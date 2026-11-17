@@ -63,6 +63,11 @@ std::optional<std::string> stored_key(const std::string& address) {
     return key;
 }
 
+std::string content_type_of(const std::string& key) {
+    const auto gzip = key.ends_with(".gz") || key.ends_with(".tgz");
+    return gzip ? "application/gzip" : "application/octet-stream";
+}
+
 std::string download_name(const std::string& key) {
     const auto slash = key.find_last_of('/');
     return key.substr(slash == std::string::npos ? 0 : slash + 1);
@@ -98,7 +103,7 @@ http_response answer(const ores::storage::filesystem::local_store& store,
                    "The stored " + std::string(what) + " is no longer there.");
 
     http_response resp;
-    resp.content_type = "application/gzip";
+    resp.content_type = content_type_of(*key);
     resp.set_header("Content-Disposition", disposition_for(download_name(*key)));
     resp.set_header("Cache-Control", "private, no-store");
     resp.body_stream = std::make_shared<ores::http::server::routes::storage_file_source>(*path);

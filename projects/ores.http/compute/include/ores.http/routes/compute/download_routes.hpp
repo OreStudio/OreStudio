@@ -55,6 +55,9 @@ public:
  */
 std::optional<std::string> stored_key(const std::string& address);
 
+/// The content type an object is served as, read from the name it is stored under.
+std::string content_type_of(const std::string& key);
+
 /// The name a browser saves an object as: the last segment of its key.
 std::string download_name(const std::string& key);
 

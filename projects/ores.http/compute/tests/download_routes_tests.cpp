@@ -33,6 +33,7 @@ using ores::http::domain::http_status;
 using ores::http::routes::compute::disposition_for;
 using ores::http::routes::compute::download_name;
 using ores::http::routes::compute::compute_routes;
+using ores::http::routes::compute::content_type_of;
 using ores::http::routes::compute::stored_key;
 using namespace ores::logging;
 
@@ -132,4 +133,14 @@ TEST_CASE("a_download_name_reaches_the_header_as_printable_ascii", "[grid_downlo
     CHECK(disposition_for("a\"b\\c") == R"(attachment; filename="a_b_c")");
     CHECK(disposition_for(std::string("a\nb\tc")) == R"(attachment; filename="a_b_c")");
     CHECK(disposition_for("caf\u00e9.tar.gz") == R"(attachment; filename="caf__.tar.gz")");
+}
+
+TEST_CASE("a_download_states_the_type_its_object_is_stored_as", "[grid_downloads]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the type a download states";
+
+    CHECK(content_type_of("compute/output/abc.tar.gz") == "application/gzip");
+    CHECK(content_type_of("compute/input/abc.tgz") == "application/gzip");
+    CHECK(content_type_of("compute/config/abc.xml") == "application/octet-stream");
+    CHECK(content_type_of("compute/input/abc") == "application/octet-stream");
 }

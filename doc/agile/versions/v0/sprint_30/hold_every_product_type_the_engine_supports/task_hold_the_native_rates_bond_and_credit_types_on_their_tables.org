@@ -30,9 +30,9 @@ stated inline is the split-out task's.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Paused mid-verification. Models, facts, projections, builders, planner and tests are in; the five suites build. trading api, trading core and shell suites pass. ores.ore.core.tests has 2 failures, below. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | 1. RateDigitalOption reads no exercise date (xml_portfolio_projection_tests.cpp:3771): read_option_block does not keep ExerciseDates for this carrier; read them into the exercise schedule rows as the swaption reader does. 2. The CBO refusal test fixture (line ~4023) is not schema-valid, as the schema requires BondBasketData in CBOStructure; add a minimal BondBasketData, CBOTranches and ScheduleData. 3. Record the generated trades with the engine, close the task, raise the PR. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance

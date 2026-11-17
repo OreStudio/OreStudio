@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-16
-#+updated: 2026-11-16
+#+updated: 2026-11-17
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ Serve GET /api/conventions/:family/documents/:id and PUT /api/conventions/:famil
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The two routes are served and the suite passes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-16                               |
+| Next         | Raise the PR, then close the task when it merges. |
+| Last touched | 2026-11-17                               |
 
 * Acceptance
 
@@ -45,9 +45,25 @@ Serve GET /api/conventions/:family/documents/:id and PUT /api/conventions/:famil
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The two routes extend =convention_screen_routes=, because the family table, the
+404 that names a family and the flattener for a grouped wire row already live
+there; a second unit would restate the table and the routes would disagree about
+which families exist. The table gains two per-family functions: one that reads a
+family's row by its identifier, and one that writes its terms.
+
+The terms are data, not wiring: =convention_kind_term= states each kind's terms
+by entity, column, schema and XPath, and the ORE parameter contract and the value
+sets fill in the words and the values. A composite family's terms live on its
+parts, so the parts the row actually holds choose the terms.
+
+The write changes the columns the caller names on the row it reads here, in the
+column's own type, and sends the whole row under =must_match_version=. A stale
+version is answered as the service's conflict with 200, because the screen reads
+the result's outcome and not the status, which is what the BFF did.
+
+The new units are =convention_terms= (the join and the refusal naming a term),
+plus the shared =wire_cells= and =catalogue_choices=, which the curve
+configuration routes needed first.
 
 * Measurements
 
@@ -61,7 +77,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The reference data area's pairs | 30 of 30, and no gap | =python3 build/scripts/route_inventory.py --check= | 3deb0febeb |
+| The gateway's routes in the inventory | 1351 routes, 1023 answered by ores.http, 257 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | 3deb0febeb |
+| The reference data part's suite | 529 test cases, 3200 assertions, all pass | =ctest -R ores.http.refdata.tests= | 3deb0febeb |
 
 * Notes
 
@@ -89,3 +107,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+
+Done. The reference data part answers both convention document routes at the
+BFF's paths, member names and status codes, and the reference data area has no
+unpaired route left.
+
+** The two routes
+
+- =GET /api/conventions/:family/documents/:id= answers one family's convention as
+  the record page reads it: its family, the kind the address stands for, the party
+  that holds it, its version, and its terms, each with the value the row holds, the
+  words the ORE parameter contract gives it and the values its set accepts. A
+  composite family's parts are read for the same key and laid over the central row,
+  and only the terms of the form the row holds are drawn.
+- =PUT /api/conventions/:family/documents/:id/terms= changes the terms the caller
+  names, writes every term the row holds and sends the row under the version the
+  caller read. A composite family is a 400, because its terms are changed on its
+  parts.
+
+** The decisions worth keeping
+
+- The routes extend the convention screen's unit rather than a new one: the family
+  table and the 404 that names a family are already there, and two tables would
+  disagree the first time a family is added.
+- A stale version is the service's conflict result with 200, not a 409, because the
+  screen reads =result.outcome= and puts the refusal on the page it drew.
+- A term the store refuses carries the store's sentence and is put on that term's
+  column, by the wording the validation function raises.
+- Two families, the tenors and the currency pairs, state no filter by identifier,
+  so their document read filters the rows it reads. Their ids are identifiers and
+  their lists are small.
+
+** What is not proved
+
+The routes are proved against a client that is not connected, so their refusals
+are covered: an unknown family, a malformed identifier, a malformed party, an
+unknown query parameter, a composite write, a family with no write, and a body the
+route cannot read. Their happy paths, and the conflict and the term-level refusal,
+need a live estate, which this task does not raise.

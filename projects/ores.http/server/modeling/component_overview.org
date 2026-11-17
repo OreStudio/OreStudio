@@ -80,6 +80,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.http.api.lib
         ores.http.assets.lib
+        ores.http.compute.lib
         ores.http.core.lib
         ores.http.iam.lib
         ores.http.refdata.lib

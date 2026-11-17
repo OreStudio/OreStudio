@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
-#+updated: 2026-11-09
+#+updated: 2026-11-17
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,9 +28,9 @@ The gateway has no part for the grid area. Add the part with the adapter recipe,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The part is stood up and registered; its routes follow. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Serve the batches, work units and results. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -42,9 +42,32 @@ The gateway has no part for the grid area. Add the part with the adapter recipe,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The part comes first, by the adapter recipe that stood up
+=ores.http.synthetic=: the model, the four hand-authored CMake files, the
+composite root, the generated umbrella header, the hand-written aggregate, the
+file lists, the diagram, and the server's registration. It is named
+=ores.http.compute= after the domain it projects, and it is registered before a
+single route is served, so the tree builds with the part in place.
+
+The routes then follow in families, one commit each, because the grid's reads are
+four joins rather than four lists:
+
+- The batches, work units and results are three collections the grid screens page
+  through, newest first, each row carrying the name of the run and the party that
+  made it. The grid service answers them; the gateway joins the party names.
+- One batch's work units, one work unit's results, and one result's output are the
+  children of a row, and the output is the bytes the grid stored, so the part
+  reads =ores.storage.api= for the entry and streams it.
+- The application versions are the catalogue the runners offer: one build with its
+  packages and the versions beside it, and the release note the super
+  administrator edits against the version they read.
+- The three composed views — =/api/operations/grid=, =/series= and =/usage= — are
+  their own task, as the story states: their design, the stored summary and the
+  counters per bucket, is settled before they are served.
+
+The grid's own paths stay as the BFF wrote them, =/api/operations/grid/...=, so the
+browser leaves the BFF with no change, and each route is paired in the inventory
+under the =grid= area.
 
 * Measurements
 

@@ -784,3 +784,20 @@ TEST_CASE("a_rate_digital_option_refuses_a_payment_before_its_fixing", scripted_
     REQUIRE_FALSE(built.has_value());
     CHECK(built.error().term == "payment_date");
 }
+
+TEST_CASE("a_rate_digital_option_takes_a_negative_strike_and_refuses_no_index", scripted_tags) {
+    rate_digital_option_terms terms{.index = std::string("EUR-EURIBOR-6M"),
+                                    .strike = scripted_amount("-0.005"),
+                                    .payoff_amount = scripted_amount("10000"),
+                                    .payoff_currency = std::string("EUR"),
+                                    .kind = option_kind::put,
+                                    .position = option_position::long_option,
+                                    .fixing_date = 2027y / 6 / 18,
+                                    .payment_date = 2027y / 6 / 20};
+    CHECK(rate_digital_option_builder(terms).build().has_value());
+
+    terms.index = std::string();
+    const auto built = rate_digital_option_builder(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "index");
+}

@@ -95,7 +95,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | a negative strike is refused | scripted_builders.cpp | accept | a rate fixes below zero, so the strike may; tested |
+| 2 | the payoff can round to zero | trade_population_planner.cpp | accept | floored at one |
+| 3 | the straddle states no LongShort list | rate_builders.hpp | decline | a limitation stated on the task and the PR |
+| 4 | format-only reflows | rate_instrument_projection.cpp | decline | clang-format's output on the file the change touched |
+| 5 | thin digital builder tests | builders_scripted_builders_tests.cpp | accept | negative strike and empty index tested |
+| 6 | the uri fallback for the index | trade_population_planner.cpp | accept | a convention that names a datum is refused instead |
 
 * Result
 

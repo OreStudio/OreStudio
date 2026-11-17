@@ -1698,13 +1698,16 @@ build_rate_trade(const domain::trade_generation_scope& scope,
     }
     if (type == "RateDigitalOption") {
         // The digital fixes on the domestic index a year out and pays two days later.
-        const auto& index = domestic[slot % domestic.size()].index;
+        const auto* index = domestic[slot % domestic.size()].index.index();
+        if (index == nullptr)
+            throw trade_population_error("A RateDigitalOption fixes on an index, and the drawn "
+                                         "swap convention names a datum.");
         const auto fixing = add_years(scope.as_of_date, 1);
         auto digital =
             tb::rate_digital_option_builder(
-                {.index = index.index() != nullptr ? index.index()->subject() : index.uri(),
+                {.index = index->subject(),
                  .strike = fixed_rate,
-                 .payoff_amount = money(std::round(entry.notional / 100.0)),
+                 .payoff_amount = money(std::max(1.0, std::round(entry.notional / 100.0))),
                  .payoff_currency = scope.currency_code,
                  .kind = first_way(entry, 2) ? tb::option_kind::call : tb::option_kind::put,
                  .position = position,

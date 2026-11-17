@@ -915,8 +915,7 @@ scripted_result rate_digital_option_builder::build() const {
         return std::unexpected(build_error{"payoff_currency", "must name a currency"});
     if (auto refusal = positive_amount("payoff_amount", terms.payoff_amount.get()))
         return std::unexpected(std::move(*refusal));
-    if (terms.strike.get() < decimal{})
-        return std::unexpected(build_error{"strike", "must not be negative"});
+    // A rate fixes below zero, so a strike may too.
     if (terms.payment_date.get() < terms.fixing_date.get())
         return std::unexpected(build_error{"payment_date", "must not be before the fixing"});
 

@@ -674,7 +674,7 @@ private:
 
 /**
  * @brief A fixed payout on an interest rate fixing above (call) or below (put)
- * the strike.
+ * the strike, which may be negative as a rate may.
  */
 struct rate_digital_option_terms final {
     /// The index as ORE names it, such as EUR-EURIBOR-6M.

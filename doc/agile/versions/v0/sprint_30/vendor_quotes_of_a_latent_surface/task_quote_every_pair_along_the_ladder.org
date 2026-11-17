@@ -8,7 +8,7 @@
 #+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
 #+branch: feature/driver-and-driven-pairs
-#+pr:
+#+pr: 4814
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4814][#4814]] | [doc,agile] Driver and driven pairs; plan the latent surface quotes |
 
 * Review
 

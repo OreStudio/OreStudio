@@ -22,10 +22,13 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::marketdata::service {
 
@@ -42,8 +45,9 @@ namespace ores::marketdata::service {
 struct ore_export_result final {
     std::string market_data;
     std::string fixings;
-    /// The session party's series the export read, not every series the session can read. A
-    /// series with nothing to write at the date, such as an unpublished surface, still counts.
+    /// The series the export read for the session party, not every series the session can
+    /// read. A series with nothing to write at the date, such as an unpublished surface, still
+    /// counts.
     int series_count = 0;
     int observation_count = 0;
     int fixing_count = 0;
@@ -52,6 +56,22 @@ struct ore_export_result final {
     /// The datums left out of the valuation date because their latest value is too old.
     int stale_count = 0;
 };
+
+/**
+ * @brief The series a run's export writes, in the order given.
+ *
+ * A run prices for one party, and every party holds its own series of each item it receives
+ * or derives, so the export writes the party's series and no other party's. A fixing is
+ * different: it is a fact of the world, which the public sources store once, as a fixing series
+ * of the system tenant. The export also writes each such series whose address the party holds
+ * no fixing series of the same ORE index, so the party's own series wins, and only the first
+ * world series of an ORE index is written, so two providers or two spellings of one index do
+ * not write its fixings twice. With no party every series of the session's tenant is written.
+ */
+ORES_MARKETDATA_CORE_EXPORT std::vector<const domain::market_series*>
+series_to_export(const std::vector<domain::market_series>& series,
+                 const utility::uuid::tenant_id& tenant,
+                 const std::optional<boost::uuids::uuid>& party);
 
 /**
  * @brief Writes the tenant's stored market data back out as ORE text.

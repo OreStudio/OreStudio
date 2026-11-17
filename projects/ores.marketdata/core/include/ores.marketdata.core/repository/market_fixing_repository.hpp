@@ -200,6 +200,18 @@ public:
 
     std::vector<domain::market_fixing> read_latest_for_series(const context& ctx,
                                                               const boost::uuids::uuid& series_id);
+
+    /**
+     * @brief The current fixings of the series that one party of one tenant holds.
+     *
+     * One query for the set, keyed as the table's indexes are, so a run can read the fixings
+     * the system tenant stores for the world under the tenant and party they are stored with.
+     */
+    std::vector<domain::market_fixing>
+    read_latest_for_series(const context& ctx,
+                           const utility::uuid::tenant_id& tenant,
+                           const boost::uuids::uuid& party,
+                           const std::vector<std::string>& series_ids);
 };
 
 }

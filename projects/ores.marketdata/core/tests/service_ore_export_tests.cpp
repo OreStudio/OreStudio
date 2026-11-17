@@ -696,7 +696,13 @@ TEST_CASE("export_for_a_party_writes_its_own_series_and_no_other_party_s",
 
     for (std::size_t i = 0; i < parties.size(); ++i) {
         const auto written = ore_export_service(as_party(parties[i])).write_all();
-        CHECK(written.series_count == 1);
+        const auto read = ores::marketdata::repository::market_series_repository{}.read_latest(
+            as_party(parties[i]));
+        const auto chosen =
+            ores::marketdata::service::series_to_export(read, t.ctx.tenant_id(), parties[i]);
+        CHECK(std::ranges::count_if(chosen,
+                                    [&](const auto* c) { return c->party_id == parties[i]; }) == 1);
+        CHECK(written.series_count == static_cast<int>(chosen.size()));
         const auto& market = written.market_data;
         CHECK(std::ranges::count(body_keys(market), std::string("FX/RATE/EUR/USD")) == 1);
         CHECK(market.contains("FX/RATE/EUR/USD\t" + values[i]));
@@ -704,4 +710,85 @@ TEST_CASE("export_for_a_party_writes_its_own_series_and_no_other_party_s",
 
     const auto every_party = body_keys(ore_export_service(t.ctx).write_all().market_data);
     CHECK(std::ranges::count(every_party, std::string("FX/RATE/EUR/USD")) == 2);
+}
+
+namespace {
+
+ores::marketdata::domain::market_series
+series_of(const boost::uuids::uuid& party, bool system_tenant, const std::string& uri) {
+    ores::marketdata::domain::market_series s;
+    s.id = boost::uuids::random_generator()();
+    s.party_id = party;
+    s.oresmd_uri = uri;
+    if (!system_tenant)
+        s.tenant_id =
+            *ores::utility::uuid::tenant_id::from_uuid(boost::uuids::random_generator()());
+    return s;
+}
+
+std::vector<std::string>
+chosen_uris(const std::vector<const ores::marketdata::domain::market_series*>& c) {
+    std::vector<std::string> out;
+    for (const auto* s : c)
+        out.push_back(s->oresmd_uri);
+    return out;
+}
+
+const std::string world_sonia = "oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA";
+const std::string world_estr = "oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER";
+const std::string world_eurusd =
+    "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD";
+
+}
+
+TEST_CASE("a_party_export_writes_the_world_fixings_the_party_holds_no_series_of",
+          "[service][ore_export]") {
+    auto lg(make_logger(test_suite));
+    const auto party = boost::uuids::random_generator()();
+    const auto world = boost::uuids::random_generator()();
+    const auto other = boost::uuids::random_generator()();
+    const auto tenant =
+        *ores::utility::uuid::tenant_id::from_uuid(boost::uuids::random_generator()());
+    const std::vector<ores::marketdata::domain::market_series> series{
+        series_of(party, false, world_eurusd),
+        series_of(world, true, world_sonia),
+        series_of(world, true, world_sonia),
+        series_of(world, true, world_estr),
+        series_of(world, true, world_eurusd),
+        series_of(other, false, world_estr),
+    };
+
+    CHECK(chosen_uris(ores::marketdata::service::series_to_export(series, tenant, party)) ==
+          std::vector<std::string>{world_eurusd, world_sonia, world_estr});
+}
+
+TEST_CASE("a_party_s_own_fixing_series_wins_over_the_world_s", "[service][ore_export]") {
+    auto lg(make_logger(test_suite));
+    const auto party = boost::uuids::random_generator()();
+    const auto world = boost::uuids::random_generator()();
+    const auto tenant =
+        *ores::utility::uuid::tenant_id::from_uuid(boost::uuids::random_generator()());
+    const std::vector<ores::marketdata::domain::market_series> series{
+        series_of(world, true, world_sonia),
+        series_of(party, false, world_sonia),
+    };
+
+    const auto chosen = ores::marketdata::service::series_to_export(series, tenant, party);
+    REQUIRE(chosen.size() == 1);
+    CHECK(chosen.front()->party_id == party);
+}
+
+TEST_CASE("an_export_with_no_party_writes_every_series_of_its_tenant", "[service][ore_export]") {
+    auto lg(make_logger(test_suite));
+    auto own = series_of(boost::uuids::random_generator()(), false, world_sonia);
+    auto colleague = series_of(boost::uuids::random_generator()(), false, world_estr);
+    colleague.tenant_id = own.tenant_id;
+    const std::vector<ores::marketdata::domain::market_series> series{
+        series_of(boost::uuids::random_generator()(), true, world_sonia),
+        own,
+        colleague,
+    };
+    const auto chosen =
+        ores::marketdata::service::series_to_export(series, own.tenant_id, std::nullopt);
+    CHECK(chosen_uris(chosen) == std::vector<std::string>{world_sonia, world_estr});
 }

@@ -8,12 +8,12 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/give-each-party-the-fixings-its-trades-use
-#+pr:
+#+pr: 4823
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
 #+updated: 2026-11-17
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A party's run exports the public fixings of every index its trades use.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -41,9 +41,19 @@ A party's run exports the public fixings of every index its trades use.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The capture [[id:A77947D9-FB2E-4518-A26B-21680DB0E1E1][World data versus party configuration]] classes market quotes as world
+data, and states the rule for a party's own copy: take the party's row first
+and the world's otherwise. Fixings are the clearest case: the public sources
+store them once, under the system tenant, and every party's trades fix
+against the same published rate.
+
+1. State the rule as a pure function, =series_to_export=: a party's run
+   writes the party's series, and each fixing series of the system tenant
+   whose address the party holds no fixing series of, the first one only.
+2. Read the fixings of the chosen series once for each tenant and party that
+   holds them, keyed as the table's indexes are, and not once per series.
+3. Run the ACCOUK NPV report and measure the fixings file, the export time,
+   and ORE's load time and missing fixings.
 
 * Measurements
 
@@ -57,9 +67,41 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Fixings in an ACCOUK run's fixings file | 0 before, 301,675 after | =zcat fixings.txt= of runs =674d2887= and =e2919cba= | 4e6e99f2e1, this branch |
+| Fixing series and fixings of the system tenant | 141 series, 301,675 fixings | count over =ores_marketdata_market_series_tbl= and its fixings | this branch |
+| Export time of the run | 7.3 s with one read per series, 2.7 s with one read per tenant and party | the marketdata service's "Exported ... series" log line | this branch |
+| ORE run time on the same package | 0.7 s with no fixings, 3.8 s with the public fixings | the vendored ORE 1.8.17.0 on the package of run =e5d89166= | this branch |
+| Overnight SONIA fixings ORE misses | 8 at earlier dates before; 8 after, every one for 2026-11-16 | "missing GBP-SONIAON" in the same logs | this branch |
+| Unit cases | 14 export cases, 67 assertions | =ores.marketdata.core.tests "[ore_export]"= | this branch |
+
+* Decisions
+
+- *The export reads the world, rather than copying it to each party.* A copy
+  under each party, the way raw quotes reach a party through its
+  subscriptions, would store 301,675 fixings again for every party of every
+  tenant, and would need a job to keep each copy current. A fixing is the same
+  fact for every party, so the export reads it where it is stored.
+- *A party's own fixing series wins.* A party that keeps its own series of an
+  index overrides the world's, as the capture's override rule states.
+- *A session with no party writes its own tenant's series.* Before, it wrote
+  every series it could read, but read data only from its own tenant, so the
+  world series came out empty; the rule now says so plainly.
+- *All world fixings, for now.* The run carries every public fixing, 1.5 MB
+  compressed, and ORE spends about 3 s loading them. Narrowing to the indices
+  the trades name is the export narrowing task's.
 
 * Notes
+
+- Main's trade generator refused the provision of 2026-11-17 12:01: the
+  population of 1000 trades gives bonds 40 trades and its configs need 44, so
+  no trade was booked. The measurements below therefore run ORE on the package
+  of the earlier run =e5d89166= with this run's fixings file.
+- The 8 overnight SONIA fixings ORE still misses are for 2026-11-16, the
+  business day before the run; the newest stored GBP-SONIA fixing is
+  2026-11-13. SONIA publishes the next business day, so this is the
+  public source's freshness, which
+  [[id:06886D23-1A52-4BBC-B305-4609D606EEA7][Generate the historical fixings the generated trades need]] fills where no
+  publisher gives a value.
 
 * Test Scenarios
 
@@ -76,12 +118,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4823][#4823]] | [marketdata] Export the world's fixings to each party's run |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local gate: two test constants collided with another source of the unity target | service_ore_export_tests.cpp | Accept | Renamed to world_sonia, world_estr and world_eurusd. |
+| 2 | PR #4823 review: the new doc block detached the class comment from its class | ore_export_service.hpp | Accept | The function and its comment now come before the class comment. |
+| 3 | PR #4823 review: the fixings of several indices interleave in the file | ore_export_service.cpp | Decline | The writer keeps the order it is given and ORE stores fixings by index and date, so the order carries nothing. |
+| 4 | PR #4823 review: two addresses could write one ORE index twice | ore_export_service.cpp | Accept | The rule keys on the ORE index an address writes. No real pair of addresses writes one name: EUR-ESTR and EUR-ESTER stay two names, which a test meant to cover the case showed, so the case has no test. |
+| 5 | PR #4823 review: the tenant is turned into a string and parsed back | ore_export_service.cpp | Accept | Keyed on the tenant's uuid, with a side map to the tenant id, so no parse and no error path. |
+| 6 | PR #4823 review: one query names every series in its IN list | market_fixing_repository.cpp | Decline | The export narrowing task bounds the list to the trades' indices. |
+| 7 | PR #4823 review: say why the party's series need no tenant check | ore_export_service.cpp | Accept | A party id belongs to one tenant; the comment says so. |
 
 * Result
+
+A party's run now writes the public fixings the system tenant stores, unless
+the party holds its own series of the index. ACCOUK's fixings file went from
+empty to 301,675 fixings, the overnight SONIA history resolves, and the
+export reads the fixings in one query per tenant and party.

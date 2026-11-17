@@ -475,4 +475,27 @@ market_fixing_repository::read_latest_for_series(const context& ctx,
         "Reading latest market fixings.");
 }
 
+std::vector<domain::market_fixing>
+market_fixing_repository::read_latest_for_series(const context& ctx,
+                                                 const utility::uuid::tenant_id& tenant,
+                                                 const boost::uuids::uuid& party,
+                                                 const std::vector<std::string>& series_ids) {
+    if (series_ids.empty())
+        return {};
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = tenant.to_string();
+    const auto pid = boost::uuids::to_string(party);
+    const auto query = query_builder::read<std::vector<market_fixing_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == pid &&
+                                            "series_id"_c.in(series_ids) && "valid_to"_c == max) |
+                       query_builder::order_by("fixing_date"_c);
+
+    return query_builder::execute_read_query<market_fixing_entity, domain::market_fixing>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_fixing_mapper::map(entities); },
+        lg(),
+        "Reading latest market fixings of a set of series.");
+}
+
 }

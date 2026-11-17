@@ -26,11 +26,11 @@ The four basket and rainbow products have a data model, a projection reader and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -45,9 +45,23 @@ The four basket and rainbow products have a data model, a projection reader and 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+ORE reads the four types as scripted trades over fixed elements
+(=basketOptionData=, =rainbowOptionData=). The four types route to the
+scripted instrument table through the class-read path, which already holds
+=PerformanceOption_01= and the other class-read products. The FX tables cannot
+hold a basket, so new equity and FX tables were not added.
+
+- The scripted carrier holds option rows (option, premiums, exercise fees,
+  payment dates, exercise prices), as the other families do.
+- The class-read projection reads an =optionData= member through the option
+  block, and a =scheduleData= member (=ObservationDates=) as a product schedule.
+  It writes both back. Task B8BF800F can use the same path for
+  EuropeanOptionBarrier and FxWorstOfBasketSwap.
+- The scalar terms (Currency, Notional, Strike, Settlement) are parameter rows.
+  The members are underlying rows with a weight and an optional currency.
+- One builder, =basket_option_builder<basket_product>=, builds all four types.
+- The equity planner books both on two equities in one currency. The FX planner
+  books both on the slot's pair and a second pair with the same quote currency.
 
 * Measurements
 
@@ -61,7 +75,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| trading api tests | 4657 cases pass | =./ores.trading.api.tests= | this branch |
+| ore core tests | 546 cases pass | =./ores.ore.core.tests= | this branch |
+| synthetic tests, not generated | 138 cases pass | =./ores.synthetic.core.tests "~[generated]"= | this branch |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | this branch |
 
 * Notes
 
@@ -89,3 +106,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+EquityBasketOption, FxBasketOption, EquityRainbowOption and FxRainbowOption
+are held in the scripted instrument table. Each fact of the element is a
+parameter, underlying, option or schedule row. No fact is held as text. The
+round-trip test reads the user guide's Asian basket and best-of rainbow and
+writes them back. Each type has a builder and the generator books one trade of
+each. The ORE engine builds the four recorded trades with no error.
+
+Two defects came up and are fixed:
+
+- The FX basket planner chose its second pair by an offset from the slot. The
+  slot's pair comes from the pairs that hold the book currency, so the offset
+  could find the same pair. The planner now searches all pairs.
+- The FX average forward ended its observations on the payment date, rolled
+  forward. A payment date on a holiday put the last observation after the
+  payment, and ORE refused the trade. The schedule now rolls its end date back
+  (=TermConvention= P).

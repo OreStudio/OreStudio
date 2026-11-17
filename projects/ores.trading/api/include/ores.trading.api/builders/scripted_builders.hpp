@@ -436,47 +436,6 @@ private:
     basket_variance_swap_terms terms_;
 };
 
-/// One leg of a pairwise variance swap: the underlying, its strike and its notional.
-struct pairwise_member final {
-    marketdata::datum::market_reference underlying;
-    utility::decimal::decimal strike;
-    utility::decimal::decimal notional;
-};
-
-/**
- * @brief A swap on the variance of two underlyings and of their sum, observed
- * daily from the start to the end.
- */
-struct pairwise_variance_swap_terms final {
-    required<pairwise_member> first;
-    required<pairwise_member> second;
-    required<utility::decimal::decimal> basket_notional;
-    required<utility::decimal::decimal> basket_strike;
-    required<std::string> pay_currency;
-    required<std::chrono::year_month_day> start;
-    required<std::chrono::year_month_day> end;
-    required<std::chrono::year_month_day> settlement;
-    required<option_position> position;
-};
-
-ORES_TRADING_API_EXPORT scripted_result build_pairwise_variance_swap(
-    std::string_view trade_type, const pairwise_variance_swap_terms& terms);
-
-template <scripted_family Family>
-class pairwise_variance_swap_builder final {
-public:
-    static constexpr std::string_view trade_type =
-        Family == scripted_family::equity ? "EquityPairwiseVarianceSwap" : "FxPairwiseVarianceSwap";
-    explicit pairwise_variance_swap_builder(pairwise_variance_swap_terms terms)
-        : terms_(std::move(terms)) {}
-    [[nodiscard]] scripted_result build() const {
-        return build_pairwise_variance_swap(trade_type, terms_);
-    }
-
-private:
-    pairwise_variance_swap_terms terms_;
-};
-
 /**
  * @brief An agreement to buy, on the FVA date, a straddle struck at the
  * underlying's level then and priced at the implied volatility agreed now.
@@ -597,31 +556,6 @@ private:
 
 
 /**
- * @brief A European option on an equity future, which expires on or after the
- * option does.
- */
-struct equity_future_option_terms final {
-    required<marketdata::datum::market_reference> underlying;
-    required<std::string> currency;
-    required<utility::decimal::decimal> quantity;
-    required<utility::decimal::decimal> strike;
-    required<option_kind> kind;
-    required<option_position> position;
-    required<std::chrono::year_month_day> expiry;
-    required<std::chrono::year_month_day> future_expiry;
-};
-
-class ORES_TRADING_API_EXPORT equity_future_option_builder final {
-public:
-    static constexpr std::string_view trade_type = "EquityFutureOption";
-    explicit equity_future_option_builder(equity_future_option_terms terms);
-    [[nodiscard]] scripted_result build() const;
-
-private:
-    equity_future_option_terms terms_;
-};
-
-/**
  * @brief A European option on a bond future, exercised into the future.
  *
  * The contract names the future as the bond future reference data holds it,
@@ -644,32 +578,6 @@ public:
 
 private:
     bond_future_option_terms terms_;
-};
-
-/**
- * @brief An FX option on the rate averaged over daily observations from the
- * observation start to the expiry.
- */
-struct fx_asian_option_terms final {
-    required<marketdata::datum::market_reference> fx_index;
-    required<std::string> currency;
-    required<utility::decimal::decimal> quantity;
-    required<utility::decimal::decimal> strike;
-    required<option_kind> kind;
-    required<option_position> position;
-    required<std::chrono::year_month_day> observation_start;
-    required<std::chrono::year_month_day> expiry;
-    required<std::chrono::year_month_day> settlement;
-};
-
-class ORES_TRADING_API_EXPORT fx_asian_option_builder final {
-public:
-    static constexpr std::string_view trade_type = "FxAsianOption";
-    explicit fx_asian_option_builder(fx_asian_option_terms terms);
-    [[nodiscard]] scripted_result build() const;
-
-private:
-    fx_asian_option_terms terms_;
 };
 
 /**
@@ -718,21 +626,6 @@ private:
     cbo_terms terms_;
 };
 
-/// An amount of cash held in one currency.
-struct cash_position_terms final {
-    required<std::string> currency;
-    required<utility::decimal::decimal> amount;
-};
-
-class ORES_TRADING_API_EXPORT cash_position_builder final {
-public:
-    static constexpr std::string_view trade_type = "CashPosition";
-    explicit cash_position_builder(cash_position_terms terms);
-    [[nodiscard]] scripted_result build() const;
-
-private:
-    cash_position_terms terms_;
-};
 
 }
 

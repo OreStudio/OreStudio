@@ -91,8 +91,8 @@ public:
      * <notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short>
      * <settlement_type> <cliquet_frequency> <strike_currency> <local_cap> <local_floor>
      * <global_cap> <global_floor> <settlement_days> <premium> <premium_payment_date>
-     * <initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> <description> <reason>
-     * <commentary>
+     * <initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> <future_expiry_date>
+     * <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -103,8 +103,8 @@ public:
      * <notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short>
      * <settlement_type> <cliquet_frequency> <strike_currency> <local_cap> <local_floor>
      * <global_cap> <global_floor> <settlement_days> <premium> <premium_payment_date>
-     * <initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> <description> <reason>
-     * <commentary> [--version <n>]
+     * <initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> <future_expiry_date>
+     * <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -115,8 +115,8 @@ public:
      * <underlying_name> <currency> <notional> <option_type> <strike> <expiry_date> <exercise_type>
      * <long_short> <settlement_type> <cliquet_frequency> <strike_currency> <local_cap>
      * <local_floor> <global_cap> <global_floor> <settlement_days> <premium> <premium_payment_date>
-     * <initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> <description> <reason>
-     * <commentary>
+     * <initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> <future_expiry_date>
+     * <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

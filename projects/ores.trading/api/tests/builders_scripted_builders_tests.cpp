@@ -483,22 +483,6 @@ basket_variance_swap_terms spx_and_ndx_variance() {
             .position = option_position::short_option};
 }
 
-pairwise_variance_swap_terms spx_and_ndx_pairwise() {
-    return {.first = pairwise_member{.underlying = scripted_equity(".SPX"),
-                                     .strike = scripted_amount("0.34"),
-                                     .notional = scripted_amount("577")},
-            .second = pairwise_member{.underlying = scripted_equity(".NDX"),
-                                      .strike = scripted_amount("0.39"),
-                                      .notional = scripted_amount("603")},
-            .basket_notional = scripted_amount("1339"),
-            .basket_strike = scripted_amount("0.32"),
-            .pay_currency = std::string("USD"),
-            .start = 2026y / 1 / 5,
-            .end = 2027y / 1 / 5,
-            .settlement = 2027y / 1 / 7,
-            .position = option_position::long_option};
-}
-
 forward_volatility_agreement_terms spx_fva() {
     return {.underlying = scripted_equity(".SPX"),
             .pay_currency = std::string("USD"),
@@ -524,35 +508,6 @@ TEST_CASE("a_basket_variance_swap_states_its_weighted_members_and_its_valuation_
     REQUIRE(built->schedules.size() == 1);
     CHECK(built->schedules[0].schedule_role == "valuationschedule");
     CHECK(built->schedules[0].tenor == "1D");
-}
-
-TEST_CASE("a_pairwise_variance_swap_states_its_legs_as_three_lists", scripted_tags) {
-    const auto built =
-        pairwise_variance_swap_builder<scripted_family::equity>(spx_and_ndx_pairwise()).build();
-    REQUIRE(built.has_value());
-    const auto underlyings = std::ranges::find_if(
-        built->parameters, [](const auto& p) { return p.name == "Underlyings"; });
-    REQUIRE(underlyings != built->parameters.end());
-    CHECK(underlyings->declared_type == "Index");
-    CHECK(underlyings->shape == "vector");
-    std::vector<std::string> strikes;
-    const auto strike_list = std::ranges::find_if(
-        built->parameters, [](const auto& p) { return p.name == "UnderlyingStrikes"; });
-    REQUIRE(strike_list != built->parameters.end());
-    for (const auto& value : built->parameter_values)
-        if (value.parameter_sequence_number == strike_list->sequence_number)
-            strikes.push_back(value.value);
-    CHECK(strikes == std::vector<std::string>{"0.34", "0.39"});
-}
-
-TEST_CASE("a_pairwise_variance_swap_refuses_one_underlying_named_twice", scripted_tags) {
-    auto terms = spx_and_ndx_pairwise();
-    auto second = terms.second.get();
-    second.underlying = scripted_equity(".SPX");
-    terms.second = second;
-    const auto built = pairwise_variance_swap_builder<scripted_family::fx>(terms).build();
-    REQUIRE_FALSE(built.has_value());
-    CHECK(built.error().term == "second");
 }
 
 TEST_CASE("a_forward_volatility_agreement_states_its_dates_and_its_strike", scripted_tags) {
@@ -681,39 +636,6 @@ TEST_CASE("an_fx_worst_of_basket_swap_refuses_level_lists_that_miss_a_period", s
     CHECK(built.error().term == "pay_dates");
 }
 
-TEST_CASE("an_equity_future_option_states_its_future_expiry_and_its_option_block", scripted_tags) {
-    const auto built = equity_future_option_builder({.underlying = scripted_equity(".SPX"),
-                                                     .currency = std::string("USD"),
-                                                     .quantity = scripted_amount("17000"),
-                                                     .strike = scripted_amount("2147.56"),
-                                                     .kind = option_kind::call,
-                                                     .position = option_position::long_option,
-                                                     .expiry = 2027y / 1 / 5,
-                                                     .future_expiry = 2027y / 3 / 19})
-                           .build();
-    REQUIRE(built.has_value());
-    const auto future = std::ranges::find_if(
-        built->parameters, [](const auto& p) { return p.name == "FutureExpiryDate"; });
-    REQUIRE(future != built->parameters.end());
-    CHECK(future->value == "2027-03-19");
-    REQUIRE(built->options.size() == 1);
-    CHECK(built->options[0].style == "European");
-}
-
-TEST_CASE("an_equity_future_option_refuses_a_future_that_expires_first", scripted_tags) {
-    const auto built = equity_future_option_builder({.underlying = scripted_equity(".SPX"),
-                                                     .currency = std::string("USD"),
-                                                     .quantity = scripted_amount("17000"),
-                                                     .strike = scripted_amount("2147.56"),
-                                                     .kind = option_kind::call,
-                                                     .position = option_position::long_option,
-                                                     .expiry = 2027y / 1 / 5,
-                                                     .future_expiry = 2026y / 12 / 18})
-                           .build();
-    REQUIRE_FALSE(built.has_value());
-    CHECK(built.error().term == "future_expiry");
-}
-
 TEST_CASE("a_bond_future_option_names_its_contract", scripted_tags) {
     const auto built = bond_future_option_builder({.contract = std::string("FGBL"),
                                                    .contract_notional = scripted_amount("100000"),
@@ -728,28 +650,6 @@ TEST_CASE("a_bond_future_option_names_its_contract", scripted_tags) {
     REQUIRE(contract != built->parameters.end());
     CHECK(contract->value == "FGBL");
     CHECK(built->options[0].long_short == "Short");
-}
-
-TEST_CASE("an_fx_asian_option_averages_daily_and_weights_its_one_underlying", scripted_tags) {
-    const auto built = fx_asian_option_builder({.fx_index = scripted_equity(".SPX"),
-                                                .currency = std::string("USD"),
-                                                .quantity = scripted_amount("1000000"),
-                                                .strike = scripted_amount("1.08"),
-                                                .kind = option_kind::call,
-                                                .position = option_position::long_option,
-                                                .observation_start = 2026y / 2 / 2,
-                                                .expiry = 2026y / 3 / 2,
-                                                .settlement = 2026y / 3 / 4})
-                           .build();
-    REQUIRE(built.has_value());
-    REQUIRE(built->options.size() == 1);
-    CHECK(built->options[0].payoff_type == "Asian");
-    REQUIRE(built->instrument_underlyings.size() == 1);
-    CHECK(built->instrument_underlyings[0].weight == 1.0);
-    const auto observed = std::ranges::find_if(
-        built->schedules, [](const auto& s) { return s.schedule_role == "observationdates"; });
-    REQUIRE(observed != built->schedules.end());
-    CHECK(observed->tenor == "1D");
 }
 
 TEST_CASE("a_rate_digital_option_fixes_on_its_index_and_pays_later", scripted_tags) {
@@ -819,29 +719,4 @@ TEST_CASE("a_cbo_names_its_tranche_notional_and_structure", scripted_tags) {
                              .build();
     REQUIRE_FALSE(unnamed.has_value());
     CHECK(unnamed.error().term == "structure_id");
-}
-
-TEST_CASE("a_cash_position_holds_an_amount_long_or_short_and_refuses_none", scripted_tags) {
-    const auto short_cash = cash_position_builder({.currency = std::string("EUR"),
-                                                   .amount = scripted_amount("-1000000")})
-                                .build();
-    REQUIRE(short_cash.has_value());
-    const auto amount = std::ranges::find_if(short_cash->parameters,
-                                             [](const auto& p) { return p.name == "Amount"; });
-    REQUIRE(amount != short_cash->parameters.end());
-    CHECK(amount->value == "-1000000");
-
-    const auto none =
-        cash_position_builder({.currency = std::string("EUR"), .amount = scripted_amount("0")})
-            .build();
-    REQUIRE_FALSE(none.has_value());
-    CHECK(none.error().term == "amount");
-}
-
-TEST_CASE("a_cash_position_refuses_no_currency", scripted_tags) {
-    const auto built =
-        cash_position_builder({.currency = std::string(), .amount = scripted_amount("100")})
-            .build();
-    REQUIRE_FALSE(built.has_value());
-    CHECK(built.error().term == "currency");
 }

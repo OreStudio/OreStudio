@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <format>
 #include <map>
 #include <optional>
 #include <string>
@@ -870,6 +871,10 @@ std::vector<const Row*> owned_by(const std::vector<Row>& rows, std::string_view 
     return out;
 }
 
+}
+
+auto decimal_of(std::string_view text) -> ores::utility::decimal::decimal {
+    return ores::utility::decimal::decimal::from_string(std::string(text)).value();
 }
 
 TEST_CASE("a_portfolio_document_projects_the_legs_of_a_vanilla_swap",
@@ -3295,18 +3300,32 @@ TEST_CASE("the_variance_swaps_and_a_forward_volatility_agreement_hold_their_term
     };
     std::vector<std::string> first_read;
     const auto check_pairwise = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        const auto names = list_of(*data, "Underlyings");
-        REQUIRE(names.size() == 2);
+        const auto* row =
+            std::get_if<ores::trading::domain::equity_pairwise_variance_swap_instrument>(
+                &data->instrument);
+        REQUIRE(row != nullptr);
+        const std::vector<std::string> names{row->first_underlying, row->second_underlying};
         CHECK(names[0] != "EQ-RIC:.STOXX50E");
         if (first_read.empty())
             first_read = names;
         CHECK(names == first_read);
-        CHECK(list_of(*data, "UnderlyingStrikes") == std::vector<std::string>{"0.3385", "0.3903"});
-        CHECK(value_of(*data, "AccrualLag") == "3");
-        CHECK(value_of(*data, "PayCcy") == "USD");
-        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "valuationschedule"));
+        CHECK(row->first_strike == decimal_of("0.3385"));
+        CHECK(row->second_strike == decimal_of("0.3903"));
+        CHECK(row->first_notional == decimal_of("577.75"));
+        CHECK(row->second_notional == decimal_of("603.54"));
+        CHECK(row->basket_notional == decimal_of("1339.28"));
+        CHECK(row->basket_strike == decimal_of("0.3161"));
+        CHECK(row->long_short == "Long");
+        CHECK(row->accrual_lag == std::optional(3));
+        CHECK(row->payoff_limit == std::optional(decimal_of("5")));
+        CHECK(row->cap == std::optional(decimal_of("2.5")));
+        CHECK(row->floor == std::optional(decimal_of("0")));
+        CHECK(row->currency == "USD");
+        CHECK(row->settlement_date == std::chrono::year{2022} / 6 / 29);
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "valuation_schedule"));
     };
     const auto check_fva = [&](const ores::ore::xml::trade_import_item& item) {
         const auto* data = scripted_data_of(item.instrument);
@@ -3500,11 +3519,16 @@ TEST_CASE("an_option_on_an_equity_future_and_on_a_bond_future_hold_their_terms_a
         return "<absent>";
     };
     const auto check_equity = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        CHECK(value_of(*data, "Name") == "RIC:.SPX");
-        CHECK(value_of(*data, "FutureExpiryDate") == "2022-03-18");
-        CHECK(value_of(*data, "Quantity") == "17000");
+        const auto* row =
+            std::get_if<ores::trading::domain::equity_option_instrument>(&data->instrument);
+        REQUIRE(row != nullptr);
+        CHECK(row->identity.trade_type_code == "EquityFutureOption");
+        CHECK(row->future_expiry_date == std::optional(std::chrono::year{2022} / 3 / 18));
+        CHECK(row->notional.to_string() == "17000");
+        CHECK(row->currency == "USD");
         REQUIRE(data->options.size() == 1);
         CHECK(data->options[0].style == std::optional<std::string>("American"));
         CHECK(data->options[0].pay_off_at_expiry.has_value());
@@ -3592,13 +3616,24 @@ TEST_CASE("an_equity_double_touch_and_an_fx_asian_option_hold_their_terms_as_row
         REQUIRE(data->barrier_levels.size() == 2);
     };
     const auto check_asian = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+        const auto* data = std::get_if<ores::trading::domain::fx_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
+        REQUIRE(data->asian_options.size() == 1);
+        const auto& row = data->asian_options[0];
+        CHECK(row.identity.trade_type_code == "FxAsianOption");
+        CHECK(row.fx_index != "ECB-EUR-USD");
+        CHECK(row.currency == "USD");
+        CHECK(row.notional == decimal_of("1000000"));
+        CHECK(row.strike == decimal_of("1.08"));
+        CHECK(row.option_type == "Call");
+        CHECK(row.long_short == "Long");
+        CHECK(row.expiry_date == std::chrono::year{2022} / 3 / 1);
+        CHECK(row.settlement_date == std::optional(std::chrono::year{2022} / 3 / 5));
         REQUIRE(data->options.size() == 1);
         CHECK(data->options[0].payoff_type == std::optional<std::string>("Asian"));
         REQUIRE(data->instrument_underlyings.size() == 1);
         CHECK(data->instrument_underlyings[0].weight == 1.0);
-        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "observationdates"));
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "observation_schedule"));
     };
 
     const auto items = portfolio_projection::map(document);
@@ -3829,7 +3864,7 @@ TEST_CASE("a_single_name_cds_option_and_a_cbo_hold_their_terms_as_rows",
     check_cbo(rebuild(items[1]));
 }
 
-TEST_CASE("a_cash_position_holds_its_currency_and_amount_as_rows",
+TEST_CASE("a_cash_position_holds_its_currency_and_amount_on_its_table",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
@@ -3844,19 +3879,131 @@ TEST_CASE("a_cash_position_holds_its_currency_and_amount_as_rows",
   </Trade>
 </Portfolio>)");
     const auto check = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        std::map<std::string, std::string> values;
-        for (const auto& p : data->parameters)
-            values[p.name] = p.value.value_or("");
-        CHECK(values["Currency"] == "EUR");
-        CHECK(values["Amount"] == "1000000");
+        const auto* row =
+            std::get_if<ores::trading::domain::cash_position_instrument>(&data->instrument);
+        REQUIRE(row != nullptr);
+        CHECK(row->identity.trade_type_code == "CashPosition");
+        CHECK(row->currency == "EUR");
+        CHECK(row->amount == decimal_of("1000000"));
     };
 
     const auto items = portfolio_projection::map(document);
     REQUIRE(items.size() == 1);
     check(items[0]);
     check(rebuild(items[0]));
+}
+
+TEST_CASE("an_fx_pairwise_variance_swap_holds_its_two_members_on_its_table",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="FxPairwise#1">
+    <TradeType>FxPairwiseVarianceSwap</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxPairwiseVarianceSwapData>
+      <LongShort>Short</LongShort>
+      <Underlyings>
+        <Value>FX-ECB-EUR-USD</Value>
+        <Value>FX-ECB-GBP-USD</Value>
+      </Underlyings>
+      <UnderlyingStrikes><Value>0.08</Value><Value>0.09</Value></UnderlyingStrikes>
+      <UnderlyingNotionals><Value>1000</Value><Value>1200</Value></UnderlyingNotionals>
+      <BasketNotional>2000</BasketNotional>
+      <BasketStrike>0.085</BasketStrike>
+      <ValuationSchedule>
+        <Rules>
+          <StartDate>2026-01-05</StartDate>
+          <EndDate>2027-01-05</EndDate>
+          <Tenor>1D</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ValuationSchedule>
+      <SettlementDate>2027-01-08</SettlementDate>
+      <PayCcy>USD</PayCcy>
+    </FxPairwiseVarianceSwapData>
+  </Trade>
+</Portfolio>)");
+    const auto check = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = std::get_if<ores::trading::domain::fx_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        REQUIRE(data->pairwise_variance_swaps.size() == 1);
+        const auto& row = data->pairwise_variance_swaps[0];
+        CHECK(row.identity.trade_type_code == "FxPairwiseVarianceSwap");
+        CHECK(row.first_underlying != "FX-ECB-EUR-USD");
+        CHECK(row.first_underlying != row.second_underlying);
+        CHECK(row.second_strike == decimal_of("0.09"));
+        CHECK(row.second_notional == decimal_of("1200"));
+        CHECK(row.basket_strike == decimal_of("0.085"));
+        CHECK(row.long_short == "Short");
+        CHECK_FALSE(row.accrual_lag.has_value());
+        CHECK_FALSE(row.cap.has_value());
+        CHECK(row.settlement_date == std::chrono::year{2027} / 1 / 8);
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "valuation_schedule"));
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    check(items[0]);
+    check(rebuild(items[0]));
+}
+
+TEST_CASE("a_pairwise_variance_swap_with_a_term_ore_refuses_is_refused",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto trade =
+        [](std::string_view underlyings, std::string_view settlement, std::string_view lag) {
+            return std::format(R"(<Portfolio>
+  <Trade id="Pairwise#1">
+    <TradeType>FxPairwiseVarianceSwap</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxPairwiseVarianceSwapData>
+      <LongShort>Long</LongShort>
+      <Underlyings>{}</Underlyings>
+      <UnderlyingStrikes><Value>0.08</Value><Value>0.09</Value></UnderlyingStrikes>
+      <UnderlyingNotionals><Value>1000</Value><Value>1200</Value></UnderlyingNotionals>
+      <BasketNotional>2000</BasketNotional>
+      <BasketStrike>0.085</BasketStrike>
+      <ValuationSchedule>
+        <Rules>
+          <StartDate>2026-01-05</StartDate>
+          <EndDate>2027-01-05</EndDate>
+          <Tenor>1D</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ValuationSchedule>
+      <AccrualLag>{}</AccrualLag>
+      <SettlementDate>{}</SettlementDate>
+      <PayCcy>USD</PayCcy>
+    </FxPairwiseVarianceSwapData>
+  </Trade>
+</Portfolio>)",
+                               underlyings,
+                               lag,
+                               settlement);
+        };
+    const auto two = "<Value>FX-ECB-EUR-USD</Value><Value>FX-ECB-GBP-USD</Value>";
+    const auto mapped = [](const std::string& text) {
+        const auto items = portfolio_projection::map(portfolio_projection::read(text));
+        REQUIRE(items.size() == 1);
+        return items[0];
+    };
+
+    CHECK(std::holds_alternative<ores::trading::domain::fx_instrument_data>(
+        mapped(trade(two, "2027-01-08", "2")).instrument));
+    CHECK(
+        std::holds_alternative<std::monostate>(mapped(trade(two, "2027-01-08", "2.5")).instrument));
+    CHECK(std::holds_alternative<std::monostate>(mapped(trade(two, "the eighth", "2")).instrument));
+    CHECK(std::holds_alternative<std::monostate>(
+        mapped(trade("<Value>FX-ECB-EUR-USD</Value>", "2027-01-08", "2")).instrument));
 }
 
 TEST_CASE("an_auto_delta_hedged_option_holds_its_hedge_and_its_batches_as_rows",

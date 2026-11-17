@@ -20,6 +20,7 @@
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
 #include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
+#include "ores.ore.core/domain/pairwise_variance_swap_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/underlying_block_projection.hpp"
@@ -48,6 +49,8 @@ using trading::domain::fx_forward_instrument;
 using trading::domain::fx_instrument_data;
 using trading::domain::fx_vanilla_option_instrument;
 using trading::domain::fx_variance_swap_instrument;
+using trading::domain::fx_asian_option_instrument;
+using trading::domain::fx_pairwise_variance_swap_instrument;
 using trading::domain::range_bound;
 
 using xml::record_reader;
@@ -70,7 +73,8 @@ constexpr bool is_fx_trade_type(std::string_view type) {
            type == "FxDoubleTouchOption" || type == "FxVarianceSwap" ||
            type == "FxAverageForward" || type == "FxAccumulator" || type == "FxTaRF" ||
            type == "FxGenericBarrierOption" || type == "FxDoubleBarrierOption" ||
-           type == "FxEuropeanBarrierOption" || type == "FxKIKOBarrierOption";
+           type == "FxEuropeanBarrierOption" || type == "FxKIKOBarrierOption" ||
+           type == "FxAsianOption" || type == "FxPairwiseVarianceSwap";
 }
 
 template <typename Row>
@@ -117,15 +121,15 @@ auto fx_instrument_projection_to_ore_date(const std::optional<std::chrono::year_
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto fx_instrument_projection_text_of(const record_reader& r,
-                                      std::string_view name) -> std::string {
+auto fx_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto fx_instrument_projection_spelling_of(const record_reader& r,
-                                          std::string_view name) -> std::string {
+auto fx_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -138,8 +142,8 @@ auto fx_instrument_projection_decimal_of(const record_reader& r, std::string_vie
     return decimal{};
 }
 
-auto fx_instrument_projection_optional_decimal_of(const record_reader& r,
-                                                  std::string_view name) -> std::optional<decimal> {
+auto fx_instrument_projection_optional_decimal_of(const record_reader& r, std::string_view name)
+    -> std::optional<decimal> {
     return r.decimal(name);
 }
 
@@ -238,8 +242,8 @@ auto underlying_code_of(const record_reader& data) -> std::string {
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_fx_forward(const record_reader& trade,
-                     std::string_view trade_type) -> fx_forward_instrument {
+auto read_fx_forward(const record_reader& trade, std::string_view trade_type)
+    -> fx_forward_instrument {
     auto r = fx_instrument_projection_make_row<fx_forward_instrument>(trade_type);
     const auto data = trade.child("FxForwardData");
     if (!data)
@@ -375,8 +379,8 @@ auto read_fx_digital_fields(const record_reader& data, fx_digital_option_instrum
     r.expiry_date = fx_instrument_projection_expiry_date_of(option);
 }
 
-auto read_fx_digital_option(const record_reader& trade,
-                            std::string_view trade_type) -> fx_digital_option_instrument {
+auto read_fx_digital_option(const record_reader& trade, std::string_view trade_type)
+    -> fx_digital_option_instrument {
     auto r = fx_instrument_projection_make_row<fx_digital_option_instrument>(trade_type);
     r.long_short = "Long";
     if (const auto data = trade.child("FxDigitalOptionData"))
@@ -409,8 +413,8 @@ auto read_fx_digital_barrier_option(const record_reader& trade) -> fx_digital_op
     return r;
 }
 
-auto read_fx_touch_option(const record_reader& trade,
-                          std::string_view trade_type) -> fx_digital_option_instrument {
+auto read_fx_touch_option(const record_reader& trade, std::string_view trade_type)
+    -> fx_digital_option_instrument {
     auto r = fx_instrument_projection_make_row<fx_digital_option_instrument>(trade_type);
     r.long_short = "Long";
 
@@ -474,8 +478,43 @@ auto read_fx_average_forward(const record_reader& trade) -> fx_asian_forward_ins
     return r;
 }
 
-auto read_fx_accumulator(fx_instrument_data& result,
-                         const record_reader& trade) -> fx_accumulator_instrument {
+// The strike is a bare value or, in the newer form, a StrikeData block. The
+// write states the bare value, which ORE reads the same way.
+auto read_fx_asian_option(const record_reader& trade) -> fx_asian_option_instrument {
+    auto r = fx_instrument_projection_make_row<fx_asian_option_instrument>("FxAsianOption");
+    const auto data = trade.child("FxAsianOptionData");
+    if (!data)
+        return r;
+    if (const auto underlying = data->child("Underlying"))
+        r.fx_index = fx_address_of(fx_instrument_projection_text_of(*underlying, "Name"));
+    r.currency = scalar_terms::read_text(*data, "Currency").value_or("");
+    r.notional = fx_instrument_projection_decimal_of(*data, "Quantity");
+    if (data->has("Strike"))
+        r.strike = decimal::from_string(scalar_terms::read_text(*data, "Strike").value_or(""))
+                       .value_or(decimal{});
+    else if (const auto strike = data->child("StrikeData"))
+        r.strike = fx_instrument_projection_decimal_of(*strike, "Value");
+    const auto option = data->child("OptionData");
+    r.option_type = fx_instrument_projection_option_type_of(option);
+    r.expiry_date = fx_instrument_projection_expiry_date_of(option);
+    if (option)
+        r.long_short = scalar_terms::read_text(*option, "LongShort").value_or("Long");
+    if (const auto settlement = scalar_terms::read_text(*data, "Settlement"))
+        r.settlement_date = fx_instrument_projection_to_optional_domain_date(*settlement);
+    return r;
+}
+
+auto read_fx_pairwise_variance_swap(const record_reader& trade)
+    -> fx_pairwise_variance_swap_instrument {
+    auto r = fx_instrument_projection_make_row<fx_pairwise_variance_swap_instrument>(
+        "FxPairwiseVarianceSwap");
+    if (const auto data = trade.child("FxPairwiseVarianceSwapData"))
+        pairwise_variance_swap::read(*data, r);
+    return r;
+}
+
+auto read_fx_accumulator(fx_instrument_data& result, const record_reader& trade)
+    -> fx_accumulator_instrument {
     auto r = fx_instrument_projection_make_row<fx_accumulator_instrument>("FxAccumulator");
     r.long_short = "Long";
     const auto data = trade.child("FxAccumulatorData");
@@ -782,6 +821,36 @@ void write_fx_average_forward(record_writer& trade,
         write_schedule_rule(data.child("ObservationDates"), "", "1M");
 }
 
+void write_fx_asian_option(record_writer& trade,
+                           const fx_asian_option_instrument& v,
+                           const fx_instrument_data& carrier) {
+    auto data = trade.child("FxAsianOptionData");
+    fx_instrument_projection_write_option_entry(
+        data.child("OptionData"), v.option_type, v.expiry_date, v.long_short);
+    scalar_terms::write_text(data, "Currency", v.currency);
+    data.set_decimal("Quantity", v.notional);
+    scalar_terms::write_text(data, "Strike", v.strike.to_string());
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying")) {
+        auto underlying = data.child("Underlying");
+        underlying.set_text("Type", "FX");
+        underlying.set_text("Name", underlying_name_of(v.fx_index));
+    }
+    if (v.settlement_date)
+        scalar_terms::write_text(
+            data, "Settlement", fx_instrument_projection_to_ore_date(*v.settlement_date));
+    option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
+}
+
+void write_fx_pairwise_variance_swap(record_writer& trade,
+                                     const fx_pairwise_variance_swap_instrument& v,
+                                     const fx_instrument_data& carrier) {
+    auto data = trade.child("FxPairwiseVarianceSwapData");
+    pairwise_variance_swap::write(data, v);
+    option_block::write_product_schedule(data, carrier, "ValuationSchedule", "valuation_schedule");
+    option_block::write_product_schedule(
+        data, carrier, "LaggedValuationSchedule", "lagged_valuation_schedule");
+}
+
 void write_fx_accumulator(record_writer& trade,
                           const fx_accumulator_instrument& v,
                           const std::vector<range_bound>& rows,
@@ -873,6 +942,7 @@ constexpr underlying_block::underlying_holder fx_underlying_holders[] = {
     {"FxVarianceSwap", "", "Underlying", "underlying"},
     {"FxAccumulator", "", "Underlying", "underlying"},
     {"FxTaRF", "", "Underlying", "underlying"},
+    {"FxAsianOption", "", "Underlying", "underlying"},
 };
 
 /// The single-valued terms each FX product row keeps, by its element.
@@ -921,6 +991,9 @@ constexpr option_block::product_schedule fx_product_schedules[] = {
     {"FxAverageForward", "ObservationDates", "observation_schedule"},
     {"FxAccumulator", "ObservationDates", "observation_schedule"},
     {"FxTaRF", "ScheduleData", "product_schedule"},
+    {"FxAsianOption", "ObservationDates", "observation_schedule"},
+    {"FxPairwiseVarianceSwap", "ValuationSchedule", "valuation_schedule"},
+    {"FxPairwiseVarianceSwap", "LaggedValuationSchedule", "lagged_valuation_schedule"},
 };
 
 std::optional<std::string> fx_option_data_element(std::string_view trade_type) {
@@ -937,6 +1010,7 @@ std::optional<std::string> fx_option_data_element(std::string_view trade_type) {
         "FxGenericBarrierOption",
         "FxAccumulator",
         "FxTaRF",
+        "FxAsianOption",
     };
     for (const auto type : with_option_data)
         if (type == trade_type)
@@ -969,6 +1043,10 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
         data.variance_swaps.push_back(read_fx_variance_swap(trade));
     } else if (trade_type == "FxAverageForward") {
         data.asian_forwards.push_back(read_fx_average_forward(trade));
+    } else if (trade_type == "FxAsianOption") {
+        data.asian_options.push_back(read_fx_asian_option(trade));
+    } else if (trade_type == "FxPairwiseVarianceSwap") {
+        data.pairwise_variance_swaps.push_back(read_fx_pairwise_variance_swap(trade));
     } else if (trade_type == "FxAccumulator") {
         // The range bounds are the product's child, so they land beside the
         // fact row rather than inside it.
@@ -1090,6 +1168,12 @@ auto write_fx_instrument(xml::record_writer& trade,
                 matched = true;
             } else if constexpr (std::is_same_v<Row, fx_variance_swap_instrument>) {
                 write_fx_variance_swap(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_asian_option_instrument>) {
+                write_fx_asian_option(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_pairwise_variance_swap_instrument>) {
+                write_fx_pairwise_variance_swap(trade, row, *v);
                 matched = true;
             }
         },

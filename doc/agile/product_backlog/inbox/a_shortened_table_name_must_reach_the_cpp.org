@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 09A6CC2C-94A9-4F1F-8072-9A951B51BEB0
+:END:
+#+title: A shortened table name must reach the C++
+#+description: The SQL codegen shortens a table base longer than 51 characters so its derived names stay under the PostgreSQL limit, but the C++ entity keeps the full declared table name, so the repository queries a table that does not exist.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The SQL codegen computes =sql_name_base= from the model's =:tablename:= and
+cuts it to =63 - longest_suffix= characters, so the insert and delete function,
+trigger and rule names stay distinct under PostgreSQL's identifier limit. The
+table is then created under the cut name, but the C++ entity template reads
+={{sql.tablename}}=, the full declared name. Either the codegen refuses a
+=:tablename:= whose base is too long, or the C++ reads the cut name, so the
+two cannot disagree.
+
+* Why
+
+=ores_trading_equity_pairwise_variance_swap_instruments_tbl= has a 54-character
+base. The table was created as =..._variance_swap_instrume_tbl= and the
+repository queried the full name. Every write failed with "relation does not
+exist", and the only signal was an eventing test. The model now states a
+shorter =:tablename:=, which hides the defect but does not remove it.
+
+* References
+
+- =projects/ores.codegen/src/codegen/core.py=, the =sql_name_base= computation
+- =projects/ores.trading/modeling/ores.trading.equity_pairwise_variance_swap_instrument.org=
+
+* See also
+
+-

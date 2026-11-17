@@ -17,12 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trading.core/messaging/cash_position_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_accumulator_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_asian_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_barrier_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_digital_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_forward_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_option_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/equity_pairwise_variance_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_option_underlying_registrar.hpp"
 #include "ores.trading.core/messaging/equity_swap_instrument_registrar.hpp"
@@ -96,6 +98,18 @@ register_equity_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(equity_forward_instrument_subs.begin()),
                 std::make_move_iterator(equity_forward_instrument_subs.end()));
+
+    auto cash_position_instrument_subs =
+        register_cash_position_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(cash_position_instrument_subs.begin()),
+                std::make_move_iterator(cash_position_instrument_subs.end()));
+
+    auto equity_pairwise_variance_swap_instrument_subs =
+        register_equity_pairwise_variance_swap_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(equity_pairwise_variance_swap_instrument_subs.begin()),
+                std::make_move_iterator(equity_pairwise_variance_swap_instrument_subs.end()));
 
     return subs;
 }

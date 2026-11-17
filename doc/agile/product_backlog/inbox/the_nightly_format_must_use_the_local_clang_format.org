@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: A541C6E5-8369-4D09-8A6B-3B95D239AB9E
+:END:
+#+title: The nightly format must use the local clang-format
+#+description: The nightly format workflow installs the distribution's clang-format, which wraps lines differently from the clang-format 21 the local format check runs, so each tool rewraps the other's lines and branches conflict with main.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=.github/workflows/nightly-format.yml= installs =clang-format= with =apt-get=,
+which gives the runner's distribution version. The local format check runs
+clang-format 21.1.8. Pin the workflow to the same major version, so the nightly
+run and the local check produce one layout.
+
+* Why
+
+The two versions wrap trailing return types and long calls differently. PR
+#4817 rewrapped =equity_instrument_projection.cpp= and
+=scripted_instrument_projection.cpp=, which made PR #4822 conflict with main.
+After the merge, the local check refused the bot's lines, and the branch had to
+reformat them back. Each nightly run will undo that again.
+
+* References
+
+- =.github/workflows/nightly-format.yml=, the "Install clang-format" step
+- PR #4817, PR #4822
+
+* See also
+
+-

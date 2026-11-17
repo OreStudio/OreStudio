@@ -176,8 +176,10 @@ inline constexpr auto fx_batch_arrays = std::tuple{
               &instrument_batch::fx_digital_option_instruments},
     std::pair{&fx_instrument_data::asian_forwards, &instrument_batch::fx_asian_forward_instruments},
     std::pair{&fx_instrument_data::accumulators, &instrument_batch::fx_accumulator_instruments},
-    std::pair{&fx_instrument_data::variance_swaps,
-              &instrument_batch::fx_variance_swap_instruments}};
+    std::pair{&fx_instrument_data::variance_swaps, &instrument_batch::fx_variance_swap_instruments},
+    std::pair{&fx_instrument_data::asian_options, &instrument_batch::fx_asian_option_instruments},
+    std::pair{&fx_instrument_data::pairwise_variance_swaps,
+              &instrument_batch::fx_pairwise_variance_swap_instruments}};
 
 /**
  * The family's child arrays paired with the batch columns they land in, in the
@@ -484,6 +486,10 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
     if (const auto* v = find(batch.equity_swap_instruments, trade_id))
         return as_equity(batch, *v, trade_id);
     if (const auto* v = find(batch.equity_accumulator_instruments, trade_id))
+        return as_equity(batch, *v, trade_id);
+    if (const auto* v = find(batch.cash_position_instruments, trade_id))
+        return as_equity(batch, *v, trade_id);
+    if (const auto* v = find(batch.equity_pairwise_variance_swap_instruments, trade_id))
         return as_equity(batch, *v, trade_id);
     if (const auto* v = find(batch.equity_position_instruments, trade_id))
         return as_equity(batch, *v, trade_id);

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/hold-the-native-equity-and-fx-types-on-their-tables
+#+pr: 4822
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -27,11 +27,11 @@ and FxAsianOption are held natively, on tables of the equity and fx families.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -52,9 +52,37 @@ and FxAsianOption are held natively, on tables of the equity and fx families.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- *EquityFutureOption* is an equity option with a future expiry, so it goes on
+  the equity option table with one new column, =future_expiry_date=, and a check
+  that only the future option states it. The reader and writer pick the element
+  by trade type.
+- *CashPosition* gets =cash_position_instruments= (currency, amount) in the
+  equity family, where the catalogue groups it.
+- *EquityPairwiseVarianceSwap* and *FxPairwiseVarianceSwap* each get a table,
+  one per family, as the single-name variance swaps do. ORE requires exactly two
+  underlyings, so each member's index, strike and notional is a column pair.
+  The basket terms, the pay currency, the settlement date and the optional
+  accrual lag, payoff limit, cap and floor are columns. The valuation schedule
+  and the lagged valuation schedule are instrument schedule rows. One header,
+  =pairwise_variance_swap_projection.hpp=, reads and writes the element for
+  both rows, and one header, =pairwise_variance_swap_terms.hpp=, builds the
+  row for both builders.
+- *FxAsianOption* gets =fx_asian_option_instruments= (index, currency,
+  notional, strike, option type, position, expiry, settlement). The OptionData
+  block, the Underlying block and the observation dates are the shared option,
+  underlying and schedule rows, as the equity Asian option holds them.
+- The four builders move from the scripted family to the equity and FX
+  families and return their tables' rows. The planner books them through
+  those builders. The class-read entries for all five are removed.
+- The catalogue gains a list of the scripted forms: the library script that
+  books a product as the generic =ScriptedTrade=. Of the five, only the
+  pairwise swaps have one (=PairwiseVarianceSwap=); ORE's library holds no
+  script for an equity future option, a cash position or a single-underlying
+  FX Asian option.
+- The models are written by a script from a column list, so the four tables
+  share the forward model's identity, keys and C++ section; the hand-written
+  wiring (variant, carrier, batch join, export, registrars, digest observers,
+  event mappings) is applied by a second script.
 
 * Measurements
 
@@ -68,7 +96,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Class-read products on main | 28 | =git show origin/main:projects/ores.ore/core/src/domain/scripted_instrument_projection.cpp \vert sed -n '/class_read_products\[\] = {/,/^};/p' \vert grep -c '{"'= | 59fc1caab4 |
+| Class-read products on the branch | 23 | the same count on the working tree | 59fc1caab4 |
+| ores.ore.core.tests | 562 cases, all pass | =./ores.ore.core.tests= | 59fc1caab4 |
+| ores.trading.api.tests | 4814 cases, all pass | =./ores.trading.api.tests= | 59fc1caab4 |
+| ores.trading.core.tests | 256 cases, all pass | =./ores.trading.core.tests= | 59fc1caab4 |
+| ores.shell.trading.tests | 1398 cases, all pass | =./ores.shell.trading.tests= | 59fc1caab4 |
+| ores.synthetic.core.tests | 148 cases, all pass; =[generated]= recorded twice with the engine, 8 cases | =ORES_UPDATE_GENERATED_TRADES=1 ./ores.synthetic.core.tests "[generated]"= | 59fc1caab4 |
 
 * Notes
 
@@ -92,12 +126,39 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4822][#4822]] | [trading] Hold the native equity and fx types on their tables |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =std::stoi= on an imported lag can throw | pairwise_variance_swap_projection.hpp | accept | parsed with =from_chars=; a lag that is not a whole number refuses the trade, as ORE does, rather than dropping it |
+| 2 | a bad settlement date becomes 0000-00-00 | pairwise_variance_swap_projection.hpp | accept | a missing or unparsable date refuses the trade; so does a list without exactly two members |
+| 3 | reformatting noise in the FX projection | fx_instrument_projection.cpp | decline | main's copy was not formatted, and the format check covers whole changed files |
+| 4 | no check that a future option states its future expiry | equity option model | decline | ORE's schema makes =FutureExpiryDate= optional (=minOccurs="0"=), so the check would refuse valid trades |
+| 5 | FX Asian strike read in two forms, written in one | fx_instrument_projection.cpp | accept | a comment says the write states the bare value, which ORE reads the same way |
+| 6 | no malformed-input tests | xml_portfolio_projection_tests.cpp | accept | a test refuses a decimal lag, an unparsable date and a one-member list, and accepts the valid form; a non-numeric lag is already refused by the schema |
+| 7 | size, mostly generated | - | no change | the codegen defect is captured |
 
 * Result
+
+The five native equity and FX types are held in their own shape.
+EquityFutureOption is on the equity option table with a =future_expiry_date=
+column. CashPosition, EquityPairwiseVarianceSwap, FxPairwiseVarianceSwap and
+FxAsianOption each have a table of their own, with every scalar term as a
+column and their option, underlying and schedule blocks as shared rows. The
+projection reads and writes each element from those rows, and a round-trip
+test covers each type, including a new one for the FX pairwise swap. The four
+builders now return their tables' rows, and the planner books them through
+those builders. The class-read list shrank from 28 to 23 entries. The
+generated trades of all five pass the ORE engine check, recorded twice.
+
+The catalogue gained a list of scripted forms. It names =PairwiseVarianceSwap=
+for both pairwise swaps. ORE's library has no script for the other three, so
+they are held in their own form only.
+
+Two defects were found on the way. A table base longer than 51 characters is
+silently cut in SQL while the C++ keeps the full name, so the equity pairwise
+model states a shorter =:tablename:=, and the defect is filed as a capture. The
+pairwise scalars are free-style nodes whose value is their own text, so the
+shared pairwise reader handles them that way.

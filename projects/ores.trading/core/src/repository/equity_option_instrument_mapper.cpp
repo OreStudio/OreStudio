@@ -76,6 +76,7 @@ equity_option_instrument_mapper::map(const equity_option_instrument_entity& v) {
     r.initial_price_2 = v.initial_price_2;
     r.knock_in_price = v.knock_in_price;
     r.knock_out_price = v.knock_out_price;
+    r.future_expiry_date = v.future_expiry_date;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -121,6 +122,7 @@ equity_option_instrument_mapper::map(const domain::equity_option_instrument& v) 
     r.initial_price_2 = v.initial_price_2;
     r.knock_in_price = v.knock_in_price;
     r.knock_out_price = v.knock_out_price;
+    r.future_expiry_date = v.future_expiry_date;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

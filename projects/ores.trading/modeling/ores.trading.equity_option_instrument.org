@@ -16,7 +16,9 @@
 #+created: 2026-08-08
 #+updated: 2026-08-08
 
-Routes ORE product types: EquityOption, EquityCliquetOption.
+Routes ORE product types: EquityOption, EquityCliquetOption,
+EquityOutperformanceOption and EquityFutureOption; =future_expiry_date= is the
+future option's alone.
 =underlying_name= captures the ORE equity Name identifier.
 =settlement_type= is Cash or Physical (empty when not specified);
 =cliquet_frequency= is EquityCliquetOption-only (e.g. Annual,
@@ -355,6 +357,23 @@ An outperformance option's knock-in price, as =KnockInPrice= states it.
 
 An outperformance option's knock-out price, as =KnockOutPrice= states it.
 
+** future_expiry_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+An option on an equity future's future expiry, as =FutureExpiryDate= states
+it; the future expires on or after the option. Other options leave it null.
+
+The generated row is a plain EquityOption, so it leaves the column null.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** description
 :PROPERTIES:
 :type:     text
@@ -434,6 +453,7 @@ is immutable.
 | "underlying_name" <> '' |
 | "currency" <> '' |
 | "trade_type_code" = 'EquityCliquetOption' or "cliquet_frequency" is null |
+| "trade_type_code" = 'EquityFutureOption' or "future_expiry_date" is null |
 | "option_type" in ('Call', 'Put') |
 | "exercise_type" is null or "exercise_type" in ('European', 'Bermudan', 'American') |
 | "settlement_type" is null or "settlement_type" in ('Physical', 'Cash') |

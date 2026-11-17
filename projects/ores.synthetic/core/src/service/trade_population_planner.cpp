@@ -2115,27 +2115,25 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                      .position = position})
                     .build(),
                 type);
-        return scripted_batch_of(
-            tb::pairwise_variance_swap_builder<tb::scripted_family::fx>(
-                {.first = tb::pairwise_member{.underlying = index,
-                                              .strike = strike,
-                                              .notional = money(notional / 200.0)},
-                 .second = tb::pairwise_member{.underlying = other,
-                                               .strike = strike,
-                                               .notional = money(notional / 200.0)},
-                 .basket_notional = money(notional / 100.0),
-                 .basket_strike = strike,
-                 .pay_currency = pair.quote,
-                 .start = start,
-                 .end = end,
-                 .settlement = year_month_day{sys_days{end} + days{5}},
-                 .position = position})
-                .build(),
-            type);
+        return built(tb::fx_pairwise_variance_swap_builder(
+                         {.first = tb::pairwise_member{.underlying = index,
+                                                       .strike = strike,
+                                                       .notional = money(notional / 200.0)},
+                          .second = tb::pairwise_member{.underlying = other,
+                                                        .strike = strike,
+                                                        .notional = money(notional / 200.0)},
+                          .basket_notional = money(notional / 100.0),
+                          .basket_strike = strike,
+                          .pay_currency = pair.quote,
+                          .start = start,
+                          .end = end,
+                          .settlement = year_month_day{sys_days{end} + days{5}},
+                          .position = position})
+                         .build());
     }
     if (type == "FxAsianOption")
         // The rate is averaged daily over the trade's life and settles two days after.
-        return scripted_batch_of(
+        return built(
             tb::fx_asian_option_builder({.fx_index = index,
                                          .currency = pair.quote,
                                          .quantity = money(notional),
@@ -2145,8 +2143,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                                          .observation_start = start,
                                          .expiry = end,
                                          .settlement = year_month_day{sys_days{end} + days{2}}})
-                .build(),
-            type);
+                .build());
     if (type == "FxWorstOfBasketSwap") {
         /*
          * Half-yearly periods over the trade's life, each paying two days after
@@ -3277,8 +3274,8 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                           .position = position})
                                          .build(),
                                      type);
-        return scripted_batch_of(
-            tb::pairwise_variance_swap_builder<tb::scripted_family::equity>(
+        return built(
+            tb::equity_pairwise_variance_swap_builder(
                 {.first = tb::pairwise_member{.underlying = equity_address_of(first->code),
                                               .strike = strike,
                                               .notional = money(notional / 200.0)},
@@ -3292,22 +3289,13 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                  .end = end,
                  .settlement = year_month_day{sys_days{end} + days{5}},
                  .position = position})
-                .build(),
-            type);
+                .build());
     }
     if (type == "EquityFutureOption")
         // The future expires a month after the option does.
-        return scripted_batch_of(
-            tb::equity_future_option_builder({.underlying = address,
-                                              .currency = currency,
-                                              .quantity = money(notional / level),
-                                              .strike = money(level),
-                                              .kind = kind,
-                                              .position = position,
-                                              .expiry = end,
-                                              .future_expiry = add_months(end, 1)})
-                .build(),
-            type);
+        return built(tb::equity_future_option_builder(
+                         {.option = option, .future_expiry = add_months(end, 1)})
+                         .build());
     if (type == "EquityForwardVolatilityAgreement") {
         // The volatility fixes halfway to the expiry, which the straddle runs to.
         const auto fva_date =
@@ -3379,13 +3367,11 @@ build_equity_trade(const domain::trade_generation_scope& scope,
      * long or short.
      */
     if (type == "CashPosition")
-        return scripted_batch_of(
-            tb::cash_position_builder(
-                {.currency = currency,
-                 .amount =
-                     money(position == tb::option_position::long_option ? notional : -notional)})
-                .build(),
-            type);
+        return built(tb::cash_position_builder(
+                         {.currency = currency,
+                          .amount = money(
+                              position == tb::option_position::long_option ? notional : -notional)})
+                         .build());
     if (type == "EquityAutoDeltaHedgedOption") {
         /*
          * A call and a put at the level on the slot's equity, half the

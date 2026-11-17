@@ -24,6 +24,7 @@
 #include "ores.marketdata.api/datum/market_reference.hpp"
 #include "ores.trading.api/builders/build_error.hpp"
 #include "ores.trading.api/builders/option_position.hpp"
+#include "ores.trading.api/builders/pairwise_variance_swap_terms.hpp"
 #include "ores.trading.api/builders/required.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
@@ -69,6 +70,48 @@ public:
 
 private:
     equity_option_terms terms_;
+};
+
+/// An amount of cash held in one currency; a short position is a negative amount.
+struct cash_position_terms final {
+    required<std::string> currency;
+    required<utility::decimal::decimal> amount;
+};
+
+class ORES_TRADING_API_EXPORT cash_position_builder final {
+public:
+    static constexpr std::string_view trade_type = "CashPosition";
+    explicit cash_position_builder(cash_position_terms terms);
+    [[nodiscard]] equity_result build() const;
+
+private:
+    cash_position_terms terms_;
+};
+
+class ORES_TRADING_API_EXPORT equity_pairwise_variance_swap_builder final {
+public:
+    static constexpr std::string_view trade_type = "EquityPairwiseVarianceSwap";
+    explicit equity_pairwise_variance_swap_builder(pairwise_variance_swap_terms terms);
+    [[nodiscard]] equity_result build() const;
+
+private:
+    pairwise_variance_swap_terms terms_;
+};
+
+/// A European option on an equity future, which expires on or after the option does.
+struct equity_future_option_terms final {
+    equity_option_terms option;
+    required<std::chrono::year_month_day> future_expiry;
+};
+
+class ORES_TRADING_API_EXPORT equity_future_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "EquityFutureOption";
+    explicit equity_future_option_builder(equity_future_option_terms terms);
+    [[nodiscard]] equity_result build() const;
+
+private:
+    equity_future_option_terms terms_;
 };
 
 /// A cliquet: the option restrikes at each reset from the start to the expiry.

@@ -72,6 +72,7 @@ namespace ores::trading::domain {
         utility::codec::field{"initial_price_2", &equity_option_instrument::initial_price_2},
         utility::codec::field{"knock_in_price", &equity_option_instrument::knock_in_price},
         utility::codec::field{"knock_out_price", &equity_option_instrument::knock_out_price},
+        utility::codec::field{"future_expiry_date", &equity_option_instrument::future_expiry_date},
         utility::codec::field{"description", &equity_option_instrument::description},
         utility::codec::field{"audit", &equity_option_instrument::audit},
     };

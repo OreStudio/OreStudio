@@ -91,18 +91,13 @@ constexpr class_read_product class_read_products[] = {
     {"EquityGenericBarrierOption", "EquityGenericBarrierOptionData"},
     {"EquityBasketVarianceSwap", "EquityBasketVarianceSwapData"},
     {"FxBasketVarianceSwap", "FxBasketVarianceSwapData"},
-    {"EquityPairwiseVarianceSwap", "EquityPairwiseVarianceSwapData"},
-    {"FxPairwiseVarianceSwap", "FxPairwiseVarianceSwapData"},
     {"EquityForwardVolatilityAgreement", "EquityForwardVolatilityAgreementData"},
     {"FxForwardVolatilityAgreement", "FxForwardVolatilityAgreementData"},
     {"EuropeanOptionBarrier", "EuropeanOptionBarrierData"},
     {"FxWorstOfBasketSwap", "FxWorstOfBasketSwapData"},
-    {"EquityFutureOption", "EquityFutureOptionData"},
     {"BondFutureOption", "BondFutureOptionData"},
-    {"FxAsianOption", "FxAsianOptionData"},
     {"RateDigitalOption", "RateDigitalOptionData"},
     {"CBO", "CBOData"},
-    {"CashPosition", "CashPositionData"},
 };
 
 auto class_read_product_of(std::string_view trade_type) -> const class_read_product* {
@@ -210,7 +205,7 @@ void append_leaf(xml::record_writer& w, std::string_view name, const std::string
 /// The terms of a derived schedule, each kept on its own column.
 struct derived_term {
     std::string_view element;
-    std::optional<std::string> scripted_parameter::*column;
+    std::optional<std::string> scripted_parameter::* column;
 };
 
 constexpr derived_term derived_terms[] = {
@@ -259,9 +254,8 @@ auto stated_value_of(const scripted_parameter& parameter, const std::string& val
     return names_an_index(parameter.declared_type) ? ore_name_of(value) : value;
 }
 
-auto make_parameter(scripted_instrument_data& data,
-                    std::string name,
-                    std::string type) -> scripted_parameter& {
+auto make_parameter(scripted_instrument_data& data, std::string name, std::string type)
+    -> scripted_parameter& {
     scripted_parameter row;
     row.sequence_number = static_cast<int>(data.parameters.size()) + 1;
     row.name = std::move(name);
@@ -373,8 +367,8 @@ void read_named_parameters(scripted_instrument_data& data, const xml::record_rea
     }
 }
 
-auto values_of(const scripted_instrument_data& data,
-               int parameter_sequence_number) -> std::vector<std::string> {
+auto values_of(const scripted_instrument_data& data, int parameter_sequence_number)
+    -> std::vector<std::string> {
     std::vector<const scripted_parameter_value*> rows;
     for (const auto& row : data.parameter_values)
         if (row.parameter_sequence_number == parameter_sequence_number)
@@ -552,8 +546,8 @@ auto states_a_free_style_scalar(const xml::field& member) -> bool {
 }
 
 /// The type a free style scalar declares: its type attribute, or the name its schema type gives.
-auto free_style_type_of(const xml::field& member,
-                        const xml::record_reader& element) -> std::string {
+auto free_style_type_of(const xml::field& member, const xml::record_reader& element)
+    -> std::string {
     if (const auto stated = element.text("type"); stated && !stated->empty())
         return *stated;
     return std::string(member.type->name.substr(std::string_view("stFreeStyle").size()));
@@ -918,8 +912,8 @@ void write_class_underlyings(xml::record_writer& product, const scripted_instrum
 }
 namespace {
 
-auto read_scripted_row(xml::record_reader trade,
-                       std::string_view trade_type) -> std::optional<scripted_instrument> {
+auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
+    -> std::optional<scripted_instrument> {
     if (trade_type != "ScriptedTrade")
         return std::nullopt;
 

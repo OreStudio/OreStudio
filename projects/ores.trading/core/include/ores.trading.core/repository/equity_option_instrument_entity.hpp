@@ -79,6 +79,7 @@ struct equity_option_instrument_entity {
     std::optional<ores::utility::decimal::decimal> initial_price_2;
     std::optional<ores::utility::decimal::decimal> knock_in_price;
     std::optional<ores::utility::decimal::decimal> knock_out_price;
+    std::optional<std::chrono::year_month_day> future_expiry_date;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -121,6 +122,7 @@ struct equity_option_instrument_entity {
                query_builder::bind("initial_price_2", &e::initial_price_2) |
                query_builder::bind("knock_in_price", &e::knock_in_price) |
                query_builder::bind("knock_out_price", &e::knock_out_price) |
+               query_builder::bind("future_expiry_date", &e::future_expiry_date) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

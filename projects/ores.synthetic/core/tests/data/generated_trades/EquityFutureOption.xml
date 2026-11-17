@@ -12,10 +12,7 @@
           <ExerciseDate>2031-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Underlying>
-        <Type>Equity</Type>
-        <Name>RIC:.NDX</Name>
-      </Underlying>
+      <Name>RIC:.NDX</Name>
       <Currency>USD</Currency>
       <Strike>1937.73</Strike>
       <Quantity>1887.83</Quantity>
@@ -34,10 +31,7 @@
           <ExerciseDate>2032-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Underlying>
-        <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
-      </Underlying>
+      <Name>RIC:.STOXX50E</Name>
       <Currency>EUR</Currency>
       <Strike>210.78</Strike>
       <Quantity>18572.99</Quantity>

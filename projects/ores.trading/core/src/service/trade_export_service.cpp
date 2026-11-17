@@ -48,6 +48,7 @@
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
 #include "ores.trading.core/service/cap_floor_instrument_service.hpp"
+#include "ores.trading.core/service/cash_position_instrument_service.hpp"
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
 #include "ores.trading.core/service/composite_instrument_service.hpp"
 #include "ores.trading.core/service/credit_default_swap_instrument_service.hpp"
@@ -59,6 +60,7 @@
 #include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_forward_instrument_service.hpp"
 #include "ores.trading.core/service/equity_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_pairwise_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/equity_position_instrument_service.hpp"
 #include "ores.trading.core/service/equity_swap_instrument_service.hpp"
 #include "ores.trading.core/service/equity_variance_swap_instrument_service.hpp"
@@ -66,9 +68,11 @@
 #include "ores.trading.core/service/fra_instrument_service.hpp"
 #include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
 #include "ores.trading.core/service/fx_asian_forward_instrument_service.hpp"
+#include "ores.trading.core/service/fx_asian_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_barrier_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_digital_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_forward_instrument_service.hpp"
+#include "ores.trading.core/service/fx_pairwise_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/fx_vanilla_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/index_credit_default_swap_instrument_service.hpp"
@@ -132,7 +136,7 @@ void populate_instruments_for_trades(const Ctx& ctx,
     std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
         rate_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids,
         eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids,
-        eq_acc_ids, eq_pos_ids;
+        eq_acc_ids, eq_pos_ids, eq_cash_ids, eq_pvs_ids, fxaso_ids, fxpvs_ids;
     std::vector<std::string> all_ids;
 
     for (const auto& item : items) {
@@ -209,6 +213,18 @@ void populate_instruments_for_trades(const Ctx& ctx,
                 break;
             case instrument_table::fx_variance_swap_instrument:
                 fxvar_ids.push_back(id);
+                break;
+            case instrument_table::cash_position_instrument:
+                eq_cash_ids.push_back(id);
+                break;
+            case instrument_table::equity_pairwise_variance_swap_instrument:
+                eq_pvs_ids.push_back(id);
+                break;
+            case instrument_table::fx_asian_option_instrument:
+                fxaso_ids.push_back(id);
+                break;
+            case instrument_table::fx_pairwise_variance_swap_instrument:
+                fxpvs_ids.push_back(id);
                 break;
             case instrument_table::rate_instrument:
                 rate_ids.push_back(id);
@@ -502,6 +518,26 @@ void populate_instruments_for_trades(const Ctx& ctx,
         service::fx_variance_swap_instrument_service svc(ctx);
         auto rows = svc.get_fx_variance_swap_instruments(fxvar_ids);
         take(rows, batch.fx_variance_swap_instruments);
+    }
+    if (!eq_cash_ids.empty()) {
+        service::cash_position_instrument_service svc(ctx);
+        auto rows = svc.get_cash_position_instruments(eq_cash_ids);
+        take(rows, batch.cash_position_instruments);
+    }
+    if (!eq_pvs_ids.empty()) {
+        service::equity_pairwise_variance_swap_instrument_service svc(ctx);
+        auto rows = svc.get_equity_pairwise_variance_swap_instruments(eq_pvs_ids);
+        take(rows, batch.equity_pairwise_variance_swap_instruments);
+    }
+    if (!fxaso_ids.empty()) {
+        service::fx_asian_option_instrument_service svc(ctx);
+        auto rows = svc.get_fx_asian_option_instruments(fxaso_ids);
+        take(rows, batch.fx_asian_option_instruments);
+    }
+    if (!fxpvs_ids.empty()) {
+        service::fx_pairwise_variance_swap_instrument_service svc(ctx);
+        auto rows = svc.get_fx_pairwise_variance_swap_instruments(fxpvs_ids);
+        take(rows, batch.fx_pairwise_variance_swap_instruments);
     }
 
     // The equity family.

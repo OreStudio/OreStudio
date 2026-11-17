@@ -26,11 +26,11 @@ Serve GET /api/conventions/:family/documents/:id and PUT /api/conventions/:famil
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The two routes are served and the suite passes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR, then close the task when it merges. |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance

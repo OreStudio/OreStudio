@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/move-codegen-and-gates-to-compass-ng
-#+pr:
+#+pr: 4835
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4835][#4835]] | [compass] Test compass-ng against the Python gates and fix what it found |
 
 * Review
 

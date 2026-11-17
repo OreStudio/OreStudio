@@ -646,6 +646,33 @@ private:
     bond_future_option_terms terms_;
 };
 
+
+/**
+ * @brief An FX option on the rate averaged over daily observations from the
+ * observation start to the expiry.
+ */
+struct fx_asian_option_terms final {
+    required<marketdata::datum::market_reference> fx_index;
+    required<std::string> currency;
+    required<utility::decimal::decimal> quantity;
+    required<utility::decimal::decimal> strike;
+    required<option_kind> kind;
+    required<option_position> position;
+    required<std::chrono::year_month_day> observation_start;
+    required<std::chrono::year_month_day> expiry;
+    required<std::chrono::year_month_day> settlement;
+};
+
+class ORES_TRADING_API_EXPORT fx_asian_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "FxAsianOption";
+    explicit fx_asian_option_builder(fx_asian_option_terms terms);
+    [[nodiscard]] scripted_result build() const;
+
+private:
+    fx_asian_option_terms terms_;
+};
+
 }
 
 #endif

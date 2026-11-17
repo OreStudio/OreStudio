@@ -19,23 +19,23 @@
       <Quantity>4132.38</Quantity>
     </EquityDigitalOptionData>
   </Trade>
-  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
     <TradeType>EquityDigitalOption</TradeType>
     <EquityDigitalOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-09-02</ExerciseDate>
+          <ExerciseDate>2026-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Strike>1125.18</Strike>
+      <Strike>2753.31</Strike>
       <PayoffCurrency>EUR</PayoffCurrency>
-      <PayoffAmount>4253585.58</PayoffAmount>
-      <Name>RIC:.STOXX50E</Name>
-      <Quantity>3780.36</Quantity>
+      <PayoffAmount>2449079.16</PayoffAmount>
+      <Name>RIC:DHER.DE</Name>
+      <Quantity>889.5</Quantity>
     </EquityDigitalOptionData>
   </Trade>
 </Portfolio>

@@ -16,10 +16,11 @@
 #+created: 2026-08-09
 #+updated: 2026-08-09
 
-Represents EquityDigitalOption and EquityTouchOption trades.
-=underlying_name= captures the ORE equity Name identifier;
-=option_type= is Call or Put (digital only); =strike= is digital
-only; =barrier_level= and =barrier_type= are touch only; the two
+Represents EquityDigitalOption, EquityTouchOption and
+EquityDoubleTouchOption trades. =underlying_name= captures the ORE equity
+Name identifier; =option_type= is Call or Put (digital only); =strike= is
+digital only; =barrier_level= and =barrier_type= are touch only, and a double
+touch keeps its lower level here and both levels in the barrier rows; the two
 product families are mutually exclusive, enforced by a cross-column
 check. =expiry_date= is an ISO 8601 date string.
 
@@ -346,7 +347,7 @@ is immutable.
 | "notional" > 0 |
 | "underlying_name" <> '' |
 | "currency" <> '' |
-| ("trade_type_code" = 'EquityDigitalOption' and "option_type" is not null and "strike" is not null and "barrier_level" is null and "barrier_type" is null) or ("trade_type_code" = 'EquityTouchOption' and "barrier_level" is not null and "barrier_type" is not null and "option_type" is null and "strike" is null) |
+| ("trade_type_code" = 'EquityDigitalOption' and "option_type" is not null and "strike" is not null and "barrier_level" is null and "barrier_type" is null) or ("trade_type_code" in ('EquityTouchOption', 'EquityDoubleTouchOption') and "barrier_level" is not null and "barrier_type" is not null and "option_type" is null and "strike" is null) |
 | "option_type" is null or "option_type" in ('Call', 'Put') |
 | "barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor') |
 

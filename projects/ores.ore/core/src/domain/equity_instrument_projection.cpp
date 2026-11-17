@@ -78,8 +78,8 @@ constexpr bool is_equity_trade_type(std::string_view type) {
            type == "EquityForward" || type == "EquitySwap" || type == "EquityVarianceSwap" ||
            type == "EquityBarrierOption" || type == "EquityAsianOption" ||
            type == "EquityDigitalOption" || type == "EquityTouchOption" ||
-           type == "EquityOutperformanceOption" || type == "EquityAccumulator" ||
-           type == "EquityTaRF" || type == "EquityCliquetOption" ||
+           type == "EquityDoubleTouchOption" || type == "EquityOutperformanceOption" ||
+           type == "EquityAccumulator" || type == "EquityTaRF" || type == "EquityCliquetOption" ||
            type == "EquityWorstOfBasketSwap" || type == "EquityDoubleBarrierOption" ||
            type == "EquityEuropeanBarrierOption";
 }
@@ -404,11 +404,12 @@ auto read_equity_digital_option(const record_reader& trade) -> equity_digital_op
 }
 
 // A touch option is the digital row with a barrier instead of a strike, which
-// is the shape the old mapper gave it.
-auto read_equity_touch_option(const record_reader& trade) -> equity_digital_option_instrument {
-    auto r = equity_instrument_projection_make_row<equity_digital_option_instrument>(
-        "EquityTouchOption");
-    const auto data = trade.child("EquityTouchOptionData");
+// is the shape the old mapper gave it. A double touch states the same element
+// with two levels, which the barrier rows hold.
+auto read_equity_touch_option(const record_reader& trade, std::string_view trade_type)
+    -> equity_digital_option_instrument {
+    auto r = equity_instrument_projection_make_row<equity_digital_option_instrument>(trade_type);
+    const auto data = trade.child(std::string(trade_type) + "Data");
     if (!data)
         return r;
     r.underlying_name = equity_address_of(equity_instrument_projection_underlying_name_of(*data));
@@ -871,9 +872,10 @@ void write_equity_digital_option(record_writer& trade,
 }
 
 void write_equity_touch_option(record_writer& trade,
+                               std::string_view element,
                                const equity_digital_option_instrument& v,
                                const equity_instrument_data& carrier) {
-    auto data = trade.child("EquityTouchOptionData");
+    auto data = trade.child(element);
     write_option_entry(data.child("OptionData"), v);
     write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_spelling("PayoffCurrency", v.currency, "currency");
@@ -1199,6 +1201,7 @@ constexpr underlying_block::underlying_holder equity_underlying_holders[] = {
     {"EquityAsianOption", "", "Underlying", "underlying"},
     {"EquityDigitalOption", "", "Underlying", "underlying"},
     {"EquityTouchOption", "", "Underlying", "underlying"},
+    {"EquityDoubleTouchOption", "", "Underlying", "underlying"},
     {"EquityCliquetOption", "", "Underlying", "underlying"},
     {"EquityAccumulator", "", "Underlying", "underlying"},
     {"EquityTaRF", "", "Underlying", "underlying"},
@@ -1213,6 +1216,7 @@ constexpr barrier_block::barrier_holder equity_barrier_holders[] = {
     {"EquityDoubleBarrierOption", "", "barrier"},
     {"EquityEuropeanBarrierOption", "", "barrier"},
     {"EquityTouchOption", "", "barrier"},
+    {"EquityDoubleTouchOption", "", "barrier"},
     {"EquityAccumulator", "Barriers", "barrier"},
     {"EquityTaRF", "Barriers", "barrier"},
 };
@@ -1238,6 +1242,7 @@ std::optional<std::string> equity_option_data_element(std::string_view trade_typ
         "EquityAsianOption",
         "EquityDigitalOption",
         "EquityTouchOption",
+        "EquityDoubleTouchOption",
         "EquityOutperformanceOption",
         "EquityAccumulator",
         "EquityTaRF",
@@ -1278,8 +1283,8 @@ auto read_equity_product(const xml::record_reader& trade, std::string_view trade
         return wrap(read_equity_asian_option(trade));
     if (trade_type == "EquityDigitalOption")
         return wrap(read_equity_digital_option(trade));
-    if (trade_type == "EquityTouchOption")
-        return wrap(read_equity_touch_option(trade));
+    if (trade_type == "EquityTouchOption" || trade_type == "EquityDoubleTouchOption")
+        return wrap(read_equity_touch_option(trade, trade_type));
     if (trade_type == "EquityOutperformanceOption")
         return wrap(read_equity_outperformance_option(trade));
     if (trade_type == "EquityAccumulator")
@@ -1405,8 +1410,9 @@ auto write_equity_instrument(xml::record_writer& trade,
                 if (trade_type == "EquityDigitalOption") {
                     write_equity_digital_option(trade, row, *v);
                     matched = true;
-                } else if (trade_type == "EquityTouchOption") {
-                    write_equity_touch_option(trade, row, *v);
+                } else if (trade_type == "EquityTouchOption" ||
+                           trade_type == "EquityDoubleTouchOption") {
+                    write_equity_touch_option(trade, std::string(trade_type) + "Data", row, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_accumulator_instrument>) {

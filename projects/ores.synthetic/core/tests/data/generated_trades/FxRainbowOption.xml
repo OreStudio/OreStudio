@@ -29,12 +29,12 @@
       <Settlement>2030-08-02</Settlement>
     </FxRainbowOptionData>
   </Trade>
-  <Trade id="990d919c-ae5f-50bd-8f28-05e61f3f9b26">
+  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
     <TradeType>FxRainbowOption</TradeType>
     <FxRainbowOptionData>
       <Currency>USD</Currency>
-      <Notional>5495701.01</Notional>
-      <Strike>2.1976</Strike>
+      <Notional>9919657.76</Notional>
+      <Strike>2.7612</Strike>
       <Underlyings>
         <Underlying>
           <Type>FX</Type>
@@ -52,10 +52,10 @@
         <OptionType>Put</OptionType>
         <PayoffType>MaxRainbow</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2027-01-02</ExerciseDate>
+          <ExerciseDate>2032-12-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Settlement>2027-01-02</Settlement>
+      <Settlement>2032-12-02</Settlement>
     </FxRainbowOptionData>
   </Trade>
 </Portfolio>

@@ -348,6 +348,50 @@ equity_result equity_touch_option_builder::build() const {
     return out;
 }
 
+equity_double_touch_option_builder::equity_double_touch_option_builder(
+    equity_double_touch_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+equity_result equity_double_touch_option_builder::build() const {
+    if (terms_.payout.get() <= decimal{})
+        return std::unexpected(build_error{"payout", "must be positive"});
+    const std::vector<decimal> levels{terms_.lower.get(), terms_.upper.get()};
+    if (auto refusal = equity_detail::barrier_refusal(terms_.barrier_type.get(), levels, true))
+        return std::unexpected(std::move(*refusal));
+    domain::equity_digital_option_instrument row{};
+    row.identity.trade_type_code = std::string(trade_type);
+    row.underlying_name = terms_.underlying.get().uri();
+    row.currency = terms_.currency.get();
+    row.notional = terms_.payout.get();
+    row.barrier_level = terms_.lower.get();
+    row.barrier_type = terms_.barrier_type.get();
+    row.expiry_date = terms_.expiry.get();
+    row.long_short = long_short_of(terms_.position.get());
+    row.payout_amount = terms_.payout.get();
+    row.barrier_fixing_index = terms_.underlying.get().uri();
+    row.barrier_calendar = "TARGET";
+    domain::equity_instrument_data out;
+    out.instrument = std::move(row);
+    out.options.push_back(
+        equity_detail::option_row(terms_.position.get(), std::nullopt, {}, std::string("true")));
+    // Both levels are one barrier's, which the barrier rows hold in order.
+    domain::instrument_barrier barrier;
+    barrier.barrier_role = "barrier";
+    barrier.sequence_number = 1;
+    barrier.barrier_type = terms_.barrier_type.get();
+    out.barriers.push_back(std::move(barrier));
+    int number = 0;
+    for (const auto& value : levels) {
+        domain::instrument_barrier_level level;
+        level.barrier_role = "barrier";
+        level.barrier_sequence_number = 1;
+        level.sequence_number = ++number;
+        level.level = value;
+        out.barrier_levels.push_back(std::move(level));
+    }
+    return out;
+}
+
 equity_forward_builder::equity_forward_builder(equity_forward_terms terms)
     : terms_(std::move(terms)) {}
 

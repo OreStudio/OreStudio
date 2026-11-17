@@ -10,13 +10,13 @@
       </Underlying>
     </EquityPositionData>
   </Trade>
-  <Trade id="af4f56f5-3bf8-5437-b7f7-bd7a389aa85c">
+  <Trade id="3a9a63de-bb7d-5267-b0a7-847b21b8d55c">
     <TradeType>EquityPosition</TradeType>
     <EquityPositionData>
-      <Quantity>4782</Quantity>
+      <Quantity>571</Quantity>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying>
     </EquityPositionData>
   </Trade>

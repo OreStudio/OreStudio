@@ -24,28 +24,28 @@
       <Quantity>4159.27</Quantity>
     </EquityBarrierOptionData>
   </Trade>
-  <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
+  <Trade id="f0c045e8-52b4-5121-b6ec-056dc60a2644">
     <TradeType>EquityBarrierOption</TradeType>
     <EquityBarrierOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2027-11-02</ExerciseDate>
+          <ExerciseDate>2031-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>DownAndOut</Type>
         <Levels>
-          <Level>2336.42</Level>
+          <Level>1336.26</Level>
         </Levels>
       </BarrierData>
-      <Name>RIC:.SPX</Name>
+      <Name>RIC:.NDX</Name>
       <Currency>USD</Currency>
-      <Strike>2596.02</Strike>
-      <Quantity>1200.89</Quantity>
+      <Strike>1484.73</Strike>
+      <Quantity>1164.74</Quantity>
     </EquityBarrierOptionData>
   </Trade>
 </Portfolio>

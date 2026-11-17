@@ -17,21 +17,21 @@
       <SettlementDate>2026-09-07</SettlementDate>
     </EquityForwardVolatilityAgreementData>
   </Trade>
-  <Trade id="218774a5-e3e4-54a7-a1a9-4d27d7aed44b">
+  <Trade id="f492623c-a82d-585f-b904-1f1428b994fe">
     <TradeType>EquityForwardVolatilityAgreement</TradeType>
     <EquityForwardVolatilityAgreementData>
-      <FvaDate>2029-03-03</FvaDate>
-      <OptionExpiry>2032-09-02</OptionExpiry>
-      <PremiumDate>2029-03-05</PremiumDate>
+      <FvaDate>2028-02-01</FvaDate>
+      <OptionExpiry>2030-08-02</OptionExpiry>
+      <PremiumDate>2028-02-03</PremiumDate>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying>
       <LongShort>Short</LongShort>
       <ImpliedVolStrike>0.2</ImpliedVolStrike>
-      <Quantity>721.2</Quantity>
+      <Quantity>3644.76</Quantity>
       <PayCcy>EUR</PayCcy>
-      <SettlementDate>2032-09-07</SettlementDate>
+      <SettlementDate>2030-08-07</SettlementDate>
     </EquityForwardVolatilityAgreementData>
   </Trade>
 </Portfolio>

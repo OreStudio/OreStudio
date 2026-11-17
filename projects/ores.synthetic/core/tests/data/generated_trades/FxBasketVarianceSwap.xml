@@ -34,12 +34,12 @@
       <Currency>USD</Currency>
     </FxBasketVarianceSwapData>
   </Trade>
-  <Trade id="d45876e9-0029-5418-9831-724e7991c27a">
+  <Trade id="e90a03e7-0ff1-57f5-ae66-716b64d4a5e1">
     <TradeType>FxBasketVarianceSwap</TradeType>
     <FxBasketVarianceSwapData>
       <LongShort>Short</LongShort>
       <Strike>0.2</Strike>
-      <Notional>36982.86</Notional>
+      <Notional>78588.9</Notional>
       <Underlyings>
         <Underlying>
           <Type>FX</Type>
@@ -54,8 +54,8 @@
       </Underlyings>
       <ValuationSchedule>
         <Rules>
-          <StartDate>2025-09-02</StartDate>
-          <EndDate>2029-09-02</EndDate>
+          <StartDate>2025-08-02</StartDate>
+          <EndDate>2032-08-02</EndDate>
           <Tenor>1D</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -64,7 +64,7 @@
         </Rules>
       </ValuationSchedule>
       <SquaredPayoff>false</SquaredPayoff>
-      <SettlementDate>2029-09-07</SettlementDate>
+      <SettlementDate>2032-08-07</SettlementDate>
       <Currency>USD</Currency>
     </FxBasketVarianceSwapData>
   </Trade>

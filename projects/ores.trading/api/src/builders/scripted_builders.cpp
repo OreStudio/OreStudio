@@ -872,6 +872,38 @@ scripted_result bond_future_option_builder::build() const {
     return out.take();
 }
 
+fx_asian_option_builder::fx_asian_option_builder(fx_asian_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+scripted_result fx_asian_option_builder::build() const {
+    const auto& terms = terms_;
+    if (terms.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must name a currency"});
+    if (auto refusal = positive_amount("quantity", terms.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = positive_amount("strike", terms.strike.get()))
+        return std::unexpected(std::move(*refusal));
+    if (!(terms.observation_start.get() < terms.expiry.get()))
+        return std::unexpected(build_error{"observation_start", "must be before the expiry"});
+    if (terms.settlement.get() < terms.expiry.get())
+        return std::unexpected(build_error{"settlement", "must not be before the expiry"});
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("Currency", "enumeration", terms.currency.get());
+    out.value("Quantity", "decimal", scripted_text(terms.quantity.get()));
+    out.value("Strike", "text", scripted_text(terms.strike.get()));
+    out.value("Settlement", "text", scripted_date(terms.settlement.get()));
+    auto& underlying = out.underlying("underlying", terms.fx_index.get(), "FX");
+    underlying.weight = 1.0;
+    domain::instrument_option option;
+    option.long_short = long_short_of(terms.position.get());
+    option.option_type = option_type_of(terms.kind.get());
+    option.payoff_type = "Asian";
+    out.option(std::move(option), terms.expiry.get());
+    out.rules_schedule("observationdates", terms.observation_start.get(), terms.expiry.get(), "1D");
+    return out.take();
+}
+
 autocallable_builder::autocallable_builder(autocallable_terms terms)
     : terms_(std::move(terms)) {}
 

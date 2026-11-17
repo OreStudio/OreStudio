@@ -729,3 +729,25 @@ TEST_CASE("a_bond_future_option_names_its_contract", scripted_tags) {
     CHECK(contract->value == "FGBL");
     CHECK(built->options[0].long_short == "Short");
 }
+
+TEST_CASE("an_fx_asian_option_averages_daily_and_weights_its_one_underlying", scripted_tags) {
+    const auto built = fx_asian_option_builder({.fx_index = scripted_equity(".SPX"),
+                                                .currency = std::string("USD"),
+                                                .quantity = scripted_amount("1000000"),
+                                                .strike = scripted_amount("1.08"),
+                                                .kind = option_kind::call,
+                                                .position = option_position::long_option,
+                                                .observation_start = 2026y / 2 / 2,
+                                                .expiry = 2026y / 3 / 2,
+                                                .settlement = 2026y / 3 / 4})
+                           .build();
+    REQUIRE(built.has_value());
+    REQUIRE(built->options.size() == 1);
+    CHECK(built->options[0].payoff_type == "Asian");
+    REQUIRE(built->instrument_underlyings.size() == 1);
+    CHECK(built->instrument_underlyings[0].weight == 1.0);
+    const auto observed = std::ranges::find_if(
+        built->schedules, [](const auto& s) { return s.schedule_role == "observationdates"; });
+    REQUIRE(observed != built->schedules.end());
+    CHECK(observed->tenor == "1D");
+}

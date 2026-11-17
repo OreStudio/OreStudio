@@ -47,6 +47,7 @@ set(files
     "messaging_fixing_read_handler_tests.cpp"
     "messaging_party_curve_blueprints_tests.cpp"
     "messaging_party_surface_blueprints_tests.cpp"
+    "messaging_party_surface_hold_back_tests.cpp"
     "messaging_provider_system_owned_tests.cpp"
     "messaging_provider_terms_handler_tests.cpp"
     "messaging_series_ticks_handler_tests.cpp"

@@ -52,8 +52,6 @@ enum class provision_step_action {
     attach_photos,
     start_auto_approval,
     end_auto_approval,
-    publish_party_forwards,
-    publish_party_surfaces,
     schedule_reports,
     complete_provisioning,
     start_tenant_setup,
@@ -97,10 +95,6 @@ enum class provision_step_action {
         return provision_step_action::start_auto_approval;
     if (kind == "end_auto_approval")
         return provision_step_action::end_auto_approval;
-    if (kind == publish_party_forwards_step_kind)
-        return provision_step_action::publish_party_forwards;
-    if (kind == publish_party_surfaces_step_kind)
-        return provision_step_action::publish_party_surfaces;
     if (kind == schedule_reports_step_kind)
         return provision_step_action::schedule_reports;
     return provision_step_action::refuse;

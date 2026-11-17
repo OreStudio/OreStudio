@@ -1245,6 +1245,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'storage::objects:write');
     -- The import reads the currency pairs it files observations under. Every read checks its code, so each is granted by name.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::currency_pairs:read');
+    -- The forward step publishes a set for every pair convention the tenant
+    -- holds, so the service reads that catalogue.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::currency_pair_conventions:read');
     -- The curve step this service serves gives each party its own copy of the
     -- system's curve blueprints, which are reference data rows the party owns
     -- once written.

@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/messaging/party_surface_hold_back.hpp"
+#include "ores.marketdata.core/messaging/party_surface_hold_back.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
 
-using ores::iam::messaging::party_surface_hold_back;
+using ores::marketdata::messaging::party_surface_hold_back;
 using ores::marketdata::messaging::calibrate_fx_vol_surface_response;
 using ores::marketdata::messaging::fx_vol_pillar_fit;
 

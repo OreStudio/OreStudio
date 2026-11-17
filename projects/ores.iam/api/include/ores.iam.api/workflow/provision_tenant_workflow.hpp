@@ -237,6 +237,8 @@ inline constexpr step_owner provision_step_owners[] = {
     {subscribe_market_data_step_kind, marketdata_provision_tenant_step_subject},
     {publish_party_curves_step_kind, marketdata_provision_tenant_step_subject},
     {give_party_surface_blueprints_step_kind, marketdata_provision_tenant_step_subject},
+    {publish_party_forwards_step_kind, marketdata_provision_tenant_step_subject},
+    {publish_party_surfaces_step_kind, marketdata_provision_tenant_step_subject},
 };
 
 /**

@@ -513,7 +513,13 @@ bool workflow_engine::is_essential_step(const boost::uuids::uuid& instance_id,
     const auto chain = plan_step_repo_.read_latest_by_workflow_id(
         ctx_, boost::uuids::to_string(instance_id), 0, 1000);
     const auto found = std::ranges::find(chain, step_name, &domain::workflow_plan_step::name);
-    return found == chain.end() || found->essential;
+    if (found == chain.end()) {
+        BOOST_LOG_SEV(lg(), warn) << "The plan of workflow " << boost::uuids::to_string(instance_id)
+                                  << " names no step '" << step_name
+                                  << "', so the step is treated as essential.";
+        return true;
+    }
+    return found->essential;
 }
 
 void workflow_engine::settle_with_warnings(
@@ -1441,7 +1447,7 @@ std::size_t workflow_engine::expire_overdue_steps() {
     const auto step_failed = step_states_.require("failed");
 
     std::size_t expired = 0;
-    std::vector<domain::workflow_instance> went_on_without;
+    std::set<boost::uuids::uuid> went_on_without;
     // The pass walks the steps the engine dispatched, not every run the store
     // holds: what it is looking for is work in flight, and that is what the
     // engine itself handed out. The step row decides whether the step is still
@@ -1557,8 +1563,7 @@ std::size_t workflow_engine::expire_overdue_steps() {
              */
             if (!is_essential_step(waiting.instance_id, step.name)) {
                 settle_with_warnings(step, "", reason, {});
-                if (!instances.empty())
-                    went_on_without.push_back(instances.front());
+                went_on_without.insert(waiting.instance_id);
                 it = awaiting_.erase(it);
                 continue;
             }
@@ -1589,13 +1594,17 @@ std::size_t workflow_engine::expire_overdue_steps() {
         }
     }
 
-    for (auto& instance : went_on_without) {
+    // Each run is advanced once, from its row as it stands after the pass,
+    // however many of its steps the pass settled.
+    for (const auto& instance_id : went_on_without) {
         try {
-            dispatch_ready_steps(instance);
+            auto instances = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+            if (!instances.empty())
+                dispatch_ready_steps(instances.front());
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn)
                 << "A run that went on without an overdue step was not advanced: workflow="
-                << boost::uuids::to_string(instance.id) << " reason=" << e.what();
+                << boost::uuids::to_string(instance_id) << " reason=" << e.what();
         }
     }
 

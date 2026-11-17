@@ -140,6 +140,12 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the startup login printed no setup summary; only the =login= command did | ores.shell application.cpp | Accept | Both paths call =print_setup_news= (9b57af296c). |
 | 2 | Local review: the logout doc comment sat above =process_setup_report= | accounts_commands.hpp | Accept | Moved back above =process_logout=. |
+| 3 | Claude review 1: the expiry pass may advance one run twice on a stale snapshot | workflow_engine.cpp | Accept | Harmless (the dispatch rebuilds what is dispatched from the store), but the pass now advances each run once, from its row as it stands. |
+| 4 | Claude review 2: a step missing from the plan is treated as essential silently | workflow_engine.cpp | Accept | Logged as a warning. |
+| 5 | Claude review 3: comment why compensation steps are excluded | workflow_engine.cpp | Decline | The guard's comment says a failed step that is not essential is settled; a compensation step has no plan row to be essential in. |
+| 6 | Claude review 4: test the 7 versus 8 day boundary | app_pair_levels_tests.cpp | Decline | Already tested: a last fixing 7 days before is accepted, 8 days before refused. |
+| 7 | Claude review 5, 6: track the system-party gap; check recorded lines for secrets | - | Decline | The gap stays on the open story; the recorded lines name bundles, parties and counts, no secret. |
+| 8 | Claude review 7: test two optional steps expiring in one pass | workflow_engine_tests.cpp | Decline | The test fixture chains steps in order, so two cannot be in flight at once; the dedupe is by construction. |
 
 * Result
 

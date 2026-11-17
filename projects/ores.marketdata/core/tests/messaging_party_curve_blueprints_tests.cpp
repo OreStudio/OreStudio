@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/messaging/party_curve_blueprints.hpp"
+#include "ores.marketdata.core/messaging/party_curve_blueprints.hpp"
 #include "ores.testing/uuid_of.hpp"
 #include "party_blueprint_fixture.hpp"
 #include "test_suite.hpp"
@@ -27,16 +27,16 @@
 
 namespace {
 
-using ores::iam::messaging::party_copy_id;
-using ores::iam::messaging::party_curve_holdings;
-using ores::iam::messaging::plan_party_curves;
-using ores::iam::messaging::system_curve_blueprints;
+using ores::marketdata::messaging::party_copy_id;
+using ores::marketdata::messaging::party_curve_holdings;
+using ores::marketdata::messaging::plan_party_curves;
+using ores::marketdata::messaging::curve_blueprints;
 using ores::marketdata::domain::market_series;
 using ores::refdata::domain::ir_curve_bootstrap_config;
 using ores::refdata::domain::ir_curve_bootstrap_pillar;
 
-using ores::iam::tests::market_series_row;
-using ores::iam::tests::system_party;
+using ores::marketdata::tests::market_series_row;
+using ores::marketdata::tests::system_party;
 using ores::testing::uuid_of;
 
 const auto acme_us = uuid_of("00000000-0000-4000-8000-0000000000a1");
@@ -46,8 +46,8 @@ const auto eur_quotes = uuid_of("00000000-0000-4000-8000-0000000000e1");
 const std::string eur_quotes_uri =
     "oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D";
 
-system_curve_blueprints eur_estr() {
-    system_curve_blueprints system;
+curve_blueprints eur_estr() {
+    curve_blueprints system;
     ir_curve_bootstrap_config config;
     config.id = eur_config;
     config.party_id = system_party;

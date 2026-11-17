@@ -19,6 +19,7 @@
  */
 #include "ores.http/routes/refdata/curve_document_cells.hpp"
 #include "ores.http/routes/refdata/curve_section_wiring.hpp"
+#include "ores.http/routes/refdata/wire_cells.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/split-the-unit-of-work-header
+#+pr: 4789
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -26,12 +26,12 @@ pq/unit_of_work.hpp needs pq::transaction's definition for its body, and pq/tran
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-16                               |
 
 * Acceptance
 
@@ -41,9 +41,48 @@ pq/unit_of_work.hpp needs pq::transaction's definition for its body, and pq/tran
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+pq/transaction.hpp defines two types: the transaction, and the session context
+of which it keeps a copy. The copy is why the definition has to live beside it,
+and that is why pq/unit_of_work.hpp, which only passes the context on, could
+not take the declaration: the only header that defined the type was the one it
+needs for the transaction.
+
+The copy turned out to be the second thing to fix. The transaction never reads
+the context it holds; it reads the five settings to encode the =set_config=
+statement, and it did that encoding on every round trip, throwing away every
+copy after the first. So the copy is not the design: the encoded settings are.
+The transaction now encodes them once, in its constructor, and holds the
+encoded parameters.
+
+The split:
+
+- =pq/session_context.hpp= holds the struct, and =pq/session_context_fwd.hpp=
+  its declaration. The struct carries the includes it needs, which are
+  =tenant_id.hpp=, =<boost/uuid/uuid.hpp>=, =<optional>=, =<string>= and
+  =<vector>=.
+- =pq/transaction.hpp= stops defining the struct, takes the declaration, and
+  holds =std::array<param, 5>= of encoded settings instead of a context. It
+  loses the includes only the struct used, and gains =<array>=.
+- =pq/unit_of_work.hpp= takes =session_context_fwd.hpp= and keeps
+  =transaction.hpp=: it constructs the transaction, so it needs that
+  definition, but it only passes the context through.
+- =context_transact.hpp=, =repository/unit_of_work.cpp= and the two pq layer
+  test sources build a session context, so they take the definition. It is a
+  header that constructs the type, and that is a use, not a name.
+
+This split does not move reach, and the measurement says why: the header that
+builds a session context is =domain/context_transact.hpp=, which every
+repository source includes through =query_builder/execute.hpp=, so 182 objects
+reach the definition before and after. What the split buys is the declaration
+itself, the end of an encoding that ran once per round trip, and the parse cost
+of a consumer that names the context alone. The forward-declaration check has no
+offender to explain and its baseline is empty.
+
+The constructor takes the context by =const=&, not by value. A by-value
+parameter needs the definition at every call site, because the call copies the
+argument in, and that would have put the definition back into every translation
+unit the unit of work's template reaches — which is what the first build of this
+branch failed on, in 127 objects.
 
 * Measurements
 
@@ -57,9 +96,39 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Offenders the forward-declaration check reports | 1 before, 0 after | =python3 build/scripts/check_forward_declarable_includes.py --root .= | 5862ee5e6d before, working tree after |
+| Reach after the split, objects and targets | =unit_of_work.hpp= 182/35, =transaction.hpp= 188/35, =session_context.hpp= 182/35, =session_context_fwd.hpp= 188/35, over 938 objects and 224 targets | =evidence/reach_unit_of_work_2026-11-16.txt= | 43001fc495 and the working tree after the transaction change |
+| Parse cost of one probe per header, five runs | =session_context.hpp= 1.40 s, =transaction.hpp= 2.83 s, =unit_of_work.hpp= 2.86 s, in one run at load 3.5 | =python3 evidence/header_cost.py headers --build-dir build/output/linux-clang-release-ninja --runs 5 --header ...=, raw output in =evidence/header_cost_unit_of_work_2026-11-16.txt= | 43001fc495 |
+| Build | 666 steps, 0 failures, 28 min 04 s at =-j6= after the split; 418 steps, 0 failures, 37 min 26 s at =-j6= after the transaction change | =compass build -j 6 -k 0= | 43001fc495 and the working tree after the transaction change |
+| Suites the change reaches | 4 of 4 passed in 85 s after the split, 4 of 4 in 190 s after the transaction change: database, iam.core, trading.core, refdata.core | =compass test run --preset linux-clang-release-ninja -- -j 4 -R "ores.database.tests\|ores.refdata.core.tests\|ores.trading.core.tests\|ores.iam.core.tests"= | 43001fc495 and the working tree after the transaction change |
+| Local checks | 4 of 4 passed: format, lint, cmake-sources, forward-declarable-includes | =compass check --only format --only cmake-sources --only forward-declarable-includes --only lint= | working tree |
 
 * Notes
+
+The reach numbers say what the split does not do. =session_context.hpp= is
+reached by 182 objects, almost the same 188 that reach =transaction.hpp=,
+because the header that builds a session context is =domain/context_transact.hpp=
+and every repository source includes it through =query_builder/execute.hpp=.
+The definition therefore still arrives for the whole repository layer; it
+arrives from that header instead of from the transaction's.
+
+Removing the copy did not change that, and the two changes are worth separating:
+the first split the type out, the second stopped the transaction holding one.
+The second was a design correction, not a clean-up. A transaction kept a copy of
+the context to encode five =set_config= arguments, encoded them again on every
+round trip, and threw every result but the first away. It now encodes them once,
+in its constructor, and holds =std::array<param, 5>=.
+
+That constructor takes the context by =const&=, and the first attempt did not:
+it took the context by value, which needs the definition at every call site that
+copies the argument in. The first build of this branch failed on 127 objects for
+exactly that reason, and the signature is the fix.
+
+The parse cost is where the split pays: the probe that includes only
+=session_context.hpp= costs half of the one that includes =transaction.hpp=,
+because the transaction's header carries the statement types and the result
+type with it. Under the load this record was taken at, only that ratio travels:
+a later run at load 30 reported 2.88 s and 5.45 s for the same two headers.
 
 * Test Scenarios
 
@@ -76,7 +145,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4789][#4789]] | [database] Split the session context out of the transaction header |
 
 * Review
 
@@ -85,3 +154,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The session context is its own type in its own header. =pq/transaction.hpp=
+takes the declaration and holds the encoded session settings rather than a copy
+of the context, =pq/unit_of_work.hpp= takes the declaration, and the sources
+that build a context take the definition. The forward-declaration check reports
+no offender at all, so its baseline is empty.
+
+The task asked whether holding a copy was right, and the answer was no: the
+transaction keeps five strings it encodes into =set_config=, and it was
+re-encoding them on every round trip while keeping the struct they came from.
+It now encodes once, in its constructor, from a =const=&.
+
+The reach does not fall, and the record says so: the header that builds a
+session context is =domain/context_transact.hpp=, which every repository source
+includes, so 182 objects still reach the definition. What the split buys is a
+declaration the type did not have, the halt of an encoding that ran once per
+round trip, and the parse cost of a consumer that names the context alone,
+which is 1.40 s against 2.83 s in one run.
+
+The build was the check that mattered, and it caught the one real mistake: a
+by-value constructor parameter put the definition back into 127 translation
+units, and the signature is now a reference. Both builds are clean, both runs of
+the suites pass, and the pq layer reads a database that was recreated from
+scratch.

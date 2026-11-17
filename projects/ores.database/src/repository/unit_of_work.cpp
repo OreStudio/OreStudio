@@ -18,6 +18,7 @@
  *
  */
 #include "ores.database/repository/unit_of_work.hpp"
+#include "ores.database/pq/session_context.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include <boost/exception/exception.hpp>
 #include <format>

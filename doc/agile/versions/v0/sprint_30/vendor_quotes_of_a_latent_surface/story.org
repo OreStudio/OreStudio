@@ -21,7 +21,7 @@ The system tenant simulates FX volatility quotes as if they were public market d
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -40,7 +40,9 @@ The system tenant simulates FX volatility quotes as if they were public market d
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:E0BC2FC6-0F57-4F41-972A-D8E6D12CD069][Scaffold story: Build each party's volatility surfaces from vendor quotes of a latent surface]] | DONE | 2026-11-17 | 2026-11-17 | Story scaffolding rides this task: the three stories planned with the person, the driver and driven terms in the docs, and the planning PR. |
-| [[id:69BEF021-3064-4E4B-A944-62CFB3FE9955][Quote every catalogued pair's latent surface along the blueprint ladder]] | BACKLOG | | | The latent surface feed is configured for 7 pairs and 10 expiry rows; give it every pair the blueprints hold, at the blueprint ladder's expiries, with its starting quotes seeded from the derived source. |
+| [[id:69BEF021-3064-4E4B-A944-62CFB3FE9955][Quote every catalogued pair's latent surface along the blueprint ladder]] | DONE | 2026-11-17 | 2026-11-17 | The latent surface feed is configured for 7 pairs and 10 expiry rows; give it every pair the blueprints hold, at the blueprint ladder's expiries, with its starting quotes seeded from the derived source. |
+| [[id:6DC1DD9A-ADF8-41FA-9154-FEF8FA4C0152][Quote cross surfaces consistent with their legs]] | BACKLOG | | | The latent run quotes a spot only for the USD pairs, so 21 of the 35 blueprint pairs, the crosses, have no latent spot to strike a surface against; give the run each cross's spot from its legs and a surface consistent with its legs' surfaces and their correlation. |
+| [[id:9F2FDCB9-D222-40F1-B4DB-C3EAB2929603][Quote each latent surface in its pair's own convention]] | BACKLOG | | | The surface feed quotes every pair in one convention, spot delta and delta-neutral ATM, which its own comment says it borrows from the derived source until it is handed the pair's convention; read the pair's FX option convention instead, as the calibration does. |
 | [[id:BBDBE494-26BB-4C12-87A3-3EE1C6FC12DB][Quote the latent surfaces through the vendor contributors the curves use]] | BACKLOG | | | The latent surface has two contributors, bloomberg and demo; the IR curves are quoted by bloomberg, ice and tradeweb. Quote every surface through the same vendors, each with its own noise, and keep a clean contributor as the truth tests compare against. |
 | [[id:1F460B5E-5E3B-4E2C-B6FF-D2E6EA1173C0][Point the blueprints at the vendor contributors and keep the derived source in the system]] | BACKLOG | | | Every system blueprint pillar reads the derived source, and every Acme party subscribes to it; point the pillars at the vendor contributors' series and take the derived source off the tenant subscriptions, so it only seeds the latent surface. |
 | [[id:E7890239-F663-49AD-A5BB-1B1036F64327][Prove a party's surfaces agree with the latent market and its forwards]] | BACKLOG | | | Provision Acme and compare each party's published surfaces with the clean contributor's quotes and with the forwards they were struck against, so consistency with the generated spot and forwards is measured rather than assumed. |

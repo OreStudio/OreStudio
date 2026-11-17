@@ -75,6 +75,7 @@ declare
     v_fx_folder_id uuid;
     v_ir_asset_class_folder_id uuid;
     v_ir_folder_id uuid;
+    v_vol_folder_id uuid;
     v_fx_config_id uuid;
     v_ir_config_id uuid;
     v_dataset_name text;
@@ -208,6 +209,9 @@ begin
         where dataset_id = p_dataset_id
         union all
         select provider_code from ores_dq_ir_curve_generation_configs_artefact_tbl
+        where dataset_id = p_dataset_id
+        union all
+        select provider_code from ores_dq_fx_vol_surface_feeds_artefact_tbl
         where dataset_id = p_dataset_id
     ) p
     having count(*) = count(p.provider_code)
@@ -892,6 +896,203 @@ begin
                        and existing_e.valid_to = ores_utility_infinity_timestamp_fn();
                 end if;
             end loop;
+        end loop;
+    end if;
+
+    -- =========================================================================
+    -- FX volatility surfaces: only resolved/populated if this dataset has
+    -- surface rows. Each published row takes its artefact row's id, which the
+    -- generator makes stable, so a second publish writes new versions of the
+    -- same rows rather than new ones, and a feed's expiries and contributor
+    -- links name it by that id.
+    -- =========================================================================
+
+    if exists (
+        select 1 from ores_dq_fx_vol_surface_feeds_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+    ) then
+        if v_fx_asset_class_folder_id is null then
+            select id into v_fx_asset_class_folder_id
+            from ores_synthetic_folders_tbl
+            where tenant_id = p_target_tenant_id and party_id = v_party_id
+              and kind = 'asset_class' and parent_id = v_collection_folder_id and name = 'FX'
+              and valid_to = ores_utility_infinity_timestamp_fn();
+        end if;
+        if v_fx_asset_class_folder_id is null then
+            v_fx_asset_class_folder_id := gen_random_uuid();
+            insert into ores_synthetic_folders_tbl (
+                tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
+                modified_by, performed_by, change_reason_code, change_commentary
+            ) values (
+                p_target_tenant_id, v_fx_asset_class_folder_id, 0, v_party_id, v_collection_folder_id,
+                'FX', 'asset_class', null,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import', 'Asset class folder'
+            );
+        end if;
+
+        select id into v_vol_folder_id
+        from ores_synthetic_folders_tbl
+        where tenant_id = p_target_tenant_id and party_id = v_party_id
+          and kind = 'instrument_type' and parent_id = v_fx_asset_class_folder_id
+          and name = 'FX Volatility'
+          and valid_to = ores_utility_infinity_timestamp_fn();
+        if v_vol_folder_id is null then
+            v_vol_folder_id := gen_random_uuid();
+            insert into ores_synthetic_folders_tbl (
+                tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
+                modified_by, performed_by, change_reason_code, change_commentary
+            ) values (
+                p_target_tenant_id, v_vol_folder_id, 0, v_party_id, v_fx_asset_class_folder_id,
+                'FX Volatility', 'instrument_type', null,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import', 'Instrument type folder'
+            );
+        end if;
+
+        for r in
+            select * from ores_dq_fx_vol_contributors_artefact_tbl a
+            where a.dataset_id = p_dataset_id order by a.provider_code
+        loop
+            select exists (
+                select 1 from ores_synthetic_fx_vol_contributors_tbl existing
+                where existing.tenant_id = p_target_tenant_id and existing.id = r.id
+                  and existing.valid_to = ores_utility_infinity_timestamp_fn()
+            ) into v_exists;
+            if p_mode = 'insert_only' and v_exists then
+                v_skipped := v_skipped + 1;
+                continue;
+            end if;
+            insert into ores_synthetic_fx_vol_contributors_tbl (
+                tenant_id, id, version, party_id, provider_code, noise, wing_widening,
+                expiry_widening, quote_step, missing_probability, stale_probability,
+                outlier_probability, outlier_size, bias,
+                modified_by, performed_by, change_reason_code, change_commentary
+            )
+            select
+                p_target_tenant_id, r.id, coalesce(existing.version, 0), v_party_id,
+                r.provider_code, r.noise, r.wing_widening, r.expiry_widening, r.quote_step,
+                r.missing_probability, r.stale_probability, r.outlier_probability,
+                r.outlier_size, r.bias,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+            from (select 1) as _contributor
+            left join ores_synthetic_fx_vol_contributors_tbl existing
+                on existing.tenant_id = p_target_tenant_id and existing.id = r.id
+               and existing.valid_to = ores_utility_infinity_timestamp_fn()
+            returning version into v_new_version;
+            if v_new_version = 1 then
+                v_inserted := v_inserted + 1;
+            else
+                v_updated := v_updated + 1;
+            end if;
+        end loop;
+
+        for r in
+            select * from ores_dq_fx_vol_surface_feeds_artefact_tbl a
+            where a.dataset_id = p_dataset_id
+            order by a.base_currency_code, a.quote_currency_code
+        loop
+            select exists (
+                select 1 from ores_synthetic_fx_vol_surface_feeds_tbl existing
+                where existing.tenant_id = p_target_tenant_id and existing.id = r.id
+                  and existing.valid_to = ores_utility_infinity_timestamp_fn()
+            ) into v_exists;
+            if p_mode = 'insert_only' and v_exists then
+                v_skipped := v_skipped + 1;
+                continue;
+            end if;
+            insert into ores_synthetic_fx_vol_surface_feeds_tbl (
+                tenant_id, id, version, party_id, config_id, folder_id,
+                base_currency_code, quote_currency_code, source_name,
+                ticks_per_hour, enabled, auto_start, asset_class_code,
+                arrival_mode, branching_ratio, decay, sensitivity,
+                skew_reversion, skew_volatility, curvature_reversion, curvature_volatility,
+                spot_variance_correlation, spot_skew_correlation, segment_correlation,
+                start_skew, start_curvature,
+                modified_by, performed_by, change_reason_code, change_commentary
+            )
+            select
+                p_target_tenant_id, r.id, coalesce(existing.version, 0), v_party_id,
+                v_config_id, v_vol_folder_id,
+                r.base_currency_code, r.quote_currency_code,
+                'synthetic.' ||
+                    coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))) ||
+                    '.vol.' || lower(r.base_currency_code) || lower(r.quote_currency_code),
+                r.ticks_per_hour, r.enabled, r.auto_start, 'fx',
+                r.arrival_mode, r.branching_ratio, r.decay, r.sensitivity,
+                r.skew_reversion, r.skew_volatility, r.curvature_reversion, r.curvature_volatility,
+                r.spot_variance_correlation, r.spot_skew_correlation, r.segment_correlation,
+                r.start_skew, r.start_curvature,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+            from (select 1) as _feed
+            left join ores_synthetic_fx_vol_surface_feeds_tbl existing
+                on existing.tenant_id = p_target_tenant_id and existing.id = r.id
+               and existing.valid_to = ores_utility_infinity_timestamp_fn()
+            returning version into v_new_version;
+            if v_new_version = 1 then
+                v_inserted := v_inserted + 1;
+            else
+                v_updated := v_updated + 1;
+            end if;
+        end loop;
+
+        for r in
+            select * from ores_dq_fx_vol_surface_feed_expiries_artefact_tbl a
+            where a.dataset_id = p_dataset_id order by a.feed_id, a.tenor
+        loop
+            insert into ores_synthetic_fx_vol_surface_feed_expiries_tbl (
+                tenant_id, id, version, party_id, feed_id, tenor, atm_vol,
+                variance_reversion, variance_volatility,
+                modified_by, performed_by, change_reason_code, change_commentary
+            )
+            select
+                p_target_tenant_id, r.id, coalesce(existing.version, 0), v_party_id,
+                r.feed_id, r.tenor, r.atm_vol, r.variance_reversion, r.variance_volatility,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+            from (select 1) as _expiry
+            left join ores_synthetic_fx_vol_surface_feed_expiries_tbl existing
+                on existing.tenant_id = p_target_tenant_id and existing.id = r.id
+               and existing.valid_to = ores_utility_infinity_timestamp_fn()
+            where not (p_mode = 'insert_only' and existing.id is not null)
+            returning version into v_new_version;
+            if not found then
+                v_skipped := v_skipped + 1;
+            elsif v_new_version = 1 then
+                v_inserted := v_inserted + 1;
+            else
+                v_updated := v_updated + 1;
+            end if;
+        end loop;
+
+        for r in
+            select * from ores_dq_fx_vol_surface_feed_contributors_artefact_tbl a
+            where a.dataset_id = p_dataset_id order by a.feed_id, a.contributor_id
+        loop
+            insert into ores_synthetic_fx_vol_surface_feed_contributors_tbl (
+                tenant_id, id, version, party_id, feed_id, contributor_id,
+                modified_by, performed_by, change_reason_code, change_commentary
+            )
+            select
+                p_target_tenant_id, r.id, coalesce(existing.version, 0), v_party_id,
+                r.feed_id, r.contributor_id,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+            from (select 1) as _link
+            left join ores_synthetic_fx_vol_surface_feed_contributors_tbl existing
+                on existing.tenant_id = p_target_tenant_id and existing.id = r.id
+               and existing.valid_to = ores_utility_infinity_timestamp_fn()
+            where not (p_mode = 'insert_only' and existing.id is not null)
+            returning version into v_new_version;
+            if not found then
+                v_skipped := v_skipped + 1;
+            elsif v_new_version = 1 then
+                v_inserted := v_inserted + 1;
+            else
+                v_updated := v_updated + 1;
+            end if;
         end loop;
     end if;
 

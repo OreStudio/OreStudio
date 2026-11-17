@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 92BB2900-C197-413A-B39A-84789D68BD8F
+:END:
+#+title: Main fails the money column check and a trade type catalogue test
+#+description: At main 4d5ccdd292 the money-decimal-columns check reports two new continuous columns typed exact (equity_position_instrument.volatility, equity_position_option_underlying.quantity), and codegen-tests fails test_a_routed_table_checks_exactly_the_codes_routed_to_it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:trading:keep_main_green:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+At main =4d5ccdd292= the =money-decimal-columns= check reports two new
+continuous columns typed as exact decimals: =volatility= of
+=equity_position_instrument= and =quantity= of
+=equity_position_option_underlying=. The =codegen-tests= check also fails
+=test_a_routed_table_checks_exactly_the_codes_routed_to_it=, beside the
+three codegen failures already filed.
+
+* Why
+
+A branch whose change classes include modeling runs these checks and fails
+for code it did not touch.
+
+* References
+
+- Found by the local gate of the task "Bootstrap every IBOR tenor the
+  generated trades book", on 2026-11-17.
+
+* See also
+
+-

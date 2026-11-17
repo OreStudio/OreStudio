@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B9FDF453-1431-4145-A59B-7C68F6E03855
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.wire-codec.enabled: true
 :ores.cpp.http-route.web_records_header.enabled: true
 :ores.cpp.http-route.web_records_implementation.enabled: true
@@ -198,6 +199,80 @@ A persistent offset of every point, in volatility.
 #+begin_src cpp :name generator
 0.0
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: id
+:END:
+
+One row per contributor the imported feeds are quoted by, with its noise profile.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** provider_code
+:PROPERTIES:
+:type: text
+:END:
+
+** noise
+:PROPERTIES:
+:type: double precision
+:END:
+
+** wing_widening
+:PROPERTIES:
+:type: double precision
+:END:
+
+** expiry_widening
+:PROPERTIES:
+:type: double precision
+:END:
+
+** quote_step
+:PROPERTIES:
+:type: double precision
+:END:
+
+** missing_probability
+:PROPERTIES:
+:type: double precision
+:END:
+
+** stale_probability
+:PROPERTIES:
+:type: double precision
+:END:
+
+** outlier_probability
+:PROPERTIES:
+:type: double precision
+:END:
+
+** outlier_size
+:PROPERTIES:
+:type: double precision
+:END:
+
+** bias
+:PROPERTIES:
+:type: double precision
+:END:
+
+* Artefact indexes
+
+** provider_code
+:PROPERTIES:
+:columns: provider_code
+:END:
 
 * SQL
 

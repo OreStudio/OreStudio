@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/quote-every-pair-along-the-ladder
+#+pr: 4819
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -26,23 +26,44 @@ Every pair a blueprint calibrates has a latent surface quoted at every expiry it
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
 
 - The feed configuration is generated from the blueprint dataset's pairs and ladder, not listed again.
-- Each pair's starting quotes come from the derived source, by rank, as the design states.
+- Each pair's starting ATM level is its spot process's volatility, so a surface and the spot it
+  is struck against start from one level. (Revised: the first draft seeded the levels from the
+  derived source by rank; see the Plan.)
+- The pairs whose spot the latent run quotes have a surface at every expiry of their
+  blueprint's ladder; the crosses are the task "Quote cross surfaces consistent with their legs".
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- *What was there.* The latent surface feed's code exists (the generator, the emitter, the
+  feed kind), but no dataset configured it: the seven feeds in the database were test rows in
+  test tenants, written by the test user. The system tenant quoted no latent surface.
+- *The route.* The synthetic feeds dataset already publishes FX spot and IR curve feeds in one
+  transaction, and its publish function names a third asset class as "a third loop added
+  here". The four surface tables gain artefact tables from their models, and the publish gains
+  that loop: contributors, feeds, expiries and the links, each published row taking its
+  artefact's id so a second publish writes new versions of the same rows.
+- *Nothing listed again.* The dataset rows are read from what is already published: the pairs
+  are the blueprint pairs the Bloomberg feeds quote a spot for, the ladder is the blueprint
+  pillars' expiries, and the script runs after the refdata layer that stages them.
+- *The starting level.* A surface starts at its pair's spot volatility, read from the spot
+  mixture's primary component (its per-tick stdev is the annual vol over 3970.9). The derived
+  source's realised volatility was the first draft's seed; the spot's own level keeps the latent
+  surface consistent with the spot it is struck against, and leaves the derived source as a
+  candidate to retire.
+- *What the run showed.* The crosses have no latent spot (the run quotes USD pairs only), and
+  the feed quotes every pair in one borrowed convention: both are new tasks. A surface runs
+  only on demand, and its contributors have no vendor ids yet, so it starts with the next task,
+  which quotes through the vendors.
 
 * Measurements
 
@@ -56,7 +77,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Latent surface feeds in the system tenant before | 0 (7 test rows in test tenants) | a count by tenant and writer | origin/main 4d5ccdd292 |
+| After a recreate | 14 feeds, 182 expiries (14 x 13), 14 contributor links, published | a count of the artefacts and the system rows | this branch |
+| Starting ATM levels | EURUSD 0.085, GBPUSD 0.095, USDJPY 0.115, USDZAR 0.175, ... | from the spot mixtures | this branch |
 
 * Notes
 
@@ -75,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4819][#4819]] | [synthetic,sql] Publish a latent FX vol surface for every pair the run quotes |
 
 * Review
 
@@ -84,3 +107,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The system tenant now holds a latent FX volatility surface for every blueprint pair the latent
+run quotes a spot for: 14 pairs at the 13 expiries of their blueprints' ladder, published with
+the Bloomberg feeds and read from what is already published, with no pair or expiry listed
+again. Each starts at its spot's volatility. They run once their contributors have vendor ids,
+which is the next task; the 21 crosses and the pair's own convention are tasks of their own.

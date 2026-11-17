@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_MESSAGING_PARTY_CURVE_BLUEPRINTS_HPP
-#define ORES_IAM_MESSAGING_PARTY_CURVE_BLUEPRINTS_HPP
+#ifndef ORES_MARKETDATA_CORE_MESSAGING_PARTY_CURVE_BLUEPRINTS_HPP
+#define ORES_MARKETDATA_CORE_MESSAGING_PARTY_CURVE_BLUEPRINTS_HPP
 
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
@@ -32,10 +32,10 @@
 #include <utility>
 #include <vector>
 
-namespace ores::iam::messaging {
+namespace ores::marketdata::messaging {
 
 /// The system's curve blueprints, as the party step reads them from the system tenant.
-struct system_curve_blueprints {
+struct curve_blueprints {
     std::vector<ores::refdata::domain::ir_curve_bootstrap_config> configs;
     std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar> pillars;
     /// Every series a config or a pillar names: the outputs and the quotes.
@@ -94,7 +94,7 @@ struct party_curve_plan {
  * Each pillar reads the party's series of the same item from the same provider, and each config
  * writes its own output series under the party.
  */
-[[nodiscard]] inline party_curve_plan plan_party_curves(const system_curve_blueprints& system,
+[[nodiscard]] inline party_curve_plan plan_party_curves(const curve_blueprints& system,
                                                         const party_curve_holdings& party) {
     std::map<boost::uuids::uuid, const ores::marketdata::domain::market_series*> system_series;
     for (const auto& s : system.series)

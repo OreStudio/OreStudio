@@ -97,80 +97,6 @@ namespace ores::http::routes::refdata::document {
 
 namespace {
 
-using ores::utility::codec::for_each_field;
-using ores::utility::codec::is_optional_member;
-
-/// The cell one member holds, as the wire writes it.
-template <typename T>
-cell field_cell(const T& source, std::string_view column) {
-    cell found;
-    for_each_field(source, [&](std::string_view name, const auto& value) {
-        if (name == column)
-            found = cell_of(value);
-    });
-    return found;
-}
-
-/// The number one text states, or a refusal naming the column it did not.
-template <typename T>
-T number_of_text(const std::string& stated, std::string_view column) {
-    T number{};
-    const auto read = std::from_chars(stated.data(), stated.data() + stated.size(), number);
-    if (read.ec != std::errc())
-        throw std::invalid_argument("The column \"" + std::string(column) + "\" holds \"" + stated +
-                                    "\", which is not a number.");
-    return number;
-}
-
-/**
- * @brief Writes one cell into one member, in the member's own type.
- *
- * An absent cell leaves an optional empty, which is what the screen means by
- * unsetting a leaf, and it leaves the other kinds empty rather than refusing:
- * a column the caller states as nothing is a column with no value.
- */
-template <typename T>
-void assign_cell(T& member, std::string_view column, const cell& value) {
-    if constexpr (is_optional_member<T>) {
-        using inner = typename T::value_type;
-        if (!value) {
-            member.reset();
-            return;
-        }
-        inner written{};
-        assign_cell(written, column, value);
-        member = std::move(written);
-    } else if constexpr (std::is_same_v<T, bool>) {
-        member = value.value_or(std::string()) == "true";
-    } else if constexpr (std::is_integral_v<T>) {
-        member = value ? number_of_text<T>(*value, column) : T{};
-    } else if constexpr (std::is_floating_point_v<T>) {
-        member = value ? static_cast<T>(number_of_text<double>(*value, column)) : T{};
-    } else if constexpr (std::is_same_v<T, std::string>) {
-        member = value.value_or(std::string());
-    } else if constexpr (states_text<T>) {
-        // A type with a stated text, such as a uuid or an instant, need not have
-        // an empty value of its own, so an absent cell leaves it as it was.
-        if (value)
-            member = ores::utility::codec::text_form<T>::from_text(*value);
-    } else {
-        static_assert(states_text<T>, "a row member with no wire text cannot be written");
-    }
-}
-
-/// Writes one column of one row, and answers whether the row has that column.
-template <typename Row>
-bool write_cell(Row& row, std::string_view column, const cell& value) {
-    bool written = false;
-    for_each_field(row, [&](std::string_view name, auto& member) {
-        if (name == column) {
-            assign_cell(member, column, value);
-            written = true;
-        }
-    });
-    return written;
-}
-
 /// Writes the column of the row this key names, and answers whether it found one.
 template <typename Row>
 bool write_keyed(std::vector<Row>& rows,
@@ -179,8 +105,8 @@ bool write_keyed(std::vector<Row>& rows,
                  std::string_view column,
                  const cell& value) {
     for (auto& row : rows)
-        if (field_cell(row, key_column) == cell(std::string(key)))
-            return write_cell(row, column, value);
+        if (find_cell(row, key_column) == cell(std::string(key)))
+            return set_cell(row, column, value);
     return false;
 }
 

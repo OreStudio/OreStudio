@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_MESSAGING_PROVISIONING_STEP_REGISTRAR_HPP
 #define ORES_MARKETDATA_SERVICE_MESSAGING_PROVISIONING_STEP_REGISTRAR_HPP
 
+#include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/subscription.hpp"
@@ -36,8 +37,14 @@ namespace ores::marketdata::service::messaging {
  */
 class provisioning_step_registrar {
 public:
+    /**
+     * @param ctx The service's own database context. A step that copies the
+     *            installation's blueprints reads them through it, in the tenant
+     *            they live in, and writes nothing with it.
+     */
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
+                      const ores::database::context& ctx,
                       ores::nats::service::nats_client::token_provider service_token);
 };
 

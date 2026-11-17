@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 175
+Tables: 179
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2053,6 +2053,28 @@ package "dq_staging" #F3E5F5 {
     A typed sub-configuration owned by a market_data_generation_config. Describes how to synthesise the tick stream for a single FX spot rate: which ORE market key it produces, the starting price, the tick cadence, and the price process. The price process is a Gaussian Mixture Model whose components are held separately as gmm_component rows. Scoped to a tenant and a party. - Artefact Table
     end note
 
+    entity ores_dq_fx_vol_contributors_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * provider_code : text
+        * noise : double
+        * wing_widening : double
+        * expiry_widening : double
+        * quote_step : double
+        * missing_probability : double
+        * stale_probability : double
+        * outlier_probability : double
+        * outlier_size : double
+        * bias : double
+    }
+
+    note right of ores_dq_fx_vol_contributors_artefact_tbl
+    A synthetic contributor, a provider of the simulator that quotes FX volatility as a broker does. Its noise profile is its own, whatever pair it quotes, so it is held once here and fx_vol_surface_feed_contributor says which pairs it quotes. A profile of zeros is the clean contributor, whose quotes are the truth. The noise of a point is noise, widened on the wings by 1 + wing_widening * (0.5 - delta) and for long expiries by 1 + expiry_widening * (years - 1) past one year. - Artefact Table
+    end note
+
     entity ores_dq_fx_vol_surface_blueprints_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -2073,6 +2095,68 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_fx_vol_surface_blueprints_artefact_tbl
     Records *how* one FX volatility surface is built, as a named, inspectable recipe, the surface's counterpart of the IR curve bootstrap config. Its pillars, in fx_vol_surface_pillar, name the quotes the calibration reads; the blueprint states what is done with them: the smile model fitted at each expiry, how the fitted expiries are joined, the grid of expiries and strikes the surface is written on, and the series it is written to. See [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]. output_series_id is a soft, cross-component reference into ores.marketdata's market_series: the fx_vol_surface series the calibration alone writes. As for the IR config, it is chosen and not minted, and it is the sole natural key, so exactly one active blueprint, tenant-wide, writes any given surface series. fx_option_convention_id names the pair's quoting convention in fx_option_convention, a soft reference: its ATM type, delta type, butterfly style and switch tenor decide what each pillar's quote means. smile_model and expiry_interpolation are small, fixed vocabularies intrinsic to the record, held by check constraints, as the IR config's curve_family_role is. The output grid is two lists, the expiries as tenor codes and the strikes in the oresmd strike grammar (ATM, DEL/Spot/Put/25, an absolute level), each separated by commas: the grid is a property of the recipe, read whole by the calibration and never addressed one point at a time, so it has no table of its own. - Artefact Table
+    end note
+
+    entity ores_dq_fx_vol_surface_feed_contributors_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * feed_id : uuid <<FK>>
+        * contributor_id : uuid <<FK>>
+    }
+
+    note right of ores_dq_fx_vol_surface_feed_contributors_artefact_tbl
+    Says that a contributor quotes a feed's surface. A feed with several contributors gives a tenant several broker quotes of one market; the clean contributor among them gives the truth. - Artefact Table
+    end note
+
+    entity ores_dq_fx_vol_surface_feed_expiries_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * feed_id : uuid <<FK>>
+        * tenor : text
+        * atm_vol : double
+        * variance_reversion : double
+        * variance_volatility : double
+    }
+
+    note right of ores_dq_fx_vol_surface_feed_expiries_artefact_tbl
+    One expiry an fx_vol_surface_feed quotes. The feed orders its expiries by length, so the row carries no position. The forward variance of the segment that ends at this expiry, from the expiry before it, is a Cox-Ingersoll-Ross process with this row's reversion and volatility. - Artefact Table
+    end note
+
+    entity ores_dq_fx_vol_surface_feeds_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * base_currency_code : text
+        * quote_currency_code : text
+          provider_code : text
+        * ticks_per_hour : integer
+        * enabled : boolean
+        * auto_start : boolean
+        * arrival_mode : text
+        * branching_ratio : double
+        * decay : double
+        * sensitivity : double
+        * skew_reversion : double
+        * skew_volatility : double
+        * curvature_reversion : double
+        * curvature_volatility : double
+        * spot_variance_correlation : double
+        * spot_skew_correlation : double
+        * segment_correlation : double
+        * start_skew : double
+        * start_curvature : double
+    }
+
+    note right of ores_dq_fx_vol_surface_feeds_artefact_tbl
+    A synthetic volatility surface of one currency pair, as [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]] describes. The surface is SSVI with gamma fixed at one half. Its state is the forward variance of each segment between the feed's expiries, which the fx_vol_surface_feed_expiry rows hold, a skew driver and a curvature driver, each reverting to where the surface started. The correlation of the shocks is three numbers, and the feed builds the matrix from them: spot with every forward variance, spot with the skew, and how strongly neighbouring forward variances move together, which falls by that factor for each segment between them. Every other shock is independent of spot. The surface is quoted by the contributors fx_vol_surface_feed_contributor names. - Artefact Table
     end note
 
     entity ores_dq_fx_vol_surface_pillar_sources_artefact_tbl  #F7E5FF {

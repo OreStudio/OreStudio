@@ -108,7 +108,7 @@ bool is_set(std::string_view value) {
 }
 
 /// One field of the contract entry, empty for a leaf no contract entry holds.
-std::string parameter_field(const ore_parameter* entry, std::string ore_parameter::* field) {
+std::string parameter_field(const ore_parameter* entry, std::string ore_parameter::*field) {
     return entry == nullptr ? std::string() : entry->*field;
 }
 

@@ -313,7 +313,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             // consumer: the engine sends them, and each one holds a session
             // inside the tenant its command names.
             auto provisioning = ores::marketdata::service::messaging::provisioning_step_registrar::
-                register_handlers(n, service_token);
+                register_handlers(n, c, service_token);
             for (auto& sub : provisioning)
                 subs.push_back(std::move(sub));
 

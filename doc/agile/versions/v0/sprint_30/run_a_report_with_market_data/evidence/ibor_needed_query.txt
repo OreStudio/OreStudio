@@ -1,0 +1,18 @@
+\set tenant '''4ea9b51d-86eb-4c2d-af53-c6dc7e384be6'''
+select set_config('app.current_tenant_id', :tenant, false);
+select set_config('app.visible_party_ids', null, false);
+with trades as (
+    select array_agg(id) ids from ores_trading_trades_tbl
+    where tenant_id = :tenant::uuid and valid_to = ores_utility_infinity_timestamp_fn()
+), refs as (
+    select r.trade_id, r.oresmd_uri from trades, ores_trading_market_references_fn(:tenant::uuid, trades.ids) r
+    where r.oresmd_uri like 'oresmd://ir/%type=fixing&index=ibor%tenor=%'
+)
+select substring(oresmd_uri from 'ir/([A-Z]{3})') as ccy,
+       substring(oresmd_uri from 'name=([A-Z]+)') as name,
+       substring(oresmd_uri from 'tenor=([0-9A-Z]+)') as tenor,
+       count(distinct trade_id) as trades,
+       exists (select 1 from ores_refdata_ir_curve_bootstrap_configs_tbl c
+               where c.valid_to = ores_utility_infinity_timestamp_fn()
+                 and c.name = substring(oresmd_uri from 'ir/([A-Z]{3})') || '-' || substring(oresmd_uri from 'name=([A-Z]+)') || '-' || substring(oresmd_uri from 'tenor=([0-9A-Z]+)')) as bootstrapped
+from refs group by 1, 2, 3, oresmd_uri order by 4 desc;

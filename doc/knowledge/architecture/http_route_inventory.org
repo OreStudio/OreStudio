@@ -75,7 +75,7 @@ an API publishes no area, so it is counted under =(none)=.
 | market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, series, subscriptions | 60 | composed view 6, resource 54 |
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
-| reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 304 | composed view 2, resource 302 |
+| reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 306 | composed view 2, resource 304 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 88 | composed view 20, resource 68 |
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
@@ -153,14 +153,14 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | market-data | 35 | 25 | 10 |
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
-| reference-data | 30 | 28 | 2 |
+| reference-data | 30 | 30 | 0 |
 | reporting | 44 | 44 | 0 |
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 28 | 7 |
-| total | 328 | 255 | 73 |
+| total | 328 | 257 | 71 |
 
 * The pairing
 
@@ -219,8 +219,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/client-log= | POST /api/client-log |
 | GET =/api/conventions/:family= | GET /api/conventions/{family} |
 | PUT =/api/conventions/:family= | PUT /api/conventions/{family} |
-| GET =/api/conventions/:family/documents/:id= | none |
-| PUT =/api/conventions/:family/documents/:id/terms= | none |
+| GET =/api/conventions/:family/documents/:id= | GET /api/conventions/{family}/documents/{id} |
+| PUT =/api/conventions/:family/documents/:id/terms= | PUT /api/conventions/{family}/documents/{id}/terms |
 | GET =/api/conventions/families= | GET /api/conventions/families |
 | GET =/api/conventions/pick-lists= | GET /api/conventions/pick-lists |
 | GET =/api/counterparties= | GET /api/v1/reference-data/counterparties |
@@ -497,7 +497,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1349 routes: 328 answered by the BFF and 1021 by ores.http.
+1351 routes: 328 answered by the BFF and 1023 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -757,11 +757,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | get | =/api/conventions/:family/documents/:id= | bff | projects/ores.web/packages/bff/src/conventions.ts:661 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
 | resource | reference-data | put | =/api/conventions/:family/documents/:id/terms= | bff | projects/ores.web/packages/bff/src/conventions.ts:799 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
 | resource | reference-data | get | =/api/conventions/families= | bff | projects/ores.web/packages/bff/src/conventions.ts:593 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
-| resource | reference-data | get | =/api/conventions/families= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:535 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
+| resource | reference-data | get | =/api/conventions/families= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:955 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, the write of a family whose terms the screen draws, and one convention's document with the terms the screen changes and writes. |
 | not an API | (none) | get | =/api/conventions/pick-lists= | bff | projects/ores.web/packages/bff/src/conventions.ts:702 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
 | not an API | (none) | get | =/api/conventions/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:383 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
-| resource | reference-data | get | =/api/conventions/{family}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:581 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
-| resource | reference-data | put | =/api/conventions/{family}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:598 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
+| resource | reference-data | get | =/api/conventions/{family}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:1103 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, the write of a family whose terms the screen draws, and one convention's document with the terms the screen changes and writes. |
+| resource | reference-data | put | =/api/conventions/{family}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:1120 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, the write of a family whose terms the screen draws, and one convention's document with the terms the screen changes and writes. |
+| resource | reference-data | get | =/api/conventions/{family}/documents/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:1001 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, the write of a family whose terms the screen draws, and one convention's document with the terms the screen changes and writes. |
+| resource | reference-data | put | =/api/conventions/{family}/documents/{id}/terms= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:1076 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, the write of a family whose terms the screen draws, and one convention's document with the terms the screen changes and writes. |
 | resource | reference-data | get | =/api/counterparties= | bff | projects/ores.web/packages/bff/src/counterparties.ts:201 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | get | =/api/counterparties/:id= | bff | projects/ores.web/packages/bff/src/counterparties.ts:230 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/:id/business-centres= | bff | projects/ores.web/packages/bff/src/counterparties.ts:358 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
@@ -1021,11 +1023,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | put | =/api/refdata/currency-pairs= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_pair_web_routes.cpp:313 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/currency-pairs/key/{key}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_pair_web_routes.cpp:302 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | resource | reference-data | get | =/api/refdata/curve-configurations= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:720 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
-| resource | reference-data | get | =/api/refdata/curve-configurations= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:258 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| resource | reference-data | get | =/api/refdata/curve-configurations= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:222 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
 | resource | reference-data | get | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:763 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
 | resource | reference-data | put | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:884 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
-| resource | reference-data | get | =/api/refdata/curve-configurations/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:313 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
-| resource | reference-data | put | =/api/refdata/curve-configurations/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:361 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| resource | reference-data | get | =/api/refdata/curve-configurations/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:277 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| resource | reference-data | put | =/api/refdata/curve-configurations/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:329 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
 | not an API | (none) | delete | =/api/refdata/ir-curve-bootstrap-configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_web_routes.cpp:361 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/ir-curve-bootstrap-configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_web_routes.cpp:328 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | put | =/api/refdata/ir-curve-bootstrap-configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_web_routes.cpp:350 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |

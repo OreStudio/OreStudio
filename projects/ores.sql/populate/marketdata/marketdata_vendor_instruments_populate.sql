@@ -42,7 +42,7 @@
  * A provider's catalogue is therefore exactly the set of ids its feeds can serve. No row names an
  * instrument no feed quotes, and every instrument a feed quotes has its row: the Bloomberg
  * collection quotes 26 pairs and 28 curves, the Demo collection 11 pairs and 20 curves, the LSEG
- * collection 14 pairs and no curve, and the ICE and Tradeweb collections five curves each.
+ * collection 14 pairs and no curve, the ICE collection eight curves and the Tradeweb collection seven.
  *
  * An instrument whose provider's notation cannot write it gets no row. The meeting-dated FOMC
  * pillars are spelled with meeting codes such as 1F, which no notation writes, so the FOMC curve's
@@ -220,8 +220,8 @@ create temporary table t_ir_pillar_id (
 -- BEGIN GENERATED ir pillar ids: tools/ir_catalogue writes this block, see the header
     -- bloomberg: 336 with an id, 9 without
     -- demo: 60 with an id, 0 without
-    -- ice: 35 with an id, 0 without
-    -- tradeweb: 35 with an id, 0 without
+    -- ice: 56 with an id, 0 without
+    -- tradeweb: 49 with an id, 0 without
     insert into t_ir_pillar_id (provider_code, currency_code, index_family,
         instrument_code, start_tenor_code, end_tenor_code, config_tenor,
         id_scheme, external_id, field, oresmd_uri) values
@@ -637,13 +637,34 @@ create temporary table t_ir_pillar_id (
     ('ice', 'CHF', 'libor', 'IRS', 'SPOT', '10Y', '3M', 'ice_ticker', 'CHFLIBOR3M.IRS.SPOT.10Y=', 'BID', 'oresmd://ir/CHF?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=10Y'),
     ('ice', 'CHF', 'libor', 'IRS', 'SPOT', '2Y', '3M', 'ice_ticker', 'CHFLIBOR3M.IRS.SPOT.2Y=', 'BID', 'oresmd://ir/CHF?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=2Y'),
     ('ice', 'CHF', 'libor', 'IRS', 'SPOT', '5Y', '3M', 'ice_ticker', 'CHFLIBOR3M.IRS.SPOT.5Y=', 'BID', 'oresmd://ir/CHF?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=5Y'),
+    ('ice', 'GBP', 'libor', 'DEPO', 'SPOT', '1M', '12M', 'ice_ticker', 'GBPLIBOR12M.DEPO.SPOT.1M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=12M&term=1M'),
+    ('ice', 'GBP', 'libor', 'DEPO', 'SPOT', '1M', '1W', 'ice_ticker', 'GBPLIBOR1W.DEPO.SPOT.1M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1W&term=1M'),
     ('ice', 'GBP', 'libor', 'DEPO', 'SPOT', '1M', '3M', 'ice_ticker', 'GBPLIBOR3M.DEPO.SPOT.1M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=1M'),
+    ('ice', 'GBP', 'libor', 'DEPO', 'SPOT', '1M', '6M', 'ice_ticker', 'GBPLIBOR6M.DEPO.SPOT.1M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=1M'),
+    ('ice', 'GBP', 'libor', 'DEPO', 'SPOT', '3M', '12M', 'ice_ticker', 'GBPLIBOR12M.DEPO.SPOT.3M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=12M&term=3M'),
+    ('ice', 'GBP', 'libor', 'DEPO', 'SPOT', '3M', '1W', 'ice_ticker', 'GBPLIBOR1W.DEPO.SPOT.3M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1W&term=3M'),
     ('ice', 'GBP', 'libor', 'DEPO', 'SPOT', '3M', '3M', 'ice_ticker', 'GBPLIBOR3M.DEPO.SPOT.3M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=3M'),
+    ('ice', 'GBP', 'libor', 'DEPO', 'SPOT', '3M', '6M', 'ice_ticker', 'GBPLIBOR6M.DEPO.SPOT.3M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=3M'),
+    ('ice', 'GBP', 'libor', 'FRA', '3M', '6M', '12M', 'ice_ticker', 'GBPLIBOR12M.FRA.3M.6M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=12M&term=6M'),
+    ('ice', 'GBP', 'libor', 'FRA', '3M', '6M', '1W', 'ice_ticker', 'GBPLIBOR1W.FRA.3M.6M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=1W&term=6M'),
     ('ice', 'GBP', 'libor', 'FRA', '3M', '6M', '3M', 'ice_ticker', 'GBPLIBOR3M.FRA.3M.6M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=3M&term=6M'),
+    ('ice', 'GBP', 'libor', 'FRA', '3M', '6M', '6M', 'ice_ticker', 'GBPLIBOR6M.FRA.3M.6M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=6M&term=6M'),
+    ('ice', 'GBP', 'libor', 'FRA', '6M', '12M', '12M', 'ice_ticker', 'GBPLIBOR12M.FRA.6M.12M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=12M&term=12M'),
+    ('ice', 'GBP', 'libor', 'FRA', '6M', '12M', '1W', 'ice_ticker', 'GBPLIBOR1W.FRA.6M.12M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=1W&term=12M'),
     ('ice', 'GBP', 'libor', 'FRA', '6M', '12M', '3M', 'ice_ticker', 'GBPLIBOR3M.FRA.6M.12M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=3M&term=12M'),
+    ('ice', 'GBP', 'libor', 'FRA', '6M', '12M', '6M', 'ice_ticker', 'GBPLIBOR6M.FRA.6M.12M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=6M&term=12M'),
+    ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '10Y', '12M', 'ice_ticker', 'GBPLIBOR12M.IRS.SPOT.10Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=12M&term=10Y'),
+    ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '10Y', '1W', 'ice_ticker', 'GBPLIBOR1W.IRS.SPOT.10Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1W&term=10Y'),
     ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '10Y', '3M', 'ice_ticker', 'GBPLIBOR3M.IRS.SPOT.10Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=10Y'),
+    ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '10Y', '6M', 'ice_ticker', 'GBPLIBOR6M.IRS.SPOT.10Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=10Y'),
+    ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '2Y', '12M', 'ice_ticker', 'GBPLIBOR12M.IRS.SPOT.2Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=12M&term=2Y'),
+    ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '2Y', '1W', 'ice_ticker', 'GBPLIBOR1W.IRS.SPOT.2Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1W&term=2Y'),
     ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '2Y', '3M', 'ice_ticker', 'GBPLIBOR3M.IRS.SPOT.2Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=2Y'),
+    ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '2Y', '6M', 'ice_ticker', 'GBPLIBOR6M.IRS.SPOT.2Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=2Y'),
+    ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '5Y', '12M', 'ice_ticker', 'GBPLIBOR12M.IRS.SPOT.5Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=12M&term=5Y'),
+    ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '5Y', '1W', 'ice_ticker', 'GBPLIBOR1W.IRS.SPOT.5Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1W&term=5Y'),
     ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '5Y', '3M', 'ice_ticker', 'GBPLIBOR3M.IRS.SPOT.5Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=5Y'),
+    ('ice', 'GBP', 'libor', 'IRS', 'SPOT', '5Y', '6M', 'ice_ticker', 'GBPLIBOR6M.IRS.SPOT.5Y=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=5Y'),
     ('ice', 'JPY', 'libor', 'DEPO', 'SPOT', '1M', '3M', 'ice_ticker', 'JPYLIBOR3M.DEPO.SPOT.1M=', 'BID', 'oresmd://ir/JPY?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=1M'),
     ('ice', 'JPY', 'libor', 'DEPO', 'SPOT', '3M', '3M', 'ice_ticker', 'JPYLIBOR3M.DEPO.SPOT.3M=', 'BID', 'oresmd://ir/JPY?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=3M'),
     ('ice', 'JPY', 'libor', 'FRA', '3M', '6M', '3M', 'ice_ticker', 'JPYLIBOR3M.FRA.3M.6M=', 'BID', 'oresmd://ir/JPY?type=quote&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=3M&term=6M'),
@@ -672,19 +693,33 @@ create temporary table t_ir_pillar_id (
     ('tradeweb', 'CHF', 'libor', 'IRS', 'SPOT', '10Y', '6M', 'tradeweb_ticker', 'CHFLIBOR6M.IRS.SPOT.10Y=', 'BID', 'oresmd://ir/CHF?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=10Y'),
     ('tradeweb', 'CHF', 'libor', 'IRS', 'SPOT', '2Y', '6M', 'tradeweb_ticker', 'CHFLIBOR6M.IRS.SPOT.2Y=', 'BID', 'oresmd://ir/CHF?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=2Y'),
     ('tradeweb', 'CHF', 'libor', 'IRS', 'SPOT', '5Y', '6M', 'tradeweb_ticker', 'CHFLIBOR6M.IRS.SPOT.5Y=', 'BID', 'oresmd://ir/CHF?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=5Y'),
+    ('tradeweb', 'EUR', 'euribor', 'DEPO', 'SPOT', '1M', '12M', 'tradeweb_ticker', 'EUREURIBOR12M.DEPO.SPOT.1M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=12M&term=1M'),
     ('tradeweb', 'EUR', 'euribor', 'DEPO', 'SPOT', '1M', '1M', 'tradeweb_ticker', 'EUREURIBOR1M.DEPO.SPOT.1M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1M&term=1M'),
+    ('tradeweb', 'EUR', 'euribor', 'DEPO', 'SPOT', '1M', '1W', 'tradeweb_ticker', 'EUREURIBOR1W.DEPO.SPOT.1M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1W&term=1M'),
     ('tradeweb', 'EUR', 'euribor', 'DEPO', 'SPOT', '1M', '6M', 'tradeweb_ticker', 'EUREURIBOR6M.DEPO.SPOT.1M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=1M'),
+    ('tradeweb', 'EUR', 'euribor', 'DEPO', 'SPOT', '3M', '12M', 'tradeweb_ticker', 'EUREURIBOR12M.DEPO.SPOT.3M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=12M&term=3M'),
     ('tradeweb', 'EUR', 'euribor', 'DEPO', 'SPOT', '3M', '1M', 'tradeweb_ticker', 'EUREURIBOR1M.DEPO.SPOT.3M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1M&term=3M'),
+    ('tradeweb', 'EUR', 'euribor', 'DEPO', 'SPOT', '3M', '1W', 'tradeweb_ticker', 'EUREURIBOR1W.DEPO.SPOT.3M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1W&term=3M'),
     ('tradeweb', 'EUR', 'euribor', 'DEPO', 'SPOT', '3M', '6M', 'tradeweb_ticker', 'EUREURIBOR6M.DEPO.SPOT.3M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=3M'),
+    ('tradeweb', 'EUR', 'euribor', 'FRA', '3M', '6M', '12M', 'tradeweb_ticker', 'EUREURIBOR12M.FRA.3M.6M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=12M&term=6M'),
     ('tradeweb', 'EUR', 'euribor', 'FRA', '3M', '6M', '1M', 'tradeweb_ticker', 'EUREURIBOR1M.FRA.3M.6M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=1M&term=6M'),
+    ('tradeweb', 'EUR', 'euribor', 'FRA', '3M', '6M', '1W', 'tradeweb_ticker', 'EUREURIBOR1W.FRA.3M.6M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=1W&term=6M'),
     ('tradeweb', 'EUR', 'euribor', 'FRA', '3M', '6M', '6M', 'tradeweb_ticker', 'EUREURIBOR6M.FRA.3M.6M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=6M&term=6M'),
+    ('tradeweb', 'EUR', 'euribor', 'FRA', '6M', '12M', '12M', 'tradeweb_ticker', 'EUREURIBOR12M.FRA.6M.12M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=12M&term=12M'),
     ('tradeweb', 'EUR', 'euribor', 'FRA', '6M', '12M', '1M', 'tradeweb_ticker', 'EUREURIBOR1M.FRA.6M.12M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=1M&term=12M'),
+    ('tradeweb', 'EUR', 'euribor', 'FRA', '6M', '12M', '1W', 'tradeweb_ticker', 'EUREURIBOR1W.FRA.6M.12M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=1W&term=12M'),
     ('tradeweb', 'EUR', 'euribor', 'FRA', '6M', '12M', '6M', 'tradeweb_ticker', 'EUREURIBOR6M.FRA.6M.12M=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=6M&term=12M'),
+    ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '10Y', '12M', 'tradeweb_ticker', 'EUREURIBOR12M.IRS.SPOT.10Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=12M&term=10Y'),
     ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '10Y', '1M', 'tradeweb_ticker', 'EUREURIBOR1M.IRS.SPOT.10Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1M&term=10Y'),
+    ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '10Y', '1W', 'tradeweb_ticker', 'EUREURIBOR1W.IRS.SPOT.10Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1W&term=10Y'),
     ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '10Y', '6M', 'tradeweb_ticker', 'EUREURIBOR6M.IRS.SPOT.10Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=10Y'),
+    ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '2Y', '12M', 'tradeweb_ticker', 'EUREURIBOR12M.IRS.SPOT.2Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=12M&term=2Y'),
     ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '2Y', '1M', 'tradeweb_ticker', 'EUREURIBOR1M.IRS.SPOT.2Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1M&term=2Y'),
+    ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '2Y', '1W', 'tradeweb_ticker', 'EUREURIBOR1W.IRS.SPOT.2Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1W&term=2Y'),
     ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '2Y', '6M', 'tradeweb_ticker', 'EUREURIBOR6M.IRS.SPOT.2Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=2Y'),
+    ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '5Y', '12M', 'tradeweb_ticker', 'EUREURIBOR12M.IRS.SPOT.5Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=12M&term=5Y'),
     ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '5Y', '1M', 'tradeweb_ticker', 'EUREURIBOR1M.IRS.SPOT.5Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1M&term=5Y'),
+    ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '5Y', '1W', 'tradeweb_ticker', 'EUREURIBOR1W.IRS.SPOT.5Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1W&term=5Y'),
     ('tradeweb', 'EUR', 'euribor', 'IRS', 'SPOT', '5Y', '6M', 'tradeweb_ticker', 'EUREURIBOR6M.IRS.SPOT.5Y=', 'BID', 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=5Y'),
     ('tradeweb', 'GBP', 'libor', 'DEPO', 'SPOT', '1M', '1M', 'tradeweb_ticker', 'GBPLIBOR1M.DEPO.SPOT.1M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1M&term=1M'),
     ('tradeweb', 'GBP', 'libor', 'DEPO', 'SPOT', '3M', '1M', 'tradeweb_ticker', 'GBPLIBOR1M.DEPO.SPOT.3M=', 'BID', 'oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1M&term=3M'),

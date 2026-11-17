@@ -18,6 +18,7 @@
  */
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/pq/codec.hpp"
+#include "ores.database/pq/session_context.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include "ores.database/pq/text.hpp"
 #include "ores.database/pq/unit_of_work.hpp"

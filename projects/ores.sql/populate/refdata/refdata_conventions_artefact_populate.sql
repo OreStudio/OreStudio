@@ -111,11 +111,13 @@ own copy.
    AMD-GENERIC-3M-SWAP: ORE refuses the index, so no run can use them. They
    are left out, and propose_decisions.tsv names each.
 
-   CAD-CORRA, GBP-SONIA, JPY-TONAR and USD-SOFR were both an IborIndex and an
-   OvernightIndex, and CNH-HIBOR and MXN-TIIE the same. ORE holds one convention
-   for each id, so on 2026-11-17 each kept one row: the overnight rates their
-   OvernightIndex, and the two IBOR families their IborIndex. The check requires
-   one row for each id.
+   CAD-CORRA, GBP-SONIA, JPY-TONAR, MXN-TIIE and USD-SOFR were both an
+   IborIndex and an OvernightIndex, and CNH-HIBOR the same. ORE holds one
+   convention for each id, so on 2026-11-17 each kept one row: the overnight
+   rates their OvernightIndex, which their funding curves are named after, and
+   CNH-HIBOR, which no funding curve names, its IborIndex. ORE parses a term
+   index such as GBP-SONIA-3M or MXN-TIIE-28D without a convention. The check
+   requires one row for each id.
 
    EUR-ESTR and JPY-TONA are OreStudio ids of the indices ORE names EUR-ESTER
    and JPY-TONAR. The curve configs name them, and they state the same terms,
@@ -4031,7 +4033,7 @@ begin
             (v_dataset_id, v_tenant_id, 'ZAR-SEK-FXOPTION', 1, v_party_id, 'ZAR-SEK-FX', 'AtmDeltaNeutral', 'Spot', '0D', 'AtmDeltaNeutral', 'Spot', 'Call', 'Broker', null);
     end if;
 
-    -- IborIndex: 107 rows
+    -- IborIndex: 106 rows
     if not exists (
         select 1 from ores_dq_ibor_index_conventions_artefact_tbl
         where dataset_id = v_dataset_id
@@ -4096,7 +4098,6 @@ begin
             (v_dataset_id, v_tenant_id, 'LKR-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/LKR?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'MAD-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/MAD?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'MUR-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/MUR?type=fixing&index=ibor&name=GENERIC'),
-            (v_dataset_id, v_tenant_id, 'MXN-TIIE', 1, 'Mexican stock exchange', 'ACT/360', '1', 'Following', 'false', 'oresmd://ir/MXN?type=fixing&index=ibor&name=TIIE'),
             (v_dataset_id, v_tenant_id, 'MXV-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/MXV?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'MYR-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/MYR?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'MYR-KLIBOR', 1, 'Malaysia Stock Exchange', 'ACT/365.FIXED', '0', 'ModifiedFollowing', 'false', 'oresmd://ir/MYR?type=fixing&index=ibor&name=KLIBOR'),
@@ -4254,7 +4255,7 @@ begin
             (v_dataset_id, v_tenant_id, 'ZAR-ZARONIA-OIS', 1, v_party_id, '1', 'ZAR-ZARONIA', 'ACT/365.FIXED', null, '2', 'false', 'Quarterly', 'Following', 'Following', 'Backward', null, null, 'oresmd://ir/ZAR?type=fixing&index=ibor&name=ZARONIA');
     end if;
 
-    -- OvernightIndex: 51 rows
+    -- OvernightIndex: 52 rows
     if not exists (
         select 1 from ores_dq_overnight_index_conventions_artefact_tbl
         where dataset_id = v_dataset_id
@@ -4291,6 +4292,7 @@ begin
             (v_dataset_id, v_tenant_id, 'JPY-TONAR', 1, 'Japan', 'ACT/365.FIXED', '0', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),
             (v_dataset_id, v_tenant_id, 'KRW-KOFR', 1, 'SouthKorea.Settlement', 'ACT/365.FIXED', '0', 'oresmd://ir/KRW?type=fixing&index=ibor&name=KOFR'),
             (v_dataset_id, v_tenant_id, 'MXN-FTIIE', 1, 'MXN', 'ACT/360', '0', 'oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE'),
+            (v_dataset_id, v_tenant_id, 'MXN-TIIE', 1, 'MXN', 'ACT/360', '0', 'oresmd://ir/MXN?type=fixing&index=ibor&name=TIIE'),
             (v_dataset_id, v_tenant_id, 'NOK-NOWA', 1, 'Norway', 'ACT/ACT.ISMA', '0', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA'),
             (v_dataset_id, v_tenant_id, 'NZD-NZONIA', 1, 'NewZealand', 'ACT/365.FIXED', '0', 'oresmd://ir/NZD?type=fixing&index=ibor&name=NZONIA'),
             (v_dataset_id, v_tenant_id, 'NZD-OCR', 1, 'New Zealand', 'ACT/365.FIXED', '0', 'oresmd://ir/NZD?type=fixing&index=ibor&name=OCR'),

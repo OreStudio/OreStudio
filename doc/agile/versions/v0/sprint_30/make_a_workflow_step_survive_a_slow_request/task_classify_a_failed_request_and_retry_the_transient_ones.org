@@ -101,7 +101,7 @@ matches. =nats_connect_error= gained =request_timeout=, distinct from
 =connection_timeout= (a connect that never completed) and from
 =services_unavailable= (nobody listening).
 
-[request_retry.hpp](file:../../../../../projects/ores.iam/core/include/ores.iam.core/service/request_retry.hpp)
+[request_retry.hpp](file:../../../../../projects/ores.service/include/ores.service/messaging/request_retry.hpp)
 holds the three answers and the one retry loop:
 
 - =classify_request_failure= reads a refusal, a timeout or a missing responder,

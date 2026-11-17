@@ -1,0 +1,28 @@
+compiler : /usr/bin/clang++
+flags    : 137 include and define flags (union over the build)
+
+ wall_s  trace_s  header
+   5.45  5419.70  ores.database/pq/transaction.hpp
+   2.88  2793.49  ores.database/pq/session_context.hpp
+  10.53 10270.04  ores.database/pq/unit_of_work.hpp
+
+== where each probe spends its trace time (top 5 per header)
+ores.database/pq/transaction.hpp (5.45s wall)
+       280.3 ms  /home/marco/Development/OreStudio/ores_dev_festive_dijkstra/build/output/linux-clang-release-ninja/vcpkg_installed/x64-linux/include/boost/multiprecision/detail/default_ops.hpp
+       267.0 ms  /home/marco/Development/OreStudio/ores_dev_festive_dijkstra/build/output/linux-clang-release-ninja/vcpkg_installed/x64-linux/include/boost/math/special_functions/lanczos.hpp
+       237.5 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/format
+       157.3 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/char_traits.h
+       147.8 ms  /home/marco/Development/OreStudio/ores_dev_festive_dijkstra/build/output/linux-clang-release-ninja/vcpkg_installed/x64-linux/include/boost/multiprecision/cpp_dec_float.hpp
+ores.database/pq/session_context.hpp (2.88s wall)
+       200.8 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/locale_facets.tcc
+       190.1 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/basic_string.h
+       174.1 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/format
+       128.8 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/chrono
+       113.5 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/locale_facets.h
+ores.database/pq/unit_of_work.hpp (10.53s wall)
+       696.8 ms  /home/marco/Development/OreStudio/ores_dev_festive_dijkstra/projects/ores.database/src/../include/ores.database/pq/transaction.hpp
+       553.8 ms  /home/marco/Development/OreStudio/ores_dev_festive_dijkstra/build/output/linux-clang-release-ninja/vcpkg_installed/x64-linux/include/boost/math/special_functions/lanczos.hpp
+       441.4 ms  /home/marco/Development/OreStudio/ores_dev_festive_dijkstra/build/output/linux-clang-release-ninja/vcpkg_installed/x64-linux/include/boost/math/constants/constants.hpp
+       385.3 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/unordered_map.h
+       334.8 ms  /home/marco/Development/OreStudio/ores_dev_festive_dijkstra/build/output/linux-clang-release-ninja/vcpkg_installed/x64-linux/include/boost/multiprecision/cpp_dec_float.hpp
+

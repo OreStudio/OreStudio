@@ -109,6 +109,36 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
   capability to write in their names for no reach it lacks. Shapes 2 and 3 stay
   recorded as the ways to get per-trader authorship if the product decides the
   demonstration needs it, with the cost stated.
+- *A service reads the installation's blueprints as itself, 2026-11-15.* The
+  two steps that give a party its own curves and surfaces copy blueprints that
+  live in the system tenant, and they read them through an administrator
+  session there because a tenant-scoped session cannot see the system's rows. A
+  service session is refused the system tenant by this story's own rule, so the
+  question was how the blueprints reach the service.
+  - *Widening the read to every tenant was tried first, and withdrawn.* The
+    four blueprint tables joined the thirty-nine that already say "every session
+    reads its own rows and the system tenant's rows", with the party scope
+    passing them too. It works, and the cost is not the policy: a read is
+    narrowed twice, so the repositories had to widen as well, and a
+    repository-wide widening changes every reader. The scheduled
+    =publish_due_curves= sweep then saw the installation's 20 curve configs
+    beside the tenant's own 2, and =messaging_publish_due_curves_tests= caught
+    it. Every consumer of those repositories would have to filter, which is a
+    footgun, not a rule.
+  - *A read subject in refdata would not avoid the question.* Row-level
+    security reads the caller's tenant, so such a subject either widens the
+    policy exactly as above or opens a session inside the system tenant, which
+    is the hole the rule closes.
+  - *Shipping the blueprint content in the seed profile* moves where the truth
+    lives and duplicates it, and a template that changes leaves every tenant
+    stale.
+  So the service reads the catalogue itself, in the system tenant where it
+  lives, through its own database context: =tenant_context::with_system_tenant=
+  over the marketdata service's context, the same way the feed ingest loop
+  already reads the installation's feeds and mappings. No session inside that
+  tenant is entered, no person is impersonated, and nothing a tenant may read
+  changes. The rows the step copies are exactly the installation's, so a second
+  run copies the template and never a copy of a copy.
 - *A command that cannot read the state it guards on refuses, 2026-11-14.*
   A recreate asks whether anything is still connected before it drops, and an
   answer that never came back used to read as "nothing is connected". The

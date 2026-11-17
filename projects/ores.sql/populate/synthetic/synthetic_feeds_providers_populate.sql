@@ -36,10 +36,12 @@
  *     cross-rates matrix. A WM style composite, started at the level the
  *     Bloomberg USD spots imply.
  *   - ICE: LIBOR curves of the tenors the Bloomberg feeds leave out: USD 1M and 6M, GBP,
- *     CHF and JPY 3M. LIBOR is retired, so the curves are learning material: the feed
+ *     CHF and JPY 3M, and GBP 6M, 12M and 1W, the tenors the generated trades book.
+ *     LIBOR is retired, so the curves are learning material: the feed
  *     simulates a benchmark that no longer publishes, and claims no live market.
  *   - Tradeweb: dealer composite curves of the six and one month EURIBOR, and the one month
- *     GBP and JPY LIBOR and six month CHF LIBOR, kept as learning material.
+ *     GBP and JPY LIBOR and six month CHF LIBOR, kept as learning material, and the twelve
+ *     month and one week EURIBOR the generated trades book.
  *
  * FX spots are a two-component geometric Gaussian mixture, as Bloomberg's: a primary
  * component of weight 0.95 and a per-tick stdev of the pair's annualised vol / 3970.9, at
@@ -131,8 +133,13 @@ begin
         ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'GBP', 'libor', '3M', 0.25, 0.012, 0.0470),
         ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'CHF', 'libor', '3M', 0.30, 0.009, 0.0120),
         ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'JPY', 'libor', '3M', 0.20, 0.006, 0.0040),
+        ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'GBP', 'libor', '6M', 0.25, 0.012, 0.0480),
+        ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'GBP', 'libor', '12M', 0.25, 0.012, 0.0490),
+        ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'GBP', 'libor', '1W', 0.25, 0.012, 0.0455),
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'EUR', 'euribor', '1M', 0.35, 0.009, 0.0300),
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'EUR', 'euribor', '6M', 0.35, 0.010, 0.0320),
+        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'EUR', 'euribor', '12M', 0.35, 0.010, 0.0330),
+        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'EUR', 'euribor', '1W', 0.35, 0.009, 0.0295),
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'GBP', 'libor', '1M', 0.25, 0.012, 0.0460),
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'CHF', 'libor', '6M', 0.30, 0.009, 0.0130),
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'JPY', 'libor', '1M', 0.20, 0.006, 0.0035);

@@ -94,16 +94,6 @@ namespace ores::http::routes::refdata::document {
 
 namespace {
 
-/// One row, as the cells the wiring reads by column name.
-template <typename T>
-row row_of(const T& source) {
-    row one;
-    codec::for_each_field(source, [&one](std::string_view name, const auto& value) {
-        one.emplace(std::string(name), cell_of(value));
-    });
-    return one;
-}
-
 /// One vector of the document, as rows under the name the document gives it.
 template <typename T>
 void flatten(std::map<std::string, std::vector<row>, std::less<>>& into,
@@ -201,21 +191,5 @@ const std::vector<row>& cells::at(std::string_view vector) const {
     return rows == nullptr ? none : *rows;
 }
 
-cell cell_at(const row& source, std::string_view column) {
-    const auto found = source.find(column);
-    return found == source.end() ? cell() : found->second;
-}
-
-std::string text_of(const row& source, std::string_view column) {
-    const auto found = source.find(column);
-    return found == source.end() || !found->second ? std::string() : *found->second;
-}
-
-int number_of(const row& source, std::string_view column) {
-    const auto stated = text_of(source, column);
-    int number = 0;
-    const auto read = std::from_chars(stated.data(), stated.data() + stated.size(), number);
-    return read.ec == std::errc() ? number : 0;
-}
 
 }

@@ -247,6 +247,12 @@ PAIRS = {
         "DELETE",
         "/api/reporting/engine-settings/{id}"),
     ("POST", "/api/reporting/pricing-engines"): ("POST", "/api/reporting/pricing-engines"),
+    ("GET", "/api/conventions/:family/documents/:id"): (
+        "GET",
+        "/api/conventions/{family}/documents/{id}"),
+    ("PUT", "/api/conventions/:family/documents/:id/terms"): (
+        "PUT",
+        "/api/conventions/{family}/documents/{id}/terms"),
     ("GET", "/api/refdata/curve-configurations"): (
         "GET",
         "/api/refdata/curve-configurations"),

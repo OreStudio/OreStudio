@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/give-each-party-the-fixings-its-trades-use
-#+pr:
+#+pr: 4823
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4823][#4823]] | [marketdata] Export the world's fixings to each party's run |
 
 * Review
 

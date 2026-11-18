@@ -101,6 +101,7 @@ faker::number::integer(1, 100)
 :PROPERTIES:
 :tablename: ores_refdata_currency_groups_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -132,6 +133,7 @@ drop function if exists ores_refdata_validate_currency_group_fn;
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: group
 :entity_plural_short:   groups
 :entity_singular_words: currency group

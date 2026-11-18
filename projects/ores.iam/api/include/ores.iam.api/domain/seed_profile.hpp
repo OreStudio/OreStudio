@@ -46,8 +46,10 @@ namespace ores::iam::domain {
  * and the first two rows are:
  *
  * - empty_operational: the production starting point. It publishes the
- *   world and tenant_defaults bundles, takes a counterparty count and a GLEIF root LEI to
- *   import, and creates no test data.
+ *   tenant_defaults bundle and the counterparties it trades against, takes a
+ *   counterparty count and a GLEIF root LEI to import, and creates no test data.
+ *   It names no world bundle: the world catalogue is published once into the
+ *   system tenant at bring-up, and every tenant reads it where it lies.
  * - acme_demo: the Acme Corporation holding group, with its staff, books
  *   and market data. Every test datum lives here.
  *

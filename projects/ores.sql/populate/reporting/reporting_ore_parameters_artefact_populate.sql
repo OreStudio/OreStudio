@@ -25,11 +25,13 @@
  * Ore Parameters DQ Datasets
  *
  * Registers the datasets ore.parameter_value_domains and ore.parameters and
- * stages their rows. Both are members of the system_core and base bundles, so
- * a publication writes them into the system tenant and into each tenant, through
+ * stages their rows. Both are members of the system_core bundle and of no
+ * other, so the publication writes them into the system tenant once, at
+ * bring-up, through
  * ores_reporting_publish_ore_parameter_value_domains_from_dq_fn and
- * ores_reporting_publish_ore_parameters_from_dq_fn. This script is idempotent:
- * it replaces the artefact rows of each dataset.
+ * ores_reporting_publish_ore_parameters_from_dq_fn; a tenant reads those rows
+ * through the shared-reference read. This script is idempotent: it replaces
+ * the artefact rows of each dataset.
  */
 
 \echo '--- DQ Dataset: Ore Parameter Value Domains ---'

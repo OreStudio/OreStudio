@@ -26,6 +26,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_currency_group.hpp"
 #include "ores.refdata.api/domain/currency_currency_group_json_io.hpp" // IWYU pragma: keep.
@@ -145,9 +146,11 @@ currency_currency_group_repository::rows_by_pair currency_currency_group_reposit
         const std::vector<std::string> lefts(left_set.begin(), left_set.end());
         const std::vector<std::string> rights(right_set.begin(), right_set.end());
         const auto tid = ctx_.tenant_id().to_string();
+        static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
         const auto query =
             query_builder::read<std::vector<currency_currency_group_entity>> |
-            query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c.in(lefts) &&
+            query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                 "currency_iso_code"_c.in(lefts) &&
                                  "currency_group_code"_c.in(rights) && "valid_to"_c == max);
         auto rows = query_builder::execute_read_query<currency_currency_group_entity,
                                                       domain::currency_currency_group>(
@@ -236,8 +239,10 @@ void currency_currency_group_repository::write(
 std::vector<domain::currency_currency_group> currency_currency_group_repository::read_latest() {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_currency_group_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c, "currency_group_code"_c);
 
     return query_builder::execute_read_query<currency_currency_group_entity,
@@ -255,8 +260,10 @@ currency_currency_group_repository::read_latest(std::uint32_t offset, std::uint3
                                << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_currency_group_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c, "currency_group_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -279,9 +286,11 @@ currency_currency_group_repository::read_latest(const std::string& currency_iso_
     const auto currency_iso_code_str = currency_iso_code;
     const auto currency_group_code_str = currency_group_code;
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_currency_group_entity>> |
-        query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "currency_iso_code"_c == currency_iso_code &&
                              "currency_group_code"_c == currency_group_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<currency_currency_group_entity,
@@ -298,8 +307,10 @@ std::uint32_t currency_currency_group_repository::get_total_currency_group_count
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<currency_currency_group_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<currency_currency_group_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_currency_group_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency groups");
@@ -313,10 +324,11 @@ currency_currency_group_repository::read_latest_by_currency(const std::string& c
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_currency_group_entity>> |
-        query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "currency_iso_code"_c == currency_iso_code && "valid_to"_c == max) |
         query_builder::order_by("currency_group_code"_c);
 
     auto rows = query_builder::execute_read_query<currency_currency_group_entity,
@@ -336,8 +348,9 @@ currency_currency_group_repository::read_latest_by_group(const std::string& curr
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_currency_group_entity>> |
-                       query_builder::where("tenant_id"_c == tid &&
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
                                             "currency_group_code"_c == currency_group_code &&
                                             "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c);
@@ -362,10 +375,11 @@ currency_currency_group_repository::read_latest_by_currency(const std::string& c
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_currency_group_entity>> |
-        query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "currency_iso_code"_c == currency_iso_code && "valid_to"_c == max) |
         query_builder::order_by("currency_group_code"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -387,10 +401,11 @@ std::uint32_t currency_currency_group_repository::get_total_currency_group_count
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_currency_group_entity>> |
-        query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "currency_iso_code"_c == currency_iso_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_currency_group_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency groups");
@@ -405,9 +420,10 @@ std::uint32_t currency_currency_group_repository::get_total_currency_group_count
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_currency_group_entity>> |
-        query_builder::where("tenant_id"_c == tid &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
                              "currency_group_code"_c == currency_group_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_currency_group_entity>(
@@ -422,10 +438,11 @@ currency_currency_group_repository::read_all_by_currency(const std::string& curr
                                << currency_iso_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<currency_currency_group_entity>> |
-        query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code) |
-        query_builder::order_by("currency_group_code"_c, "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<currency_currency_group_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "currency_iso_code"_c == currency_iso_code) |
+                       query_builder::order_by("currency_group_code"_c, "valid_from"_c.desc());
 
     return query_builder::execute_read_query<currency_currency_group_entity,
                                              currency_currency_group_history_row>(

@@ -220,6 +220,7 @@ std::string("1.9.0.0")
 :PROPERTIES:
 :tablename: ores_reporting_ore_parameters_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Foreign keys
@@ -250,6 +251,7 @@ std::string("1.9.0.0")
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: parameter
 :entity_plural_short:   parameters
 :entity_singular_words: ore parameter

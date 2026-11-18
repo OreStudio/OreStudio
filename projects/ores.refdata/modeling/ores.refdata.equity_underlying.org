@@ -170,6 +170,7 @@ Order for UI display purposes.
 :PROPERTIES:
 :tablename: ores_refdata_equity_underlyings_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Validations
@@ -187,6 +188,7 @@ Order for UI display purposes.
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: equity_underlying
 :entity_plural_short:   equity_underlyings
 :entity_singular_words: equity underlying

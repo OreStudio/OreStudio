@@ -140,6 +140,7 @@ faker::number::integer(1, 100)
 :PROPERTIES:
 :tablename: ores_refdata_commodities_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Insert trigger
@@ -158,6 +159,7 @@ faker::number::integer(1, 100)
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: commodity
 :entity_plural_short:   commodities
 :entity_singular_words: commodity

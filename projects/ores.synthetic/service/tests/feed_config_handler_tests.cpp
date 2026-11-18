@@ -731,6 +731,7 @@ TEST_CASE("feed_config_starts_a_volatility_surface_by_config_id",
         test_start_subject,
         token,
         start_feed_request{.config_id = boost::uuids::to_string(seeds.surface_enabled_id)});
+    INFO(surface_start.message);
     REQUIRE(surface_start.success);
     CHECK(surface_start.message == "Feed started: " + seeds.surface_enabled_source);
     CHECK(f.fleet.running_count() == 1);

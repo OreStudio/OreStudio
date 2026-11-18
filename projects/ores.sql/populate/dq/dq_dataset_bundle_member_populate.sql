@@ -43,15 +43,8 @@ BEGIN
     -- one.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'iso.coding_schemes', 1);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'fpml.coding_schemes', 2);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'assets.country_flags', 3);
+    -- Default administrator pictures; the attach step binds them by code.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'assets.system_avatars', 4);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'iso.countries', 5);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'iso.currencies', 6);
-    -- The currencies ISO 4217 does not code, such as CNH, which the feeds below
-    -- quote. Without them the feeds publish only while the currency table is still
-    -- empty, which its check lets through.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'fpml.non_iso_currency', 7);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'fpml.asset_class', 8);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.asset_class', 9);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.market_data_providers', 10);
 
@@ -64,13 +57,11 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.bloomberg', 14);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.uniform_demo', 16);
 
-    -- The ORE parameter documentation. The system tenant's rows are what the
-    -- validators of the configuration parameters read, and each tenant's rows
-    -- are what its own screens read, so both bundles carry it. The parameters
-    -- depend on the value domains, so the dataset dependency orders them.
-    -- Two copies of one dataset is a stopgap: the capture "One source for
-    -- reference data that the system and each tenant read" tracks the choice
-    -- of one source and the rewrite of the readers that follows.
+    -- The ORE parameter documentation. The parameters and their value domains
+    -- belong to the platform, which defines them. The system tenant's rows are
+    -- what the validators of the configuration parameters read, and its rows
+    -- are what a tenant's screens read too: the read admits the system
+    -- tenant's rows beside the caller's own, so no tenant holds a copy.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameter_value_domains', 17);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameters', 18);
 
@@ -99,10 +90,12 @@ BEGIN
 
     -- --- World Bundle Members ---
 
-    -- Visual assets
+    -- The world catalogue is published into the system tenant and nowhere else.
+    -- A tenant reads these rows where they lie, through the shared-reference
+    -- read, and holds no copy of a fact that has one correct value.
+
+    -- Visual assets: the flag of each country, drawn beside it.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'assets.country_flags', 1);
-    -- Default administrator pictures; the attach step binds them by code.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'assets.system_avatars', 3);
 
     -- Geolocation
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'geo.ip2country', 2);
@@ -110,6 +103,10 @@ BEGIN
     -- ISO Standards
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'iso.countries', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'iso.currencies', 11);
+    -- The currencies ISO 4217 does not code, such as CNH, which a feed quotes.
+    -- Without them a feed publishes only while the currency table is still
+    -- empty, which its check lets through.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.non_iso_currency', 114);
     -- The equity underlyings a population draws. A trade that named one no
     -- catalogue holds is refused when it is written, so the catalogue has to
     -- publish before the population runs.
@@ -151,7 +148,6 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.hkma_rewrite_party_relationship_type', 111);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.hkma_rewrite_regulatory_corporate_sector', 112);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.local_jurisdiction', 113);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.non_iso_currency', 114);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.party_relationship_type', 115);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.party_role', 116);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.party_role_type', 117);
@@ -159,34 +155,6 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.regulatory_corporate_sector', 119);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.reporting_regime', 120);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.supervisory_body', 121);
-
-    -- GLEIF LEI. Every rung is opt-in: a caller asks for the slice it needs.
-    -- Publishing the world bundle must not force a thirteen-thousand-entity
-    -- corpus on a tenant that wants a handful, which is what the two mandatory
-    -- members here used to do. Tiny covers every region and is what the demo
-    -- tenants want; small and large are for work where the volume is the point.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_entities.tiny', 210, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_relationships.tiny', 211, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_counterparties.tiny', 212, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_parties.tiny', 213, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_entities.small', 200, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_relationships.small', 201, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_counterparties.small', 202, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_parties.small', 203, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_counterparties.large', 204, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_parties.large', 205, true);
-    -- The ORE samples' counterparty names, as aliases of GLEIF counterparties.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'ore.counterparty_aliases', 206, true);
-
-    -- The ORE parameter documentation. The system tenant's rows are what the
-    -- validators of the configuration parameters read, and the tenant's rows
-    -- are what its own screens read. The copy is transitional: the platform
-    -- level already publishes this dataset into the system tenant at bring-up,
-    -- and the tenant's copy leaves once its readers admit the system tenant's
-    -- rows. See the knowledge page Reference data classification by
-    -- publication level.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'ore.parameter_value_domains', 304);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'ore.parameters', 305);
 
     -- =============================================================================
     -- Tenant Defaults Bundle Members
@@ -208,44 +176,12 @@ BEGIN
 
     -- --- Crypto Bundle Members ---
 
-    -- Visual assets
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'assets.country_flags', 1);
+    -- The cryptocurrency slice, and the one catalogue only it carries. Every
+    -- other dataset a crypto installation needs is in the world catalogue,
+    -- which publishes into the same tenant; listing it here again would be a
+    -- second membership for a dataset that has one.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'assets.crypto_icons', 2);
-
-    -- Geolocation
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'geo.ip2country', 3);
-
-    -- ISO Standards
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'iso.countries', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'iso.currencies', 11);
-
-    -- Cryptocurrency
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'crypto.small', 20);
-
-    -- FpML Standards
-    -- NOTE: iso.coding_schemes/fpml.coding_schemes deliberately omitted; see
-    -- the 'base' bundle above for why.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.account_type', 101);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.asset_class', 102);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.asset_measure', 103);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.benchmark_rate', 104);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.business_center', 105);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.business_process', 106);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.cashflow_type', 107);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.cftc_entity_classification', 108);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.cftc_organization_type', 109);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.entity_type', 110);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.hkma_rewrite_party_relationship_type', 111);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.hkma_rewrite_regulatory_corporate_sector', 112);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.local_jurisdiction', 113);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.non_iso_currency', 114);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.party_relationship_type', 115);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.party_role', 116);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.party_role_type', 117);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.person_role', 118);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.regulatory_corporate_sector', 119);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.reporting_regime', 120);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.supervisory_body', 121);
 
     -- =============================================================================
     -- Risk Management Bundle Members
@@ -271,14 +207,36 @@ BEGIN
 
     -- --- GLEIF LEI Hierarchy Import Bundle Members ---
 
-    -- One member: the publish trigger. Its entity/relationship siblings
-    -- (gleif.lei_entities.small, gleif.lei_relationships.small) are read by
-    -- ores_refdata_publish_lei_parties_from_dq_fn but carry no publish
-    -- target of their own, and the dependency graph declared in
-    -- lei_dataset_dependency_populate.sql already orders them; listing them
-    -- here would add members that never dispatch. Same shape as
-    -- acme_lei_import, which lists only acme.lei_parties.
+    -- The run publishes the parties under the root LEI it is given, so that
+    -- member is required. Every other member is a rung: the legal entity
+    -- catalogue the parties are derived from, and the wider party slices. The
+    -- GLEIF entity and relationship artefacts are read by
+    -- ores_refdata_publish_lei_parties_from_dq_fn from the staging tables the
+    -- dependency graph in lei_dataset_dependency_populate.sql orders; the
+    -- relationship datasets carry no publish target, so they are members of no
+    -- bundle. Same shape as acme_lei_import, which lists only
+    -- acme.lei_parties.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'lei_hierarchy', 'gleif.lei_parties.small', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'lei_hierarchy', 'gleif.lei_parties.tiny', 11, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'lei_hierarchy', 'gleif.lei_parties.large', 12, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'lei_hierarchy', 'gleif.lei_entities.tiny', 20, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'lei_hierarchy', 'gleif.lei_entities.small', 21, true);
+
+    -- --- GLEIF Counterparties Bundle Members ---
+
+    -- The GLEIF records a tenant trades against. The LEI record is a world
+    -- fact, but the counterparty and the alias that names it are the tenant's
+    -- own rows, so both datasets are tenant datasets and neither belongs to
+    -- the world catalogue. Every member is a rung, and a caller names the
+    -- slice it wants: publishing the whole golden copy would force a
+    -- thirteen-thousand-entity corpus on a tenant that wants a handful. Tiny
+    -- covers every region and is what the demo tenants ask for; small and
+    -- large are for work where the volume is the point.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'lei_counterparties', 'gleif.lei_counterparties.tiny', 10, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'lei_counterparties', 'gleif.lei_counterparties.small', 11, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'lei_counterparties', 'gleif.lei_counterparties.large', 12, true);
+    -- The ORE samples' counterparty names, as aliases of GLEIF counterparties.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'lei_counterparties', 'ore.counterparty_aliases', 20, true);
 
     -- --- Party Essentials Bundle Members ---
 

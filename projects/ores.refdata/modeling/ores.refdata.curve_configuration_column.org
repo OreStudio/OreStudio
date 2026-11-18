@@ -38,6 +38,7 @@ columns, so the map and the screen cannot disagree.
 :PROPERTIES:
 :rls_tenant_isolation:      true
 :tablename: ores_refdata_curve_configuration_columns_tbl
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Columns

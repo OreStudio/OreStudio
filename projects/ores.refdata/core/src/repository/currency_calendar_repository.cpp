@@ -26,6 +26,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_calendar.hpp"
 #include "ores.refdata.api/domain/currency_calendar_json_io.hpp" // IWYU pragma: keep.
@@ -144,10 +145,12 @@ currency_calendar_repository::read_current(const std::vector<domain::currency_ca
         const std::vector<std::string> lefts(left_set.begin(), left_set.end());
         const std::vector<std::string> rights(right_set.begin(), right_set.end());
         const auto tid = ctx_.tenant_id().to_string();
+        static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
         const auto query =
             query_builder::read<std::vector<currency_calendar_entity>> |
-            query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c.in(lefts) &&
-                                 "calendar_code"_c.in(rights) && "valid_to"_c == max);
+            query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                 "currency_iso_code"_c.in(lefts) && "calendar_code"_c.in(rights) &&
+                                 "valid_to"_c == max);
         auto rows =
             query_builder::execute_read_query<currency_calendar_entity, domain::currency_calendar>(
                 ctx_,
@@ -230,8 +233,10 @@ void currency_calendar_repository::write(
 std::vector<domain::currency_calendar> currency_calendar_repository::read_latest() {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_calendar_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c, "calendar_code"_c);
 
     return query_builder::execute_read_query<currency_calendar_entity, domain::currency_calendar>(
@@ -248,8 +253,10 @@ currency_calendar_repository::read_latest(std::uint32_t offset, std::uint32_t li
                                << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_calendar_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c, "calendar_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -271,9 +278,11 @@ currency_calendar_repository::read_latest(const std::string& currency_iso_code,
     const auto currency_iso_code_str = currency_iso_code;
     const auto calendar_code_str = calendar_code;
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
-        query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "currency_iso_code"_c == currency_iso_code &&
                              "calendar_code"_c == calendar_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<currency_calendar_entity, domain::currency_calendar>(
@@ -289,8 +298,10 @@ std::uint32_t currency_calendar_repository::get_total_currency_calendar_count() 
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<currency_calendar_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<currency_calendar_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_calendar_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency calendars");
@@ -305,10 +316,11 @@ currency_calendar_repository::read_latest_by_currency(const std::string& currenc
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
-        query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "currency_iso_code"_c == currency_iso_code && "valid_to"_c == max) |
         query_builder::order_by("calendar_code"_c);
 
     auto rows =
@@ -328,10 +340,11 @@ currency_calendar_repository::read_latest_by_calendar(const std::string& calenda
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
-        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "calendar_code"_c == calendar_code && "valid_to"_c == max) |
         query_builder::order_by("currency_iso_code"_c);
 
     auto rows =
@@ -352,10 +365,11 @@ std::vector<domain::currency_calendar> currency_calendar_repository::read_latest
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
-        query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "currency_iso_code"_c == currency_iso_code && "valid_to"_c == max) |
         query_builder::order_by("calendar_code"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -377,10 +391,11 @@ std::uint32_t currency_calendar_repository::get_total_currency_calendar_count_by
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
-        query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "currency_iso_code"_c == currency_iso_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_calendar_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency calendars");
@@ -395,10 +410,11 @@ std::uint32_t currency_calendar_repository::get_total_currency_calendar_count_by
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
-        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "calendar_code"_c == calendar_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_calendar_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency calendars");
@@ -412,10 +428,11 @@ currency_calendar_repository::read_all_by_currency(const std::string& currency_i
                                << currency_iso_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<currency_calendar_entity>> |
-        query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code) |
-        query_builder::order_by("calendar_code"_c, "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<currency_calendar_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "currency_iso_code"_c == currency_iso_code) |
+                       query_builder::order_by("calendar_code"_c, "valid_from"_c.desc());
 
     return query_builder::execute_read_query<currency_calendar_entity,
                                              currency_calendar_history_row>(

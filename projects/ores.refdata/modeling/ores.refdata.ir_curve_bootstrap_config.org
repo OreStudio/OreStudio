@@ -354,6 +354,7 @@ std::string("1Y")
 :PROPERTIES:
 :tablename: ores_refdata_ir_curve_bootstrap_configs_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :rls_party_isolation: true
 :END:
 
@@ -438,6 +439,7 @@ config that is no longer =FUNDING=, with nothing left to catch it.
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: bootstrap_config
 :entity_plural_short:   bootstrap_configs
 :entity_singular_words: IR curve bootstrap config

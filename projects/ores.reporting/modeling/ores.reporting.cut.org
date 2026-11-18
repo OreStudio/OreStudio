@@ -561,6 +561,7 @@ nulls as distinct.
 ** business_centre_code
 :PROPERTIES:
 :table:         ores_refdata_business_centres_tbl
+:system_tenant_visible: true
 :target_column: code
 :nullable:      false
 :error_message: Invalid business_centre_code: %. No active business centre found with this code.

@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/currency_pair_json_io.hpp" // IWYU pragma: keep.
@@ -127,6 +128,22 @@ using currency_pair_rows_by_key =
     std::map<std::tuple<std::string>, std::vector<domain::currency_pair>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::currency_pair>
+currency_pair_claim_rows(const ores::database::context& ctx,
+                         std::vector<domain::currency_pair> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -141,7 +158,7 @@ currency_pair_rows_by_key currency_pair_current_rows(currency_pair_repository& r
         pair_codes.push_back(row.pair_code);
     }
     currency_pair_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, pair_codes))
+    for (auto& item : currency_pair_claim_rows(ctx, repo.read_latest(ctx, pair_codes)))
         current[std::make_tuple(item.pair_code)].push_back(std::move(item));
     return current;
 }
@@ -202,7 +219,10 @@ domain::currency_pair currency_pair_apply_claim(const domain::currency_pair& v,
 }
 
 void currency_pair_repository::write(const context& ctx, const domain::currency_pair& v) {
-    write(ctx, v, currency_pair_replace_claim(read_latest(ctx, v.pair_code)));
+    write(
+        ctx,
+        v,
+        currency_pair_replace_claim(currency_pair_claim_rows(ctx, read_latest(ctx, v.pair_code))));
 }
 
 void currency_pair_repository::write(const context& ctx,
@@ -219,11 +239,12 @@ void currency_pair_repository::write(const context& ctx,
                                      const domain::currency_pair& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pair. " << "pair_code: " << v.pair_code;
-    const auto t = currency_pair_apply_claim(v,
-                                             claim,
-                                             currency_pair_claim_reads_current(claim) ?
-                                                 read_latest(ctx, v.pair_code) :
-                                                 std::vector<domain::currency_pair>{});
+    const auto t =
+        currency_pair_apply_claim(v,
+                                  claim,
+                                  currency_pair_claim_reads_current(claim) ?
+                                      currency_pair_claim_rows(ctx, read_latest(ctx, v.pair_code)) :
+                                      std::vector<domain::currency_pair>{});
     query_builder::execute_write_query(
         ctx, currency_pair_mapper::map(t), lg(), "Writing currency pair to database.");
 }
@@ -254,8 +275,10 @@ void currency_pair_repository::write(
 std::vector<domain::currency_pair> currency_pair_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_pair_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("pair_code"_c);
 
     return query_builder::execute_read_query<currency_pair_entity, domain::currency_pair>(
@@ -271,9 +294,10 @@ currency_pair_repository::read_latest(const context& ctx, const std::string& pai
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair. " << "pair_code: " << pair_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_pair_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "pair_code"_c == pair_code &&
-                                            "valid_to"_c == max);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "pair_code"_c == pair_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<currency_pair_entity, domain::currency_pair>(
         ctx,
@@ -289,8 +313,10 @@ currency_pair_repository::read_all(const context& ctx, const std::string& pair_c
     BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair versions. "
                                << "pair_code: " << pair_code;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_pair_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "pair_code"_c == pair_code) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "pair_code"_c == pair_code) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<currency_pair_entity, domain::currency_pair>(
@@ -306,9 +332,10 @@ std::optional<domain::currency_pair> currency_pair_repository::read_at_version(
     BOOST_LOG_SEV(lg(), debug) << "Reading currency pair at version. " << "pair_code: " << pair_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_pair_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "pair_code"_c == pair_code &&
-                                            "version"_c == version) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "pair_code"_c == pair_code && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities =
@@ -368,9 +395,10 @@ currency_pair_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pairs with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_pair_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<currency_pair_entity, domain::currency_pair>(
         ctx,
@@ -390,8 +418,9 @@ std::uint32_t currency_pair_repository::get_total_pair_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency pair count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_pair_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<currency_pair_entity>(
         ctx,
@@ -425,9 +454,10 @@ currency_pair_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_pair_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "pair_code"_c.in(pair_codes) &&
-                                            "valid_to"_c == max);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "pair_code"_c.in(pair_codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<currency_pair_entity, domain::currency_pair>(
         ctx,
         query,

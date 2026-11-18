@@ -94,7 +94,8 @@ bundle names the tenant that holds the rows. One table carries the whole map.
 | =ore_samples= | Tenant | Party | The party's tenant | When the party is onboarded | The ORE samples: netting agreements, netting sets, CSAs, aliases, portfolios |
 | =risk_management= | Tenant | Party | The party's tenant | When the party is onboarded | The business units, portfolios and books, and the ORE report definitions, of a party that runs reports |
 | =crm_topology= | Tenant | Party | The party's tenant | When the party is onboarded | The CRM topology on its own |
-| =lei_hierarchy= | Tenant | Tenant-wide | The tenant | When the tenant asks for it | The GLEIF hierarchy imported as the tenant's parties, and the staging datasets it reads |
+| =lei_hierarchy= | Tenant | Tenant-wide | The tenant | When the tenant asks for it | The GLEIF hierarchy imported as the tenant's parties, and the legal-entity catalogue it derives them from |
+| =lei_counterparties= | Tenant | Tenant-wide | The tenant | When the tenant asks for it | The GLEIF records published as the tenant's counterparties, and the aliases that name them |
 | =crypto= | World | World | The system tenant | When the installation asks for it | The cryptocurrency slice, published beside the currencies |
 
 A demonstration carries bundles of its own: =acme_group=, =acme_uk=, =acme_us=,
@@ -117,9 +118,14 @@ row. The rows exist in the system tenant, and a tenant reads them where they
 lie: the table's policy takes the shared-reference shape,
 ~tenant_id = current or tenant_id = system~, and the entity's repository
 declares =:system_tenant_visible:=, whose reads admit the system tenant's rows
-beside the caller's own. This is what allows a database to be usable before any
+beside the caller's own. The policy is a select policy of its own, because a
+single for-all policy that admitted the system tenant would let a tenant change
+or remove a shared row. This is what allows a database to be usable before any
 tenant has been provisioned, and it is what removes the class of defect in
-which two copies of a fact diverge.
+which two copies of a fact diverge. The world catalogue carries the same read:
+the calendars, the countries, the currencies, the currency pairs and their
+conventions, the commodities, the equity underlyings and the FpML vocabularies
+are read from the system tenant, and a tenant publishes none of them.
 [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]] holds
 the mechanism and the checklist for a new shared table; the write side is
 governed by permission rather than by a further policy shape, because a tenant
@@ -144,11 +150,18 @@ something the model does not contain.
 ** The bundle map
 
 A bundle carries one level and one scope, and the two determine its target
-tenant and the parameters the publication passes. A dataset is a member of one
-bundle and of no other; the datasets a bundle reaches through a dependency edge
-are not members. A bundle is a run and not a transaction: each step commits its
-own function call, and a step that fails halts the run without undoing the
-steps that preceded it. The guarantee a bundle gives, and the guarantee it does
+tenant and the parameters the publication passes. The bundles that carry one
+dataset therefore share its level and its scope: =party_essentials= and
+=risk_management= both publish into the tenant that holds the party, so the two
+may both list the report definitions and the reader cannot tell which bundle
+placed a row. A dataset may not be a member of two bundles that differ in level
+or in scope, and the datasets a bundle reaches through a dependency edge are
+not members at all. The instrument conventions are the one dataset the map
+doubles: =system_core= publishes the system party's copy and =party_essentials=
+publishes each other party's, because the system tenant's derived source reads
+its own party's conventions and no tenant reads another party's. A bundle is a
+run and not a transaction: each step commits its own function call, and a step
+that fails halts the run without undoing the steps that preceded it. The guarantee a bundle gives, and the guarantee it does
 not give, is the subject of
 [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner
 count]], at B14.
@@ -166,13 +179,13 @@ The level also determines the mechanism, and the choice is not free.
   publish function may serve two datasets that fill one table, as the FpML and
   ORE asset-class datasets do; each row nevertheless belongs to one dataset.
 - A row written by a populate script belongs to the platform and is not a
-  published row, although every tenant reads it. The system party and the
-  business centre are of this kind.
+  published row, although every tenant reads it. The system party is of this
+  kind.
 
 Three practices are excluded by the rule. A populate script may not insert into
-a table in a tenant that a publish function writes. An installation or world
-row may not be published into a tenant. A dataset may not be added to a second
-bundle.
+a table in a tenant that a publish function writes. A platform or world row may
+not be published into a tenant. A dataset may not be a member of two bundles
+that differ in level or in scope.
 
 ** The path a publication takes
 
@@ -207,7 +220,9 @@ bring-up publishes =system_core= and =world= into the system tenant, and the
 creation of a tenant publishes =tenant_defaults= into that tenant. Both call the
 same function, which takes the target tenant as an argument, and both read the
 dataset from the system tenant's one copy, so no tenant needs a dataset row of
-its own in order to publish.
+its own in order to publish. No other caller publishes without the bus, and no
+tenant's creation publishes a world dataset: the tenant reads the world
+catalogue where the bring-up placed it.
 
 ** Provenance
 
@@ -249,9 +264,12 @@ a catalogue that agrees, and one that rewrites its rows returns =updated=. The
 tree holds both kinds, so a zero =inserted= count is the evidence and a zero
 =updated= count is not.
 
-Bring-up concludes with the system tenant. Creating a tenant publishes
-=tenant_defaults= into it, and an operator continues by onboarding each party
-with =party_essentials=; market data and trades follow, and neither is published.
+Bring-up concludes with the system tenant, which holds the platform and world
+catalogues. Creating a tenant publishes =tenant_defaults= into it and nothing
+else; an operator continues by onboarding each party with =party_essentials=,
+and a tenant that trades against GLEIF records publishes =lei_counterparties=
+with the rungs it wants. Market data and trades follow, and neither is
+published.
 
 * See also
 

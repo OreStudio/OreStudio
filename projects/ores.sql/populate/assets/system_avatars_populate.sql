@@ -25,9 +25,9 @@
  * them into the system tenant's live table. The super administrator's account
  * belongs to the system tenant, and the provisioning attach step copies each
  * account's picture from a system-tenant template, so the rows must exist
- * before any tenant is set up. assets.system_avatars is also a base bundle
- * member, which puts a copy in every tenant; that copy is not the one
- * attach_photos reads for a system-tenant account.
+ * before any tenant is set up. The dataset is a member of the system_core
+ * bundle and of no other: a tenant reads these rows where they lie, through
+ * the shared-reference read, and holds no copy.
  */
 
 -- =============================================================================

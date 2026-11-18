@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/ore_parameter_value_domain.hpp"
 #include "ores.reporting.api/domain/ore_parameter_value_domain_json_io.hpp" // IWYU pragma: keep.
@@ -121,6 +122,22 @@ using ore_parameter_value_domain_rows_by_key =
     std::map<std::tuple<std::string>, std::vector<domain::ore_parameter_value_domain>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::ore_parameter_value_domain>
+ore_parameter_value_domain_claim_rows(const ores::database::context& ctx,
+                                      std::vector<domain::ore_parameter_value_domain> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -136,7 +153,7 @@ ore_parameter_value_domain_current_rows(ore_parameter_value_domain_repository& r
         codes.push_back(row.code);
     }
     ore_parameter_value_domain_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, codes))
+    for (auto& item : ore_parameter_value_domain_claim_rows(ctx, repo.read_latest(ctx, codes)))
         current[std::make_tuple(item.code)].push_back(std::move(item));
     return current;
 }
@@ -200,7 +217,10 @@ domain::ore_parameter_value_domain ore_parameter_value_domain_apply_claim(
 
 void ore_parameter_value_domain_repository::write(const context& ctx,
                                                   const domain::ore_parameter_value_domain& v) {
-    write(ctx, v, ore_parameter_value_domain_replace_claim(read_latest(ctx, v.code)));
+    write(ctx,
+          v,
+          ore_parameter_value_domain_replace_claim(
+              ore_parameter_value_domain_claim_rows(ctx, read_latest(ctx, v.code))));
 }
 
 void ore_parameter_value_domain_repository::write(
@@ -223,7 +243,7 @@ void ore_parameter_value_domain_repository::write(
         v,
         claim,
         ore_parameter_value_domain_claim_reads_current(claim) ?
-            read_latest(ctx, v.code) :
+            ore_parameter_value_domain_claim_rows(ctx, read_latest(ctx, v.code)) :
             std::vector<domain::ore_parameter_value_domain>{});
     query_builder::execute_write_query(ctx,
                                        ore_parameter_value_domain_mapper::map(t),
@@ -260,8 +280,10 @@ std::vector<domain::ore_parameter_value_domain>
 ore_parameter_value_domain_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<ore_parameter_value_domain_entity,
@@ -278,9 +300,10 @@ ore_parameter_value_domain_repository::read_latest(const context& ctx, const std
     BOOST_LOG_SEV(lg(), debug) << "Reading latest ore parameter value domain. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<ore_parameter_value_domain_entity,
                                              domain::ore_parameter_value_domain>(
@@ -297,9 +320,11 @@ ore_parameter_value_domain_repository::read_all(const context& ctx, const std::s
     BOOST_LOG_SEV(lg(), debug) << "Reading all ore parameter value domain versions. "
                                << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<ore_parameter_value_domain_entity,
                                              domain::ore_parameter_value_domain>(
@@ -317,10 +342,11 @@ ore_parameter_value_domain_repository::read_at_version(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading ore parameter value domain at version. "
                                << "code: " << code << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<ore_parameter_value_domain_entity,
                                                             domain::ore_parameter_value_domain>(
@@ -379,9 +405,10 @@ std::vector<domain::ore_parameter_value_domain> ore_parameter_value_domain_repos
     BOOST_LOG_SEV(lg(), debug) << "Reading latest ore parameter value domains with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<ore_parameter_value_domain_entity,
                                                      domain::ore_parameter_value_domain>(
@@ -402,8 +429,9 @@ std::uint32_t ore_parameter_value_domain_repository::get_total_domain_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ore parameter value domain count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<ore_parameter_value_domain_entity>(
         ctx,
@@ -436,9 +464,10 @@ ore_parameter_value_domain_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<ore_parameter_value_domain_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c.in(codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<ore_parameter_value_domain_entity,
                                                     domain::ore_parameter_value_domain>(
         ctx,

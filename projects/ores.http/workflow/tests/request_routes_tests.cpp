@@ -37,6 +37,7 @@ namespace {
 
 const std::string mine_pattern = "/api/me/requests";
 const std::string one_pattern = "/api/me/requests/{id}";
+const std::string decision_pattern = "/api/requests/{id}/decision";
 
 const std::string a_request_id = "11111111-1111-1111-1111-111111111111";
 const std::string a_role_id = "22222222-2222-2222-2222-222222222222";
@@ -46,6 +47,8 @@ const std::string page_refused = "A page names an offset and a limit of 1 to 100
 const std::string ask_refused = "Asking for roles names at least one role, and why.";
 const std::string withdraw_refused = "Withdrawing a request names the version read and why.";
 const std::string id_refused = "A request is named by its identifier.";
+const std::string decision_refused =
+    "A decision is approve, refuse, hold or resume, against the version read.";
 
 bool body_holds(const std::string& body, const std::string& part) {
     return body.find(part) != std::string::npos;
@@ -171,4 +174,53 @@ TEST_CASE("a_withdrawal_refuses_a_parameter_it_does_not_take", "[workflow_reques
         answer_at<workflow_routes>(http_method::delete_, one_request, req, one_pattern);
     CHECK(refused.status == http_status::bad_request);
     CHECK(body_holds(refused.body, "force"));
+}
+
+TEST_CASE("a_decision_is_one_of_four_verbs_against_the_version_read", "[workflow_requests]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the body a decision takes";
+
+    const std::vector<std::string> bodies = {
+        R"({"version":0,"comment":"","decisionCode":"maybe"})",
+        R"({"version":-1,"comment":"","decisionCode":"approve"})",
+        R"({"comment":"","decisionCode":"approve"})",
+        R"({"version":0,"comment":"","decisionCode":"approve","partCode":"Not-A-Part"})",
+        R"({"version":0,"comment":"","decisionCode":"hold","holdReasonCode":"Bad Code"})",
+        R"({"version":0,"comment":"","decisionCode":"approve","extra":1})"};
+    for (const auto& body : bodies) {
+        http_request req;
+        req.body = body;
+        const auto refused =
+            answer_at<workflow_routes>(http_method::post,
+                                       "/api/requests/" + a_request_id + "/decision",
+                                       req,
+                                       decision_pattern);
+        CHECK(refused.status == http_status::bad_request);
+        CHECK(body_holds(refused.body, decision_refused));
+    }
+}
+
+TEST_CASE("a_decision_takes_the_part_and_the_reason_a_hold_names", "[workflow_requests]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a decision with no service behind it";
+
+    http_request req;
+    req.body =
+        R"({"version":2,"comment":"parked","decisionCode":"hold","partCode":"book","holdReasonCode":"awaiting.risk"})";
+    CHECK(
+        answer_at<workflow_routes>(
+            http_method::post, "/api/requests/" + a_request_id + "/decision", req, decision_pattern)
+            .status == http_status::bad_gateway);
+}
+
+TEST_CASE("a_decision_is_named_by_the_requests_identifier", "[workflow_requests]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the identifier a decision names";
+
+    http_request req;
+    req.body = R"({"version":0,"comment":"","decisionCode":"approve"})";
+    const auto refused = answer_at<workflow_routes>(
+        http_method::post, "/api/requests/not-an-id/decision", req, decision_pattern);
+    CHECK(refused.status == http_status::bad_request);
+    CHECK(body_holds(refused.body, id_refused));
 }

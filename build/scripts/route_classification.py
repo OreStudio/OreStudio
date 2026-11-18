@@ -893,6 +893,12 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "One request an identifier names, when the person may open it, which a queue read"
          " cannot answer because a notice is read after the request stopped waiting."),
+    Rule("a request decision's route",
+         ("exact", "POST /api/requests/{id}/decision"),
+         CPP, RESOURCE, "workflow",
+         "One request decided at the address and in the shape the BFF answered: approved,"
+         " refused, held or resumed against the version read, with the part the decider answers"
+         " for and the reason a hold names."),
     Rule("a request decision",
          ("exact", "POST /api/requests/:id/decision"),
          BFF, RESOURCE, "workflow",

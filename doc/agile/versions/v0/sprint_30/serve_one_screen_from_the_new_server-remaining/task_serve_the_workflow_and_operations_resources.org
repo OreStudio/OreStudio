@@ -30,7 +30,7 @@ The gateway has no part for the workflow and operations area. Add the part with 
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | The part is stood up and registered; its routes follow. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve one request and its decision. |
+| Next         | Serve one request, and the notices a person is given. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -97,6 +97,9 @@ task and name that file in the Command column.
 | The part's test suite | 8 cases, 105 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the requests commit |
 | The workflow area's routes the C++ server answers | 3 of 18 paired | =python3 build/scripts/route_inventory.py --check= | the requests commit |
 | The gateway's routes in the inventory | 1365 routes, 1037 answered by the gateway, 271 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the requests commit |
+| The part's test suite | 11 cases, 152 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the decision commit |
+| The workflow area's routes the C++ server answers | 4 of 18 paired | =python3 build/scripts/route_inventory.py --check= | the decision commit |
+| The gateway's routes in the inventory | 1366 routes, 1038 answered by the gateway, 272 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the decision commit |
 |      |       |         |        |
 
 * Notes

@@ -110,6 +110,60 @@ struct intent_body final {
                                             field{"comment", &intent_body::comment}};
 }
 
+/// A decision as the screen states it: what it decides, and why.
+struct decide_body final {
+    int version{};
+    std::string comment;
+    std::string decision_code;
+    std::optional<std::string> part_code;
+    std::optional<std::string> hold_reason_code;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<decide_body>) {
+    using ores::utility::codec::field;
+    return ores::utility::codec::field_list{
+        field{"version", &decide_body::version},
+        field{"comment", &decide_body::comment},
+        field{"decisionCode", &decide_body::decision_code},
+        field{"partCode", &decide_body::part_code},
+        field{"holdReasonCode", &decide_body::hold_reason_code}};
+}
+
+/// The sentence a decision states when its body is not the shape it takes.
+constexpr std::string_view decision_refused =
+    "A decision is approve, refuse, hold or resume, against the version read.";
+
+/// Whether a code is lower snake case over the characters @p extra allows.
+bool is_code(const std::string& code, std::string_view extra) {
+    if (code.empty() || code.size() > 100)
+        return false;
+    if (code.front() < 'a' || code.front() > 'z')
+        return false;
+    for (const char c : code) {
+        const auto lower = c >= 'a' && c <= 'z';
+        const auto digit = c >= '0' && c <= '9';
+        if (!lower && !digit && extra.find(c) == std::string_view::npos)
+            return false;
+    }
+    return true;
+}
+
+/// The decision the screen states, refused when a member is not the shape it takes.
+decide_body decision_of(const http_request& req) {
+    const auto body = rr::body_of<decide_body>(
+        req,
+        {"version", "comment", "decisionCode", "partCode", "holdReasonCode"},
+        std::string(decision_refused));
+    const auto part = body.part_code.value_or(std::string());
+    const auto reason = body.hold_reason_code.value_or(std::string());
+    const auto known = body.decision_code == "approve" || body.decision_code == "refuse" ||
+                       body.decision_code == "hold" || body.decision_code == "resume";
+    if (body.version < 0 || !known || rr::characters_of(body.comment) > 500 ||
+        (!part.empty() && !is_code(part, "_")) || (!reason.empty() && !is_code(reason, "_.")))
+        rr::invalid(std::string(decision_refused));
+    return body;
+}
+
 page page_of(const http_request& req) {
     rr::refuse_unknown_params(req, {"offset", "limit"});
     page out;
@@ -381,6 +435,30 @@ void request_routes::register_routes(
                     rr::require_ok(reply.result);
                     return http_response::json("{\"requestId\":" + json::write(reply.request_id) +
                                                "}");
+                });
+            }));
+
+    add(router->post("/api/requests/{id}/decision")
+            .summary("Approve, refuse, hold or resume one request")
+            .description("The decider needs the permission the request's kind names and is not "
+                         "the person who asked; the service decides both, so the route does not "
+                         "guess at either.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<inbox_messaging::decide_approval_request_request>([&] {
+                    rr::refuse_unknown_params(req, {});
+                    const auto id = request_id_of(req);
+                    const auto body = decision_of(req);
+
+                    inbox_messaging::decide_approval_request_request msg;
+                    msg.request_id = id;
+                    msg.version = body.version;
+                    msg.decision_code = body.decision_code;
+                    msg.comment = body.comment;
+                    msg.part_code = body.part_code.value_or(std::string());
+                    msg.hold_reason_code = body.hold_reason_code.value_or(std::string());
+                    const auto reply = forwarding::forward(req, session, msg);
+                    rr::require_ok(reply.result);
+                    return rr::no_content();
                 });
             }));
 

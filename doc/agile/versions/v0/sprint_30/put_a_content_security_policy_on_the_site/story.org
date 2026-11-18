@@ -57,7 +57,7 @@ BFF's, so it holds on any host the service runs on, not only behind the proxy.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B1CCF799-5B9D-4AE2-A69C-AD87009AAE97][Scaffold story: Put a content security policy on the site]] | STARTED | 2026-11-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B1CCF799-5B9D-4AE2-A69C-AD87009AAE97][Scaffold story: Put a content security policy on the site]] | DONE | 2026-11-18 | 2026-11-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:986AABE6-7898-4202-A240-427B462AD114][Implement Put a content security policy on the site]] | BACKLOG | | | Initial task for: Put a content security policy on the site |
 
 * Decisions

@@ -26,11 +26,11 @@ The story's documents, its sprint wiring and the PR that carries them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C5CD23A5-4F84-4D3A-AF9C-370FD08A7B8E][Put a content security policy on the site]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+The story and its two tasks are on main with the decisions that shape the
+policy, and the review's corrections: the acceptance states the hash rather
+than offering a nonce, report-only names an endpoint, and the proxy keeps
+X-Frame-Options until the policy is enforced.

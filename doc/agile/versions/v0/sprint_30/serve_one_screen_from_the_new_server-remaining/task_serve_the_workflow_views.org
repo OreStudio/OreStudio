@@ -28,9 +28,9 @@ Serve these composed views from ores.workflow and ores.inbox: one subject's stor
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The plan is written; the run's progress is the first view. |
+| Now          | Two views' worth of groundwork is in: the run's progress answers, and the request joins are shared. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the run's progress, then the request story. |
+| Next         | Serve the approval inbox at GET /api/requests: the queue read with the kind-subject joins. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -90,9 +90,27 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| The part's test suite | 35 cases, 425 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the progress commit |
+| The workflow area's routes the C++ server answers | 13 of 18 paired | =./compass.sh generate= then =build/scripts/route_inventory.py --check= | the progress commit |
+| The gateway's routes in the inventory | 1377 routes, 1049 answered by the gateway, 283 of the BFF's 328 paired | =build/scripts/route_inventory.py --check= | the progress commit |
+| The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the progress commit |
+| The part's test suite | 35 cases, 425 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the joins commit |
+| The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the joins commit |
 |      |       |         |        |
 
 * Notes
+
+The views are served smallest first, and the second one needed something the
+first did not: a view that draws a request reads the same joins the request list
+reads, and those lived inside the request routes. They are shared before the
+views that need them, so each join is stated once for all four request views.
+
+What the approval inbox owes, for the next family: the queue read itself, the
+joins this part now shares, and one subject join per kind, because a kind's
+subject lives in the component that owns it — a curve publish carries the subject
+it publishes or the reason there is none, a cut carries the cut, and an
+operational authorisation carries the trades it is about. A reader who may not see
+one kind's subject keeps the other rows.
 
 * Test Scenarios
 

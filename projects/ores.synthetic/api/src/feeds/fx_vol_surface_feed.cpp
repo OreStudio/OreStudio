@@ -121,8 +121,8 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
                 "forward variance would not be positive.",
                 expiry->tenor));
         const auto convention =
-            ores::refdata::mapping::parse_tenor_text(expiry->tenor).and_then(
-                [&](ores::analytics::quant::domain::date_period period) {
+            ores::refdata::mapping::parse_tenor_text(expiry->tenor)
+                .and_then([&](ores::analytics::quant::domain::date_period period) {
                     return ores::refdata::mapping::to_quote_convention(input.convention, period);
                 });
         if (!convention)

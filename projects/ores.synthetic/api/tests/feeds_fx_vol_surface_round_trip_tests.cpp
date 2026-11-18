@@ -322,10 +322,8 @@ TEST_CASE("the surface a run publishes is the surface a calibration recovers",
             return 0.0;
         }();
         const auto convention = round_trip_convention_at(point.expiry_id);
-        const double expected = fx_atm_strike(convention.atm,
-                                              convention.delta,
-                                              expiry.market,
-                                              vol * std::sqrt(expiry.years));
+        const double expected = fx_atm_strike(
+            convention.atm, convention.delta, expiry.market, vol * std::sqrt(expiry.years));
         const double strike = expiry.market.forward() * std::exp(point.log_moneyness);
         // The residual is the fit's: the calibration solves the grid strike on the fitted smile,
         // whose volatility differs from the quote by the error above.

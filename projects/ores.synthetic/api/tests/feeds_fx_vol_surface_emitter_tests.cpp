@@ -285,13 +285,13 @@ TEST_CASE("the emitter refuses what it cannot step", "[fx_vol_surface_emitter]")
     CHECK_FALSE(make_emitter({}, emitter_markets(start), emitter_dynamics(start.expiries.size()))
                     .has_value());
     // An expiry with no convention has no meaning for its quotes, so one short is refused.
-    const auto short_of_one = fx_vol_surface_emitter::make(
-        start,
-        emitter_dynamics(start.expiries.size()),
-        emitter_day,
-        std::vector(start.expiries.size() - 1, emitter_convention),
-        emitter_deltas,
-        {emitter_clean()});
+    const auto short_of_one =
+        fx_vol_surface_emitter::make(start,
+                                     emitter_dynamics(start.expiries.size()),
+                                     emitter_day,
+                                     std::vector(start.expiries.size() - 1, emitter_convention),
+                                     emitter_deltas,
+                                     {emitter_clean()});
     REQUIRE_FALSE(short_of_one.has_value());
     CHECK(short_of_one.error() == "A surface of 3 expiries needs one convention for each, not 2.");
     // A market per expiry: the count is a step's business now, and a step one market short is

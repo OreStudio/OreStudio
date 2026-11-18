@@ -21,12 +21,12 @@
 #define ORES_SYNTHETIC_API_FEEDS_FX_VOL_SURFACE_FEED_HPP
 
 #include "ores.analytics.quant/domain/date_convention.hpp"
-#include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed_expiry.hpp"
 #include "ores.synthetic.api/export.hpp"

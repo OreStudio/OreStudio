@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: F61E6A4B-1211-4ECD-959E-FEC742C4015F
+:END:
+#+title: A service whose binary and database schema disagree prints t…
+#+description: A service whose binary and database schema disagree prints the mismatch warning and then crashes with free(): invalid pointer, so a deploy ends with containers that exited 139 instead of running with the warning.
+#+type: capture
+#+level: cross
+#+filetags: :services:database:schema:crash:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A service started against a database built from other SQL prints its schema-mismatch warning and
+then dies with =free(): invalid pointer=, exit code 139. Every service that took that path exited
+the same way on pauli on 2026-11-18, so a deploy that should have run with a warning ran nothing.
+
+The warning is designed to let the product start: "The service starts anyway: a query against a
+table that moved will fail and the rest of the product is unaffected." The crash defeats it.
+
+* Why
+
+The mismatch itself was expected — the images were built before a merge brought new SQL into the
+checkout, and the database was recreated from the newer SQL. What was not expected is that the
+diagnosis path corrupts memory: a person who reads "the service starts anyway" gets containers
+that exited instead, and nothing in the message says the process is about to die.
+
+Whatever the mismatch path allocates and frees, it does so wrongly. The fix belongs there, and a
+test should start a service against a database whose recorded fingerprint differs and expect the
+warning plus a running process.
+
+* References
+
+- Log: =ores.iam.service= on pauli, 2026-11-18 14:49, ends with =free(): invalid pointer=.
+- Reproduce: recreate a database from one SQL tree, then run a binary built from another.
+
+* References
+
+-
+
+* See also
+
+-

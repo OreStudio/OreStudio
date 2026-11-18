@@ -2200,3 +2200,11 @@ tangled into the runnable script library
 * Rate Digital Option Instruments
 
 - [[id:2FF607F2-5F32-5E47-BED2-F33C8F9FC6A2][How do I run the rate_digital_option_instruments commands from the shell?]]
+
+* Equity Basket Option Instruments
+
+- [[id:74D08CD6-E26F-5A4B-AA15-223F6B6584F3][How do I run the equity_basket_option_instruments commands from the shell?]]
+
+* Fx Basket Option Instruments
+
+- [[id:288E17A3-EA62-5365-9CA6-BA451FF7D399][How do I run the fx_basket_option_instruments commands from the shell?]]

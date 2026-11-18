@@ -66,6 +66,7 @@
 #include "ores.trading.service/messaging/equity_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_asian_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_barrier_option_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_basket_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_digital_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_option_instrument_event_registrar.hpp"
@@ -82,6 +83,7 @@
 #include "ores.trading.service/messaging/fx_asian_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_asian_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_barrier_option_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/fx_basket_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_digital_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_pairwise_variance_swap_instrument_event_registrar.hpp"
@@ -209,6 +211,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto fx_pairwise_variance_swap_instrument_sub = ores::trading::service::messaging::
         register_fx_pairwise_variance_swap_instrument_event_mapping(event_source, event_bus, nats);
+    auto equity_basket_option_instrument_sub =
+        ores::trading::service::messaging::register_equity_basket_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto fx_basket_option_instrument_sub =
+        ores::trading::service::messaging::register_fx_basket_option_instrument_event_mapping(
+            event_source, event_bus, nats);
     auto equity_forward_instrument_sub =
         ores::trading::service::messaging::register_equity_forward_instrument_event_mapping(
             event_source, event_bus, nats);

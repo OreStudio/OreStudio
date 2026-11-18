@@ -30,6 +30,7 @@ import type { CreditInstrument } from './domain/credit_instrument.js';
 import type { EquityAccumulatorInstrument } from './domain/equity_accumulator_instrument.js';
 import type { EquityAsianOptionInstrument } from './domain/equity_asian_option_instrument.js';
 import type { EquityBarrierOptionInstrument } from './domain/equity_barrier_option_instrument.js';
+import type { EquityBasketOptionInstrument } from './domain/equity_basket_option_instrument.js';
 import type { EquityDigitalOptionInstrument } from './domain/equity_digital_option_instrument.js';
 import type { EquityForwardInstrument } from './domain/equity_forward_instrument.js';
 import type { EquityOptionInstrument } from './domain/equity_option_instrument.js';
@@ -41,6 +42,7 @@ import type { FxAccumulatorInstrument } from './domain/fx_accumulator_instrument
 import type { FxAsianForwardInstrument } from './domain/fx_asian_forward_instrument.js';
 import type { FxAsianOptionInstrument } from './domain/fx_asian_option_instrument.js';
 import type { FxBarrierOptionInstrument } from './domain/fx_barrier_option_instrument.js';
+import type { FxBasketOptionInstrument } from './domain/fx_basket_option_instrument.js';
 import type { FxDigitalOptionInstrument } from './domain/fx_digital_option_instrument.js';
 import type { FxForwardInstrument } from './domain/fx_forward_instrument.js';
 import type { FxPairwiseVarianceSwapInstrument } from './domain/fx_pairwise_variance_swap_instrument.js';
@@ -131,6 +133,7 @@ export interface InstrumentBatch {
     equity_accumulator_instruments: EquityAccumulatorInstrument[];
     equity_asian_option_instruments: EquityAsianOptionInstrument[];
     equity_barrier_option_instruments: EquityBarrierOptionInstrument[];
+    equity_basket_option_instruments: EquityBasketOptionInstrument[];
     equity_digital_option_instruments: EquityDigitalOptionInstrument[];
     equity_forward_instruments: EquityForwardInstrument[];
     equity_option_instruments: EquityOptionInstrument[];
@@ -142,6 +145,7 @@ export interface InstrumentBatch {
     fx_asian_forward_instruments: FxAsianForwardInstrument[];
     fx_asian_option_instruments: FxAsianOptionInstrument[];
     fx_barrier_option_instruments: FxBarrierOptionInstrument[];
+    fx_basket_option_instruments: FxBasketOptionInstrument[];
     fx_digital_option_instruments: FxDigitalOptionInstrument[];
     fx_forward_instruments: FxForwardInstrument[];
     fx_pairwise_variance_swap_instruments: FxPairwiseVarianceSwapInstrument[];

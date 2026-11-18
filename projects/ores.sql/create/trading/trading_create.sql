@@ -407,6 +407,10 @@
 \ir ./trading_fx_pairwise_variance_swap_instruments_notify_trigger_create.sql
 \ir ./trading_fx_asian_option_instruments_create.sql
 \ir ./trading_fx_asian_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_basket_option_instruments_create.sql
+\ir ./trading_equity_basket_option_instruments_notify_trigger_create.sql
+\ir ./trading_fx_basket_option_instruments_create.sql
+\ir ./trading_fx_basket_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_variance_swap_instruments_create.sql
 \ir ./trading_equity_variance_swap_instruments_notify_trigger_create.sql
 \ir ./trading_equity_swap_instruments_create.sql

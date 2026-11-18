@@ -88,6 +88,7 @@
 #include "ores.trading.api/domain/equity_asian_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_basket_constituent_codec.hpp"
+#include "ores.trading.api/domain/equity_basket_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_option_instrument_codec.hpp"
@@ -103,6 +104,7 @@
 #include "ores.trading.api/domain/fx_asian_forward_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_asian_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_barrier_option_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_basket_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_pairwise_variance_swap_instrument_codec.hpp"
@@ -195,6 +197,11 @@ struct instrument_batch {
     std::vector<ores::trading::domain::equity_barrier_option_instrument>
         equity_barrier_option_instruments;
     /**
+     * @brief The equity_basket_option_instrument rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::equity_basket_option_instrument>
+        equity_basket_option_instruments;
+    /**
      * @brief The equity_digital_option_instrument rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::equity_digital_option_instrument>
@@ -241,6 +248,10 @@ struct instrument_batch {
      * @brief The fx_barrier_option_instrument rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::fx_barrier_option_instrument> fx_barrier_option_instruments;
+    /**
+     * @brief The fx_basket_option_instrument rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::fx_basket_option_instrument> fx_basket_option_instruments;
     /**
      * @brief The fx_digital_option_instrument rows, keyed by trade id.
      */
@@ -622,6 +633,13 @@ inline void append(instrument_batch& batch, equity_barrier_option_instrument v) 
 }
 
 /**
+ * @brief Adds one equity_basket_option_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, equity_basket_option_instrument v) {
+    batch.equity_basket_option_instruments.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one equity_digital_option_instrument to the array that holds its type.
  */
 inline void append(instrument_batch& batch, equity_digital_option_instrument v) {
@@ -696,6 +714,13 @@ inline void append(instrument_batch& batch, fx_asian_option_instrument v) {
  */
 inline void append(instrument_batch& batch, fx_barrier_option_instrument v) {
     batch.fx_barrier_option_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one fx_basket_option_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, fx_basket_option_instrument v) {
+    batch.fx_basket_option_instruments.push_back(std::move(v));
 }
 
 /**
@@ -1245,6 +1270,8 @@ template <typename T>
                                       &instrument_batch::equity_asian_option_instruments},
         ::ores::utility::codec::field{"equity_barrier_option_instruments",
                                       &instrument_batch::equity_barrier_option_instruments},
+        ::ores::utility::codec::field{"equity_basket_option_instruments",
+                                      &instrument_batch::equity_basket_option_instruments},
         ::ores::utility::codec::field{"equity_digital_option_instruments",
                                       &instrument_batch::equity_digital_option_instruments},
         ::ores::utility::codec::field{"equity_forward_instruments",
@@ -1267,6 +1294,8 @@ template <typename T>
                                       &instrument_batch::fx_asian_option_instruments},
         ::ores::utility::codec::field{"fx_barrier_option_instruments",
                                       &instrument_batch::fx_barrier_option_instruments},
+        ::ores::utility::codec::field{"fx_basket_option_instruments",
+                                      &instrument_batch::fx_basket_option_instruments},
         ::ores::utility::codec::field{"fx_digital_option_instruments",
                                       &instrument_batch::fx_digital_option_instruments},
         ::ores::utility::codec::field{"fx_forward_instruments",

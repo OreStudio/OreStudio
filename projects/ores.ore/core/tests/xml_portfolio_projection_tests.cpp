@@ -2926,22 +2926,23 @@ TEST_CASE("a_basket_and_a_rainbow_hold_their_members_option_block_and_schedule_a
     </EquityRainbowOptionData>
   </Trade>
 </Portfolio>)");
-    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
-                             std::string_view name) -> std::string {
-        for (const auto& p : data.parameters)
-            if (p.name == name)
-                return p.value.value_or("");
-        return "<absent>";
-    };
     const auto check = [&](const ores::ore::xml::trade_import_item& item,
                            std::string_view payoff,
                            bool observed) {
-        const auto* data = scripted_data_of(item.instrument);
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        CHECK(value_of(*data, "Currency") == "USD");
-        CHECK(value_of(*data, "Settlement") == "2020-02-20");
-        CHECK_FALSE(value_of(*data, "Strike") == "<absent>");
+        const auto* row =
+            std::get_if<ores::trading::domain::equity_basket_option_instrument>(&data->instrument);
+        REQUIRE(row != nullptr);
+        CHECK(row->currency == "USD");
+        CHECK(row->notional.to_string() == "1");
+        REQUIRE(row->strike.has_value());
+        CHECK(row->settlement_date ==
+              std::optional(std::chrono::year_month_day{
+                  std::chrono::year{2020}, std::chrono::February, std::chrono::day{20}}));
         REQUIRE(data->instrument_underlyings.size() == 2);
+        CHECK(data->instrument_underlyings[1].underlying_role == "underlying");
         CHECK(ores::ore::domain::underlying_name_of(data->instrument_underlyings[1].name) ==
               "RIC:.STOXX50E");
         CHECK(data->instrument_underlyings[1].currency == std::optional<std::string>("EUR"));
@@ -2949,8 +2950,8 @@ TEST_CASE("a_basket_and_a_rainbow_hold_their_members_option_block_and_schedule_a
         REQUIRE(data->options.size() == 1);
         CHECK(data->options[0].payoff_type == std::optional<std::string>(payoff));
         CHECK(ores::ore::domain::option_block::exercise_dates_of(*data).size() == 1u);
-        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "observationdates") ==
-              observed);
+        CHECK(ores::ore::domain::option_block::has_product_schedule(
+                  *data, "observation_schedule") == observed);
     };
 
     const auto items = portfolio_projection::map(document);
@@ -2959,6 +2960,83 @@ TEST_CASE("a_basket_and_a_rainbow_hold_their_members_option_block_and_schedule_a
     check(rebuild(items[0]), "Asian", true);
     check(items[1], "BestOfAssetOrCash", false);
     check(rebuild(items[1]), "BestOfAssetOrCash", false);
+}
+
+TEST_CASE("an_fx_rainbow_holds_its_terms_on_the_fx_row_and_its_members_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="FX_RAINBOW">
+    <TradeType>FxRainbowOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxRainbowOptionData>
+      <Currency>USD</Currency>
+      <Notional>1000000</Notional>
+      <Strike>2.8</Strike>
+      <Underlyings>
+        <Underlying><Type>FX</Type><Name>ECB-EUR-USD</Name><Weight>1</Weight></Underlying>
+        <Underlying><Type>FX</Type><Name>ECB-GBP-USD</Name><Weight>0.5</Weight></Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Put</OptionType>
+        <PayoffType>MaxRainbow</PayoffType>
+        <ExerciseDates><ExerciseDate>2030-08-02</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Settlement>2030-08-06</Settlement>
+    </FxRainbowOptionData>
+  </Trade>
+</Portfolio>)");
+    const auto check = [](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = std::get_if<ores::trading::domain::fx_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        REQUIRE(data->basket_options.size() == 1);
+        const auto& row = data->basket_options[0];
+        CHECK(row.identity.trade_type_code == "FxRainbowOption");
+        CHECK(row.currency == "USD");
+        CHECK(row.notional.to_string() == "1000000");
+        REQUIRE(row.strike.has_value());
+        CHECK(row.strike->to_string() == "2.8");
+        REQUIRE(data->instrument_underlyings.size() == 2);
+        CHECK(ores::ore::domain::underlying_name_of(data->instrument_underlyings[1].name) ==
+              "ECB-GBP-USD");
+        CHECK(data->instrument_underlyings[1].weight == 0.5);
+        REQUIRE(data->options.size() == 1);
+        CHECK(data->options[0].long_short == "Short");
+        CHECK(data->options[0].option_type == std::optional<std::string>("Put"));
+        CHECK(data->options[0].payoff_type == std::optional<std::string>("MaxRainbow"));
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    check(items[0]);
+    check(rebuild(items[0]));
+}
+
+TEST_CASE("a_rainbow_without_a_strike_is_refused_by_the_schema",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    CHECK_THROWS(portfolio_projection::read(R"(<Portfolio>
+  <Trade id="RAINBOW_NO_STRIKE">
+    <TradeType>EquityRainbowOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityRainbowOptionData>
+      <Currency>USD</Currency>
+      <Notional>1</Notional>
+      <Underlyings>
+        <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name><Weight>1</Weight></Underlying>
+        <Underlying><Type>Equity</Type><Name>RIC:.NDX</Name><Weight>1</Weight></Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <PayoffType>BestOfAssetOrCash</PayoffType>
+        <ExerciseDates><ExerciseDate>2030-08-02</ExerciseDate></ExerciseDates>
+      </OptionData>
+    </EquityRainbowOptionData>
+  </Trade>
+</Portfolio>)"));
 }
 
 TEST_CASE("a_best_entry_and_a_strike_resettable_hold_their_terms_and_observation_dates_as_rows",

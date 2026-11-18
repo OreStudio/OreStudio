@@ -1587,6 +1587,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_option_instruments:read',           'View fx asian option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_option_instruments:write',          'Create and modify fx asian option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_option_instruments:delete',         'Delete fx asian option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_basket_option_instruments:read', 'View equity basket option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_basket_option_instruments:write', 'Create and modify equity basket option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_basket_option_instruments:delete', 'Delete equity basket option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_basket_option_instruments:read', 'View FX basket option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_basket_option_instruments:write', 'Create and modify FX basket option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_basket_option_instruments:delete', 'Delete FX basket option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:read',         'View fx barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:write',        'Create and modify fx barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:delete',       'Delete fx barrier option instruments');

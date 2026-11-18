@@ -398,6 +398,58 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
+-- Equity Basket Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_basket_option_instruments_tbl enable row level security;
+
+drop policy if exists equity_basket_option_instruments_tenant_isolation_policy
+    on ores_trading_equity_basket_option_instruments_tbl;
+
+create policy equity_basket_option_instruments_tenant_isolation_policy on ores_trading_equity_basket_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists equity_basket_option_instruments_party_isolation_policy
+    on ores_trading_equity_basket_option_instruments_tbl;
+
+create policy equity_basket_option_instruments_party_isolation_policy
+on ores_trading_equity_basket_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Basket Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_basket_option_instruments_tbl enable row level security;
+
+drop policy if exists fx_basket_option_instruments_tenant_isolation_policy
+    on ores_trading_fx_basket_option_instruments_tbl;
+
+create policy fx_basket_option_instruments_tenant_isolation_policy on ores_trading_fx_basket_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists fx_basket_option_instruments_party_isolation_policy
+    on ores_trading_fx_basket_option_instruments_tbl;
+
+create policy fx_basket_option_instruments_party_isolation_policy
+on ores_trading_fx_basket_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
 -- FX Pairwise Variance Swap Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fx_pairwise_variance_swap_instruments_tbl enable row level security;

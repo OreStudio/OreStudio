@@ -96,8 +96,8 @@ absent: it is a placeholder, not a product.
 | FxTaRF | FX Target Redemption Forward | forward | scripted | fx! | false | false | fx_asian_forward_instrument |
 | FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false | scripted_instrument |
 | FxBestEntryOption | FX Best Entry Option | option | scripted | fx! | true | false | scripted_instrument |
-| FxBasketOption | FX Basket Option | option | scripted | fx! | true | false | scripted_instrument |
-| FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false | scripted_instrument |
+| FxBasketOption | FX Basket Option | option | scripted | fx! | true | false | fx_basket_option_instrument |
+| FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false | fx_basket_option_instrument |
 | FxStrikeResettableOption | FX Strike Resettable Option | option | scripted | fx! | true | false | scripted_instrument |
 | CreditDefaultSwap | Credit Default Swap | swap | native | credit! | false | false | credit_instrument |
 | CreditDefaultSwapOption | Credit Default Swap Option |   | native | credit! | false | true | credit_instrument |
@@ -140,8 +140,8 @@ absent: it is a placeholder, not a product.
 | EquityTaRF | Equity Target Redemption Forward | forward | scripted | equity! | false | false | equity_accumulator_instrument |
 | EquityWorstOfBasketSwap | Equity Worst-Of Basket Swap | swap | scripted | equity! | false | false | equity_swap_instrument |
 | EquityBestEntryOption | Equity Best Entry Option | option | scripted | equity! | true | false | scripted_instrument |
-| EquityBasketOption | Equity Basket Option | option | scripted | equity! | true | false | scripted_instrument |
-| EquityRainbowOption | Equity Rainbow Option | option | scripted | equity! | true | false | scripted_instrument |
+| EquityBasketOption | Equity Basket Option | option | scripted | equity! | true | false | equity_basket_option_instrument |
+| EquityRainbowOption | Equity Rainbow Option | option | scripted | equity! | true | false | equity_basket_option_instrument |
 | EquityOutperformanceOption | Equity Outperformance Option | option | native | equity! | true | false | equity_option_instrument |
 | EquityStrikeResettableOption | Equity Strike Resettable Option | option | scripted | equity! | true | false | scripted_instrument |
 | TotalReturnSwap | Total Return Swap | swap | native | equity! | false | false | composite_instrument |
@@ -205,8 +205,12 @@ library script in ORE, and is held in its own form only.
 
 | code                       | script               |
 |----------------------------+----------------------|
+| EquityBasketOption         | VanillaBasketOption  |
 | EquityPairwiseVarianceSwap | PairwiseVarianceSwap |
+| EquityRainbowOption        | MaxRainbowOption     |
+| FxBasketOption             | VanillaBasketOption  |
 | FxPairwiseVarianceSwap     | PairwiseVarianceSwap |
+| FxRainbowOption            | MaxRainbowOption     |
 
 * Classes
 
@@ -525,6 +529,7 @@ hold no row for the trade and read as empty.
 | equity_accumulator_instrument    | equity_accumulator_instrument      |
 | equity_asian_option_instrument   | equity_asian_option_instrument     |
 | equity_barrier_option_instrument | equity_barrier_option_instrument   |
+| equity_basket_option_instrument  | equity_basket_option_instrument    |
 | equity_digital_option_instrument | equity_digital_option_instrument   |
 | equity_forward_instrument        | equity_forward_instrument          |
 | equity_option_instrument         | equity_option_instrument           |
@@ -536,6 +541,7 @@ hold no row for the trade and read as empty.
 | fx_asian_forward_instrument      | fx_asian_forward_instrument        |
 | fx_asian_option_instrument       | fx_asian_option_instrument         |
 | fx_barrier_option_instrument     | fx_barrier_option_instrument       |
+| fx_basket_option_instrument      | fx_basket_option_instrument        |
 | fx_digital_option_instrument     | fx_digital_option_instrument       |
 | fx_forward_instrument            | fx_forward_instrument              |
 | fx_vanilla_option_instrument     | fx_vanilla_option_instrument       |

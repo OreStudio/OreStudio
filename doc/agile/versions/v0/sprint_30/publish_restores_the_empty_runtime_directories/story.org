@@ -23,11 +23,11 @@ path it copies and the rest of the hierarchy follows.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The publish job fails on its first build. The artifact carries files, not directories, and `build/docker-stage/storage` is empty. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-11-18                               |
 
 * Acceptance
@@ -39,8 +39,8 @@ path it copies and the rest of the hierarchy follows.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:434C1525-D173-4297-8A51-34FF43B70D54][Scaffold story: Publish restores the empty runtime directories]] | STARTED | 2026-11-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:7746777D-23E3-4759-9247-7A847E2FF429][Implement Publish restores the empty runtime directories]] | BACKLOG | | | Initial task for: Publish restores the empty runtime directories |
+| [[id:434C1525-D173-4297-8A51-34FF43B70D54][Scaffold story: Publish restores the empty runtime directories]] | DONE | 2026-11-18 | 2026-11-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:7746777D-23E3-4759-9247-7A847E2FF429][Implement Publish restores the empty runtime directories]] | DONE | | 2026-11-18 | Initial task for: Publish restores the empty runtime directories |
 
 * Decisions
 
@@ -49,3 +49,9 @@ path it copies and the rest of the hierarchy follows.
 * Out of scope
 
 - Uploading `build/docker-stage/bin`, which the library partition has already consumed.
+
+* Result
+
+The publish job recreates the three runtime directories the staging leaves empty, so the base image
+finds every path its Dockerfile copies and the hierarchy behind it can be built. The failure it
+removes was the whole job: nothing was published while the first COPY could not resolve.

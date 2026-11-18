@@ -1424,9 +1424,9 @@ CHECKS_BY_ID = {check.id: check for check in CATALOGUE}
 # The compass-ng codecs that answer for each gate. compass-ng ports these gates
 # and gives their verdicts on the same commit; a gate missing here runs as a
 # Python script. paste-blocks, model-sql-types and skill-recipes have no codec of
-# their own: compass dropped them, and the codecs named cover what they checked.
-# forward-declarable-includes stays in Python while compass reports a false
-# positive on ores.database/pq/unit_of_work.hpp.
+# their own: compass dropped them, and the codecs named cover what they checked;
+# lint now holds the pattern-uses and structure-notes rules.
+# curve-sections-wiring stays in Python until compass checks its two C++ outputs.
 COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "tangle-templates": ("tangle", "tangle_check",),
     "tangle-shell": ("shell_recipe_library",),
@@ -1441,8 +1441,8 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "skill-levels": ("skill_levels",),
     "skill-recipes": ("lint",),
     "rule-identifiers": ("rule_identifiers",),
-    "structure-notes": ("structure_notes",),
-    "pattern-uses": ("pattern_uses",),
+    "structure-notes": ("lint",),
+    "pattern-uses": ("lint",),
     "trade-type-coverage": ("trade_type_coverage",),
     "translation-unit-budget": ("translation_unit_budget",),
     "unity-collisions": ("unity_collisions",),
@@ -1469,7 +1469,6 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "ore-parameter-value-sets": ("ore_value_sets",),
     "parameter-value-sets-only": ("parameter_value_sets",),
     "convention-kind-terms": ("convention_kind_terms",),
-    "curve-sections-wiring": ("curve_sections_wiring",),
     "shell-command-units": ("shell_command_units",),
     "curve-parameter-paths": ("curve_parameter_paths",),
     "ore-element-map": ("ore_value_sets",),
@@ -1496,6 +1495,7 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "rls-widenings": ("rls_widenings",),
     "entity-writes": ("entity_writes",),
     "enum-attributes": ("exported_types",),
+    "forward-declarable-includes": ("forward_declarable_includes",),
     "exported-types": ("exported_types",),
     "bff-list-requests": ("bff_list_requests",),
     "backlog-indexes": ("backlog_indexes",),
@@ -1548,6 +1548,9 @@ def expand_compass(results: list[Result], covered: list[Check]) -> list[Result]:
         match = COMPASS_FINDING.match(line)
         if match:
             findings.setdefault(match.group(1), []).append(line)
+    # A run that failed with no finding did not check the tree, so no gate it
+    # answers for has passed.
+    errored = run.failed and not findings
     claimed: set[str] = set()
     expanded: list[Result] = []
     for check in covered:
@@ -1555,15 +1558,14 @@ def expand_compass(results: list[Result], covered: list[Check]) -> list[Result]:
         claimed.update(COMPASS_CODECS[check.id])
         expanded.append(Result(
             check=check,
-            status="FAIL" if lines else "PASS",
+            status="FAIL" if lines or errored else "PASS",
             seconds=run.seconds,
             log=run.log,
-            tail="\n".join(lines[-TAIL_LINES:]),
+            tail="\n".join(lines[-TAIL_LINES:]) if lines else run.tail,
             reason="answered by compass-ng",
         ))
     unclaimed = [line for codec, lines in findings.items() if codec not in claimed
                  for line in lines]
-    errored = run.failed and not findings
     run.status = "FAIL" if unclaimed or errored else "PASS"
     if unclaimed:
         run.tail = "\n".join(unclaimed[-TAIL_LINES:])

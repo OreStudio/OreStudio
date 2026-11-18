@@ -85,7 +85,6 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | lint | yes | |
 | no_pr_triggers | yes | |
 | org_links | yes | |
-| pattern_uses | yes | |
 | physical_inventory | yes | |
 | prototypes | yes | |
 | recipe_inventories | yes | |
@@ -96,6 +95,5 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | skill_levels | yes | |
 | skill_namespace | yes | |
 | skill_type_tables | yes | |
-| structure_notes | yes | |
 | trade_type_coverage | yes | |
 | rls_coverage | yes | |

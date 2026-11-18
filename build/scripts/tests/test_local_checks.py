@@ -479,11 +479,13 @@ def test_a_finding_no_selected_gate_claims_fails_compass_ng(tmp_path):
     assert "core_link_edges" in by_id["compass-ng"].tail
 
 
-def test_compass_ng_failing_to_run_fails_it(tmp_path):
-    covered = [local_checks.CHECKS_BY_ID["sql-hygiene"]]
-    run = _compass_result(tmp_path, "compass: unknown codec 'x'\n", "FAIL")
+def test_compass_ng_failing_to_run_fails_every_gate_it_answers_for(tmp_path):
+    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "entity-writes")]
+    run = _compass_result(tmp_path, "compass: codegen: a model did not load\n", "FAIL")
     by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
     assert by_id["compass-ng"].failed
+    assert by_id["sql-hygiene"].failed
+    assert by_id["entity-writes"].failed
 
 
 def test_every_gate_compass_ng_answers_for_is_in_the_catalogue():

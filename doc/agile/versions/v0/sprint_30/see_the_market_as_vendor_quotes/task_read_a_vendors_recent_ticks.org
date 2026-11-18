@@ -61,7 +61,7 @@ task and name that file in the Command column.
 
 * Notes
 
-- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: =get_series_ticks= already reads a series' ticks behind the subscription. There is no recent window; it reads the store. The work is the system tenant rule in =tick_entitlement.cpp=.
+- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: =get_series_ticks= already reads a series' ticks behind the subscription. There is no recent window; it reads the store. The work is the system tenant rule in =tick_entitlement.cpp=, and the display right for a read that a screen makes: =may_read_ticks= accepts the non-display right today.
 
 * Test Scenarios
 

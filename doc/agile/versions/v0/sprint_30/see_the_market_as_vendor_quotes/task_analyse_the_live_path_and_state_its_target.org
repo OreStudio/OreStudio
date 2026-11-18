@@ -26,11 +26,11 @@ The market data docs state where the live path is going and why, and the change 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | The inventory, the target page and the doc changes are written. |
-| Waiting on   | The product owner: the review of the target, and the display right question. |
-| Next         | Close the task and raise its PR. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -118,13 +118,12 @@ asks for.
    copies, the shell moves, and the copies are removed last, so the system works
    after each task.
 
-** Open question for the product owner
-
-The rule today, =may_show=, lets a party show ticks when its subscription holds
-the display or the non-display right. In a vendor's terms, the non-display right
-is for machines and does not allow a screen. The quotes view shows ticks to a
-person, so it could require the display right. This analysis keeps =may_show= and
-asks.
+6. *A screen needs the display right.* The rule today, =may_show=, accepts the
+   display or the non-display right. A vendor licenses the non-display right for
+   machines, and it does not allow a screen. So a watch or a read for a screen
+   needs the display right, and a service with no screen needs either right.
+   The question for the market data service names the use. (2026-11-18, product
+   owner.)
 
 ** Changes to the later tasks
 
@@ -168,3 +167,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The inventory lists every publisher and reader of the party live subjects
+  and of the display tap, with the change each needs. The change to the
+  consumers is small: only the shell reads the party subjects.
+- The new page [[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]]
+  states the target: one publish for each tick, on a subject that names the
+  provider and the feed, with the entitlement checked where a watch starts and
+  the system tenant watching every feed.
+- Six market data docs now point at the target, and the pipeline doc states
+  what is built today.
+- The product owner reviewed the target and decided that a screen needs the
+  display right. The later tasks carry what each one needs.

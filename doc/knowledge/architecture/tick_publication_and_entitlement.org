@@ -64,14 +64,21 @@ follows the number of ticks, whatever the number of parties.
 A party may watch a feed when two records agree:
 
 - its route for the provider picks that feed, and
-- its subscription to the provider holds a right to show the ticks.
+- its subscription to the provider holds the right that the use needs.
+
+The use decides the right. A screen shows the ticks to a person, so a watch for
+a screen needs the display right. A service that uses the ticks with no screen
+needs the display right or the non-display right. A vendor licenses the two uses
+apart, and the non-display right does not allow a screen.
 
 Two parties with the same routes and subscriptions see the same ticks. The
 system tenant watches every feed, because it runs the installation.
 
-The history read already applies the same rule through =may_read_ticks=
+The history read applies the same rule through =may_read_ticks=
 (=tick_entitlement.cpp=). One rule decides both, so a party can watch live
-exactly what it can read in its history.
+exactly what it can read in its history for the same use. Today
+=may_read_ticks= accepts the display or the non-display right for every read;
+a read for a screen needs the display right.
 
 ** Where the check is made
 
@@ -84,8 +91,8 @@ web server, and the web server is a client the installation trusts. So the check
 is made where a watch starts:
 
 - The server that serves a person's session asks the market data service which
-  feeds the session's party may watch, and subscribes only to those.
-- A service that watches for a party asks the same question.
+  feeds the session's party may watch for display, and subscribes only to those.
+- A service that watches for a party asks the same question for its own use.
 - The market data service answers from the routes and the subscriptions, by the
   rule above, with the system tenant's answer being every feed.
 

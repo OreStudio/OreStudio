@@ -62,7 +62,7 @@ task and name that file in the Command column.
 
 * Notes
 
-- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: the only reader of the party subjects is the shell's stream watch (=marketdata_commands.cpp=). The new work is a market data operation that answers which feeds a party may watch, by the rule =may_read_ticks= uses, with every feed for the system tenant. The broker checks only certificates, so the web servers and the shell check before they subscribe.
+- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: the only reader of the party subjects is the shell's stream watch (=marketdata_commands.cpp=). The new work is a market data operation that answers which feeds a party may watch, by the rule =may_read_ticks= uses, with every feed for the system tenant. The question names the use: a watch for a screen needs the display right, and a service with no screen needs the display or the non-display right. The broker checks only certificates, so the web servers and the shell check before they subscribe.
 
 * Test Scenarios
 

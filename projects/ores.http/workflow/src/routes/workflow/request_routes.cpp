@@ -28,11 +28,13 @@
 #include "ores.inbox.api/messaging/approval_decision_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_request_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/messaging/trade_authorisation_request_protocol.hpp"
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <charconv>
 #include <chrono>
 #include <cstdint>
 #include <map>
@@ -61,6 +63,12 @@ using ores::http::domain::http_response;
 using ores::http::domain::http_status;
 using ores::nats::service::nats_client;
 
+/// The trail a read leaves when a join of a page is deliberately absent.
+auto& request_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.workflow.request_routes");
+    return instance;
+}
+
 /// The most rows one page may ask for. A page costs the join one read per row.
 constexpr std::uint32_t page_max = 100;
 
@@ -69,6 +77,9 @@ constexpr std::uint32_t page_default = 50;
 
 /// The most rows one join asks for; the services refuse a longer filter.
 constexpr std::uint32_t join_page = 1000;
+
+/// The most trades one request may name, as the screen draws them.
+constexpr std::size_t trades_of_request = 10;
 
 /// The sentence a page states when it is not one.
 constexpr std::string_view page_refused = "A page names an offset and a limit of 1 to 100.";
@@ -167,23 +178,25 @@ decide_body decision_of(const http_request& req) {
     return body;
 }
 
+/// The whole number a page parameter states, or nothing when it states none.
+std::optional<std::uint32_t> whole_of(const std::string& raw) {
+    if (raw.empty())
+        return std::nullopt;
+    std::uint32_t value = 0;
+    const auto* first = raw.data();
+    const auto* last = raw.data() + raw.size();
+    const auto parsed = std::from_chars(first, last, value);
+    if (parsed.ec != std::errc() || parsed.ptr != last)
+        rr::invalid(std::string(page_refused));
+    return value;
+}
+
 page page_of(const http_request& req) {
     rr::refuse_unknown_params(req, {"offset", "limit"});
     page out;
-    const auto whole = [](const std::string& raw) -> std::optional<std::uint32_t> {
-        if (raw.empty())
-            return std::nullopt;
-        std::uint32_t value = 0;
-        for (const char c : raw) {
-            if (c < '0' || c > '9' || value > 400'000'000)
-                rr::invalid(std::string(page_refused));
-            value = value * 10 + static_cast<std::uint32_t>(c - '0');
-        }
-        return value;
-    };
-    if (const auto stated = whole(req.get_query_param("offset")))
+    if (const auto stated = whole_of(req.get_query_param("offset")))
         out.offset = *stated;
-    if (const auto stated = whole(req.get_query_param("limit"))) {
+    if (const auto stated = whole_of(req.get_query_param("limit"))) {
         if (*stated < 1 || *stated > page_max)
             rr::invalid(std::string(page_refused));
         out.limit = *stated;
@@ -214,7 +227,9 @@ roles_of(const http_request& req, nats_client& session, const std::string& reque
         if (reply.result.outcome != ores::utility::domain::outcome::ok)
             return {};
         return reply.roles;
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
+            << "The roles of request " << request_id << " were not read: " << e.what();
         return {};
     }
 }
@@ -236,7 +251,9 @@ requesters_of(const http_request& req,
         rr::require_ok(reply.result);
         for (const auto& grant : reply.role_grant_requests)
             requesters.emplace(rr::as_text(grant.request_id), rr::as_text(grant.account_id));
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
+            << "The accounts of the requests were not read: " << e.what();
         return requesters;
     }
     return requesters;
@@ -268,7 +285,9 @@ std::map<std::string, std::string> usernames_of(const http_request& req,
         rr::require_ok(reply.result);
         for (const auto& account : reply.accounts)
             usernames.emplace(rr::as_text(account.id), account.username);
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
+            << "The usernames of the accounts were not read: " << e.what();
         return usernames;
     }
     return usernames;
@@ -296,7 +315,9 @@ decisions_of(const http_request& req,
                 continue;
             decisions.insert_or_assign(key, decision);
         }
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
+            << "The decisions on the requests were not read: " << e.what();
         return decisions;
     }
     return decisions;
@@ -330,7 +351,9 @@ parts_of(const http_request& req, nats_client& session, const std::string& reque
         if (reply.result.outcome != ores::utility::domain::outcome::ok)
             return {};
         return reply.parts;
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
+            << "The parts of request " << request_id << " were not read: " << e.what();
         return {};
     }
 }
@@ -356,8 +379,9 @@ std::string label_of(const http_request& req, nats_client& session, const std::s
         for (const auto& identifier : reply.identifiers)
             if (!identifier.id_value.empty())
                 return identifier.id_value;
-    } catch (const std::exception&) {
-        // The identifier is still a link, so a refused read costs only the label.
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(request_lg(), ores::logging::debug)
+            << "The label of trade " << trade_id << " was not read: " << e.what();
     }
     return trade_id;
 }
@@ -376,12 +400,14 @@ subjects_of(const http_request& req, nats_client& session, const std::string& re
         const auto reply = forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);
         for (const auto& link : reply.trade_authorisation_requests) {
-            if (subjects.size() == 10)
+            if (subjects.size() == trades_of_request)
                 break;
             const auto trade_id = rr::as_text(link.trade_id);
             subjects.push_back({trade_id, link.trade_version, label_of(req, session, trade_id)});
         }
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
+            << "The trades of request " << request_id << " were not read: " << e.what();
         return subjects;
     }
     return subjects;
@@ -509,7 +535,9 @@ void request_routes::register_routes(
             .summary("One request, with what it asks for, what was decided and what it is about")
             .description("A notice carries the request it is about, and is read after the request "
                          "stopped waiting, so this read does not depend on a queue. A request the "
-                         "caller may not open answers as one that does not exist.")
+                         "caller may not open answers as one that does not exist. requestedBy and "
+                         "a decision's decidedBy hold a username where the join could read the "
+                         "account and the account's identifier where it could not.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<inbox_messaging::get_approval_request>([&] {
                     rr::refuse_unknown_params(req, {});
@@ -517,9 +545,13 @@ void request_routes::register_routes(
                     inbox_messaging::get_approval_request msg;
                     msg.request_id = id;
                     const auto reply = forwarding::forward(req, session, msg);
-                    if (reply.result.outcome == ores::utility::domain::outcome::missing ||
-                        !reply.request)
+                    if (reply.result.outcome == ores::utility::domain::outcome::missing)
                         rr::refuse(http_status::not_found, "not-found", "No such request.");
+                    if (!reply.request) {
+                        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
+                            << "The inbox answered request " << id << " without a row.";
+                        rr::refuse(http_status::not_found, "not-found", "No such request.");
+                    }
                     rr::require_ok(reply.result);
 
                     const auto request = *reply.request;

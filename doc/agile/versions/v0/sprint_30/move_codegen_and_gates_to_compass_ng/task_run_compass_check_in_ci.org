@@ -12,7 +12,7 @@
 #+blocked_on: the compass story Publish installable binaries: CI and external developers install a release, never build compass
 #+blocked_since: 2026-11-18
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-18
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,9 +28,9 @@ CI runs every ported gate in one job of seconds, from the same binary and config
 |--------------+----------------------------------------|
 | State        | BLOCKED |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Blocked. |
 | Waiting on   | The compass story Publish installable binaries: CI and external developers install a release, never build compass. |
-| Next         | Begin implementation.                  |
+| Next         | Install the first compass-ng release in CI once Publish installable binaries ships one. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance

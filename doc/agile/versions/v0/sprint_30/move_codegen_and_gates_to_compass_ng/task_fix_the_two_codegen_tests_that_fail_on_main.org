@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: fix/two-codegen-tests-on-main
-#+pr:
+#+pr: 4838
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4838][#4838]] | [codegen] Fix the two codegen tests that fail on main |
 
 * Review
 

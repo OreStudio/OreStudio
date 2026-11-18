@@ -35,6 +35,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -596,4 +597,77 @@ TEST_CASE("a_batch_write_states_the_current_version_of_every_row_it_replaces", "
     REQUIRE(read.size() == series.size());
     for (const auto& s : read)
         CHECK(s.version == 3);
+}
+
+namespace {
+
+// A fixing URI under a series subclass a fixing never carries: the identity shape
+// refuses it before a family is looked up.
+const std::string refused_fixing_uri =
+    "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M";
+
+ores::marketdata::domain::market_series make_refused_test_series(database_helper& h,
+                                                                 const boost::uuids::uuid& party) {
+    auto s = make_fixing_test_series(h, party, refused_fixing_uri);
+    s.series_subclass = "yield";
+    return s;
+}
+
+std::size_t stored_series(database_helper& h, const boost::uuids::uuid& id) {
+    return market_series_repository{}.read_latest(h.context(), boost::uuids::to_string(id)).size();
+}
+
+std::size_t stored_identities(database_helper& h, const boost::uuids::uuid& id) {
+    return ores::marketdata::repository::market_series_identity_repository{}
+        .read_latest(h.context(), boost::uuids::to_string(id))
+        .size();
+}
+
+}
+
+TEST_CASE("a_series_the_shape_refuses_is_not_stored", "[repository][series_identity]") {
+    database_helper h;
+    const auto s = make_refused_test_series(h, boost::uuids::random_generator{}());
+
+    CHECK_THROWS_AS(market_series_repository{}.write(h.context(), s), std::invalid_argument);
+
+    CHECK(stored_series(h, s.id) == 0);
+    CHECK(stored_identities(h, s.id) == 0);
+}
+
+TEST_CASE("a_batch_with_a_series_the_shape_refuses_stores_none_of_it",
+          "[repository][series_identity]") {
+    database_helper h;
+    const auto party = boost::uuids::random_generator{}();
+    // The accepted series comes first, so a write that stores as it goes would keep it.
+    const auto accepted = make_fixing_test_series(
+        h, party, "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M");
+    const auto refused = make_refused_test_series(h, party);
+
+    CHECK_THROWS_AS(
+        market_series_repository{}.write(
+            h.context(), std::vector<ores::marketdata::domain::market_series>{accepted, refused}),
+        std::invalid_argument);
+
+    CHECK(stored_series(h, accepted.id) == 0);
+    CHECK(stored_series(h, refused.id) == 0);
+    CHECK(stored_identities(h, accepted.id) == 0);
+}
+
+TEST_CASE("a_batch_the_shape_accepts_stores_each_series_and_its_identity",
+          "[repository][series_identity]") {
+    database_helper h;
+    const auto party = boost::uuids::random_generator{}();
+    const std::vector<ores::marketdata::domain::market_series> batch{
+        make_fixing_test_series(
+            h, party, "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M"),
+        make_fixing_test_series(
+            h, party, "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M")};
+
+    market_series_repository{}.write(h.context(), batch);
+
+    for (const auto& s : batch) {
+        CHECK(stored_series(h, s.id) == 1);
+        CHECK(stored_identities(h, s.id) == 1);
+    }
 }

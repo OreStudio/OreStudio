@@ -248,9 +248,11 @@ void market_series_repository::write(const context& ctx,
         market_series_claim_reads_current(claim) ?
             market_series_claim_rows(ctx, read_latest(ctx, boost::uuids::to_string(v.id))) :
             std::vector<domain::market_series>{});
+    const auto identities =
+        market_series_identity_projector::project(ctx, std::vector<domain::market_series>{t});
     query_builder::execute_write_query(
         ctx, market_series_mapper::map(t), lg(), "Writing market series to database.");
-    market_series_identity_projector::project(ctx, std::vector<domain::market_series>{t});
+    market_series_identity_projector::write(ctx, identities);
 }
 
 void market_series_repository::write(
@@ -272,9 +274,10 @@ void market_series_repository::write(
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(
             market_series_apply_claim(v[i], claims[i], market_series_rows_of(current, v[i])));
+    const auto identities = market_series_identity_projector::project(ctx, batch);
     query_builder::execute_write_query(
         ctx, market_series_mapper::map(batch), lg(), "Writing market series to database.");
-    market_series_identity_projector::project(ctx, batch);
+    market_series_identity_projector::write(ctx, identities);
 }
 
 std::vector<domain::market_series> market_series_repository::read_latest(const context& ctx) {

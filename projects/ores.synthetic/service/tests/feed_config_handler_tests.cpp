@@ -354,11 +354,12 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
     std::string surface_source = "synthetic.feed_config.test.fx_vol.eur_usd";
     {
         // A party holds one contributor for each provider, so a second seed of the same
-        // fixtures reuses the first one rather than colliding with it.
+        // fixtures reuses the first one rather than colliding with it. The read also admits
+        // the system tenant's contributors, which a link of this tenant cannot name.
         dom::fx_vol_contributor contributor;
         contributor.provider_code = "demo";
         for (const auto& existing : repo::fx_vol_contributor_repository().read_latest(party_ctx))
-            if (existing.provider_code == "demo")
+            if (existing.provider_code == "demo" && existing.tenant_id == h.tenant_id())
                 contributor = existing;
         if (contributor.id.is_nil()) {
             contributor.tenant_id = h.tenant_id();

@@ -28,7 +28,7 @@ BFF's, so it holds on any host the service runs on, not only behind the proxy.
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Nothing. The site answers with HSTS, X-Content-Type-Options, X-Frame-Options and a referrer policy, and with no content security policy. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Implement the policy in the BFF.       |
 | Last touched  | 2026-11-18                               |
 
 * Acceptance
@@ -36,18 +36,22 @@ BFF's, so it holds on any host the service runs on, not only behind the proxy.
 - Every response that carries a page states a =Content-Security-Policy= whose
   =default-src= is ='self'=, and which names no host outside the environment.
 - The bundle runs under the policy with no =unsafe-inline= for scripts: the
-  theme script =index.html= inlines is allowed by its hash or a nonce.
+  theme script =index.html= inlines is allowed by the hash the build writes,
+  taken from the final page rather than from the source.
 - =style-src= allows what the bundle uses, which today includes inline styles
   from the component library.
 - =connect-src= reaches the BFF and the NATS monitor the shell reads, and
   nothing else.
 - =object-src 'none'=, =base-uri 'none'= and =frame-ancestors 'none'= are
-  stated, the last making the proxy's =X-Frame-Options= redundant.
+  stated. The proxy keeps =X-Frame-Options= until the policy is enforced, and
+  the policy is stated as a header rather than a meta tag, where
+  =frame-ancestors= and the report-only mode are ignored.
 - The policy is stricter in a built site than under the development server,
   which needs inline scripts and a websocket, and no test relies on the
   development policy.
 - A violation is visible: the policy is served in report-only mode for one
-  release before it is enforced, and the reports are read.
+  release before it is enforced, with a =report-to= endpoint that accepts the
+  reports, and the reports are read.
 
 * Tasks
 

@@ -20,7 +20,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The BFF states a =Content-Security-Policy= on every response that carries a page, and the policy is
+the one the story's acceptance describes. The hash it allows for the inline theme script is computed
+from the built =index.html=, so a minifier or a plugin cannot leave it stale; when the script changes
+without the hash changing, a check fails rather than a browser blocking the script in silence.
+
+Before the policy is enforced, =report-to= names an endpoint the BFF serves and the reports are read
+there, so the rules are settled against real violations.
 
 * Status
 
@@ -35,7 +41,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The policy is the one the story states, served as a header by the BFF in every mode a page is served.
+- The script hash is computed from the built page, and a change to the inline script that leaves the hash stale fails a check.
+- The report-only release names a =report-to= endpoint the BFF answers, and its reports are read before enforcement.
+- =base-uri 'none'= holds because the bundle sets no =<base>=, and =connect-src= names the BFF and the NATS monitor explicitly rather than relying on ='self'= for websockets.
+- The proxy's =X-Frame-Options= stays until the policy is enforced.
 
 * Plan
 

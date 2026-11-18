@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/run-the-ported-gates-through-compass-check
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ A local check of a change takes seconds for the build-free gates, and gives the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

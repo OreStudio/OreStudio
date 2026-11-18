@@ -26,6 +26,7 @@ import argparse
 import fnmatch
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -1417,6 +1418,159 @@ CHECKS_BY_ID = {check.id: check for check in CATALOGUE}
 
 
 # --------------------------------------------------------------------------
+# compass-ng: one pass over the tree for every ported gate
+# --------------------------------------------------------------------------
+
+# The compass-ng codecs that answer for each gate. compass-ng ports these gates
+# and gives their verdicts on the same commit; a gate missing here runs as a
+# Python script. paste-blocks, model-sql-types and skill-recipes have no codec of
+# their own: compass dropped them, and the codecs named cover what they checked.
+# forward-declarable-includes stays in Python while compass reports a false
+# positive on ores.database/pq/unit_of_work.hpp.
+COMPASS_CODECS: dict[str, tuple[str, ...]] = {
+    "tangle-templates": ("tangle", "tangle_check",),
+    "tangle-shell": ("shell_recipe_library",),
+    "tangle-http": ("http_recipe_library",),
+    "lint": ("lint",),
+    "no-pr-triggers": ("no_pr_triggers",),
+    "org-links": ("org_links",),
+    "heading-numbers": ("heading_numbers",),
+    "skill-namespace": ("skill_namespace",),
+    "skill-catalogue": ("skill_catalogue",),
+    "skill-type-tables": ("skill_type_tables",),
+    "skill-levels": ("skill_levels",),
+    "skill-recipes": ("lint",),
+    "rule-identifiers": ("rule_identifiers",),
+    "structure-notes": ("structure_notes",),
+    "pattern-uses": ("pattern_uses",),
+    "trade-type-coverage": ("trade_type_coverage",),
+    "translation-unit-budget": ("translation_unit_budget",),
+    "unity-collisions": ("unity_collisions",),
+    "unique-type-names": ("unique_type_names",),
+    "xml-family-census": ("xml_family_census",),
+    "http-areas": ("http_areas",),
+    "route-units": ("route_units",),
+    "route-inventory": ("route_inventory",),
+    "prototypes": ("prototypes",),
+    "component-docs": ("component_docs",),
+    "cmake-sources": ("component_files",),
+    "template-sections": ("template_sections",),
+    "component-drift": ("codegen",),
+    "drift-sweep": ("codegen",),
+    "paste-blocks": ("codegen",),
+    "model-drift": ("model_drift",),
+    "er-diagram": ("er_diagram", "rls_coverage",),
+    "money-decimal-columns": ("money_decimal_columns",),
+    "model-sql-types": ("codegen",),
+    "entity-binary-types": ("entity_binary_types",),
+    "sql-hygiene": ("sql_hygiene",),
+    "script-library-seed": ("script_library_seed",),
+    "ore-renderings-tables": ("ore_renderings_tables",),
+    "ore-parameter-value-sets": ("ore_value_sets",),
+    "parameter-value-sets-only": ("parameter_value_sets",),
+    "convention-kind-terms": ("convention_kind_terms",),
+    "curve-sections-wiring": ("curve_sections_wiring",),
+    "shell-command-units": ("shell_command_units",),
+    "curve-parameter-paths": ("curve_parameter_paths",),
+    "ore-element-map": ("ore_value_sets",),
+    "curve-column-guards": ("curve_column_guards",),
+    "marketdata-identity-columns": ("marketdata_identity_columns",),
+    "generated-column-refs": ("generated_column_refs",),
+    "protocol-twins": ("protocol_twins",),
+    "subject-conformance": ("subject_conformance",),
+    "handler-permissions": ("handler_permissions",),
+    "open-reads": ("open_reads",),
+    "shell-menus": ("shell_menus",),
+    "route-auth": ("route_auth",),
+    "recipe-inventories": ("recipe_inventories",),
+    "physical-inventory": ("physical_inventory",),
+    "registry-exceptions": ("registry_exceptions",),
+    "reachability": ("test_case_reachability",),
+    "portable-stop": ("portable_stop",),
+    "event-registrars": ("event_registrars",),
+    "history-registrars": ("history_registrars",),
+    "handler-registrars": ("handler_registrars",),
+    "stream-coverage": ("stream_coverage",),
+    "populate-refs": ("populate_refs",),
+    "sql-reachability": ("sql_reachability",),
+    "rls-widenings": ("rls_widenings",),
+    "entity-writes": ("entity_writes",),
+    "enum-attributes": ("exported_types",),
+    "exported-types": ("exported_types",),
+    "bff-list-requests": ("bff_list_requests",),
+    "backlog-indexes": ("backlog_indexes",),
+    "conventions-dataset": ("conventions_dataset",),
+    "conventions-coverage": ("conventions_coverage",),
+    "ore-output-catalogue": ("ore_output_catalogue",),
+}
+
+COMPASS_CHECK = Check(
+    id="compass-ng",
+    title="compass-ng finds nothing new since the base in the gates it ports",
+    argv=("compass-ng", "check", "--ratchet", "{base}"),
+    classes=CLASSES,
+    fix="Fix each finding the log names, or excuse it with a compass:except comment"
+        " that says why; ./compass.sh generate rewrites the generated files.",
+)
+
+COMPASS_FINDING = re.compile(r"^[^:\s][^:]*:\d+:\d+: ([a-z_]+)/[a-z_]+: ")
+
+
+def through_compass(selected: list[Check]) -> tuple[list[Check], list[Check]]:
+    """The checks to run, and the selected gates compass-ng answers for.
+
+    With compass-ng on the PATH, the ported gates run as one compass-ng check;
+    without it they run as their scripts, and the runner says so.
+    """
+    covered = [check for check in selected if check.id in COMPASS_CODECS]
+    if not covered:
+        return selected, []
+    if shutil.which("compass-ng") is None:
+        print("⚠️  compass-ng is not on the PATH: the ported gates run as Python scripts")
+        return selected, []
+    rest = [check for check in selected if check.id not in COMPASS_CODECS]
+    return rest + [COMPASS_CHECK], covered
+
+
+def expand_compass(results: list[Result], covered: list[Check]) -> list[Result]:
+    """One result for each gate compass-ng answered for, from its findings.
+
+    A gate fails when a finding names one of its codecs. The compass-ng result
+    stays, and fails only on what no selected gate claims: a finding of a codec
+    no gate maps to, or compass-ng itself failing to run.
+    """
+    run = next((r for r in results if r.check.id == COMPASS_CHECK.id), None)
+    if run is None or not covered:
+        return results
+    output = run.log.read_text(errors="replace") if run.log else ""
+    findings: dict[str, list[str]] = {}
+    for line in output.splitlines():
+        match = COMPASS_FINDING.match(line)
+        if match:
+            findings.setdefault(match.group(1), []).append(line)
+    claimed: set[str] = set()
+    expanded: list[Result] = []
+    for check in covered:
+        lines = [line for codec in COMPASS_CODECS[check.id] for line in findings.get(codec, [])]
+        claimed.update(COMPASS_CODECS[check.id])
+        expanded.append(Result(
+            check=check,
+            status="FAIL" if lines else "PASS",
+            seconds=run.seconds,
+            log=run.log,
+            tail="\n".join(lines[-TAIL_LINES:]),
+            reason="answered by compass-ng",
+        ))
+    unclaimed = [line for codec, lines in findings.items() if codec not in claimed
+                 for line in lines]
+    errored = run.failed and not findings
+    run.status = "FAIL" if unclaimed or errored else "PASS"
+    if unclaimed:
+        run.tail = "\n".join(unclaimed[-TAIL_LINES:])
+    return [r for r in results if r is not run] + [run] + expanded
+
+
+# --------------------------------------------------------------------------
 # Reach: which build targets a changed file compiles into
 # --------------------------------------------------------------------------
 
@@ -1899,6 +2053,7 @@ def main(argv: list[str] | None = None) -> int:
         selected = selected + [
             c for c in CATALOGUE if c.phase == HEAVY and c not in selected
         ]
+    selected, covered = through_compass(selected)
 
     print("🧭 ores.local_checks")
     print(f"   base     : {base} ({base_sha})")
@@ -1918,6 +2073,10 @@ def main(argv: list[str] | None = None) -> int:
                 if check.phase == phase:
                     where = f"  (in {check.cwd})" if check.cwd != "." else ""
                     print(f"    {check.id:<20} {' '.join(check.command(ref, preset))}{where}")
+        if covered:
+            print()
+            print(f"  compass-ng answers for {len(covered)} gate(s):")
+            print("    " + " ".join(check.id for check in covered))
         print()
         print("Why these checks")
         for name in sorted(classes):
@@ -1943,6 +2102,7 @@ def main(argv: list[str] | None = None) -> int:
 
     results = run_all(selected, ref, preset, args.jobs,
                       changed=changed if scoped else None)
+    results = expand_compass(results, covered)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     report = OUTPUT_DIR / "report.md"

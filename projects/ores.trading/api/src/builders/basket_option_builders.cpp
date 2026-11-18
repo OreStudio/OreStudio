@@ -29,7 +29,7 @@ namespace {
 
 using utility::decimal::decimal;
 
-std::optional<build_error> refusal_of(bool rainbow, const basket_option_terms& terms) {
+std::optional<build_error> basket_refusal_of(bool rainbow, const basket_option_terms& terms) {
     if (terms.currency.get().empty())
         return build_error{"currency", "must name a currency"};
     if (!(terms.notional.get() > decimal{}))
@@ -119,7 +119,7 @@ void add_shared_rows(Data& out,
 equity_result build_equity_basket_option(std::string_view trade_type,
                                          bool rainbow,
                                          const basket_option_terms& terms) {
-    if (auto refusal = refusal_of(rainbow, terms))
+    if (auto refusal = basket_refusal_of(rainbow, terms))
         return std::unexpected(std::move(*refusal));
     domain::equity_instrument_data out{};
     out.instrument = row_of<domain::equity_basket_option_instrument>(trade_type, terms);
@@ -130,7 +130,7 @@ equity_result build_equity_basket_option(std::string_view trade_type,
 fx_result build_fx_basket_option(std::string_view trade_type,
                                  bool rainbow,
                                  const basket_option_terms& terms) {
-    if (auto refusal = refusal_of(rainbow, terms))
+    if (auto refusal = basket_refusal_of(rainbow, terms))
         return std::unexpected(std::move(*refusal));
     domain::fx_instrument_data out{};
     out.basket_options.push_back(row_of<domain::fx_basket_option_instrument>(trade_type, terms));

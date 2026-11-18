@@ -931,6 +931,12 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "Whether auto-approval is on, its scope, and who set it, when and why, read from"
          " the one subject the inbox answers it on."),
+    Rule("the approvals mode route",
+         ("exact", "GET /api/approvals-mode"),
+         CPP, RESOURCE, "workflow",
+         "Whether the tenant enforces approvals at the address and in the shape the BFF answered:"
+         " the mode read as whether it auto-approves, with its scope and the person who set it,"
+         " when and why."),
     Rule("the principal's requests route",
          ("regex", r"^((GET|POST) /api/me/requests|DELETE /api/me/requests/\{id\})$"),
          CPP, RESOURCE, "workflow",
@@ -961,6 +967,12 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "The codes a decider may park a request with, a tenant-wide lookup that carries no"
          " personal data."),
+    Rule("the hold reasons' route",
+         ("exact", "GET /api/hold-reasons"),
+         CPP, RESOURCE, "workflow",
+         "The codes a decider may park a request with at the address and in the shape the BFF"
+         " answered, and the kinds that allow a hold: a refused kind read costs the rules and"
+         " not the reasons, because a panel that offers no hold asks for a grant."),
 
     Rule("an access screen's route",
          ("regex", r"^(GET|POST|PUT|DELETE) /api/(me|accounts|roles|permissions|reporting-tree)(/.*)?$"),

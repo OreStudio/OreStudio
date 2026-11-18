@@ -381,6 +381,8 @@ PAIRS = {
     ("POST", "/api/workflow/:instanceId/retry"): (
         "POST",
         "/api/workflow/{instanceId}/retry"),
+    ("GET", "/api/approvals-mode"): ("GET", "/api/approvals-mode"),
+    ("GET", "/api/hold-reasons"): ("GET", "/api/hold-reasons"),
     # operations
     ("GET", "/api/operations/services"): ("GET", "/api/operations/services"),
     ("GET", "/api/operations/logs"): ("GET", "/api/operations/logs"),

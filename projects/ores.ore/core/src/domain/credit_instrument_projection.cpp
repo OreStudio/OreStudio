@@ -1116,9 +1116,9 @@ auto read_credit_instrument(xml::record_reader trade, std::string_view trade_typ
 }
 
 void write_cbo(record_writer& trade, const credit_instrument_data& v) {
-    auto investment = trade.child("CBOData").child("CBOInvestment");
     if (v.cbo_instruments.empty())
         return;
+    auto investment = trade.child("CBOData").child("CBOInvestment");
     const auto& fact = v.cbo_instruments.front();
     scalar_terms::write_text(investment, "TrancheName", fact.tranche_name);
     scalar_terms::write_text(investment, "Notional", fact.notional.to_string());

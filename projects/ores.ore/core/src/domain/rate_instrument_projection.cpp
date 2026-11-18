@@ -423,7 +423,6 @@ auto read_capfloor(const record_reader& trade) -> swap_instrument_data {
     return result;
 }
 
-// A straddle states a swaption's element under its own name, so both read here.
 auto read_rate_digital_option(const record_reader& trade) -> swap_instrument_data {
     swap_instrument_data result;
     result.header = rate_instrument_projection_make_header("RateDigitalOption");
@@ -448,6 +447,7 @@ auto read_rate_digital_option(const record_reader& trade) -> swap_instrument_dat
     return result;
 }
 
+// A straddle states a swaption's element under its own name, so both read here.
 auto read_swaption(const record_reader& trade, std::string_view trade_type)
     -> swap_instrument_data {
     swap_instrument_data result;

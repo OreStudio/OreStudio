@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 2454C5FF-E84D-4ABC-807B-ECA17287A271
+:END:
+#+title: Task: Bring the codegen tests and the trading output up to the tree
+#+description: Four codegen tests fail on main. Two assert a policy shape that a November change replaced for a security reason, one hardcodes a routed-code list the catalogue has since grown, and one names four trading models that declare an include they do not use.
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/align-the-codegen-tests-with-the-tree
+#+pr: 4843
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the codegen suite pass on main by putting each test on the side of the change that is newer, and by taking the unused include out of the four models rather than out of the headers by hand.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The codegen suite passes, 1809 tests.
+- The two RLS tests assert the two-policy shape, and each states why a single for-all policy admitting the system tenant's rows is refused.
+- The four trading models declare only the headers their domain class uses, and the headers are generated from them.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Codegen tests failing | 4 of 1809 | `pytest projects/ores.codegen/tests -q` | 4834e28b1c |
+| Codegen tests after the change | 1809 passed, 264.70s | same | 52c5e5b0b2 |
+| Trading files the generator would rewrite | 25 | `check_component_drift.py --component trading-cpp` | 52c5e5b0b2 |
+| Create scripts that lost the widened for-all | 7, each gaining a SELECT-only shared-read policy | `git diff projects/ores.sql/create/trading/trading_script*_create.sql` | working tree |
+| Policies after applying them | a PERMISSIVE ALL tenant policy and a PERMISSIVE SELECT shared-read policy | `select tablename, policyname, permissive, cmd from pg_policies where tablename like 'ores_trading_script%'` | working tree |
+| Local gates on the superseded branch | the first failed on er-diagram and build, the second on the synthetic golden file; ctest and ticks-smoke failed under host load | `compass check` | e439d8a0ee, b5d259394d (dropped by the rebase) |
+| Local gate on the rebased branch | 54 of 54 passed: codegen, cpp, docs, modeling; build, ctest, ticks-smoke green | `compass check` | ba7aa19e12 on 2860712f0a |
+| Local gate after main landed both test fixes | 35 of 35 passed: codegen, docs | `compass check` | fd19f9be29 on 82fd396e6f |
+
+* Notes
+
+- Main landed the rest of this task while it waited for review.
+  =424d2f0a59= and =e441cebcbb= regenerated the script tables with the
+  two-policy shape and the tenant-scoped claim reads, =3883a780ae= made the
+  two continuous quantities doubles and converts them at the builder, and
+  =a3f4a5c306= (PR #4835) moved the two RLS tests to the split policy.
+  =4142d6f69d= named =SwaptionStraddle= in the routed-table test and took
+  the unused optional include out of the four script models. The
+  rebases on =2860712f0a= and =82fd396e6f= kept main's version of each and dropped this
+  branch's equivalents, including a builder that took doubles as its terms:
+  main's conversion at the row is as correct, and it is merged.
+- A gate on the superseded branch failed its ticks-smoke because
+  ores.marketdata.service and ores.refdata.service hit the 90s systemd start
+  timeout while ctest ran ores.marketdata.core.tests and other worktrees'
+  services crash-looped on the same host. Run alone, the smoke passed.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4843][#4843]] | [codegen] Align the tests and the trading includes with the tree |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the generator template writes no value for a double field, so the converted columns stay null in synthetic rows. | =equity_position_instrument_generator.cpp= | Decline here | Older than this branch: the instrument's double =quantity= already had the gap. Filed as the capture [[id:B9E1C314-8D56-4BD0-9163-89075B47B9AE][The generator template leaves a double column unfilled]]. |
+| 2 | Local review: misspell on the changed files. | all | Accept | Clean. |
+| 3 | Claude review: =WIDENED_FOR_ALL= is an exact, whitespace-sensitive substring, so a reformatted widened policy would pass. | =test_rls_own_or_system_tenant_rows.py= | Decline | The template's output is deterministic, and the sibling =WRITE_POLICY_BODY= and =READ_POLICY_BODY= checks match exactly too; one regex-normalised check would break the file's convention. |
+
+* Result
+
+The codegen suite passes on main again. Main landed every fix this task
+set out to make while it waited for review, and the rebases kept main's
+version of each; see the notes. What this task adds is one guard:
+
+- The RLS tests, on main's split-policy assertions, also refuse the single
+  widened for-all policy, so the test fails if that policy returns beside
+  the pair.

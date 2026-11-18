@@ -96,6 +96,15 @@ for select using (
     or tenant_id = ores_utility_system_tenant_id_fn()
 );"""
 
+# What the two policies must never become: one FOR ALL condition that admits the
+# system tenant's rows to a write as readily as to a read, which let a tenant
+# move a platform row into its own tenant or close it for everyone.
+WIDENED_FOR_ALL = """\
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)"""
+
 JUNCTION = """\
 :PROPERTIES:
 :ID: 00000000-0000-0000-0000-0000000000F2
@@ -166,6 +175,7 @@ def test_the_flag_emits_own_or_system_tenant_rows_and_a_tenant_scoped_write(tmp_
         tmp_path, rls_flags=":rls_own_or_system_tenant_rows: true\n")
     assert WRITE_POLICY_BODY in sql
     assert READ_POLICY_BODY in sql
+    assert WIDENED_FOR_ALL not in sql
 
 
 def test_the_flag_emits_no_widening(tmp_path):
@@ -248,6 +258,7 @@ def test_a_junction_emits_own_or_system_tenant_rows_and_a_tenant_scoped_write(tm
         ":rls_own_or_system_tenant_rows: true\n")
     assert WRITE_POLICY_BODY in sql
     assert READ_POLICY_BODY in sql
+    assert WIDENED_FOR_ALL not in sql
 
 
 def test_a_junction_without_tenant_isolation_is_refused(tmp_path):

@@ -8,7 +8,7 @@
 #+filetags: :link_the_shared_service_error_on_windows:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/link-the-shared-service-error-on-windows
-#+pr:
+#+pr: 4860
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4860][#4860]] | [service,ore] Link the shared service error on Windows |
 
 * Review
 

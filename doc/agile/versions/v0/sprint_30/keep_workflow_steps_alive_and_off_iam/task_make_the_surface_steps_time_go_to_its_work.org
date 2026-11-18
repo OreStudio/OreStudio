@@ -31,10 +31,10 @@ time, and reads and writes in batches, so its time goes to the fits.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | The step does its own work in lanes over one gather: the requests to itself are gone, a party's catalogue is four reads and its market one snapshot, the lineage read is one per surface, and the recipe is indexed once. |
+| Now          | Every step of the marketdata family reads and publishes where it stands, and runs its independent units in lanes. The four steps still ask refdata for one thing: the plan they write into refdata's tables. |
 | Waiting on   | A run on a host that is not building five other branches, so the wall clock means something. |
-| Next         | The curves, blueprint and subscription steps take the same treatment; then the batch approval task. |
-| Last touched | 2026-11-17                               |
+| Next         | The batch approval task, [[id:C756C87B-2284-4BCB-AAEC-F2EA4F2F6D6F][Approve a set of surfaces in one request]]. |
+| Last touched | 2026-11-18                               |
 
 * Acceptance
 
@@ -99,6 +99,12 @@ task and name that file in the Command column.
 | The run that proves the gather | the step published 26 of 35 surfaces for the one party whose blueprints the run wrote, with no error of its own; the other parties held no blueprints because the derived source quoted 2,978 of the 3,888 ids the run demands, which is upstream of this step | =./compass.sh smoke ticks --fresh= | =d2e6130c9a= |
 | Requests to its own service, forwards | 0, from 2 per pair (~3,800 a party: a read and a publish) | =publish_party_forwards= calls the forward publish service where it stands | =06c0798b6d= |
 | Pairs published at once | 4 | =run_party_forwards= | =06c0798b6d= |
+| Requests to its own service, curves | 0, from a holdings page per retry round, a published-set page, and a bootstrap and a publish per curve | =compute_and_publish_curve= calls =curve_republish_service::compute= and =approval_gated_curve_publish_handler::answer= where it stands | =b730b21b10= |
+| A party's curve holdings and published sets | 1 statement a table, from a page of requests for each | =read_party_curve_holdings= and =published_configs_of= | =b730b21b10= |
+| Curves bootstrapped and published at once | 4 | =run_party_curves= | =b730b21b10= |
+| Requests to its own service, surface blueprints | 0 reads: the party's series and blueprints are 1 statement a table | =read_party_surface_holdings= | =b730b21b10= |
+| Requests to its own service, market data | 0, from 4 requests a party (a feed page, two party pages, then two reads and up to two writes a party) | =subscribe_market_data= reads the catalogue, the parties, and each party's subscriptions and routes where it stands | =branch= |
+| The plan writes | still requests: refdata owns the tables | =information_schema.role_table_grants= shows the marketdata role holds =SELECT= only on =ores_refdata_ir_curve_bootstrap_configs_tbl=, its =pillars=, the =fx_vol_surface_blueprints=, their =pillars= and their =pillar_sources= | =b730b21b10= |
 | The step's wall clock | not measured: the host ran at a load average of 45 to 56 (other worktrees building) and two of the three runs had incomplete market data (the derived source quoted 2,978 of 3,888 ids), so the step had a fraction of its work to do | =./compass.sh smoke ticks --fresh=, =uptime= | =branch= |
 
 * Notes
@@ -130,6 +136,13 @@ task and name that file in the Command column.
   read therefore asks a datum whether it holds the field before it asks for its
   value: asking a TWD overnight swap for an expiry is the error the first run
   of this shape reported, =IR_SWAP does not hold expiry=.
+- The plan a curve or a surface step writes stays a request, and that is a
+  decision and not an omission: the configs, their pillars and the blueprints
+  are refdata's tables, and the marketdata service's role holds the read
+  privilege on them and no more. Writing them where the step stands would be
+  refused by the store, and granting the write would move a refdata table's
+  owner to a second service. The reads around them are the step's own, so the
+  split follows the tables rather than the transport.
 - One instant per party is a behaviour change worth naming: the party's surfaces
   are one reading of the market, so they are calibrated at the instant the
   snapshot was taken rather than at the instant each surface came round.

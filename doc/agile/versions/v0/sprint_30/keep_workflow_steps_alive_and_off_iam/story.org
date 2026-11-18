@@ -155,6 +155,19 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
   whether the service's own role may be the maker of an installation-wide
   publish. Until someone states them, iam keeps the step and the impersonation
   it uses, and the task stays open.
+- *A step reads where it stands and writes where the table's owner is,
+  2026-11-18.* Moving a marketdata step onto its own process meant asking, of
+  every call it made, who owns the table behind it. The reads answered the
+  marketdata service: its own tables outright, refdata's and the parties' under
+  a grant it already holds. The writes did not. The marketdata role holds
+  =SELECT= and no more on =ores_refdata_ir_curve_bootstrap_configs_tbl=, its
+  =pillars=, the =fx_vol_surface_blueprints=, their =pillars= and their
+  =pillar_sources=, so a curve plan or a surface plan written in process is
+  refused by the store. The steps therefore read, gather and publish where they
+  stand and still ask refdata to write the plan. The alternative, granting the
+  write, would make a refdata table owned by two services, which is the rule
+  this story is built on, and the saving would be a handful of batched requests
+  a party, which is nothing beside the requests the steps no longer make.
 - *Four services work one run at once, 2026-11-17.* The measured run has iam,
   refdata, synthetic and marketdata working overlapping steps: between 15:10:59
   and 15:13:32 marketdata served a party's curves and its surface blueprints

@@ -1487,7 +1487,7 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "physical-inventory": ("physical_inventory",),
     "registry-exceptions": ("registry_exceptions",),
     "reachability": ("test_case_reachability",),
-    "portable-stop": ("portable_stop",),
+    "portable-stop": ("portable_cpp",),
     "event-registrars": ("event_registrars",),
     "history-registrars": ("history_registrars",),
     "handler-registrars": ("handler_registrars",),

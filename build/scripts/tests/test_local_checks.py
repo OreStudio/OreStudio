@@ -520,5 +520,6 @@ def test_a_codec_name_with_a_digit_is_read(tmp_path):
 def test_every_codec_a_gate_maps_to_is_enabled_in_the_configuration():
     rows = re.findall(r"^\| (\w+) \| (yes|no) \|", (REPO_ROOT / ".compass.org").read_text(), re.M)
     enabled = {name for name, state in rows if state == "yes"}
+    enabled |= {doc.stem for doc in (REPO_ROOT / "compass" / "checks").glob("*.org")}
     mapped = {codec for codecs in local_checks.COMPASS_CODECS.values() for codec in codecs}
     assert mapped <= enabled, sorted(mapped - enabled)

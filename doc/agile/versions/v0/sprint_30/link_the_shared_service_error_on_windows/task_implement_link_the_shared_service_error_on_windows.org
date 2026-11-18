@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-18
 #+updated: 2026-11-18
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:51A61A3A-AB4B-4E7A-A8CE-014CA1C50840][Link the shared service error on Windows]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:51A61A3A-AB4B-4E7A-A8CE-014CA1C50840][Link the shared service error on Windows]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -83,3 +83,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+=service_error= now has a unit of its own: the constructor and an out-of-line
+destructor live in =projects/ores.service/src/messaging/service_error.cpp=, which
+makes the shared library own the vtable and export the members its consumers
+import. The Linux build shows the constructor (C1/C2) and destructor (D0/D1) as
+defined exports, which are the symbols LNK1120 named on both Windows legs.
+
+The projection test lost a =value_of= lambda that its case never calls, which
+clang warned about on every build.
+
+An audit of all 3,418 exported classes found four more with no translation unit:
+=awaitable_body_source= and =body_source= in =ores.http.api=,
+=repository_exception= in =ores.database= and =tenant_provisioning_service= in
+=ores.iam.core=. They are captured rather than fixed here.

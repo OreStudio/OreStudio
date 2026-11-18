@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 03C3B2EA-3A9C-4A2D-9330-7788D308772C
+:END:
+#+title: A compute wrapper whose NATS connection closes keeps failing…
+#+description: A compute wrapper whose NATS connection closes keeps failing every claim and heartbeat for hours and never reconnects, so the grid loses the node silently until somebody restarts the unit.
+#+type: capture
+#+level: cross
+#+filetags: :compute:grid:nats:reconnect:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A compute wrapper whose NATS connection closes does not reconnect. On 2026-11-17 the six newton
+wrappers of =eager_maxwell= lost their connection when the pauli NATS container was recreated, and
+on 2026-11-18 they were still failing: =Claim failed (1447 in a row): NATS request failed: Connection
+Closed=. The units said =active running= the whole time, and the grid showed no node from that
+machine. Restarting the unit reconnects at once, and the same certificate then works.
+
+The wrapper does recover the same connection type elsewhere: the wiener units had stopped entirely
+and came back on redeploy, and the goedel units connect first time.
+
+* Why
+
+A deploy that recreates the broker leaves every compute node silently dead, and the only sign is a
+grid with fewer machines than it should have. The unit's restart policy does not help, because the
+process never exits; it keeps logging a failure every heartbeat. The client either needs to rebuild
+its connection after a closed one, or the process needs to exit so the unit restarts it.
+
+Evidence: =journalctl --user -u ores-compute-node-eager_maxwell-1= on newton, 2026-11-17 21:06 to
+2026-11-18 08:48, and the same unit working two minutes after a restart.
+
+* References
+
+- =compass env deploy <host> --role compute= restarts the units and brings the node back.
+- The grid counts machines from =ores_compute_node_samples_tbl=, so a node that stops reporting
+  vanishes without an error.
+
+* References
+
+-
+
+* See also
+
+-

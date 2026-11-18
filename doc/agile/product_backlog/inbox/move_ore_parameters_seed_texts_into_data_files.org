@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A80F98D6-82AB-40AC-841F-5C7FEB83D7F1
+:END:
+#+title: Move the ORE parameters seed's texts into data files
+#+description: generate_ore_parameters_dataset.py keeps about 7,800 lines of texts and logic in Python, so compass-ng cannot port the ore-parameters-seed gate. Move the texts into data files compass can read, then port the gate.
+#+type: capture
+#+level: cross
+#+filetags: :compass:sql:gates:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

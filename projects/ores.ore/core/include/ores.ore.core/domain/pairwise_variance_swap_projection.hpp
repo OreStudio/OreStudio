@@ -53,16 +53,16 @@ inline auto decimal_of(const std::string& text) -> decimal {
     return decimal{};
 }
 
-inline auto values_of(const xml::record_reader& data, std::string_view list)
-    -> std::vector<std::string> {
+inline auto values_of(const xml::record_reader& data,
+                      std::string_view list) -> std::vector<std::string> {
     if (const auto node = data.child(list))
         return node->values("Value");
     return {};
 }
 
 /// A free-style scalar is a node whose own text is the value.
-inline auto free_text(const xml::record_reader& data, std::string_view element)
-    -> std::optional<std::string> {
+inline auto free_text(const xml::record_reader& data,
+                      std::string_view element) -> std::optional<std::string> {
     if (const auto node = data.child(element))
         return node->own_text();
     return std::nullopt;
@@ -73,16 +73,16 @@ set_free_text(xml::record_writer& data, std::string_view element, const std::str
     data.child(element).set_own_text(value);
 }
 
-inline auto optional_decimal(const xml::record_reader& data, std::string_view element)
-    -> std::optional<decimal> {
+inline auto optional_decimal(const xml::record_reader& data,
+                             std::string_view element) -> std::optional<decimal> {
     if (const auto text = free_text(data, element))
         if (const auto parsed = decimal::from_string(*text))
             return *parsed;
     return std::nullopt;
 }
 
-inline auto decimals_of(const xml::record_reader& data, std::string_view list)
-    -> std::vector<decimal> {
+inline auto decimals_of(const xml::record_reader& data,
+                        std::string_view list) -> std::vector<decimal> {
     if (const auto node = data.child(list))
         return node->decimals("Value");
     return {};

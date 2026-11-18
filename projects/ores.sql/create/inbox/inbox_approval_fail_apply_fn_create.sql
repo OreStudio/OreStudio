@@ -33,6 +33,7 @@
  * caller's tenant. It answers one row: the outcome (ok, missing, conflict), a
  * message, and the request's state and version afterwards.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=moves an approved request to apply_failed in one guarded statement and answers ok, missing or conflict, which the repository does not express; recorded in entity_table_writes_baseline.json
 create or replace function ores_inbox_fail_apply_fn(
     p_request_id uuid,
     p_reason text,

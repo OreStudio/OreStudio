@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 08035698-916F-4134-8D93-B89D2C284BE4
+:END:
+#+title: Task: Publish the new trade tables to the web, and read the rest of the drift
+#+description: The BFF list request descriptor table is stale, and the same four new trade tables are the cause it was before. The wider drift the component-drift check reports is not stale output: regenerating it removes work, so that half has to be read rather than re-run.
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/regenerate-the-output-that-drifted-from-its-models
+#+pr: 4832
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the bff-list-requests check pass on main, and find out whether the component-drift check can be cleared the same way. It cannot, and the reason is worth recording: what the generator would write back deletes hand-written work.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- check_bff_list_requests.py reports that every hand-written list request agrees with the protocol and that the descriptor table is current.
+- The two tables the four new instrument tables needed are in the descriptor table beside the other instruments' tables.
+- The component-drift finding is written down with the three files that show it, so the next reader does not run the regeneration and lose them.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| List descriptors missing | 8: a list and a versions-list for each of 4 tables, 40 lines | `regenerate_list_request_descriptors.py --check` | 31367addf5 |
+| List requests read after the seed | 1286 written, 1284 checked | `regenerate_list_request_descriptors.py` | 31367addf5 |
+| Files the component generator would rewrite | 26 | `check_component_drift.py --all` | 31367addf5 |
+| Files of those 26 that lose work | at least 3: `pugixml::pugixml` from the ores.ore test link, the `= 0` on two staleness seconds, a party-scoped fixing read | `git diff` after `--all --write` | 31367addf5 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4832][#4832]] | [web] Publish the new trade tables' list descriptors |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+*The descriptor table is current, and the wider drift is not stale output.*
+
+The table was missing eight entries, a list and a versions-list for each of
+the four instrument tables that landed without their row-level security and
+their permissions. It is the same omission seen from the web side: the
+tables reached the schema and the C++ and nothing in the browser knew they
+were listable. =regenerate_list_request_descriptors.py= wrote them beside
+the other instruments, and the check now reads 1284 requests and finds every
+one agreeing with the C++ protocol.
+
+*The component generator is not safe to run.* The check says 26 files differ
+from their models and suggests regenerating. I ran it into a scratch tree and
+read what it would write. It removes:
+- =pugixml::pugixml= from the =ores.ore/core/tests= link, though
+  =domain_script_library_projection_tests.cpp= includes =<pugixml.hpp>= and
+  is built by that target, so the build breaks;
+- the = 0= on =stale_seconds_ir= and =stale_seconds_fx=, leaving two
+  members of a hand-written configuration struct with no value until the
+  parser fills them;
+- a party-scoped =market_fixing_repository::read_latest_for_series= that
+  takes a tenant, a party and a set of series.
+
+None of those is generated output that drifted. They are work added to
+files the generator also owns, and the model does not describe them. Running
+the generator would delete the work and pass the check. So the drift is a
+model gap, one member at a time, and it needs the models changed rather than
+the generator run.
+
+*Gate.* =compass check --exclude-heavy= ran 11 checks and passed 10, and
+=check_bff_list_requests.py= is one of them. The eleventh, =web=, hit its own
+900 second limit: it opens with =npm ci=, a full reinstall, before it reaches
+a single test. Run one at a time on the tree the check leaves behind, the
+three things it stands for all pass:
+
+- =prettier --check= on the regenerated table: all files use Prettier style.
+- =npm run typecheck= across the workspaces: no error.
+- The tests that read the table: =@ores/wire-protocol= 225 passed,
+  =@ores/bff= 1301 passed.
+
+*What is still red.* =component-drift= for the reason above, and
+=money-decimal-columns= and =codegen-tests=, each of which needs a decision
+about which side is right rather than a rerun.

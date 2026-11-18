@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F6D8D407-EE6D-42F9-B211-1DE9C383D64E
+:END:
+#+title: Keep the system tenant's rows out of writes and removals
+#+description: Repositories of models with system_tenant_visible read the system tenant's rows beside the caller's, and some write paths use those reads. The pair template (tenor_convention_resolution, app_version_platform_junction, product_type_asset_class_junction) builds batch claims from read_current and single claims from read_latest with shared rows, so a tenant's write of a key the system tenant holds is claimed against the system row and refused. The entity template's remove reads read_latest with shared rows, so removing a key only the system tenant holds reports conflicting rather than missing. The script entities' claim_rows filter is the pattern: a claim or a removal acts on the caller's own rows. About 100 models carry the flag. Found by the review of PR 4835.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:security:repository:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -44,6 +44,7 @@
  * @param p_curves    the curve definitions published, as
  *                    {"currency": ..., "curve_id": ..., "day_counter": ...}.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=writes the live market series a published curve configuration names from its staged curves, as every publish from DQ does; recorded in entity_table_writes_baseline.json
 create or replace function ores_marketdata_publish_curve_series_fn(
     p_tenant_id uuid,
     p_party_id uuid,

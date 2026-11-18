@@ -114,10 +114,22 @@ export function startHeartbeat(options: HeartbeatOptions): () => void {
  * on one line, `project(Name VERSION x.y.z`, as the project writes it, and a
  * different layout reports `unknown` rather than a wrong number. A tree with no declaration
  * reports `unknown`, which the screen shows rather than hides.
+ *
+ * A staged tree carries the release in a `version` file instead, because the
+ * image ships the packages without the declaration that produced them. That
+ * file wins at a level, and the declaration is the fallback.
  */
 export function releaseVersion(start: string): string {
     let directory = resolve(start);
     for (let depth = 0; depth < MAX_CLIMB; depth += 1) {
+        try {
+            const declared = readFileSync(resolve(directory, 'version'), 'utf8').trim();
+            if (declared !== '') {
+                return declared;
+            }
+        } catch {
+            // No staged release at this level: the declaration may name it.
+        }
         try {
             const cmake = readFileSync(resolve(directory, 'CMakeLists.txt'), 'utf8');
             const release = /project\(\s*\w+\s+VERSION\s+([0-9.]+)/.exec(cmake)?.[1];

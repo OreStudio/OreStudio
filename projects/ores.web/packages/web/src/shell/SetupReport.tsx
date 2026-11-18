@@ -51,9 +51,13 @@ export function warnedSteps(progress: WorkflowProgress): WarnedStep[] {
             id: step.id,
             name: step.name,
             label: step.label !== '' ? step.label : step.name,
-            warnings: step.log
-                .filter((entry) => entry.level === 'warn' || entry.level === 'error')
-                .map((entry) => entry.message),
+            warnings: [
+                ...new Set(
+                    step.log
+                        .filter((entry) => entry.level === 'warn' || entry.level === 'error')
+                        .map((entry) => entry.message),
+                ),
+            ],
         }));
 }
 
@@ -228,13 +232,20 @@ export function SetupReportPage(): ReactNode {
                                     {t('journey.tenantSetup.report.rerun')}
                                 </Button>
                             </div>
-                            <ul className="mt-2 space-y-1 text-sm">
-                                {step.warnings.map((warning, index) => (
-                                    <li key={index} className="break-words">
-                                        {text(warning)}
-                                    </li>
-                                ))}
-                            </ul>
+                            {step.warnings.length > 0 && (
+                                <details className="mt-2 text-sm">
+                                    <summary className="cursor-pointer text-ink-muted">
+                                        {step.warnings.length} warning(s)
+                                    </summary>
+                                    <ul className="mt-2 space-y-1">
+                                        {step.warnings.map((warning, index) => (
+                                            <li key={index} className="break-words">
+                                                {text(warning)}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </details>
+                            )}
                         </li>
                     ))}
                 </ul>

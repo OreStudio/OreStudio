@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-grid-resources
+#+pr: 4831
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
-#+updated: 2026-11-09
-#+environment:
+#+updated: 2026-11-17
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The gateway has no part for the grid area. Add the part with the adapter recipe,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
 
 * Acceptance
 
@@ -42,9 +42,45 @@ The gateway has no part for the grid area. Add the part with the adapter recipe,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The part comes first, by the adapter recipe that stood up
+=ores.http.synthetic=: the model, the four hand-authored CMake files, the
+composite root, the generated umbrella header, the hand-written aggregate, the
+file lists, the diagram, and the server's registration. It is named
+=ores.http.compute= after the domain it projects, and it is registered before a
+single route is served, so the tree builds with the part in place.
+
+The routes then follow in families, one commit each, because the grid's reads are
+four joins rather than four lists:
+
+- The batches, work units and results are three collections the grid screens page
+  through, newest first, each row carrying the name of the run and the party that
+  made it. The grid service answers them; the gateway joins the party names.
+- One batch's work units, one work unit's results, and one result's output are the
+  children of a row, and the output is the bytes the grid stored, so the part
+  reads =ores.storage.api= for the entry and streams it.
+- The application versions are the catalogue the runners offer: one build with its
+  packages and the versions beside it, and the release note the super
+  administrator edits against the version they read.
+- The three composed views — =/api/operations/grid=, =/series= and =/usage= — are
+  their own task, as the story states: their design, the stored summary and the
+  counters per bucket, is settled before they are served.
+
+The grid's own paths stay as the BFF wrote them, =/api/operations/grid/...=, so the
+browser leaves the BFF with no change, and each route is paired in the inventory
+under the =grid= area.
+
+The jobs' seven reads are served first: the two pages the grid screens open on,
+the batch's children, the work unit's children, and the three single rows. One
+unit states the join the four share, =grid_views=, so the page's sentence, the
+party names and the run names are stated once. Two departures from the BFF are
+recorded below: the node a run ran on is shown to the system tenant alone, and
+the party names are one read per page rather than the session's own list.
+
+The two downloads follow: the input bundle of a work unit and the output archive
+of a run. The part reads the record on the caller's own token first, so a caller
+who may not read the record is refused before a byte is read, and then streams
+the object out of the store the grid wrote it to. The aggregate takes the
+storage root, as the reporting part's does, and the server passes its own.
 
 * Measurements
 
@@ -58,9 +94,55 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The compute part's test suite | 18 cases, 252 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.compute.tests= | the jobs unit commit |
+| The grid area's routes the C++ server answers | 7 of 14 paired | =python3 build/scripts/route_inventory.py --check= | the jobs unit commit |
+| The gateway's routes in the inventory | 1358 routes, 1030 answered by the gateway, 264 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the jobs unit commit |
+| The compute part's test suite | 24 cases, 295 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.compute.tests= | the downloads commit |
+| The grid area's routes the C++ server answers | 9 of 14 paired | =python3 build/scripts/route_inventory.py --check= | the downloads commit |
+| The gateway's routes in the inventory | 1360 routes, 1032 answered by the gateway, 266 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the downloads commit |
+| The compute part's test suite | 29 cases, 356 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.compute.tests= | the catalogue commit |
+| The grid area's routes the C++ server answers | 11 of 14 paired | =python3 build/scripts/route_inventory.py --check= | the catalogue commit |
+| The gateway's routes in the inventory | 1362 routes, 1034 answered by the gateway, 268 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the catalogue commit |
 
 * Notes
+
+** The join the jobs reads share
+
+The BFF read the party names off the session it held, which the gateway does not
+keep, so the part reads the parties of the caller's own account once per page.
+A batch with no party, or a read of the parties that fails, states no party name
+and the page still answers.
+
+The runs a batch names in its =external_ref= are read in one list request for
+the whole page, as the BFF read them. A reference that is not an identifier, or a
+run the caller may not read, states no run name.
+
+** The node a run ran on
+
+A run states its node only to a caller whose token is scoped to the system
+tenant; every other caller reads =host_hidden= where the node is known. That is
+the rule the BFF applied, read from the token rather than from a session.
+
+** The stored bytes
+
+A row states the address of its object as the storage service serves it, so the
+download reads the key out of that path and nothing else: a row that names
+another bucket, or a path outside the storage service, answers 404 rather than
+reading something the row did not mean. The object is streamed from the store a
+buffer at a time, under the name of its last segment, and is never held whole.
+
+** The release note's conflict
+
+A note edited by someone else since the editor read it is refused with 409 and
+the service's own sentence, where the BFF answered a failure of its own. The
+version the body states is the guard the screen already sent, so the refusal
+is the one the person can act on.
+
+** The acknowledgements
+
+A batch or a run the caller may not read answers the service's own refusal: 403
+for a denied read, 404 for one that names nothing, 400 for an address the service
+calls invalid. A read whose service does not answer is 502.
 
 * Test Scenarios
 
@@ -77,7 +159,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4831][#4831]] | [http,compute] Serve the grid's resources and stand the compute part up |
 
 * Review
 
@@ -86,3 +168,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Every grid resource route, and none of them left behind. Eleven routes are
+  served at the BFF's addresses, and each names its C++ equivalent in the
+  inventory, so the grid area reads 11 of 14 paired. The three that remain are
+  the composed views, which the story owns as their own task.
+- Tests. =ores.http.compute.tests= holds 29 cases and 356 assertions, all
+  passing. They prove every route is registered by the part's aggregate at the
+  pattern it states, requires a session, and answers the service's absence with
+  502; every refusal the routes decide themselves, which is a page that is not
+  one, a parameter they do not take, an address that is not an identifier and a
+  body that is not the shape they take; and the shapes the views state, which
+  are the run and party a batch names, the nil identifier as none, the node a
+  run hides from a reader who may not see it, the page's own members, the object
+  an address names and the header a download name reaches.
+- The gate. =compass check --exclude-heavy= runs 51 checks and 48 pass. The
+  three that fail are not this branch's and reproduce on =origin/main=:
+  =money-decimal-columns= names two trading equity position models,
+  =forward-declarable-includes= names the marketdata provisioning step
+  registrar, and =codegen-tests= fails two row-level security tests that the
+  template and the schema disagree on.
+- What the tests cannot prove. The routes are proved against a client that is
+  not connected, so every happy path is read from the code and not exercised
+  against a live estate. The refusals, the registration and the shapes are the
+  parts a test can hold without one.
+- The departures, stated so a reader does not meet them as surprises: a run
+  shows its node to the system tenant alone; the party names are one read per
+  page rather than the session's own list; a stale release note answers 409 with
+  the service's sentence where the BFF answered a failure of its own; and a
+  download reads the object store directly instead of fetching it over the
+  storage service's HTTP interface.

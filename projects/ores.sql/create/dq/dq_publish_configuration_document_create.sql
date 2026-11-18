@@ -83,6 +83,7 @@ comment on function ores_dq_party_uuid_fn(uuid, uuid) is
  * A publish only inserts. The mode a caller passes has no effect, and a staged row
  * whose live id exists is left as it is, so a changed document needs new ids.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=writes the live tables of a configuration document from its staging tables, as every publish from DQ does; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_publish_configuration_document_fn(
     p_dataset_id uuid,
     p_tenant_id uuid,

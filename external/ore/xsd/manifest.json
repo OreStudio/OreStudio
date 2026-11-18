@@ -9,6 +9,6 @@
   "synced_by": "external/ore/tools/update_ore_samples.sh",
   "file_count": 27,
   "top_level_entries": ["baselTrafficLightconfig.xsd", "calendaradjustment.xsd", "check.cmd", "check.sh", "collateralbalance.xsd", "conventions.xsd", "counterparty.xsd", "creditsimulation.xsd", "currencyconfig.xsd", "curveconfig.xsd", "historicalreturnconfig.xsd", "iborfallbackconfig.xsd", "input.xsd", "instruments.xsd", "intradaypowerloaddata.xsd", "nettingsetdefinitions.xsd", "ore.xsd", "ore_types.xsd", "pricingengines.xsd", "referencedata.xsd", "scriptlibrary.xsd", "sensitivity.xsd", "simmcalibration.xsd", "simulation.xsd", "stress.xsd", "todaysmarket.xsd", "xsd_bindings.xjb"],
-  "tree_sha256": "83c989291bfcf42fcda955c9ee9cbc5ea6484cc121732b57649a852c496d2012",
-  "tree_sha256_method": "sha256 of the sorted 'sha256sum  relative/path' lines for every vendored file (manifest.json/README.md/methodology.txt themselves excluded) -- reproducible by re-running this script against the same engine_commit and diffing the regenerated manifest.json's own tree_sha256."
+  "tree_sha256": "b78317a6ffc748e26005480109c96cbbf5ca479a3a0d6a4074d408c3b005fbb4",
+  "tree_sha256_method": "sha256 of the 'sha256sum  relative/path' lines in byte order (LC_ALL=C) for every vendored file (manifest.json/README.md/methodology.txt themselves excluded) -- reproducible by re-running this script against the same engine_commit and diffing the regenerated manifest.json's own tree_sha256."
 }

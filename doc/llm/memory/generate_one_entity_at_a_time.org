@@ -2,13 +2,20 @@
 :ID: 77769020-CCA6-4F2C-ADAB-81C0AEFF7FF2
 :END:
 #+title: Generate one entity at a time, through an address
-#+description: Run codegen per entity with --address rather than per component or with --all, so a narrow change produces a narrow diff.
+#+description: Run the Python codegen per entity with --address, so a narrow change produces a narrow diff; compass-ng generate writes only what changed and is the tree-wide run.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
 #+filetags: :codegen:drift:hygiene:memory:feedback:
 #+created: 2026-09-19
-#+updated: 2026-09-27
+#+updated: 2026-11-18
+
+With compass-ng the tree-wide run is the normal one: =./compass.sh generate=
+writes only the outputs whose inputs changed, and the gate fails any drift
+anywhere in the tree, so =./compass.sh diff= is clean on main and a
+regeneration shows exactly what a change touched. Preview with
+=./compass.sh diff=, then run =./compass.sh generate=. The rule below holds
+for the Python codegen, which stays for scaffolding and single-address runs.
 
 Regenerate codegen output one entity at a time, always through an explicit --address: =compass codegen generate --model <model.org> --address <facet>=, or =compass codegen regenerate --component <component> --address <facet> --entity <names>=. Never run a whole-component regeneration or --all to check one model.
 

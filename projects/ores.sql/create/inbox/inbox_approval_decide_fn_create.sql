@@ -62,6 +62,7 @@
  */
 drop function if exists ores_inbox_decide_approval_request_fn(uuid, integer, text, uuid, text, text, text);
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_inbox_decide_approval_request_fn(
     p_request_id uuid,
     p_version integer,

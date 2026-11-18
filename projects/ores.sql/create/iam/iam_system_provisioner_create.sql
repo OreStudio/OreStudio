@@ -50,6 +50,7 @@
 --
 -- Returns: The UUID of the newly created account
 -- =============================================================================
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_create_initial_admin_fn(
     p_principal text,
     p_email text,

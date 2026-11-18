@@ -23,6 +23,8 @@ IndentPPDirectives: AfterHash
 # ── Line length ───────────────────────────────────────────────────────────────
 ColumnLimit: 100
 
+CommentPragmas: '^ compass:except'
+
 # ── Pointer / reference alignment ────────────────────────────────────────────
 DerivePointerAlignment: false
 PointerAlignment: Left

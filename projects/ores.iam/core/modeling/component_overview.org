@@ -91,10 +91,12 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.iam.api.lib
         ores.geo.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.variability.core.lib
         ores.database.lib
         ores.dq.api.lib
         ores.eventing.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.eventing.core.lib
         ores.platform.lib
         ores.security.lib
@@ -104,12 +106,14 @@ target_link_libraries(${lib_target_name}
         ores.reporting.api.lib
         ores.scheduler.api.lib
     PRIVATE
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.history.core.lib
         ores.iam.client.lib
         ores.inbox.api.lib
         ores.service.lib
         ores.utility.lib
         ores.refdata.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.refdata.core.lib
         ores.synthetic.api.lib
         ores.marketdata.api.lib

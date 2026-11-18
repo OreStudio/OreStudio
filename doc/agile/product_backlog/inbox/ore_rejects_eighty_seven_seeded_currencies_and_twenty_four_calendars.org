@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 94F636A5-F050-459A-91D3-301C55C52F0B
+:END:
+#+title: ORE does not know 87 of the seeded currencies or 24 of the seeded calendars
+#+description: ORE does not know 87 of the currencies and 24 of the calendar codes that the exported conventions name, so a report run logs hundreds of parse failures and a trade in any of those currencies cannot be priced.
+#+type: capture
+#+level: cross
+#+filetags: :conventions:marketdata:reports:ore:currencies:calendars:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The report run =3cc4de26-d607-43a8-9709-0cb1bc075d81= (Intraday Risk Monitor, ACME UK)
+exported the convention set and ORE rejected a large part of it. Of the 333 lines ORE wrote,
+87 name a currency it does not know and 24 name a calendar it cannot convert:
+
+- Unknown currencies: AFN, ALL, AMD, ANG, AWG, AZN, BAM, BBD, BDT, BIF, BMD, BND, BOB, BSD, BTN,
+  BYN, BZD, CDF, CRC, CUP, CVE, DJF, DOP, DZD, ERN, FJD, FKP, GIP, GMD, GNF, GTQ, GYD, HNL, HTG,
+  IQD, IRR, JMD, KGS, KHR, KMF, KPW, KYD, LAK, LBP, LRD, LSL, LYD, MDL, MGA, MKD, MMK, MNT, MOP,
+  MRU, MVR, MWK, MZN, NAD, NIO, NPR, PAB, PGK, PYG, RWF, SBD, SCR, SDG, SLL, SOS, SRD, SSP, STN,
+  SYP, SZL, TJS, TMT, TOP, TTD, TZS, UZS, VES, VUV, WST, XAF, XCD, YER, ZWL.
+- Unknown calendars: Argentina, Canada.Settlement, Chile, China.SSE, CzechRepublic, HongKong,
+  Iceland, India, Indonesia.BEJ, Israel.Settlement, Mexico, NewZealand, Poland, Romania, Russia,
+  SaudiArabia, Singapore, SouthAfrica, SouthKorea.Settlement, Taiwan, Thailand, Ukraine,
+  UnitedKingdom.Settlement, UnitedStates.Settlement.
+- Retired index names, which [[id:20AC7FA7-F7E2-4154-AF4D-3E922B914FFD][the ACME UK retired-convention capture]] already records:
+  =HUF-HUFONIA= and =ILS-SHIR=.
+
+Each line says it is "only a problem if this convention is used later on", so the run does not fail
+on them. The run failed because the portfolio held no trades. The lines are still wrong: they bury
+the errors that matter, and a trade in any of those 87 currencies cannot be priced at all.
+
+* Why
+
+The seeded conventions come from a source whose currency and calendar code lists are wider than the
+one ORE ships, and nothing checks the two against each other. Provisioning therefore seeds rows that
+no engine can resolve, and the first report run discovers it in the log rather than at setup.
+
+Two things would close it: seed only the codes ORE resolves, and report at provisioning which seeded
+rows name a code ORE cannot. That check is the one [[id:E4801A4B-938E-48FD-A7F2-E57E91587FEF][gather each trade set and its market data]]
+and [[id:0E718054-03B7-43A5-9289-61E505235BBD][run a report with market data]] both need before their reports can price anything, and
+[[id:6EDB96AD-45A3-419A-A723-70265C9C964B][triangulate each party's rates]] and
+[[id:91E40364-DB1A-4EA4-AE99-4904849AED22][give each party its correlation market data]] widen the set further.
+
+* References
+
+- The run's errors: =GET /api/reporting/runs/3cc4de26-d607-43a8-9709-0cb1bc075d81/errors=.
+- ORE's own lists: =external/ore/examples/Input/currencies.xml=, and its calendars, which ORE names
+  without the =.Settlement= suffix our rows carry.
+- The seeding side: =projects/ores.seeder/datasets/conventions/conventions.tsv=.
+
+* References
+
+-
+
+* See also
+
+-

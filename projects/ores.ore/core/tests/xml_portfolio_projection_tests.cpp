@@ -4124,15 +4124,13 @@ TEST_CASE("an_auto_delta_hedged_option_holds_its_hedge_and_its_batches_as_rows",
             std::get_if<ores::trading::domain::equity_position_instrument>(&data->instrument);
         REQUIRE(row != nullptr);
         CHECK(row->identity.trade_type_code == "EquityAutoDeltaHedgedOption");
-        REQUIRE(row->volatility.has_value());
-        CHECK(*row->volatility == 0.05);
+        CHECK(row->volatility == std::optional<double>(0.05));
         CHECK(row->observation_start_date.has_value());
         REQUIRE(data->underlyings.size() == 2);
         CHECK(data->underlyings[0].strike_currency == std::optional<std::string>("USD"));
         CHECK_FALSE(data->underlyings[1].strike_currency.has_value());
         CHECK(data->underlyings[1].long_short == "Short");
-        REQUIRE(data->underlyings[1].quantity.has_value());
-        CHECK(*data->underlyings[1].quantity == 20000.0);
+        CHECK(data->underlyings[1].quantity == std::optional<double>(20000.0));
         REQUIRE(data->underlyings[0].premium_amount.has_value());
         CHECK(data->underlyings[0].premium_amount->to_string() == "9.36");
         CHECK(data->underlyings[0].premium_currency == std::optional<std::string>("USD"));

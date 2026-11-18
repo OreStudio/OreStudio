@@ -159,8 +159,9 @@ using recording_hold = ores::synthetic::service::basic_shared_surface_hold<recor
 
 // One offer: the id it answers and the feed, by source name, that it builds.
 generator_offer offer_of(const std::string& pair, const std::string& source_name) {
-    return {.id = pair_id(pair),
-            .make = [source_name] { return std::make_shared<named_generator>(source_name); }};
+    return {.id = pair_id(pair), .make = [source_name] {
+                return std::make_shared<named_generator>(source_name);
+            }};
 }
 
 std::shared_ptr<domain::i_feed> feed_named(const std::string& source_name) {

@@ -84,6 +84,7 @@ alter table ores_scheduler_job_instances_tbl enable row level security;
 drop policy if exists job_instances_read_policy
     on ores_scheduler_job_instances_tbl;
 
+-- compass:except(rls_widenings/system_tenant_widening) expires=2027-05-18 approver=marco reason=under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py
 create policy job_instances_read_policy
 on ores_scheduler_job_instances_tbl for select using (
     tenant_id is null  -- system jobs visible to all

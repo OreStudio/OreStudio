@@ -54,6 +54,7 @@
 -- names a provider when every feed row names the same one.
 -- =============================================================================
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_synthetic_publish_feeds_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1118,6 +1119,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * of the system_core bundle and the only target this function accepts is the
  * system tenant: a tenant's own setup never writes the catalogue.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes the provider catalogue the dq dataset stages into the system tenant in one idempotent pass, the synthetic publish-from-dq pattern beside it; recorded in entity_table_writes_baseline.json
 create or replace function ores_synthetic_publish_market_data_providers_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: A10F246B-35A2-40CF-8C33-274584E5E7C3
+:END:
+#+title: How do I install and update compass-ng?
+#+description: Install the pinned compass-ng build, build a worktree's record, collect the store, and fall back to the Python gates.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:gates:codegen:bearings:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+(One- or two-sentence pointer to the component model and any knowledge
+doc this recipe relies on.)
+
+* Question
+
+How do I install compass-ng, keep it at the build ORE Studio needs, and keep its store small?
+
+* Answer
+
+compass-ng is one binary for every environment on a machine, at
+=~/.local/bin/compass-ng=. =build/scripts/compass_ng.pin= names the build ORE
+Studio needs, and bearings asks for a newer one when the installed build was
+committed before it.
+
+1. Install or update it from a checkout of the compass repository, at the
+   commit the pin names or later:
+
+   #+begin_src sh
+   build/scripts/install_compass.sh
+   #+end_src
+
+2. Confirm the build. Every line of =--version= is a fact to paste with a
+   report to the compass repository:
+
+   #+begin_src sh
+   compass-ng --version
+   #+end_src
+
+3. In a new worktree, or after a pull or a rebase, run one full check. It
+   builds the worktree's record, which the edit hook and the ratchet read; the
+   store is shared, so most of it comes from cache:
+
+   #+begin_src sh
+   ./compass.sh check
+   #+end_src
+
+4. Collect the store now and then. It keeps its packs under the git common
+   directory, shared by every worktree; =gc= removes what nothing references:
+
+   #+begin_src sh
+   compass-ng gc
+   #+end_src
+
+Without compass-ng, =./compass.sh check= runs the ported gates as their Python
+scripts and says so, and the edit hook does nothing. If compass-ng fails,
+report its =--version= and the output to the compass repository and run the
+Python gates until the fix lands.
+
+* Script
+
+=build/scripts/install_compass.sh= in the compass repository; =compass_ng_problem= in projects/ores.compass/src/compass.py reads the pin for bearings.
+
+* Tested by
+
+projects/ores.compass/tests/test_compass_ng_verbs.py covers a missing build, an older one and a newer one against the pin.
+
+* See also
+
+-

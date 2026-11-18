@@ -21,6 +21,7 @@
 #include "client_message.hpp"
 #include "feed_adapter_targets.hpp"
 #include "ir_curve_preview_process.hpp"
+#include "ores.analytics.quant/service/fx_vol_surface_generator.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
@@ -714,11 +715,42 @@ feed_kind make_fx_vol_surface_kind() {
                             .skip_reason = "Feed config has no Expiry rows: " +
                                            boost::uuids::to_string(cfg.id)};
 
+                /*
+                 * Each contributor observes the surface through its own noise, so its row's
+                 * profile goes with its name. Without the profiles every contributor is the
+                 * clean one, and the vendors would quote the same number.
+                 */
+                std::map<boost::uuids::uuid, ores::synthetic::domain::fx_vol_contributor>
+                    contributor_rows;
+                for (auto& row : repo::fx_vol_contributor_repository().read_latest(ctx))
+                    contributor_rows.emplace(row.id, std::move(row));
                 repo::fx_vol_surface_feed_contributor_repository contributor_repo;
                 std::vector<std::string> contributors;
-                for (auto& row : contributor_repo.read_latest(ctx))
-                    if (row.feed_id == cfg.id)
-                        contributors.push_back(boost::uuids::to_string(row.contributor_id));
+                std::vector<ores::analytics::quant::service::fx_vol_noise_profile> profiles;
+                // Each contributor's noise stream is seeded by its place in the list, so the
+                // list is in contributor id order and a restart keeps each vendor's stream.
+                auto links = contributor_repo.read_latest(ctx);
+                std::ranges::sort(links, {}, [](const auto& l) { return l.contributor_id; });
+                for (auto& link : links) {
+                    if (link.feed_id != cfg.id)
+                        continue;
+                    const auto found = contributor_rows.find(link.contributor_id);
+                    if (found == contributor_rows.end())
+                        return {.input = std::nullopt,
+                                .skip_reason = "Feed config names a contributor with no row: " +
+                                               boost::uuids::to_string(link.contributor_id)};
+                    const auto& c = found->second;
+                    contributors.push_back(boost::uuids::to_string(link.contributor_id));
+                    profiles.push_back({.noise = c.noise,
+                                        .wing_widening = c.wing_widening,
+                                        .expiry_widening = c.expiry_widening,
+                                        .quote_step = c.quote_step,
+                                        .missing_probability = c.missing_probability,
+                                        .stale_probability = c.stale_probability,
+                                        .outlier_probability = c.outlier_probability,
+                                        .outlier_size = c.outlier_size,
+                                        .bias = c.bias});
+                }
                 if (contributors.empty())
                     return {.input = std::nullopt,
                             .skip_reason = "Feed config has no Contributor rows: " +
@@ -761,6 +793,7 @@ feed_kind make_fx_vol_surface_kind() {
                 in.config = cfg;
                 in.expiries = std::move(expiries);
                 in.contributors = std::move(contributors);
+                in.contributor_profiles = std::move(profiles);
                 in.expiry_rule = expiry_rule->rule;
                 /*
                  * The market is not a fact of the row: the feed reads its pair's spot and its

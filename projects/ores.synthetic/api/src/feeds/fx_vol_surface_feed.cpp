@@ -317,11 +317,15 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
     }
     for (std::size_t c = 0; c < emitter_.contributor_count(); ++c) {
         const auto& who = emitter_.contributor_name(c);
+        // A contributor no adapter serves, such as the clean one no tenant subscribes to, still
+        // records the surface it observed as market ticks, while the vendors quote it.
+        const bool served = std::ranges::any_of(
+            *sinks, [&who](const auto& entry) { return entry.second.contributor == who; });
         for (std::size_t i = 0; i < per_contributor; ++i) {
             const auto& point = points[c * per_contributor + i];
             if (!point.value)
                 continue;
-            if (sinks->empty()) {
+            if (!served) {
                 ores::marketdata::messaging::market_tick shown;
                 shown.oresmd_uri = series_uris_[i];
                 shown.value = std::format("{}", *point.value);

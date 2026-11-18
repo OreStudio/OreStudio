@@ -40,6 +40,7 @@
 -- own authority, so a further class is a case arm here and nothing else.
 -- =============================================================================
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_marketdata_publish_market_data_observations_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -249,6 +250,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- staged set however many times the dataset is published.
 -- =============================================================================
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=a DQ publish function, written in SQL like every sibling; recorded in entity_table_writes_baseline.json
 create or replace function ores_marketdata_publish_adapters_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -361,6 +363,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- finds.
 -- =============================================================================
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=a DQ publish function, written in SQL like every sibling; recorded in entity_table_writes_baseline.json
 create or replace function ores_marketdata_publish_suppliers_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

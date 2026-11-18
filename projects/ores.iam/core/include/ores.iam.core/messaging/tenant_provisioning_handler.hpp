@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+// compass:except-file(entity_writes/cpp_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 #ifndef ORES_IAM_MESSAGING_TENANT_PROVISIONING_HANDLER_HPP
 #define ORES_IAM_MESSAGING_TENANT_PROVISIONING_HANDLER_HPP
 

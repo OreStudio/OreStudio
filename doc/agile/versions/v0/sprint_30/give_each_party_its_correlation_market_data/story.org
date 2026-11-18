@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_30:v0:
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-18
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -33,6 +33,7 @@ Correlations are market data like any other: the system quotes them as a vendor 
 - The flow from source to use is designed and recorded before it is built, naming what already exists (the correlation datum, its classification, ORE's CORRELATION type, curve_correlation_config).
 - Each party holds its own correlation tables, maintained through screens, with the lineage of every value.
 - A party's correlations reach its driven surfaces and its ORE runs.
+- The simulator's latent cross surfaces are implied from their legs' surfaces and the correlations it quotes, so the crosses a vendor quotes agree with the correlations it sends.
 
 * Tasks
 
@@ -41,6 +42,7 @@ Correlations are market data like any other: the system quotes them as a vendor 
 | [[id:77C31B2B-C339-467B-BD39-E8672CE771AC][Scaffold story: Give each party its correlation market data, end to end]] | DONE | 2026-11-17 | 2026-11-17 | Story scaffolding rides this task: the correlation story, the generator story re-scoped to see but never use, and the driven story pointed at the correlation tables. |
 | [[id:DF7C448C-77D8-42D3-B35D-E33493BE1A24][Design the end-to-end flow of correlation data]] | BACKLOG | | | Analysis first: trace a correlation from its source to its uses, naming what exists (the correlation datum and its classification, ORE's CORRELATION type, curve_correlation_config, the simulator's shared factors) and what is missing, and record the design as knowledge before any build. |
 | [[id:C28EAA6E-D6F2-42B5-A71F-AA2099CEA3D3][Quote correlations as market data from the simulator]] | BACKLOG | | | The simulator correlates its series through shared factors but publishes no correlation; quote the correlations it simulates through vendor contributors, under the correlation datum's identity, as it quotes rates and volatilities. |
+| [[id:6DC1DD9A-ADF8-41FA-9154-FEF8FA4C0152][Quote cross surfaces consistent with their legs]] | BACKLOG | | | The latent run quotes a spot only for the USD pairs, so 21 of the 35 blueprint pairs, the crosses, have no latent surface; imply each cross's surface from its two legs' latent surfaces and the simulator's correlation between them, never from the cross's own spot. |
 | [[id:48A82366-AD5C-44E6-B6C3-777EC54B9DB8][Hold each party's correlation tables and maintain them on screens]] | BACKLOG | | | Give each party its own correlation tables, built from the quotes it receives and copied with its configuration at provisioning, and screens to browse, override and audit them, as its other market data has. |
 | [[id:29A8F8A2-25FC-4858-B233-B3F985C4FE43][Use a party's correlations in its driven surfaces and its ORE runs]] | BACKLOG | | | Feed a party's correlation tables to the calibration of its correlation-driven crosses and to the ORE market it prices with, through curve_correlation_config. |
 
@@ -52,6 +54,11 @@ Correlations are market data like any other: the system quotes them as a vendor 
   reads the simulator; only the quotes it receives.
 - *Design first.* The flow is designed and recorded before any of it is built; the quotes and the
   party tables wait on the design, and their use waits on the tables.
+
+- *A latent cross surface is implied by correlation.* A cross's latent ATM vol
+  comes from its legs' latent vols and the correlation the simulator quotes,
+  never from a surface simulated off the cross's own spot. The task moved here
+  from the story [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] because it needs those quotes.
 
 * Out of scope
 

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/quote-each-pair-in-its-own-convention
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ A latent surface's quotes mean what the pair's market means by them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

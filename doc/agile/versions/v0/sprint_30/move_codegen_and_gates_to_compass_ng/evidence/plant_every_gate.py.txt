@@ -1,0 +1,502 @@
+"""Plant one violation for each gate compass-ng answers for.
+
+Run from the repository root on a throwaway branch. Each plant names the gate
+it must fail; the run that follows proves which gates caught theirs.
+"""
+from pathlib import Path
+
+PLANTS = []
+
+
+def plant(gate):
+    def register(fn):
+        PLANTS.append((gate, fn))
+        return fn
+    return register
+
+
+def append(path, text):
+    p = Path(path)
+    p.write_text(p.read_text() + text)
+
+
+def replace(path, old, new):
+    p = Path(path)
+    t = p.read_text()
+    assert t.count(old) >= 1, (path, old)
+    p.write_text(t.replace(old, new, 1))
+
+
+def write(path, text):
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(text)
+
+
+def inside_markers(path, text):
+    p = Path(path)
+    lines = p.read_text().splitlines(keepends=True)
+    at = next(i for i, line in enumerate(lines) if "BEGIN generated" in line)
+    lines.insert(at + 1, text)
+    p.write_text("".join(lines))
+
+
+def table_cell(path):
+    p = Path(path)
+    lines = p.read_text().splitlines(keepends=True)
+    sep = next(i for i, line in enumerate(lines) if line.startswith("|-"))
+    row = lines[sep + 1]
+    lines[sep + 1] = row.replace("| ", "| planted ", 1)
+    p.write_text("".join(lines))
+
+
+# Generators: a hand edit of what the codec writes.
+@plant("component-drift")
+def _():
+    append("projects/ores.refdata/core/src/repository/currency_repository.cpp", "// planted\n")
+
+
+@plant("tangle-templates")
+def _():
+    append("projects/ores.codegen/library/templates/cpp_domain_type_repository.hpp.mustache", "// planted\n")
+
+
+@plant("tangle-shell")
+def _():
+    lib = sorted(Path("projects/ores.shell/scripts/library").rglob("*.ores"))[0]
+    append(lib, "# planted\n")
+
+
+@plant("tangle-http")
+def _():
+    append("projects/ores.http/scripts/library/images/images-list.hurl", "# planted\n")
+
+
+@plant("cmake-sources")
+def _():
+    append("projects/ores.analytics/api/src/component_files.cmake", "# planted\n")
+
+
+@plant("recipe-inventories")
+def _():
+    replace("doc/recipes/shell/shell.org",
+            "How do I run the fx_pairwise_variance_swap_instruments commands", "Planted")
+
+
+@plant("backlog-indexes")
+def _():
+    table_cell("doc/agile/product_backlog/inbox.org")
+
+
+@plant("route-inventory")
+def _():
+    table_cell("doc/knowledge/architecture/http_route_inventory.org")
+
+
+@plant("er-diagram")
+def _():
+    append("projects/ores.sql/modeling/ores_schema.puml", "' planted\n")
+
+
+@plant("skill-catalogue")
+def _():
+    inside_markers("doc/llm/skills/claude_code_skills.org", "| planted | planted |\n")
+
+
+@plant("skill-levels")
+def _():
+    inside_markers("doc/llm/skills/skill_systems_levels.org", "| planted | planted |\n")
+
+
+@plant("skill-type-tables")
+def _():
+    inside_markers("doc/llm/skills/compass-doc-show/SKILL.org", "| planted | planted |\n")
+
+
+@plant("trade-type-coverage")
+def _():
+    table_cell("doc/knowledge/domain/ore_trade_type_coverage.org")
+
+
+@plant("ore-parameter-value-sets")
+def _():
+    append("projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql", "-- planted\n")
+
+
+@plant("convention-kind-terms")
+def _():
+    append("projects/ores.sql/populate/refdata/refdata_convention_kind_terms_populate.sql", "-- planted\n")
+
+
+@plant("conventions-dataset")
+def _():
+    append("projects/ores.sql/populate/refdata/refdata_conventions_artefact_populate.sql", "-- planted\n")
+
+
+@plant("curve-column-guards")
+def _():
+    append("projects/ores.sql/populate/refdata/refdata_curve_configuration_columns_populate.sql", "-- planted\n")
+
+
+@plant("ore-renderings-tables")
+def _():
+    append("projects/ores.ore/core/src/domain/conventions_renderings.hpp", "// planted\n")
+
+
+@plant("ore-output-catalogue")
+def _():
+    append("projects/ores.ore/core/src/results/output_catalogue_data.cpp", "// planted\n")
+
+
+@plant("script-library-seed")
+def _():
+    append("projects/ores.sql/populate/trading/trading_script_library_populate.sql", "-- planted\n")
+
+
+@plant("bff-list-requests")
+def _():
+    append("projects/ores.web/packages/wire-protocol/src/generated/list_requests.ts", "// planted\n")
+
+
+@plant("parameter-value-sets-only")
+def _():
+    replace("projects/ores.sql/utility/generate_convention_kind_terms.py",
+            '    ("CURRENCY_PAIR", "r", "id"):', '    ("CURRENCY_PAIR", "r", "planted"):')
+
+
+# Rules: a violation of the rule.
+@plant("lint")
+def _():
+    replace("doc/recipes/shell/how_do_i_test_the_shell.org", ":recipe:shell:testing:", ":recipe:Shell:testing:")
+
+
+@plant("org-links")
+def _():
+    append("doc/recipes/http/delete_account.org", "\nSee [[:nowhere][nowhere]].\n")
+
+
+@plant("heading-numbers")
+def _():
+    append("doc/recipes/http/assign_role.org", "\n* 1. Planted\n\nPlanted.\n")
+
+
+@plant("no-pr-triggers")
+def _():
+    write(".github/workflows/planted.yml", "name: planted\non: pull_request\njobs: {}\n")
+
+
+@plant("portable-stop")
+def _():
+    replace("projects/ores.refdata/core/src/service/asset_class_service.cpp",
+            '#include "ores.utility/domain/protocol.hpp"\n',
+            '#include "ores.utility/domain/protocol.hpp"\n#include <stop_token>\n')
+
+
+@plant("sql-hygiene")
+def _():
+    idx = ('create index if not exists currencies_tenant_idx\n'
+           'on "ores_refdata_currencies_tbl" (tenant_id)\n'
+           'where valid_to = ores_utility_infinity_timestamp_fn();\n')
+    replace("projects/ores.sql/create/refdata/refdata_currencies_create.sql", idx, idx + "\n" + idx)
+
+
+@plant("sql-reachability")
+def _():
+    write("projects/ores.sql/create/refdata/refdata_planted_create.sql",
+          "create table if not exists ores_refdata_planted_tbl (\n"
+          "    tenant_id uuid not null,\n"
+          "    code text not null\n"
+          ");\n\n"
+          "create policy planted_policy on ores_refdata_planted_tbl for all using (\n"
+          "    tenant_id = ores_iam_current_tenant_id_fn()\n"
+          "    or ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()\n"
+          ");\n\n"
+          "create or replace function ores_refdata_planted_fn() returns void\n"
+          "language sql as $$\n"
+          "    insert into ores_refdata_currencies_tbl (iso_code) values ('XXX');\n"
+          "$$;\n")
+
+
+PLANTS.append(("rls-widenings", lambda: None))
+PLANTS.append(("entity-writes", lambda: None))
+
+
+@plant("unique-type-names")
+def _():
+    write("projects/ores.refdata/core/include/ores.refdata.core/service/planted.hpp",
+          "#ifndef ORES_REFDATA_CORE_SERVICE_PLANTED_HPP\n#define ORES_REFDATA_CORE_SERVICE_PLANTED_HPP\n\n"
+          "namespace ores::refdata::domain {\n\nstruct currency {\n    int planted;\n};\n\n}\n\n#endif\n")
+
+
+@plant("unity-collisions")
+def _():
+    helper = "\nnamespace {\nint planted_helper() { return 1; }\n}\n"
+    append("projects/ores.refdata/core/src/service/asset_class_code_service.cpp", helper)
+    append("projects/ores.refdata/core/src/service/asset_measure_service.cpp", helper)
+
+
+@plant("reachability")
+def _():
+    p = Path("projects/ores.refdata/core/tests/swap_index_convention_eventing_integration_tests.cpp")
+    t = p.read_text()
+    at = t.index("\nTEST_CASE")
+    end = t.index("\n}\n", at) + 3
+    p.write_text(t[:at] + "\n#if 0" + t[at:end] + "#endif\n" + t[end:])
+
+
+@plant("template-sections")
+def _():
+    append("projects/ores.codegen/library/templates/cpp_domain_type_entity.hpp.mustache",
+           "{{#planted}}{{#also_planted}}\nplanted\n{{/also_planted}}{{/planted}}\n")
+
+
+@plant("skill-namespace")
+def _():
+    write("doc/llm/skills/planted/SKILL.org",
+          "#+title: Planted\n#+description: Planted.\n#+type: skill\n\n* When to use this skill\n\nPlanted.\n")
+
+
+@plant("http-areas")
+def _():
+    replace("projects/ores.iam/modeling/ores.iam.account.org", "#+http_area: access", "#+http_area: planted")
+
+
+@plant("subject-conformance")
+def _():
+    replace("projects/ores.refdata/modeling/ores.refdata.book_proposal_operations.org",
+            ":subject:  refdata.v1.ops.preview_book_changes", ":subject:  planted.subject")
+
+
+@plant("generated-column-refs")
+def _():
+    replace("projects/ores.trading/api/src/domain/equity_position_instrument_table.cpp",
+            "<< epi.currency", "<< epi.planted")
+
+
+import re as _re
+
+
+def _lines(path):
+    return Path(path).read_text().splitlines(keepends=True)
+
+
+@plant("component-docs")
+def _():
+    p = Path("projects/ores.ore/core/modeling/component_overview.org")
+    p.write_text("".join(l for l in _lines(p) if not l.startswith("#+description:")))
+
+
+@plant("conventions-coverage")
+def _():
+    p = Path("projects/ores.seeder/datasets/conventions/conventions.tsv")
+    lines = _lines(p)
+    lines.insert(2, lines[1])
+    p.write_text("".join(lines))
+
+
+@plant("curve-parameter-paths")
+def _():
+    replace("projects/ores.sql/utility/curve_schema_exemptions.json", '    "rules": [\n',
+            '    "rules": [\n        {"reason": "planted", "path": ["/CurveConfiguration/Planted"]},\n')
+
+
+@plant("entity-binary-types")
+def _():
+    replace("projects/ores.sql/create/refdata/refdata_currencies_create.sql",
+            '"version" integer not null', '"version" bigint not null')
+
+
+@plant("enum-attributes")
+def _():
+    write("projects/ores.refdata/api/include/ores.refdata.api/domain/planted_kind.hpp",
+          "#ifndef ORES_REFDATA_API_DOMAIN_PLANTED_KIND_HPP\n#define ORES_REFDATA_API_DOMAIN_PLANTED_KIND_HPP\n\n"
+          '#include "ores.refdata.api/export.hpp"\n\nnamespace ores::refdata::domain {\n\n'
+          "enum class ORES_REFDATA_API_EXPORT planted_kind { planted };\n\n}\n\n#endif\n")
+
+
+PLANTS.append(("exported-types", lambda: None))
+
+
+@plant("event-registrars")
+def _():
+    p = Path("projects/ores.refdata/service/src/messaging/event_registrar.cpp")
+    p.write_text("".join(l for l in _lines(p)
+                         if "register_credit_limit_event_mapping(event_source" not in l))
+
+
+@plant("history-registrars")
+def _():
+    p = Path("projects/ores.refdata/core/src/messaging/registrar.cpp")
+    p.write_text("".join(l for l in _lines(p)
+                         if "register_asset_class_code_history_provider(hist_registry)" not in l))
+
+
+@plant("forward-declarable-includes")
+def _():
+    write("projects/ores.refdata/core/include/ores.refdata.core/service/planted_connection.hpp",
+          "#ifndef ORES_REFDATA_CORE_SERVICE_PLANTED_CONNECTION_HPP\n"
+          "#define ORES_REFDATA_CORE_SERVICE_PLANTED_CONNECTION_HPP\n\n"
+          '#include "ores.database/pq/connection.hpp"\n\n'
+          "namespace ores::refdata::service {\n\n"
+          "void planted(ores::database::pq::connection& c);\n\n}\n\n#endif\n")
+
+
+@plant("handler-permissions")
+def _():
+    replace("projects/ores.refdata/core/src/messaging/calendar_materialisation_handler.cpp",
+            '"refdata::calendars:write"', '"refdata::planted:write"')
+
+
+@plant("handler-registrars")
+def _():
+    replace("projects/ores.refdata/service/src/app/application.cpp",
+            "auto subs = ores::refdata::messaging::registrar::register_handlers(n, c, v);",
+            "std::vector<ores::nats::service::subscription> subs;")
+
+
+@plant("marketdata-identity-columns")
+def _():
+    p = Path("projects/ores.sql/create/marketdata/marketdata_market_series_identity_create.sql")
+    lines = _lines(p)
+    at = next(i for i, l in enumerate(lines) if l.lower().startswith("create table"))
+    lines.insert(at + 1, '    "planted" text null,\n')
+    p.write_text("".join(lines))
+
+
+@plant("model-drift")
+def _():
+    replace("projects/ores.refdata/modeling/ores.refdata.tenor_convention_resolution.org",
+            ":rls_own_or_system_tenant_rows: true\n",
+            ":rls_own_or_system_tenant_rows: true\n:rls_own_or_system_tenant_rows: false\n")
+
+
+@plant("money-decimal-columns")
+def _():
+    p = Path("projects/ores.trading/modeling/ores.trading.bond_forward.org")
+    t = p.read_text()
+    at = t.index("** premium_amount")
+    end = t.index(":END:", at)
+    head = _re.sub(r":type:\s+[^\n]+", ":type:     double precision", t[at:end], count=1)
+    head = _re.sub(r":cpp_type:\s+[^\n]+", ":cpp_type: std::optional<double>", head, count=1)
+    p.write_text(t[:at] + head + t[end:])
+
+
+@plant("open-reads")
+def _():
+    replace("doc/knowledge/security/authorised-reads.org",
+            "| =iam.v1.roles.get= |", "| =planted.v1.nothing.get= | Planted | Planted |\n| =iam.v1.roles.get= |")
+
+
+@plant("pattern-uses")
+def _():
+    page = sorted(Path("doc/knowledge/service_architecture_patterns").glob("*.org"))[0]
+    replace(page, "* In ORE Studio\n", "* In ORE Studio\n\n- [[id:"
+            + _re.search(r":ID:\s+(\S+)", Path("doc/recipes/http/assign_role.org").read_text()).group(1)
+            + "][Planted]]\n")
+
+
+@plant("physical-inventory")
+def _():
+    table_cell("projects/ores.codegen/library/templates/ores.cmake.org")
+
+
+@plant("protocol-twins")
+def _():
+    p = Path("projects/ores.refdata/modeling/ores.refdata.currency.org")
+    lines = _lines(p)
+    at = next(i for i, l in enumerate(lines) if l.startswith(":ID:"))
+    lines.insert(at + 1, ":ores.ts.protocol.enabled: nil\n")
+    p.write_text("".join(lines))
+
+
+@plant("prototypes")
+def _():
+    group = sorted(d for d in Path("doc/prototypes").iterdir() if d.is_dir())[0]
+    write(group / "planted" / "index.html", "<!doctype html><title>planted</title>\n")
+
+
+@plant("registry-exceptions")
+def _():
+    replace("projects/ores.codegen/scripts/component_registry.py",
+            '    "variability-cpp": (\n        AcceptedException(', '    "planted-cpp": (\n        AcceptedException(')
+
+
+@plant("route-auth")
+def _():
+    p = Path("projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_web_routes.cpp")
+    lines = _lines(p)
+    at = next(i for i, l in enumerate(lines) if "router->add_route(list_built);" in l)
+    auth = max(i for i in range(at) if ".auth_required()" in lines[i])
+    del lines[auth]
+    p.write_text("".join(lines))
+
+
+@plant("route-units")
+def _():
+    p = Path("projects/ores.http/refdata/src/routes/refdata/refdata_routes.cpp")
+    lines = _lines(p)
+    at = next(i for i, l in enumerate(lines) if _re.match(r"\s+\w+::register_routes\(", l))
+    lines.insert(at, lines[at])
+    p.write_text("".join(lines))
+
+
+@plant("rule-identifiers")
+def _():
+    for path in sorted(Path("doc").rglob("*.org")):
+        lines = _lines(path)
+        hits = [i for i, l in enumerate(lines) if _re.match(r"- \*[A-Z]+(-[A-Z]+)*-\d\d\*", l)]
+        if hits:
+            lines.insert(hits[0] + 1, lines[hits[0]])
+            path.write_text("".join(lines))
+            return
+    raise AssertionError("no keyed rule found")
+
+
+@plant("shell-command-units")
+def _():
+    replace("projects/ores.shell/application/src/app/repl.cpp",
+            "    dq_commands::register_commands(*root, session_);\n",
+            "    dq_commands::register_commands(*root, session_);\n"
+            "    dq_commands::register_commands(*root, session_);\n")
+
+
+@plant("shell-menus")
+def _():
+    replace("projects/ores.shell/synthetic/src/app/commands/synthetic/fx_vol_contributor_commands.cpp",
+            'std::make_unique<cli::Menu>("fx_vol_contributors")',
+            'std::make_unique<cli::Menu>("fx_vol_contributors", "planted")')
+
+
+@plant("stream-coverage")
+def _():
+    append("projects/ores.nats/src/service/jetstream_admin.cpp",
+           "\nnamespace {\nvoid planted(ores::nats::service::jetstream_admin& admin, const std::string& name) {\n"
+           "    admin.ensure_stream(name, {});\n}\n}\n")
+
+
+@plant("structure-notes")
+def _():
+    hub = next(p for p in sorted(Path("doc").rglob("*.org"))
+               if _re.search(r"^#\+filetags:.*:structure_note:", p.read_text(errors="replace"), _re.M))
+    append(hub, "\n- [[id:" + _re.search(r":ID:\s+(\S+)", Path("doc/recipes/http/delete_account.org").read_text()).group(1)
+           + "][Planted]]\n")
+
+
+@plant("translation-unit-budget")
+def _():
+    replace(".compass.org", "| translation_unit_budget | yes | |",
+            "| translation_unit_budget | yes | ceilings=projects/ores.ore/core/src/domain/conventions_family_tenor_basis_swap.cpp=1 |")
+
+
+@plant("xml-family-census")
+def _():
+    write("external/ore/examples/Planted/Input/planted.xml", "<Planted/>\n")
+
+
+if __name__ == "__main__":
+    import sys
+    only = set(sys.argv[1:])
+    for gate, fn in PLANTS:
+        if not only or gate in only:
+            fn()
+            print(gate)

@@ -2176,3 +2176,19 @@ tangled into the runnable script library
 * Series Identity Shapes
 
 - [[id:424D435E-B5A9-5042-8D95-615970844601][How do I run the series_identity_shapes commands from the shell?]]
+
+* Cash Position Instruments
+
+- [[id:1DE55EAC-4CAF-5317-A3DD-74BF926C8D93][How do I run the cash_position_instruments commands from the shell?]]
+
+* Equity Pairwise Variance Swap Instruments
+
+- [[id:603779D2-32E3-51C1-ADB0-C194B62A30A7][How do I run the equity_pairwise_variance_swap_instruments commands from the shell?]]
+
+* Fx Asian Option Instruments
+
+- [[id:2356A572-92CA-569B-99E8-74F59786F296][How do I run the fx_asian_option_instruments commands from the shell?]]
+
+* Fx Pairwise Variance Swap Instruments
+
+- [[id:D385D2DE-92AA-5A4E-BB8E-8A3C9D5BD461][How do I run the fx_pairwise_variance_swap_instruments commands from the shell?]]

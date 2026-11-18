@@ -52,10 +52,21 @@ ice_notation::read(const messaging::vendor_id& id) const {
         return fail(notation_error::kind::wrong_scheme,
                     "ICE ids use the scheme ice_ticker, not '" + id.id_scheme + "'.");
 
+    fx_option_quote option;
+    if (detail::parse_dot_option(id.external_id, option)) {
+        if (id.field != ice_notation_field)
+            return fail(notation_error::kind::wrong_field,
+                        "An ICE volatility carries the bid: '" + id.field + "'.");
+        if (option.base == option.quote)
+            return fail(notation_error::kind::malformed,
+                        "A pair holds two different currencies: '" + id.external_id + "'.");
+        return quote_description{option};
+    }
+
     ir_curve_pillar pillar;
     if (!detail::parse_dot_pillar_with_tenor(id.external_id, pillar))
         return fail(notation_error::kind::malformed,
-                    "Not an ICE curve pillar: '" + id.external_id + "'.");
+                    "Not an ICE curve pillar or volatility point: '" + id.external_id + "'.");
     if (id.field != ice_notation_field)
         return fail(notation_error::kind::wrong_field,
                     "An ICE curve pillar carries the bid price: '" + id.field + "'.");
@@ -68,6 +79,13 @@ ice_notation::read(const messaging::vendor_id& id) const {
 std::expected<messaging::vendor_id, notation_error>
 ice_notation::write(const quote_description& description) const {
     using detail::fail;
+    if (const auto* option = std::get_if<fx_option_quote>(&description)) {
+        if (const auto ok = detail::check_option(*option); !ok)
+            return std::unexpected(ok.error());
+        return messaging::vendor_id{.id_scheme = std::string(ice_notation_scheme),
+                                    .external_id = detail::write_dot_option(*option),
+                                    .field = std::string(ice_notation_field)};
+    }
     const auto pillar = detail::ir_pillar_of(description);
     if (!pillar)
         return std::unexpected(pillar.error());

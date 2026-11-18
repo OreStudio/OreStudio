@@ -33,6 +33,7 @@
 -- Report Definitions: reporting.v1.ops.publish_report_definitions_from_dq
 -- =============================================================================
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_reporting_publish_report_definitions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -302,6 +303,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- the target party and written as the configuration's portfolio scope. A scope
 -- that names a portfolio the party does not hold is refused: the configuration
 -- would read no books, and every run of it would fail.
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes the risk report configs the dq catalogue defines into the tenant in one idempotent pass, the reporting publish-from-dq pattern beside it; recorded in entity_table_writes_baseline.json
 create or replace function ores_reporting_publish_risk_report_configs_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -522,6 +524,7 @@ comment on function ores_reporting_publish_engine_settings_from_dq_fn(uuid, uuid
 -- Ore Parameter Value Domains: reporting.v1.ops.publish_ore_parameter_value_domains_from_dq
 -- =============================================================================
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes the value domains the dq catalogue defines into the tenant, the publish-from-dq pattern beside it; recorded in entity_table_writes_baseline.json
 create or replace function ores_reporting_publish_ore_parameter_value_domains_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -653,6 +656,7 @@ comment on function ores_reporting_publish_ore_parameter_value_domains_from_dq_f
 -- Ore Parameters: reporting.v1.ops.publish_ore_parameters_from_dq
 -- =============================================================================
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes the ore parameter documentation the dq catalogue defines into the tenant, the publish-from-dq pattern beside it; recorded in entity_table_writes_baseline.json
 create or replace function ores_reporting_publish_ore_parameters_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

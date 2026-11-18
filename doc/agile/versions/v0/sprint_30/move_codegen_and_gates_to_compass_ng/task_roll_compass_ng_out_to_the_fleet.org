@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: AE4F196D-F528-467A-AF6A-2E464A6601F5
+:END:
+#+title: Task: Roll compass-ng out to the fleet
+#+description: Make every ores_dev environment use compass-ng: check the binary, build each worktree's records, collect the store, and say what to do when it fails.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch: feature/roll-compass-ng-out-to-the-fleet
+#+pr: 4847
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every environment on the machine runs the same pinned compass-ng, and an environment that lacks it is told so before it runs a gate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- A committed file pins the compass-ng release ORE Studio needs.
+- bearings reports a missing compass-ng, or one older than the pin, with the command that fixes it.
+- A recipe covers the first full check in a new worktree, compass gc, and the fallback to Python when the binary is missing or crashes.
+- compass gc runs on a schedule or from a documented command; the pilot store reached 12 GB before a gc.
+- The recipe checks the store's file count (find <git common dir>/compass | wc -l) as well as its size: after one day of the pilot it held 188,697 files, 858 MB of data and 1.5 GB on disk, and compass gc removed nothing. compass-ng keeps one file per cached result until its D8 fix packs them.
+- The fleet broadcast names the change and the date the Python gates stop.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4847][#4847]] | [compass] Pin compass-ng e689a2e |
+| [[https://github.com/OreStudio/OreStudio/pull/4842][#4842]] | [compass] Pin the compass-ng build and report a missing or older one |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | An installed build with no commit time passes silently | compass.py | Accepted | Reported as a problem. |
+| 2 | Commit times compared as strings | compass.py | Accepted | Parsed with datetime.fromisoformat. |
+| 3 | A malformed pin reports nothing or raises | compass.py | Accepted | Reported as a problem. |
+| 4 | Three blank lines in the test file | test_compass_ng_verbs.py | Accepted | Two. |
+| 5 | No test for an absent pin or a malformed one | test_compass_ng_verbs.py | Accepted | Three tests added. |
+| 6 | The install hint names a script outside this repository | compass.py | Accepted | The instruction names the recipe. |
+| 7 | The tests' PATH would not suit a Windows runner | test_compass_ng_verbs.py | Declined | The compass tests run on the Linux environments only. |
+
+* Result
+
+- build/scripts/compass_ng.pin names the build ORE Studio needs, 21ae16d,
+  with its commit time. bearings runs compass-ng --version and prints a NEXT
+  ACTION when compass-ng is missing or was committed before the pin; commit
+  times order the builds without the compass history. Tests cover a missing,
+  an older, the pinned and a newer build.
+- How do I install and update compass-ng? covers the install, the full check
+  that builds a new worktree's record, compass-ng gc, and the fallback to the
+  Python gates; the compass recipe index links it.
+- The store is no longer a growth risk: compass-ng d2c6595 packs it, and on
+  this machine it went from 323,894 files and 2.9 GB to 4 files and 591 MB;
+  gc is an occasional command, not a schedule.
+- The fleet hears of it through bearings, which every session runs first:
+  there is no broadcast channel beyond it. The pull that brings this change
+  also brings the PostToolUse hook and the switch-over, so a session that
+  pulls main sees the instruction before it runs a gate.
+

@@ -59,10 +59,14 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.storage.core.lib
         ores.http.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.iam.core.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.variability.core.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.compute.core.lib
         ores.geo.lib
     PRIVATE

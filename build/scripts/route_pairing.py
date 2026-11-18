@@ -334,6 +334,37 @@ PAIRS = {
     ("DELETE", "/api/marketdata/routes/:publisher"): (
         "DELETE",
         "/api/marketdata/routes/{publisher}"),
+
+    # grid
+    ("GET", "/api/operations/grid/jobs/batches"): ("GET", "/api/operations/grid/jobs/batches"),
+    ("GET", "/api/operations/grid/jobs/batches/:id"): (
+        "GET",
+        "/api/operations/grid/jobs/batches/{id}"),
+    ("GET", "/api/operations/grid/jobs/batches/:id/workunits"): (
+        "GET",
+        "/api/operations/grid/jobs/batches/{id}/workunits"),
+    ("GET", "/api/operations/grid/jobs/workunits/:id"): (
+        "GET",
+        "/api/operations/grid/jobs/workunits/{id}"),
+    ("GET", "/api/operations/grid/jobs/workunits/:id/results"): (
+        "GET",
+        "/api/operations/grid/jobs/workunits/{id}/results"),
+    ("GET", "/api/operations/grid/jobs/results"): ("GET", "/api/operations/grid/jobs/results"),
+    ("GET", "/api/operations/grid/jobs/results/:id"): (
+        "GET",
+        "/api/operations/grid/jobs/results/{id}"),
+    ("GET", "/api/operations/grid/jobs/workunits/:id/input"): (
+        "GET",
+        "/api/operations/grid/jobs/workunits/{id}/input"),
+    ("GET", "/api/operations/grid/jobs/results/:id/output"): (
+        "GET",
+        "/api/operations/grid/jobs/results/{id}/output"),
+    ("GET", "/api/operations/grid/app-versions/:id"): (
+        "GET",
+        "/api/operations/grid/app-versions/{id}"),
+    ("PUT", "/api/operations/grid/app-versions/:id/release-note"): (
+        "PUT",
+        "/api/operations/grid/app-versions/{id}/release-note"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

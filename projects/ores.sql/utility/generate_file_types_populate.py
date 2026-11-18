@@ -70,6 +70,14 @@ DATED = re.compile(r"\d{8}")
 # the log file and the logging files.
 CHOICES = {"logFile", "progressLogFile", "structuredLogFile"}
 
+# The name of a parameter whose samples tie between several names, chosen by
+# hand: a tie broken by the order of the samples would change with it.
+TIED = {
+    ("scenarioGeneration", "scenarioOutputFile"): "stress_scenarios.csv",
+    ("correlation", "scenarioCorrSimulation"): "simulation.xml",
+    ("xva", "scenarioCorrSimulation"): "simulation.xml",
+}
+
 # The configuration type whose entities fill the document, where one exists.
 CONFIGURATION_TYPES = {
     ("setup", "conventionsFile"): "conventions",
@@ -138,7 +146,8 @@ def read_samples():
     runs = collections.Counter()
     paths = {}
     documents = 0
-    for dirpath, _dirs, files in os.walk(EXAMPLES):
+    for dirpath, dirs, files in os.walk(EXAMPLES):
+        dirs.sort()
         for f in sorted(files):
             full = os.path.join(dirpath, f)
             if not f.endswith(".xml"):
@@ -173,8 +182,10 @@ def read_guide():
 
 
 def plain_name(counter):
-    """The most common name without a date, and the count behind it."""
-    plain = [(name, n) for name, n in counter.most_common() if not DATED.search(name)]
+    """The most common name without a date, and the count behind it; a tie goes to the
+    first name in byte order."""
+    ranked = sorted(counter.items(), key=lambda item: (-item[1], item[0]))
+    plain = [(name, n) for name, n in ranked if not DATED.search(name)]
     return plain[0] if plain else None
 
 
@@ -315,8 +326,9 @@ def build_rows():
             if chosen is None:
                 continue
             name = chosen[0]
+        name = TIED.get((scope, parameter), name)
         kind = classify(scope, parameter, name, produced, note)
-        if (example is None and scope and kind == DOCUMENT and
+        if ((scope, parameter) not in TIED and example is None and scope and kind == DOCUMENT and
                 sum(counter.values()) < CONVENTION and parameter in common):
             shared = plain_name(common[parameter])
             if shared and shared[0] != name:
@@ -645,14 +657,10 @@ def vendored_schemas():
     every file in it, so a schema edited by hand cannot reach the seed."""
     import hashlib
     manifest = json.load(open(os.path.join(SCHEMA_DIR, "manifest.json")))
-    # The vendoring script orders the paths with sort, which follows the locale, so
-    # the paths are ordered here by the same sort rather than by their bytes.
-    import subprocess
     skip = {"manifest.json", "README.md", "methodology.txt"}
     names = [n for n in os.listdir(SCHEMA_DIR)
              if n not in skip and os.path.isfile(os.path.join(SCHEMA_DIR, n))]
-    ordered = subprocess.run(["sort", "-z"], input="\0".join(names) + "\0", text=True,
-                             capture_output=True, check=True).stdout.split("\0")
+    ordered = sorted(names)
     lines = "".join(
         f"{hashlib.sha256(open(os.path.join(SCHEMA_DIR, n), 'rb').read()).hexdigest()}  {n}\n"
         for n in ordered if n)

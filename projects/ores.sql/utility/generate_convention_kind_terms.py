@@ -61,6 +61,9 @@ ASSET_CLASSES = ("interest-rates", "fx", "inflation", "credit", "commodity", "bo
 NOT_A_COLUMN = {
     ("CURRENCY_PAIR", "r", "spot_days"):
         "the FX projection's spot days, which the projection carries and no entity stores",
+    ("CURRENCY_PAIR", "r", "id"):
+        "the FX convention's Id as the document names it, which the projection carries "
+        "to write the convention back under that name and no entity stores",
 }
 
 SCHEMA_NAME = "conventions.xsd"

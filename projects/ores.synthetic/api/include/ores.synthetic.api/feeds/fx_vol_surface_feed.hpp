@@ -207,8 +207,8 @@ public:
      * @brief Sends one contributor's points to an adapter, under that contributor's vendor ids.
      *
      * Every contributor observes the one latent surface this feed holds, so the vendors quote one
-     * market whichever adapters attach. A surface no adapter is attached to publishes its points
-     * as market ticks, as it did before adapters could serve it.
+     * market whichever adapters attach. A contributor no attached adapter serves publishes its
+     * points as market ticks, as every contributor did before adapters could serve them.
      */
     void
     attach(const std::string& adapter_id, const std::string& contributor, point_targets targets);

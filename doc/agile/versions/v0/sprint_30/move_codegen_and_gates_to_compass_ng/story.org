@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: E3BF90FE-43DF-4A30-9F2C-FF5E20128C88
+:END:
+#+title: Story: Move codegen and the gates to compass-ng
+#+description: Test compass-ng, the C++ compass, against ores.codegen and the Python gates, then replace them one area at a time and roll the new tool out to the fleet, to CI and to external developers.
+#+type: story
+#+level: s2
+#+filetags: :compass:codegen:gates:tooling:sprint_30:v0:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+compass-ng generates the code and runs the build-free gates for every environment, for CI and for external developers. ores.codegen regeneration and the ported Python gates are removed only after the two tools give the same verdicts on the same commit.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Every build-free gate compass-ng ports runs through it; compass-ng check passes on main. |
+| Waiting on    | Publish installable binaries, in the compass repository, for CI and external developers; one week of agreement for the retirement. |
+| Next          | Run compass check in CI once a release exists; retire the Python gates after the week of agreement. |
+| Last touched  | 2026-11-17                               |
+
+* Acceptance
+
+- A recorded comparison lists every disagreement between compass check and local_checks.py on one commit, with its cause and which side is right.
+- compass check reports nothing on main: the real drift is regenerated, and each baseline entry is an inline exception.
+- ./compass.sh check runs compass check for the ported gates, and runs Python only for the gates compass does not cover.
+- compass generate replaces regenerate --all and the ores.codegen regeneration verbs.
+- CI runs compass check --ratchet from a pinned compass release, and the ported Python CI workflows are removed.
+- Every environment and every external developer installs a pinned compass release with one documented command, and bearings reports a missing or out-of-date binary.
+- The Python gates and generators that compass replaces are deleted, together with their baseline files.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2EE98846-E34A-49AA-949F-29ABF87DBCDA][Scaffold story: Move codegen and the gates to compass-ng]] | DONE | 2026-11-17 | 2026-11-17 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:684B4233-F5A7-4E16-B6B2-31C2251406B2][Compare compass-ng with the Python gates on main]] | DONE | | 2026-11-17 | Initial task for: Move codegen and the gates to compass-ng |
+| [[id:6EA72ABF-61C0-457C-A01E-8B2E2FC2A48D][Name the two compass tools apart]] | DONE | 2026-11-18 | 2026-11-18 | Install compass-ng under its own name and route its verbs through ./compass.sh, so a bare compass verb never reaches the wrong tool. |
+| [[id:978CA725-4B08-428C-8AD2-E16E703F18A2][Commit the compass configuration]] | DONE | 2026-11-18 | 2026-11-18 | Add .compass.org at the repository root with the codec table the integration guide gives, and the rule table page it names. |
+| [[id:28EE3185-5F2E-472A-9364-FAE5E41E4743][Fix the drift compass reports on main]] | DONE | | 2026-11-17 | Regenerate the outputs compass shows as drift, decide each hand edit in a generated file, and fix the real findings, so compass check is clean before it becomes a gate. |
+| [[id:1A34BC91-478A-44E4-B52E-D77FD3640D44][Move the gate baselines to inline exceptions]] | DONE | 2026-11-18 | 2026-11-18 | Turn each entry in the gate baseline files into a compass:except comment on the line it covers, with a reason, an approver and an expiry. |
+| [[id:8F2AD565-A4DC-43C2-8867-BAB7AAC5DD16][Run the ported gates through compass check]] | DONE | 2026-11-18 | 2026-11-18 | Make ./compass.sh check run one compass check for the gates compass has ported, and run local_checks.py only for the gates it does not cover. |
+| [[id:AD824750-38EA-4209-A359-082223E68EBA][Generate code with compass generate]] | DONE | 2026-11-18 | 2026-11-18 | Replace regenerate --all, the ores.codegen regeneration verbs and the per-artefact regenerate scripts that compass covers with compass generate. |
+| [[id:C9EC800C-94A5-4D63-A885-6BA3B478BE92][Check each edit with the compass hook]] | DONE | 2026-11-18 | 2026-11-18 | Add compass hook as a PostToolUse hook through doc/llm/claude_code_settings.org. |
+| [[id:E1BC8C25-71E9-4586-98D6-F320F44B02A7][Fix the gate defects compass found]] | DONE | | 2026-11-17 | Fix the defects in ORE Studio's own gates that the compass port found. |
+| [[id:AE4F196D-F528-467A-AF6A-2E464A6601F5][Roll compass-ng out to the fleet]] | DONE | 2026-11-18 | 2026-11-18 | Make every ores_dev environment use compass-ng: check the binary, build each worktree's records, collect the store, and say what to do when it fails. |
+| [[id:C333376D-5D88-4D73-BB2F-AACED7605D17][Run compass check in CI]] | BLOCKED | | | Install the pinned compass-ng release in CI and replace the single-gate workflows it covers with one compass check --ratchet job. |
+| [[id:A463E42D-7A73-44DC-BB9B-FEFF1D1413E2][Install compass-ng for external developers]] | BLOCKED | | | Document and script how a developer outside the fleet installs compass-ng, and keep the project usable when they do not. |
+| [[id:67AF2BC8-0FD7-4382-A4B3-C2407C408708][Retire the Python gates and generators compass replaces]] | BLOCKED | | | Delete the Python gates, generator scripts and baseline files compass replaces, once the two tools have agreed for an agreed period. |
+| [[id:F2F96980-5CF8-4FE5-B827-8405D15F6F6B][Fix the two codegen tests that fail on main]] | DONE | | 2026-11-18 | Every local gate reported two codegen test failures that came from main, not from the change it checked. |
+
+* Decisions
+
+- Replace one area at a time, and only after the two tools agree on the same commit; keep the Python gate for any rule where they differ.
+- compass-ng bugs go to the compass repository; ORE Studio does not work around them.
+- CI and external developers install a released, pinned compass-ng; nobody builds it from source to use it.
+
+* Out of scope
+
+- HTML site export: compass-ng does not export HTML yet; the Emacs site export and site-page stay.
+- The document verbs of the Python compass (bearings, where, search, story, task, journal, env, db, services, pr): compass-ng has no replacement yet; the compass repository's Retire legacy tooling story tracks them.
+- Building and publishing compass-ng binaries and its CDash dashboard: compass repository stories Publish installable binaries and Report builds and tests to CDash.
+

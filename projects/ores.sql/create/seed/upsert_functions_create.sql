@@ -78,6 +78,7 @@ $$ language plpgsql;
 /**
  * Upsert a data domain (e.g., Reference Data, Trade Data, Market Data).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_data_domains_upsert_fn(
     p_tenant_id uuid,
     p_name text,
@@ -119,6 +120,7 @@ $$ language plpgsql;
 /**
  * Upsert a subject area within a data domain.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_subject_areas_upsert_fn(
     p_tenant_id uuid,
     p_domain_name text,
@@ -163,6 +165,7 @@ $$ language plpgsql;
 /**
  * Upsert a data quality catalog (grouping of related datasets).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_catalogs_upsert_fn(
     p_tenant_id uuid,
     p_name text,
@@ -203,6 +206,7 @@ $$ language plpgsql;
 /**
  * Upsert a dataset dependency (declares load order between datasets).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_dataset_dependencies_upsert_fn(
     p_tenant_id uuid,
     p_dataset_code text,
@@ -242,6 +246,7 @@ $$ language plpgsql;
 /**
  * Upsert an origin dimension (Primary, Derived).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_origin_dimensions_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -280,6 +285,7 @@ $$ language plpgsql;
 /**
  * Upsert a nature dimension (Actual, Synthetic, Mock).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_nature_dimensions_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -318,6 +324,7 @@ $$ language plpgsql;
 /**
  * Upsert a treatment dimension (Raw, Masked, Anonymized).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_treatment_dimensions_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -360,6 +367,7 @@ $$ language plpgsql;
 /**
  * Upsert a change reason category (system, common, trade).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_change_reason_categories_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -397,6 +405,7 @@ $$ language plpgsql;
 /**
  * Upsert a change reason with full configuration.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_change_reasons_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -446,6 +455,7 @@ $$ language plpgsql;
 /**
  * Upsert a coding scheme authority type (official, industry, internal).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_coding_scheme_authority_types_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -484,6 +494,7 @@ $$ language plpgsql;
 /**
  * Upsert a coding scheme (e.g., ISO 4217, LEI, BIC).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_coding_schemes_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -530,6 +541,7 @@ $$ language plpgsql;
 /**
  * Upsert a data sourcing methodology.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_methodologies_upsert_fn(
     p_tenant_id uuid,
     p_name text,
@@ -579,6 +591,7 @@ $$ language plpgsql;
  *        Used by the publication service to determine which population
  *        function to call when publishing the dataset.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_datasets_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -642,6 +655,7 @@ $$ language plpgsql;
 /**
  * Upsert a tag for a dataset.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_tags_upsert_fn(
     p_tenant_id uuid,
     p_dataset_name text,
@@ -692,6 +706,7 @@ $$ language plpgsql;
 /**
  * Upsert a permission code.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_permissions_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -718,6 +733,7 @@ $$ language plpgsql;
  * that grants everything are not roles a person asks for, so the callers that
  * create those pass p_is_requestable false.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_roles_upsert_fn(
     p_tenant_id uuid,
     p_name text,
@@ -760,6 +776,7 @@ $$ language plpgsql;
  *   the service_password_hash in that same credential row
  * - Account names should match database user names for consistency
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_service_accounts_upsert_fn(
     p_username    text,
     p_email       text,
@@ -864,6 +881,7 @@ $$ language plpgsql;
 /**
  * Assign a role to a service account by username (idempotent).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_account_role_assign_fn(
     p_tenant_id uuid,
     p_username   text,
@@ -910,6 +928,7 @@ $$ language plpgsql;
 /**
  * Assign a permission to a role.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_role_permissions_assign_fn(
     p_tenant_id uuid,
     p_role_name text,
@@ -960,6 +979,7 @@ $$ language plpgsql;
 /**
  * Upsert a system setting (insert if absent; never overwrites an existing value).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_variability_system_settings_upsert_fn(
     p_tenant_id uuid,
     p_name text,
@@ -1007,6 +1027,7 @@ $$ language plpgsql;
  * a new one with the supplied value. Used by stored procedures that need to
  * change an existing setting (e.g. exiting bootstrap mode).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_variability_system_settings_set_fn(
     p_tenant_id uuid,
     p_name text,
@@ -1112,6 +1133,7 @@ $$ language plpgsql;
 /**
  * Upsert a dataset bundle (named collection of datasets).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_dataset_bundles_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -1153,6 +1175,7 @@ $$ language plpgsql;
 /**
  * Upsert a dataset bundle member (links a dataset to a bundle).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_dataset_bundle_members_upsert_fn(
     p_tenant_id uuid,
     p_bundle_code text,
@@ -1192,6 +1215,7 @@ $$ language plpgsql;
 /**
  * Upsert a badge severity (secondary, info, success, warning, danger, primary).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_badge_severities_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -1233,6 +1257,7 @@ $$ language plpgsql;
 /**
  * Upsert a badge code domain (e.g. party_status, login_status).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_code_domains_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -1274,6 +1299,7 @@ $$ language plpgsql;
 /**
  * Upsert a badge definition (visual metadata for a badge).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_badge_definitions_upsert_fn(
     p_tenant_id uuid,
     p_code text,
@@ -1321,6 +1347,7 @@ $$ language plpgsql;
 /**
  * Upsert a badge mapping (links a code domain + entity code to a badge).
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_badge_mappings_upsert_fn(
     p_tenant_id uuid,
     p_code_domain_code text,

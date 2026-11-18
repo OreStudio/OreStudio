@@ -59,7 +59,7 @@ std::vector<ores::diff::domain::field_value> render_equity_position_option_under
     fields.push_back(
         {.name = "Strike Currency", .value = v.strike_currency.value_or(std::string{})});
     fields.push_back(
-        {.name = "Quantity", .value = v.quantity ? v.quantity->to_string() : std::string{}});
+        {.name = "Quantity", .value = v.quantity ? std::to_string(*v.quantity) : std::string{}});
     fields.push_back({.name = "Premium Amount",
                       .value = v.premium_amount ? v.premium_amount->to_string() : std::string{}});
     fields.push_back(

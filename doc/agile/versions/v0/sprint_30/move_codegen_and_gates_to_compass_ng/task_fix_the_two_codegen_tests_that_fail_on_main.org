@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: F2F96980-5CF8-4FE5-B827-8405D15F6F6B
+:END:
+#+title: Task: Fix the two codegen tests that fail on main
+#+description: Every local gate reported two codegen test failures that came from main, not from the change it checked.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch: fix/two-codegen-tests-on-main
+#+pr: 4838
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+codegen-tests passes on main, so a gate failure means the change under test.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-18                               |
+
+* Acceptance
+
+- test_domain_includes and test_trade_type_catalogue pass.
+- The capture that recorded them is removed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4838][#4838]] | [codegen] Fix the two codegen tests that fail on main |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- The four script models no longer list the optional header in their domain
+  includes, and their regenerated headers pass test_domain_includes.
+- test_trade_type_catalogue expects SwaptionStraddle first in the rate
+  instruments' routed list, as the generated create script has it.
+- Gate: 53 of 54 pass with codegen-tests green; ticks-smoke failed on missing
+  vendor credentials in this environment, unrelated to the change.
+

@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 72CFDCCE-09F0-4AE2-9B18-D31BEEEBDAF5
+:END:
+#+title: Compass configuration
+#+description: The configuration compass-ng reads at the root of ORE Studio: which codecs run, and their options.
+#+type: meta
+#+level: cross
+#+filetags: :meta:compass:configuration:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+output: .
+#+meta: doc/meta
+
+compass-ng, the C++ compass, reads this page before every run. The codec
+table names each codec, whether it runs, and its options as =key=value=
+pairs. A codec with no row does not run. The rows follow the integration
+guide in the compass repository; document_index, required_sections and
+rule_table stay off, because ORE Studio has its own index and contract checks.
+
+* Codecs
+
+| name | enabled | options |
+|------+---------+---------|
+| document_index | no | |
+| required_sections | no | |
+| tangle | yes | directory=projects/ores.codegen/library/templates |
+| tangle_check | yes | directory=projects/ores.codegen/library/templates |
+| codegen | yes | library=projects/ores.codegen/library year=2026 convention_component=refdata clang_format=clang-format clang_format_style=.clang-format prettier=projects/ores.web/node_modules/.bin/prettier,prettier prettier_style=.prettierrc.yaml |
+| ore_output_catalogue | yes | clang_format=clang-format |
+| rule_table | no | |
+| component_files | yes | year=2026 |
+| pending_models | yes | |
+| bff_list_requests | yes | |
+| core_link_edges | yes | |
+| event_registrars | yes | |
+| exported_types | yes | |
+| forward_declarable_includes | yes | |
+| handler_registrars | yes | |
+| history_registrars | yes | |
+| portable_stop | yes | |
+| route_auth | yes | |
+| shell_command_composition | yes | |
+| shell_command_units | yes | |
+| shell_menus | yes | |
+| stream_coverage | yes | |
+| test_case_reachability | yes | |
+| translation_unit_budget | yes | |
+| unique_type_names | yes | |
+| unity_collisions | yes | |
+| xml_family_census | yes | |
+| curve_parameter_paths | yes | |
+| handler_permissions | yes | |
+| populate_refs | yes | |
+| rls_widenings | yes | |
+| sql_hygiene | yes | |
+| sql_reachability | yes | |
+| conventions_coverage | yes | |
+| conventions_dataset | yes | |
+| curve_sections_wiring | yes | clang_format=clang-format |
+| model_rules | yes | |
+| entity_binary_types | yes | |
+| entity_writes | yes | |
+| er_diagram | yes | |
+| generated_column_refs | yes | |
+| marketdata_identity_columns | yes | |
+| open_reads | yes | |
+| ore_renderings_tables | yes | |
+| ore_value_sets | yes | |
+| parameter_value_sets | yes | |
+| protocol_twins | yes | |
+| registry_exceptions | yes | |
+| route_inventory | yes | |
+| script_library_seed | yes | |
+| subject_conformance | yes | |
+| template_sections | yes | |
+| backlog_indexes | yes | |
+| component_docs | yes | |
+| heading_numbers | yes | |
+| http_recipe_library | yes | |
+| lint | yes | |
+| no_pr_triggers | yes | |
+| org_links | yes | |
+| physical_inventory | yes | |
+| prototypes | yes | |
+| recipe_inventories | yes | |
+| rule_identifiers | yes | |
+| shell_recipe_library | yes | |
+| shell_recipe_provenance | yes | |
+| skill_catalogue | yes | |
+| skill_levels | yes | |
+| skill_namespace | yes | |
+| skill_type_tables | yes | |
+| trade_type_coverage | yes | |
+| rls_coverage | yes | |
+
+* Exceptions
+
+Findings in generated files and models, which carry no inline exception: a
+comment there is regenerated away or leaks into generated code. An empty line
+cell covers every finding of the rule in the file.
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|
+| projects/ores.codegen/library/templates/cpp_domain_type_entity.hpp.mustache | | template_sections/chained_tags | 2027-05-18 | marco | 8 chained section lines, recorded in template_section_baseline.json until the tags are split |
+| projects/ores.marketdata/modeling/ores.marketdata.fx_forward_publish.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.marketdata/modeling/ores.marketdata.fx_forward_publish_point.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.marketdata/modeling/ores.marketdata.market_series_identity.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.refdata/modeling/ores.refdata.base_correlation_config.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.refdata/modeling/ores.refdata.curve_segment_cross_currency_terms.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.refdata/modeling/ores.refdata.inflation_curve_config.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.sql/create/compute/compute_workflow_batch_links_create.sql | | rls_widenings/system_tenant_widening | 2027-05-18 | marco | under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py |
+| projects/ores.sql/create/marketdata/marketdata_delivery_counts_create.sql | | rls_widenings/system_tenant_widening | 2027-05-18 | marco | the platform pays the vendors for the usage of every tenant, so the system tenant reads the usage events of all of them; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py |
+| projects/ores.sql/create/marketdata/marketdata_demand_intervals_create.sql | | rls_widenings/system_tenant_widening | 2027-05-18 | marco | the platform pays the vendors for the usage of every tenant, so the system tenant reads the usage events of all of them; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py |
+| projects/ores.sql/create/marketdata/marketdata_subscription_intervals_create.sql | | rls_widenings/system_tenant_widening | 2027-05-18 | marco | the platform pays the vendors for the usage of every tenant, so the system tenant reads the usage events of all of them; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py |

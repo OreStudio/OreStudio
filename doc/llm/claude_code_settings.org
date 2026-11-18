@@ -79,7 +79,8 @@ last section in each array carries no comma.
 <<sandbox-excluded>>
   },
   "hooks": {
-<<hooks-pretooluse>>
+<<hooks-pretooluse>>,
+<<hooks-posttooluse>>
   }
 }
 #+end_src
@@ -1141,6 +1142,30 @@ def test_compass_does_not_run_a_denied_stash(monkeypatch):
           {
             "type": "command",
             "command": "sh -c 'f=projects/ores.compass/src/deny_bare_stash_hook.py; if [ -f \"$f\" ]; then python3 \"$f\"; else exit 0; fi'"
+          }
+        ]
+      }
+    ]
+#+end_src
+
+** The compass-ng edit hook
+
+After each edit, =compass-ng hook= checks the file Claude Code just wrote,
+against the gates compass-ng runs, and shows the agent each finding the edit
+caused; a finding the last full check already recorded is not shown again. It
+takes under a second for most edits. It writes nothing and fails open, and the
+guard leaves a machine without compass-ng alone. It trusts the record of the
+last =./compass.sh check=, so run one after a pull or a rebase.
+
+#+begin_src json :tangle no :noweb-ref hooks-posttooluse
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'command -v compass-ng >/dev/null || exit 0; exec compass-ng hook'",
+            "timeout": 30
           }
         ]
       }

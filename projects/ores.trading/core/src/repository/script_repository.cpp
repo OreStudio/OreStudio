@@ -118,6 +118,21 @@ bool script_claim_reads_current(const ores::utility::domain::precondition& claim
 using script_rows_by_key = std::map<std::tuple<std::string>, std::vector<domain::script>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::script> script_claim_rows(const ores::database::context& ctx,
+                                              std::vector<domain::script> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -132,7 +147,7 @@ script_rows_by_key script_current_rows(script_repository& repo,
         names.push_back(row.name);
     }
     script_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, names))
+    for (auto& item : script_claim_rows(ctx, repo.read_latest(ctx, names)))
         current[std::make_tuple(item.name)].push_back(std::move(item));
     return current;
 }
@@ -193,7 +208,7 @@ domain::script script_apply_claim(const domain::script& v,
 }
 
 void script_repository::write(const context& ctx, const domain::script& v) {
-    write(ctx, v, script_replace_claim(read_latest(ctx, v.name)));
+    write(ctx, v, script_replace_claim(script_claim_rows(ctx, read_latest(ctx, v.name))));
 }
 
 void script_repository::write(const context& ctx, const std::vector<domain::script>& v) {
@@ -209,11 +224,11 @@ void script_repository::write(const context& ctx,
                               const domain::script& v,
                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing script. " << "name: " << v.name;
-    const auto t =
-        script_apply_claim(v,
-                           claim,
-                           script_claim_reads_current(claim) ? read_latest(ctx, v.name) :
-                                                               std::vector<domain::script>{});
+    const auto t = script_apply_claim(v,
+                                      claim,
+                                      script_claim_reads_current(claim) ?
+                                          script_claim_rows(ctx, read_latest(ctx, v.name)) :
+                                          std::vector<domain::script>{});
     query_builder::execute_write_query(
         ctx, script_mapper::map(t), lg(), "Writing script to database.");
 }

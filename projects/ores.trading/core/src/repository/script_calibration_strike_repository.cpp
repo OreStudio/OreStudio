@@ -110,6 +110,22 @@ using script_calibration_strike_rows_by_key =
              std::vector<domain::script_calibration_strike>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::script_calibration_strike>
+script_calibration_strike_claim_rows(const ores::database::context& ctx,
+                                     std::vector<domain::script_calibration_strike> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -134,8 +150,9 @@ script_calibration_strike_current_rows(script_calibration_strike_repository& rep
         sequence_numbers.push_back(std::to_string(row.sequence_number));
     }
     script_calibration_strike_rows_by_key current;
-    for (auto& item :
-         repo.read_latest(ctx, script_names, purposes, calibration_numbers, sequence_numbers))
+    for (auto& item : script_calibration_strike_claim_rows(
+             ctx,
+             repo.read_latest(ctx, script_names, purposes, calibration_numbers, sequence_numbers)))
         current[std::make_tuple(item.script_name,
                                 item.purpose,
                                 std::to_string(item.calibration_number),
@@ -208,11 +225,13 @@ void script_calibration_strike_repository::write(const context& ctx,
                                                  const domain::script_calibration_strike& v) {
     write(ctx,
           v,
-          script_calibration_strike_replace_claim(read_latest(ctx,
-                                                              v.script_name,
-                                                              v.purpose,
-                                                              std::to_string(v.calibration_number),
-                                                              std::to_string(v.sequence_number))));
+          script_calibration_strike_replace_claim(script_calibration_strike_claim_rows(
+              ctx,
+              read_latest(ctx,
+                          v.script_name,
+                          v.purpose,
+                          std::to_string(v.calibration_number),
+                          std::to_string(v.sequence_number)))));
 }
 
 void script_calibration_strike_repository::write(
@@ -233,16 +252,17 @@ void script_calibration_strike_repository::write(const context& ctx,
                                << "script_name: " << v.script_name << " purpose: " << v.purpose
                                << " calibration_number: " << v.calibration_number
                                << " sequence_number: " << v.sequence_number;
-    const auto t =
-        script_calibration_strike_apply_claim(v,
-                                              claim,
-                                              script_calibration_strike_claim_reads_current(claim) ?
-                                                  read_latest(ctx,
-                                                              v.script_name,
-                                                              v.purpose,
-                                                              std::to_string(v.calibration_number),
-                                                              std::to_string(v.sequence_number)) :
-                                                  std::vector<domain::script_calibration_strike>{});
+    const auto t = script_calibration_strike_apply_claim(
+        v,
+        claim,
+        script_calibration_strike_claim_reads_current(claim) ?
+            script_calibration_strike_claim_rows(ctx,
+                                                 read_latest(ctx,
+                                                             v.script_name,
+                                                             v.purpose,
+                                                             std::to_string(v.calibration_number),
+                                                             std::to_string(v.sequence_number))) :
+            std::vector<domain::script_calibration_strike>{});
     query_builder::execute_write_query(ctx,
                                        script_calibration_strike_mapper::map(t),
                                        lg(),

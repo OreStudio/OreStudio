@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+// compass:except-file(entity_writes/cpp_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 #include "ores.dq.core/service/publish_service.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"

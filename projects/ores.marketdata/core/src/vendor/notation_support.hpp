@@ -239,6 +239,51 @@ inline std::expected<void, notation_error> check_pillar(const ir_curve_pillar& p
     return {};
 }
 
+/// The five strike labels a broker shows on an FX volatility surface.
+inline const auto strike_label =
+    x3::raw[x3::string("ATM") | x3::string("25RR") | x3::string("10RR") | x3::string("25BF") |
+            x3::string("10BF")];
+
+/**
+ * @brief Reads the volatility point that a provider separates with dots and ends with an equals
+ * sign: the pair run together, the word VOL, the strike label and the expiry, as in
+ * EURUSD.VOL.25RR.1Y=.
+ *
+ * The first word is six letters and no index tenor, so a pillar never reads as a point and a
+ * point never reads as a pillar.
+ *
+ * @return Whether @p text is one such point; @p option holds it when it is.
+ */
+inline bool parse_dot_option(std::string_view text, fx_option_quote& option) {
+    const auto grammar = currency_code[assign_to(option.base)] >>
+                         currency_code[assign_to(option.quote)] >> x3::lit(".VOL.") >>
+                         strike_label[assign_to(option.strike_label)] >> x3::lit('.') >>
+                         period_tenor[assign_to(option.expiry)] >> x3::lit('=');
+    return parse_all(text, grammar);
+}
+
+/// The same point as a provider that writes it with dots and a final equals sign writes it.
+inline std::string write_dot_option(const fx_option_quote& o) {
+    return o.base + o.quote + ".VOL." + o.strike_label + "." + o.expiry + "=";
+}
+
+/**
+ * @brief A volatility point that can be written: a pair, one of the five strike labels, and an
+ * expiry that is a period.
+ */
+inline std::expected<void, notation_error> check_option(const fx_option_quote& o) {
+    if (const auto ok = check_pair(fx_spot_quote{o.base, o.quote}); !ok)
+        return ok;
+    if (!parse_all(o.strike_label, strike_label))
+        return fail(notation_error::kind::not_representable,
+                    "A strike label is ATM, 25RR, 10RR, 25BF or 10BF, not '" + o.strike_label +
+                        "'.");
+    if (!parse_all(o.expiry, period_tenor))
+        return fail(notation_error::kind::not_representable,
+                    "An expiry is a period such as 1M or 10Y, not '" + o.expiry + "'.");
+    return {};
+}
+
 }
 
 #endif

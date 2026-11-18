@@ -87,6 +87,11 @@ pillars that fold in the standalone scripts, starting with Provision.
 - [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]] — generate the CA
   and per-service mTLS client certs (=nats certs= / =nats certs --force=).
 
+* compass-ng
+
+- [[id:A10F246B-35A2-40CF-8C33-274584E5E7C3][How do I install and update compass-ng?]] — install the pinned build,
+  build a worktree's record, collect the store, and fall back to Python.
+
 * Navigating the doc graph
 
 These commands moved into compass from =ores.codegen= (the tool now owns

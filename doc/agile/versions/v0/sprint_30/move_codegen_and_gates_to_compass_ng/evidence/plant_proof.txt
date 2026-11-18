@@ -1,0 +1,84 @@
+Two-sided plant proof: one planted violation per gate, the same tree for both tools.
+compass-ng 21ae16d through local_checks.py: 75 of 75 gates fail (7.9 s, one run).
+Python scripts on the af0f0be plant set (74 gates; curve-sections-wiring was then held out): 67 of 74 fail (1,834 s wall, 6 jobs).
+
+gate	python	seconds
+backlog-indexes	FAIL	0.2
+bff-list-requests	FAIL	4.5
+cmake-sources	FAIL	1.1
+component-docs	FAIL	1.3
+component-drift	FAIL	1008.4
+convention-kind-terms	FAIL	0.1
+conventions-coverage	FAIL	1.5
+conventions-dataset	FAIL	0.3
+curve-column-guards	FAIL	0.2
+curve-parameter-paths	FAIL	0.1
+drift-sweep	FAIL	751.4
+entity-binary-types	FAIL	0.5
+entity-writes	FAIL	13.0
+enum-attributes	FAIL	49.8
+er-diagram	FAIL	4.1
+event-registrars	FAIL	0.1
+exported-types	PASS	105.3
+forward-declarable-includes	FAIL	11.2
+generated-column-refs	FAIL	0.5
+handler-permissions	FAIL	0.2
+handler-registrars	FAIL	6.3
+heading-numbers	FAIL	1.4
+history-registrars	FAIL	0.1
+http-areas	FAIL	0.1
+lint	FAIL	5.8
+marketdata-identity-columns	FAIL	0.0
+model-drift	FAIL	0.1
+model-sql-types	FAIL	0.5
+money-decimal-columns	FAIL	1.1
+no-pr-triggers	PASS	0.1
+open-reads	FAIL	1.0
+ore-element-map	FAIL	0.2
+ore-output-catalogue	FAIL	3.1
+ore-parameter-value-sets	FAIL	0.2
+ore-renderings-tables	FAIL	0.1
+org-links	FAIL	2.9
+parameter-value-sets-only	FAIL	0.1
+paste-blocks	PASS	67.7
+pattern-uses	FAIL	1.4
+physical-inventory	FAIL	0.1
+populate-refs	FAIL	15.6
+portable-stop	FAIL	35.5
+protocol-twins	FAIL	0.2
+prototypes	FAIL	0.1
+reachability	FAIL	36.5
+recipe-inventories	FAIL	0.1
+registry-exceptions	FAIL	0.0
+rls-widenings	FAIL	0.1
+route-auth	FAIL	5.3
+route-inventory	PASS	0.6
+route-units	FAIL	0.1
+rule-identifiers	FAIL	0.0
+script-library-seed	FAIL	0.1
+shell-command-units	FAIL	0.3
+shell-menus	FAIL	0.4
+skill-catalogue	FAIL	0.1
+skill-levels	FAIL	0.1
+skill-namespace	FAIL	0.1
+skill-recipes	PASS	0.1
+skill-type-tables	FAIL	0.1
+sql-hygiene	FAIL	115.5
+sql-reachability	FAIL	3.1
+stream-coverage	FAIL	16.1
+structure-notes	PASS	0.5
+subject-conformance	FAIL	11.9
+tangle-http	FAIL	4.0
+tangle-shell	FAIL	54.9
+tangle-templates	FAIL	10.1
+template-sections	PASS	0.2
+trade-type-coverage	FAIL	0.1
+translation-unit-budget	FAIL	0.3
+unique-type-names	FAIL	8.8
+unity-collisions	FAIL	22.3
+xml-family-census	FAIL	0.7
+
+Python passes explained:
+exported-types: its plant is the enum plant, enum-attributes' rule in Python (expected).
+skill-recipes, paste-blocks: dropped by compass, no plant of their own (expected).
+no-pr-triggers, structure-notes, route-inventory, template-sections: Python misses a plant that breaks the rule; compass-ng catches it.

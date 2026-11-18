@@ -82,14 +82,28 @@ A plain column.
 {rls_flags}:END:
 """
 
-POLICY_BODY = """\
+WRITE_POLICY_BODY = """\
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );"""
+
+READ_POLICY_BODY = """\
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+);"""
+
+# What the two policies must never become: one FOR ALL condition that admits the
+# system tenant's rows to a write as readily as to a read, which let a tenant
+# move a platform row into its own tenant or close it for everyone.
+WIDENED_FOR_ALL = """\
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)"""
 
 JUNCTION = """\
 :PROPERTIES:
@@ -159,7 +173,9 @@ def _generate_sql(tmp_path, tenant_isolation="true", rls_flags=""):
 def test_the_flag_emits_own_or_system_tenant_rows_and_a_tenant_scoped_write(tmp_path):
     sql = _generate_sql(
         tmp_path, rls_flags=":rls_own_or_system_tenant_rows: true\n")
-    assert POLICY_BODY in sql
+    assert WRITE_POLICY_BODY in sql
+    assert READ_POLICY_BODY in sql
+    assert WIDENED_FOR_ALL not in sql
 
 
 def test_the_flag_emits_no_widening(tmp_path):
@@ -240,7 +256,9 @@ def test_a_junction_emits_own_or_system_tenant_rows_and_a_tenant_scoped_write(tm
         tmp_path,
         ":rls_tenant_isolation: true\n"
         ":rls_own_or_system_tenant_rows: true\n")
-    assert POLICY_BODY in sql
+    assert WRITE_POLICY_BODY in sql
+    assert READ_POLICY_BODY in sql
+    assert WIDENED_FOR_ALL not in sql
 
 
 def test_a_junction_without_tenant_isolation_is_refused(tmp_path):

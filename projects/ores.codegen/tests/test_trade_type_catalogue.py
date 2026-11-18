@@ -231,7 +231,7 @@ def test_a_routed_table_checks_exactly_the_codes_routed_to_it(tmp_path):
     sql = _create_sql(tmp_path, TRADING / "ores.trading.rate_instruments.org")
 
     assert (
-        "\"trade_type_code\" in ('Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', "
+        "\"trade_type_code\" in ('SwaptionStraddle', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', "
         "'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', "
         "'KnockOutSwap', 'InflationSwap')" in sql
     )

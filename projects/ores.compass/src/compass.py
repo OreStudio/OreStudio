@@ -5707,6 +5707,11 @@ def _version_fields(text):
     return dict(re.findall(r"^(commit|committed): (\S+)", text, re.M))
 
 
+def _committed_at(fields):
+    from datetime import datetime
+    return datetime.fromisoformat(fields["committed"])
+
+
 def compass_ng_problem(root=None):
     """Why this machine's compass-ng does not meet the pin, or None when it does.
 
@@ -5718,6 +5723,10 @@ def compass_ng_problem(root=None):
     if not pin_path.is_file():
         return None
     pin = _version_fields(pin_path.read_text())
+    try:
+        wanted = _committed_at(pin)
+    except (KeyError, ValueError):
+        return f"{COMPASS_NG_PIN} does not state a commit and a commit time"
     exe = shutil.which("compass-ng")
     if exe is None:
         return "compass-ng is not installed"
@@ -5727,17 +5736,22 @@ def compass_ng_problem(root=None):
     except (OSError, subprocess.TimeoutExpired):
         return "compass-ng does not answer --version"
     installed = _version_fields(out)
-    if installed.get("committed", "") < pin.get("committed", ""):
+    try:
+        built = _committed_at(installed)
+    except (KeyError, ValueError):
+        return "compass-ng does not state when its build was committed"
+    if built < wanted:
         return (f"compass-ng {installed.get('commit', 'unknown')[:7]} is older than the "
-                f"{pin['commit'][:7]} ORE Studio needs")
+                f"{pin.get('commit', 'unknown')[:7]} ORE Studio needs")
     return None
 
 
 def _compass_ng_warning():
     problem = compass_ng_problem()
     if problem:
-        print_instruction(INSTRUCTION_MANDATORY, f"{problem}; install the pinned build:",
-                          COMPASS_NG_INSTALL)
+        print_instruction(INSTRUCTION_MANDATORY,
+                          f"{problem}; install the pinned build, as How do I install and "
+                          "update compass-ng? says:", COMPASS_NG_INSTALL)
         print()
 
 

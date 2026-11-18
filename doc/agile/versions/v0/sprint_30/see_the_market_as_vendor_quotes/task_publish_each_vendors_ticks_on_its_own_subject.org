@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: D0F85D26-99A9-42E3-9FB3-DCDEFA7E225B
+:END:
+#+title: Task: Publish each vendor's ticks on its own live subject
+#+description: The ingest lane publishes each accepted, conflated tick once, on a live subject keyed by the vendor, beside the party subjects until every consumer has moved.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:ticks:routing:see_the_market_as_vendor_quotes:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each vendor's accepted ticks are on one live subject per vendor, published once by the ingest, so a consumer can watch a vendor without a copy made for its party.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-18                               |
+
+* Acceptance
+
+- The ingest publishes each accepted tick once on the vendor's live subject, with the same conflation as the party path.
+- The party subjects still carry their ticks, so no consumer breaks while it moves.
+- A test pins the vendor subject a tick is published on and that it is published once.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: build the subject =marketdata.v1.ops.market_tick.<provider>.<feed>.<instrument_type>.<series_token>.<coordinate_token>= with split tokens, and publish each accepted tick once on it in =feed_ingest_loop.cpp=. Keep the delivery meter's counts and the CRM bridge for each route.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

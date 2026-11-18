@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 4F73C113-C598-42EA-B439-04316FD80ABF
+:END:
+#+title: Task: Reach the vendor subjects through the party's subscriptions
+#+description: Move every live consumer from the party subjects to the vendor subjects, choosing the vendors from its party's subscriptions, with the system tenant reaching every vendor, and enforce the subscription on the live path.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:ticks:routing:subscriptions:see_the_market_as_vendor_quotes:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every live consumer watches the vendor subjects its party subscribes to, and nothing else, so the subscription is the only door to live market data, as it is to its history.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-18                               |
+
+* Acceptance
+
+- Each consumer the analysis listed reads the vendor subjects, chosen from its party's subscriptions.
+- A party cannot watch a vendor it does not subscribe to, by the enforcement the analysis chose.
+- The system tenant watches every vendor.
+- Two parties with the same subscriptions receive the same ticks.
+- When a party's route or subscription changes during a watch, the watcher asks again and drops the feeds the party may no longer watch.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: the only reader of the party subjects is the shell's stream watch (=marketdata_commands.cpp=). The new work is a market data operation that answers which feeds a party may watch, by the rule =may_read_ticks= uses, with every feed for the system tenant. The question names the use: a watch for a screen needs the display right, and a service with no screen needs the display or the non-display right. The broker checks only certificates, so the web servers and the shell check before they subscribe.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

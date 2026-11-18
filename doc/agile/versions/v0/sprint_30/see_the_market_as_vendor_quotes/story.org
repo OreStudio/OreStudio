@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 726A5326-E52C-44FB-9453-133D1E51C242
+:END:
+#+title: Story: See the market as the vendors quote it
+#+description: One live view of every vendor quote as it ticks, the same for any party that subscribes to the provider and complete in the system tenant, on a live subject per vendor that the ingest publishes and the parties reach through their subscriptions.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:ticks:routing:web:operations:sprint_30:v0:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person sees the market as the vendors quote it: every quote of every provider they subscribe to, live and in any asset class, in one view that reads the same from any party, and every provider from the system tenant. The ingest publishes each vendor's ticks once, on a live subject per vendor, and a party reaches them through its subscriptions rather than through a copy made for it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Analyse the live path and state its target in the market data docs. |
+| Last touched  | 2026-11-18                               |
+
+* Acceptance
+
+- The market data documentation states the target state: a live subject per vendor that the ingest publishes, and the subscription as the only door to it.
+- The ingest publishes each vendor's accepted ticks once, on that vendor's live subject, and no live tick is copied per party.
+- Every live consumer reaches the vendor subjects through its party's subscriptions, and the system tenant reaches every vendor.
+- The quotes view is designed as a journey and a prototype the product owner signs off, and is then built.
+- A party sees only the providers it subscribes to, and two parties with the same subscriptions see the same quotes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][Analyse the live path and state its target in the market data docs]] | DONE | 2026-11-18 | 2026-11-18 | Review the market data documentation and code end to end for the live path, size the change to a live subject per vendor, and write the target state into the docs before any code changes. |
+| [[id:D0F85D26-99A9-42E3-9FB3-DCDEFA7E225B][Publish each vendor's ticks on its own live subject]] | BACKLOG | | | The ingest lane publishes each accepted, conflated tick once, on a live subject keyed by the vendor, beside the party subjects until every consumer has moved. |
+| [[id:4F73C113-C598-42EA-B439-04316FD80ABF][Reach the vendor subjects through the party's subscriptions]] | BACKLOG | | | Move every live consumer from the party subjects to the vendor subjects, choosing the vendors from its party's subscriptions, with the system tenant reaching every vendor, and enforce the subscription on the live path. |
+| [[id:A19780BE-443A-4811-AA53-2B7B58842892][Stop copying live ticks per party]] | BACKLOG | | | Once no consumer reads them, remove the party live subjects and the per-party publish from the ingest, and update the docs that still name them. |
+| [[id:454D2B6D-9EC8-4801-A2AB-1C5C46338D97][Read a vendor's recent ticks through the subscription]] | BACKLOG | | | Give the quotes view its history: the recent ticks of a vendor's series from the store, behind the party's subscription, with the system tenant reading every vendor. |
+| [[id:601953D5-1EB6-4E66-8F5F-9D56E67EAD03][Write the journey: watch the vendors' quotes]] | BACKLOG | | | Agree the journey catalogue for the quotes view, then write the journey with its wireframe and coverage table, in the group the analysis chooses. |
+| [[id:D9CEB730-C3E2-464A-B69D-57E518C8AAA1][Prototype the quotes view for sign-off]] | BACKLOG | | | Build a static prototype of the quotes view on mock data, with the variants and states the journey needs, and record the product owner's sign-off or the changes asked. |
+| [[id:7421F842-BD73-42CA-8EF7-D47DBA72C79B][Build the quotes view]] | BACKLOG | | | Build the signed-off quotes view in ores.web: the BFF reads the vendor subjects and the recent ticks for the party, and the screen draws them live. |
+| [[id:5127ACAD-A58C-4B63-922A-FA703836AFB2][Retire the synthetic display tap]] | BACKLOG | | | Move the synthetic feed screens' Ticks tabs onto the vendor subjects and remove the per-feed display subject and its BFF buffer, if the analysis confirms nothing else needs them. |
+
+* Decisions
+
+- *A party sees only the providers it subscribes to.* Vendor streams are paid
+  for, so the quotes view keeps the subscription as the door, as the history
+  read does today. Two parties with the same subscriptions see the same quotes.
+  The system tenant sees every provider. (2026-11-18, product owner.)
+- *The ingest publishes each vendor's ticks once, on a live subject per
+  vendor.* Today the ingest publishes live ticks on party subjects,
+  =market_tick.<tenant>.<party>.…=, after routing, so every live consumer sees
+  the market through a copy made for one party. A party reaches a vendor's
+  subject through its subscription instead. (2026-11-18, product owner.)
+- *The routing comes before the screens.* The system must keep working after
+  the routing tasks, so the vendor subject is added first, the consumers move
+  to it, and the party subjects are removed last.
+- *The view is not specific to an asset class.* Every tick is a series URI, a
+  coordinate, a value and a time, so FX spot, IR pillars and vol quotes are rows
+  of the same view. A layout for one class, such as the FX montage, is a later
+  lens over the same rows.
+- *A screen needs the display right.* A vendor licenses the non-display right
+  for machines, and it does not allow a screen. So the quotes view, live and
+  history, needs the display right, and a service with no screen needs the
+  display or the non-display right. (2026-11-18, product owner.)
+- *The synthetic display tap is not the base.* =synthetic.v1.ops.feed_tick= is
+  published by the simulator's FX and IR feeds only, and a real vendor never
+  publishes it.
+
+* Out of scope
+
+- A party's published surfaces: the story
+  [[id:58E7AD14-ED53-478B-AA37-34FE6607E794][Read a party's published surfaces]].

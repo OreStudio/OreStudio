@@ -97,7 +97,10 @@ service resolves the rest: the provider that carries the item, the party's route
 to a source of that provider, the vendor id the source announces, and then the
 generator that produces it. The tick comes back on the party's own stream, stored
 under the party, and the delivery is counted against the party, the provider and
-the item so that the bill follows the use. A simulated source carries a rate card
+the item so that the bill follows the use. In the target the tick comes back on
+the subject of the source's feed, which the party reaches through its route and
+subscription, and the count for the party is unchanged
+([[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]]). A simulated source carries a rate card
 of the same shape as a live one, so the demonstration shows the bill the same use
 would cost on a live source;
 [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns

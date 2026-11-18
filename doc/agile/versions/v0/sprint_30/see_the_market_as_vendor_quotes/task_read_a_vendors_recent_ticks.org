@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 454D2B6D-9EC8-4801-A2AB-1C5C46338D97
+:END:
+#+title: Task: Read a vendor's recent ticks through the subscription
+#+description: Give the quotes view its history: the recent ticks of a vendor's series from the store, behind the party's subscription, with the system tenant reading every vendor.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:ticks:history:see_the_market_as_vendor_quotes:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A screen that opens on a vendor's quotes fills its recent history in one call, from the store the ingest writes, and the subscription decides what it may read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-18                               |
+
+* Acceptance
+
+- One read returns a vendor's recent ticks for the series a view shows, from the store.
+- The read refuses a vendor the party does not subscribe to, and the system tenant reads every vendor.
+- The read and the live subject agree: the newest tick the read returns is the last one the subject carried.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: =get_series_ticks= already reads a series' ticks behind the subscription. There is no recent window; it reads the store. The work is the system tenant rule in =tick_entitlement.cpp=, and the display right for a read that a screen makes: =may_read_ticks= accepts the non-display right today.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

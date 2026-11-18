@@ -61,3 +61,9 @@ disclosure beside it.
 * Out of scope
 
 - Rewriting the step's message on the server so it says less.
+
+* Result
+
+A setup warning that names hundreds of items no longer buries the run rail: its first sentence
+stands in the summary and the whole text waits behind a disclosure that scrolls, while a warning of
+one short sentence is read where it stands.

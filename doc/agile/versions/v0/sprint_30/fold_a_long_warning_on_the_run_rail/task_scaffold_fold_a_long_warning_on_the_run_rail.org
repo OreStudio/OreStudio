@@ -83,3 +83,4 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+The story's documents, its sprint wiring and the PR that carries them (#4862).

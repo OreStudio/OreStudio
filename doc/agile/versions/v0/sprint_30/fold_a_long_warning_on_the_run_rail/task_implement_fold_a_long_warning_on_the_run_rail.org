@@ -83,3 +83,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+=RunStep= shows a step's last logged sentence under it, and the surfaces step names all 120
+unpublished surfaces in that one sentence. A warning past 200 characters now keeps its first
+sentence in a =summary= and puts the whole text behind a disclosure that scrolls, while a short one
+is still read where it stands. The summary is cut to 120 characters, because a warning with no
+sentence break would otherwise fill a box that cannot scroll.
+
+38 tests pass in the parts suite, including the two new boundary cases; prettier and the typecheck
+are clean.

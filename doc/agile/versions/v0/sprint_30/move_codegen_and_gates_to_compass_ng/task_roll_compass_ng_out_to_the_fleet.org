@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/roll-compass-ng-out-to-the-fleet
-#+pr: 4842
+#+pr: 4847
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -79,6 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4847][#4847]] | [compass] Pin compass-ng e689a2e |
 | [[https://github.com/OreStudio/OreStudio/pull/4842][#4842]] | [compass] Pin the compass-ng build and report a missing or older one |
 
 * Review

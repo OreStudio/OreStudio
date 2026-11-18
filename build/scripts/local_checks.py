@@ -1450,7 +1450,7 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "unique-type-names": ("unique_type_names",),
     "xml-family-census": ("xml_family_census",),
     "http-areas": ("model_rules",),
-    "route-units": ("route_units",),
+    "route-units": ("model_rules",),
     "route-inventory": ("route_inventory",),
     "prototypes": ("prototypes",),
     "component-docs": ("component_docs",),

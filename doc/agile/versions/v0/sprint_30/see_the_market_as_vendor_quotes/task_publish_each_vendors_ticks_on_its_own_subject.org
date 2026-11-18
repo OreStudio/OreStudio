@@ -26,11 +26,11 @@ Each vendor's accepted ticks are on one live subject per vendor, published once 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -101,3 +101,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The ingest publishes each accepted tick once on
+  =market_tick.<provider>.<feed>.<instrument_type>.<series_token>.<coordinate_token>=,
+  built by =feed_tick_subject()=, after the age gate. The copies for each party
+  are still published, so every consumer keeps working.
+- The plan holds one delivery for each source and datum: the feed subject and the
+  targets for each route. The loop caches it, so no tick builds a subject. The
+  meter, the stats and the CRM bridge are unchanged.
+- Tests pin the subject of an IR swap pillar and of an FX spot, show that one
+  wildcard covers a series and nothing else, and show that a tick of two routed
+  parties arrives once on the feed and once on each party. The market data API
+  suite (1131 cases), the market data service suite (314 cases), the shell
+  stream tests and the portfolio projection tests pass.
+- The branch also fixes two build breaks on main: =booking.ts= did not fill the
+  basket option batches, and a portfolio projection test held an unused helper.

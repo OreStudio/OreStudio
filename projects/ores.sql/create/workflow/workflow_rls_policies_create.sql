@@ -36,6 +36,7 @@ alter table ores_workflow_workflow_instances_tbl enable row level security;
 drop policy if exists workflow_instances_tenant_isolation_policy
     on ores_workflow_workflow_instances_tbl;
 
+-- compass:except(rls_widenings/system_tenant_widening) expires=2027-05-18 approver=marco reason=under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py
 create policy workflow_instances_tenant_isolation_policy
 on ores_workflow_workflow_instances_tbl
 for all using (
@@ -57,6 +58,7 @@ alter table ores_workflow_workflow_steps_tbl enable row level security;
 drop policy if exists workflow_steps_tenant_isolation_policy
     on ores_workflow_workflow_steps_tbl;
 
+-- compass:except(rls_widenings/system_tenant_widening) expires=2027-05-18 approver=marco reason=under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py
 create policy workflow_steps_tenant_isolation_policy
 on ores_workflow_workflow_steps_tbl
 for all using (
@@ -78,6 +80,7 @@ alter table ores_workflow_plan_steps_tbl enable row level security;
 
 drop policy if exists workflow_plan_steps_tenant_isolation_policy on ores_workflow_plan_steps_tbl;
 
+-- compass:except(rls_widenings/system_tenant_widening) expires=2027-05-18 approver=marco reason=under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py
 create policy workflow_plan_steps_tenant_isolation_policy
 on ores_workflow_plan_steps_tbl
 for all using (
@@ -108,6 +111,7 @@ alter table ores_workflow_plan_dependencies_tbl enable row level security;
 
 drop policy if exists workflow_plan_dependencies_tenant_isolation_policy on ores_workflow_plan_dependencies_tbl;
 
+-- compass:except(rls_widenings/system_tenant_widening) expires=2027-05-18 approver=marco reason=under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py
 create policy workflow_plan_dependencies_tenant_isolation_policy
 on ores_workflow_plan_dependencies_tbl
 for all using (

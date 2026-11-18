@@ -176,6 +176,7 @@ $$ language plpgsql;
  * @param p_target_tenant_id The tenant to publish data to
  * @param p_mode             Ignored - always performs replace_all
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_dq_ip2country_publish_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

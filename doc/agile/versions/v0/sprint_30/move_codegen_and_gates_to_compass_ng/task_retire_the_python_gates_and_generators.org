@@ -39,6 +39,8 @@ One tool, not two, owns each build-free gate and each generated artefact.
 - The baseline files and their readers are deleted.
 - local_checks.py lists only the gates compass does not cover.
 - The compass repository's Retire legacy tooling targets table is updated for each removal.
+- Exception reasons that name a retired baseline file or script name what stays instead.
+- Until this task lands, a new accepted violation goes both into a compass exception and into the baseline its Python gate reads, so the fallback agrees.
 
 * Plan
 

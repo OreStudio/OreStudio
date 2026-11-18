@@ -36,6 +36,7 @@ alter table ores_scheduler_job_definitions_tbl enable row level security;
 drop policy if exists job_definitions_tenant_isolation_policy
     on ores_scheduler_job_definitions_tbl;
 
+-- compass:except(rls_widenings/system_tenant_widening) expires=2027-05-18 approver=marco reason=under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py
 create policy job_definitions_tenant_isolation_policy
 on ores_scheduler_job_definitions_tbl
 for all using (
@@ -55,6 +56,7 @@ with check (
 drop policy if exists job_definitions_party_isolation_policy
     on ores_scheduler_job_definitions_tbl;
 
+-- compass:except(rls_widenings/system_tenant_widening) expires=2027-05-18 approver=marco reason=under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py
 create policy job_definitions_party_isolation_policy
 on ores_scheduler_job_definitions_tbl
 as restrictive
@@ -72,6 +74,7 @@ for select using (
 drop policy if exists job_instances_write_policy
     on ores_scheduler_job_instances_tbl;
 
+-- compass:except(rls_widenings/system_tenant_widening) expires=2027-05-18 approver=marco reason=under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py
 create policy job_instances_write_policy
 on ores_scheduler_job_instances_tbl
 for all using (
@@ -94,6 +97,7 @@ with check (
 drop policy if exists job_instances_party_isolation_policy
     on ores_scheduler_job_instances_tbl;
 
+-- compass:except(rls_widenings/system_tenant_widening) expires=2027-05-18 approver=marco reason=under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py
 create policy job_instances_party_isolation_policy
 on ores_scheduler_job_instances_tbl
 as restrictive

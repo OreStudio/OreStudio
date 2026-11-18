@@ -116,6 +116,14 @@ side-by-side diffs at reasonable terminal widths.
 ColumnLimit: 100
 #+end_src
 
+A compass exception is one comment line: its reason runs to the end of the
+line, and a continuation line is not part of it. clang-format leaves such a
+comment whole, however long.
+
+#+begin_src yaml
+CommentPragmas: '^ compass:except'
+#+end_src
+
 ** Pointer and reference alignment
 
 Pointer and reference qualifiers are attached to the type, not the

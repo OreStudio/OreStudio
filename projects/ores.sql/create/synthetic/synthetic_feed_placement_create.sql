@@ -29,6 +29,7 @@
  * root of the party and the folders of the collection among them.
  */
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=places a feed that names no folder in the folder tree the screens list it under, making the missing folders as it goes; the placement must share the inserting transaction, so a before-insert trigger writes the folders rather than a repository call; recorded in entity_table_writes_baseline.json
 create or replace function ores_synthetic_place_feed_in_folder_fn()
 returns trigger as $$
 declare

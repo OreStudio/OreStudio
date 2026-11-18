@@ -59,6 +59,7 @@
 --
 -- Returns: (tenant_id uuid, system_party_id uuid)
 --
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_provision_tenant_fn(
     p_type        text,
     p_code        text,

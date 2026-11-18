@@ -34,6 +34,7 @@
 --   p_tenant_id: UUID of the tenant to activate
 --   p_actor:     Username of the account completing provisioning
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_mark_tenant_active_fn(
     p_tenant_id uuid,
     p_actor text

@@ -48,6 +48,7 @@
 -- Parameters:
 --   p_tenant_id: The tenant ID to deprovision
 --
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_deprovision_tenant_fn(
     p_tenant_id uuid
 ) returns void as $$

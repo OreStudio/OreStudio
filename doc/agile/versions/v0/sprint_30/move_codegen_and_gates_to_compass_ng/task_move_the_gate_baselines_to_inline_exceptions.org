@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-the-gate-baselines-to-inline-exceptions
+#+pr: 4844
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -26,11 +26,11 @@ compass check reports nothing on main, and every accepted violation is visible w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -77,12 +77,34 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4844][#4844]] | [compass] Excuse every baseline entry, so compass-ng check passes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | All 201 exceptions expire on one day | all | Accepted | Captured: Review the compass exceptions before they expire. |
+| 2 | Reasons name baseline files the retirement removes | all | Accepted | The retirement task now rewrites them. |
+| 3 | A whole-file table row also covers a new finding in that file | .compass.org | Declined | A line row in a generated file goes stale on every regeneration; the template and the generated SQL change through review. |
+| 4 | Generic reasons give a reviewer little to act on | all | Declined | They are the baselines' own records; the expiry review replaces them. |
+| 5 | Exceptions and baselines are two sources until retirement | baselines | Accepted | The retirement task states that a new exception goes in both. |
 
 * Result
+
+compass-ng check exits 0 on the branch: 0 diagnostics, 201 excused by
+exceptions; compass-ng diff writes nothing. Every exception carries the reason
+its baseline records, approver marco and expiry 2027-05-18.
+
+- 145 inline, in hand-written files: 131 SQL functions that write entity
+  tables, 5 C++ writers (one except-file each, above the first preprocessor
+  line), 9 policies that widen the system tenant.
+- 37 inline in the component models' cmake blocks, one above each forbidden
+  core link edge; they render into each CMakeLists.txt as CMake comments and
+  cover that one edge.
+- 11 rows in the .compass.org Exceptions table, one per file, for findings
+  whose file is generated or is a model: 4 generated widening policies,
+  the 8 chained template lines, 7 money columns (now model_rules).
+- clang-format leaves a compass:except comment whole (CommentPragmas).
+- The baseline files stay while the Python scripts that read them remain the
+  fallback for a machine without compass-ng.
+

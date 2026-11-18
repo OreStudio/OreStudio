@@ -93,3 +93,23 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | skill_type_tables | yes | |
 | trade_type_coverage | yes | |
 | rls_coverage | yes | |
+
+* Exceptions
+
+Findings in generated files and models, which carry no inline exception: a
+comment there is regenerated away or leaks into generated code. An empty line
+cell covers every finding of the rule in the file.
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|
+| projects/ores.codegen/library/templates/cpp_domain_type_entity.hpp.mustache | | template_sections/chained_tags | 2027-05-18 | marco | 8 chained section lines, recorded in template_section_baseline.json until the tags are split |
+| projects/ores.marketdata/modeling/ores.marketdata.fx_forward_publish.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.marketdata/modeling/ores.marketdata.fx_forward_publish_point.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.marketdata/modeling/ores.marketdata.market_series_identity.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.refdata/modeling/ores.refdata.base_correlation_config.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.refdata/modeling/ores.refdata.curve_segment_cross_currency_terms.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.refdata/modeling/ores.refdata.inflation_curve_config.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
+| projects/ores.sql/create/compute/compute_workflow_batch_links_create.sql | | rls_widenings/system_tenant_widening | 2027-05-18 | marco | under audit in 'Audit the policies that let the system tenant read every tenant'; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py |
+| projects/ores.sql/create/marketdata/marketdata_delivery_counts_create.sql | | rls_widenings/system_tenant_widening | 2027-05-18 | marco | the platform pays the vendors for the usage of every tenant, so the system tenant reads the usage events of all of them; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py |
+| projects/ores.sql/create/marketdata/marketdata_demand_intervals_create.sql | | rls_widenings/system_tenant_widening | 2027-05-18 | marco | the platform pays the vendors for the usage of every tenant, so the system tenant reads the usage events of all of them; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py |
+| projects/ores.sql/create/marketdata/marketdata_subscription_intervals_create.sql | | rls_widenings/system_tenant_widening | 2027-05-18 | marco | the platform pays the vendors for the usage of every tenant, so the system tenant reads the usage events of all of them; recorded in the EXCEPTIONS of check_rls_system_tenant_widenings.py |

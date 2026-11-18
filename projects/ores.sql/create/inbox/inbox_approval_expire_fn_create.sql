@@ -35,6 +35,7 @@
  * the inbox service is the only role granted execute. It answers one row per
  * request it closed, so the caller can tell each person who asked.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=closes overdue approval requests across every tenant, which the tenant-scoped repositories cannot express; recorded in entity_table_writes_baseline.json
 create or replace function ores_inbox_expire_approval_requests_fn(
     p_actor text
 ) returns table (

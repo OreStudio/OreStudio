@@ -64,6 +64,7 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
     PRIVATE
         ores.eventing.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.history.core.lib
         ores.service.lib
         ores.utility.lib

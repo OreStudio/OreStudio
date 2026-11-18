@@ -26,13 +26,20 @@
 # them.
 FROM alpine:3.22
 
-RUN apk add --no-cache nodejs
+# A user of the image's own, so a bare `podman run` is not root. The deployment
+# passes the host user instead, and the staged files are world-readable, so the
+# service runs the same either way.
+RUN apk add --no-cache nodejs \
+    && addgroup -g 10001 -S ores \
+    && adduser -u 10001 -S -G ores -H -s /sbin/nologin ores
 
 WORKDIR /app
 
 # Compiled JavaScript, the browser bundle, the site configuration and the
 # installed workspace dependencies.
-COPY build/docker-stage/web/ /app/
+COPY --chown=ores:ores build/docker-stage/web/ /app/
+
+USER ores
 
 ENV NODE_ENV=production
 # The port the BFF binds; the deployment passes its own through ORES_WEB_PORT.

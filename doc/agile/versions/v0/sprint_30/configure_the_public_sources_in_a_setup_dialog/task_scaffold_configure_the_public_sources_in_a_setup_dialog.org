@@ -8,7 +8,7 @@
 #+filetags: :configure_the_public_sources_in_a_setup_dialog:sprint_30:v0:
 #+owner: marco
 #+branch: feature/configure-the-public-sources-in-a-setup-dialog
-#+pr:
+#+pr: 4865
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4865][#4865]] | [web,marketdata] Record the story for configuring the public sources |
 
 * Review
 

@@ -73,14 +73,14 @@ an API publishes no area, so it is counted under =(none)=.
 | changes | core, server | 5 | transport capability 5 |
 | grid | compute, grid-app-versions, grid-downloads, grid-jobs, operations | 25 | composed view 3, resource 22 |
 | market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, series, subscriptions | 60 | composed view 6, resource 54 |
-| operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
+| operations | core, inbox, operations, server, workflow | 9 | composed view 2, resource 5, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 306 | composed view 2, resource 304 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 88 | composed view 20, resource 68 |
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
-| workflow | inbox, server, timeline, workflow | 23 | composed view 6, resource 17 |
+| workflow | inbox, server, timeline, workflow | 30 | composed view 6, resource 24 |
 | (none) | books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 429 | not an API 407, transport capability 22 |
 
 * The composed views
@@ -151,16 +151,16 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | changes | 2 | 2 | 0 |
 | grid | 14 | 11 | 3 |
 | market-data | 35 | 25 | 10 |
-| operations | 5 | 1 | 4 |
+| operations | 5 | 3 | 2 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 30 | 0 |
 | reporting | 44 | 44 | 0 |
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
-| workflow | 18 | 5 | 13 |
+| workflow | 18 | 12 | 6 |
 | (none) | 35 | 28 | 7 |
-| total | 328 | 273 | 55 |
+| total | 328 | 282 | 46 |
 
 * The pairing
 
@@ -194,7 +194,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | PUT =/api/analytics/sensitivity-templates/:code= | none |
 | GET =/api/analytics/sensitivity-templates/:code/history= | none |
 | GET =/api/analytics/sensitivity-templates/choices= | none |
-| GET =/api/approvals-mode= | none |
+| GET =/api/approvals-mode= | GET /api/approvals-mode |
 | GET =/api/auth-events= | GET /api/auth-events |
 | GET =/api/blotter= | GET /api/blotter |
 | POST =/api/book-changes= | POST /api/book-changes |
@@ -250,7 +250,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/geo/country= | GET /api/geo/country |
 | GET =/api/health= | GET /api/health |
 | GET =/api/history= | GET /api/history |
-| GET =/api/hold-reasons= | none |
+| GET =/api/hold-reasons= | GET /api/hold-reasons |
 | GET =/api/image-map= | GET /api/image-map |
 | GET =/api/image-upload-policy= | GET /api/image-upload-policy |
 | GET =/api/images= | GET /api/images |
@@ -285,10 +285,10 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/me/contact-information= | GET /api/me/contact-information |
 | PUT =/api/me/contact-information= | PUT /api/me/contact-information |
 | POST =/api/me/default-party= | POST /api/me/default-party |
-| GET =/api/me/notifications= | none |
-| POST =/api/me/notifications/clear= | none |
-| POST =/api/me/notifications/read= | none |
-| GET =/api/me/notifications/unread-count= | none |
+| GET =/api/me/notifications= | GET /api/me/notifications |
+| POST =/api/me/notifications/clear= | POST /api/me/notifications/clear |
+| POST =/api/me/notifications/read= | POST /api/me/notifications/read |
+| GET =/api/me/notifications/unread-count= | GET /api/me/notifications/unread-count |
 | GET =/api/me/parties= | GET /api/me/parties |
 | GET =/api/me/permissions= | GET /api/me/permissions |
 | PUT =/api/me/profile= | PUT /api/me/profile |
@@ -312,8 +312,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/operations/grid/jobs/workunits/:id/results= | GET /api/operations/grid/jobs/workunits/{id}/results |
 | GET =/api/operations/grid/series= | none |
 | GET =/api/operations/grid/usage= | none |
-| GET =/api/operations/logs= | none |
-| GET =/api/operations/services= | none |
+| GET =/api/operations/logs= | GET /api/operations/logs |
+| GET =/api/operations/services= | GET /api/operations/services |
 | POST =/api/oresmd/compose= | POST /api/oresmd/compose |
 | POST =/api/oresmd/parse= | POST /api/oresmd/parse |
 | POST =/api/oresmd/parse-many= | POST /api/oresmd/parse-many |
@@ -493,11 +493,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/trades/new= | GET /api/trades/new |
 | GET =/api/ungrouped-trades= | GET /api/ungrouped-trades |
 | GET =/api/workflow/:instanceId= | none |
-| POST =/api/workflow/:instanceId/retry= | none |
+| POST =/api/workflow/:instanceId/retry= | POST /api/workflow/{instanceId}/retry |
 
 * The inventory
 
-1367 routes: 328 answered by the BFF and 1039 by ores.http.
+1376 routes: 328 answered by the BFF and 1048 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -546,6 +546,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | analytics | get | =/api/analytics/sensitivity-templates/:code/history= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:366 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
 | not an API | (none) | get | =/api/analytics/sensitivity-templates/choices= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:354 | The two lookups a template states, in the order the screen offers them, which is display order for a form. |
 | resource | workflow | get | =/api/approvals-mode= | bff | projects/ores.web/packages/bff/src/inbox.ts:579 | Whether auto-approval is on, its scope, and who set it, when and why, read from the one subject the inbox answers it on. |
+| resource | workflow | get | =/api/approvals-mode= | ores.http | projects/ores.http/workflow/src/routes/workflow/lookup_routes.cpp:72 | Whether the tenant enforces approvals at the address and in the shape the BFF answered: the mode read as whether it auto-approves, with its scope and the person who set it, when and why. |
 | resource | auth | get | =/api/auth-events= | bff | projects/ores.web/packages/bff/src/audit.ts:114 | The tenant's authentication events, newest first, with the account filter the read takes though the screen does not offer it. |
 | resource | auth | get | =/api/auth-events= | ores.http | projects/ores.http/iam/src/routes/iam/audit_routes.cpp:161 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | composed view | trading | get | =/api/blotter= | bff | projects/ores.web/packages/bff/src/blotter.ts:295 | One page of trades with the rail that groups them: books, portfolios, structures and structure members, counterparties, trade types, instrument codes and asset classes, eight collection reads before the page. |
@@ -805,7 +806,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | market-data | post | =/api/curves/slice= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:541 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/snapshot= | bff | projects/ores.web/packages/bff/src/curves.ts:366 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
 | resource | market-data | post | =/api/curves/snapshot= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:526 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
-| resource | trading | get | =/api/draft-reasons= | bff | projects/ores.web/packages/bff/src/booking.ts:372 | The reasons a trade may be captured as a draft with, a tenant-wide code list the booking form offers. |
+| resource | trading | get | =/api/draft-reasons= | bff | projects/ores.web/packages/bff/src/booking.ts:374 | The reasons a trade may be captured as a draft with, a tenant-wide code list the booking form offers. |
 | resource | trading | get | =/api/draft-reasons= | ores.http | projects/ores.http/trading/src/routes/trading/booking_routes.cpp:441 | The booking screens at the address and in the shape the BFF answered: what the form offers, the reasons a deal is a draft, the link types a person records, a link between two trades, and the booking write itself. |
 | transport capability | changes | get | =/api/events= | bff | projects/ores.web/packages/bff/src/server.ts:2946 | The change stream a client subscribes to, and the watch set that says which subjects it wants; delivery of events, not a domain object. |
 | transport capability | changes | get | =/api/events= | ores.http | projects/ores.http/core/src/routes/change_routes.cpp:55 | The change stream in the shape ores.web reads, carrying only the collections the session watches, and the route that replaces that watch set. |
@@ -818,6 +819,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | get | =/api/history= | bff | projects/ores.web/packages/bff/src/classifications.ts:369 | One history route for every entity type, named by an opaque entityType string, so the payload has no per-entity schema; ores.http already serves /versions for each versioned collection. |
 | not an API | (none) | get | =/api/history= | ores.http | projects/ores.http/core/src/routes/history_routes.cpp:247 | The one history read every history tab calls, kept so the tabs work when the BFF goes; the owning component answers on the subject the entity type names. |
 | resource | workflow | get | =/api/hold-reasons= | bff | projects/ores.web/packages/bff/src/inbox.ts:756 | The codes a decider may park a request with, a tenant-wide lookup that carries no personal data. |
+| resource | workflow | get | =/api/hold-reasons= | ores.http | projects/ores.http/workflow/src/routes/workflow/lookup_routes.cpp:91 | The codes a decider may park a request with at the address and in the shape the BFF answered, and the kinds that allow a hold: a refused kind read costs the rules and not the reasons, because a panel that offers no hold asks for a grant. |
 | composed view | assets | get | =/api/image-map= | bff | projects/ores.web/packages/bff/src/server.ts:2830 | Which image every flagged record uses, weaving currencies, countries, calendars and business centres into one code to image map, five reads, with a calendar and a business centre falling back to their country's flag and a placeholder for a code that has none. |
 | composed view | assets | get | =/api/image-map= | ores.http | projects/ores.http/assets/src/routes/assets/image_screen_routes.cpp:163 | Which image every flagged record uses, answered by ores.http from four reference data lists and one image search, at the address and in the shape the BFF answered. |
 | resource | assets | get | =/api/image-upload-policy= | bff | projects/ores.web/packages/bff/src/server.ts:2819 | The rule an uploaded image must satisfy, read from the validator that enforces it rather than copied into a picker. |
@@ -877,9 +879,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | post | =/api/me/default-party= | bff | projects/ores.web/packages/bff/src/server.ts:1258 | Sets or clears the party quick sign-in uses on the signed-in account. |
 | resource | access | post | =/api/me/default-party= | ores.http | projects/ores.http/iam/src/routes/iam/account_screen_routes.cpp:239 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | workflow | get | =/api/me/notifications= | bff | projects/ores.web/packages/bff/src/inbox.ts:775 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | get | =/api/me/notifications= | ores.http | projects/ores.http/workflow/src/routes/workflow/notification_routes.cpp:161 | The signed-in person's notices at the addresses and in the shapes the BFF answered: a page of them, or only the unread ones; how many are unread, for the bell; and the two writes that mark them read or clear them, an empty list naming every one they apply to. |
 | resource | workflow | post | =/api/me/notifications/clear= | bff | projects/ores.web/packages/bff/src/inbox.ts:817 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | post | =/api/me/notifications/clear= | ores.http | projects/ores.http/workflow/src/routes/workflow/notification_routes.cpp:213 | The signed-in person's notices at the addresses and in the shapes the BFF answered: a page of them, or only the unread ones; how many are unread, for the bell; and the two writes that mark them read or clear them, an empty list naming every one they apply to. |
 | resource | workflow | post | =/api/me/notifications/read= | bff | projects/ores.web/packages/bff/src/inbox.ts:800 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | post | =/api/me/notifications/read= | ores.http | projects/ores.http/workflow/src/routes/workflow/notification_routes.cpp:199 | The signed-in person's notices at the addresses and in the shapes the BFF answered: a page of them, or only the unread ones; how many are unread, for the bell; and the two writes that mark them read or clear them, an empty list naming every one they apply to. |
 | resource | workflow | get | =/api/me/notifications/unread-count= | bff | projects/ores.web/packages/bff/src/inbox.ts:789 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | get | =/api/me/notifications/unread-count= | ores.http | projects/ores.http/workflow/src/routes/workflow/notification_routes.cpp:187 | The signed-in person's notices at the addresses and in the shapes the BFF answered: a page of them, or only the unread ones; how many are unread, for the bell; and the two writes that mark them read or clear them, an empty list naming every one they apply to. |
 | resource | tenancy | get | =/api/me/parties= | bff | projects/ores.web/packages/bff/src/server.ts:1249 | The parties the signed-in person works in, each named by the server because the association read carries an identifier alone. |
 | resource | access | get | =/api/me/parties= | ores.http | projects/ores.http/iam/src/routes/iam/account_screen_routes.cpp:228 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | get | =/api/me/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1316 | The roles the signed-in person holds with who gave each and why, or one page of what those roles let them do, the documented alias for the principal. |
@@ -923,7 +929,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | composed view | grid | get | =/api/operations/grid/series= | bff | projects/ores.web/packages/bff/src/operations.ts:480 | The grid counters per bucket and one row of buckets per node on one time axis, two reads joined onto the host registry. |
 | composed view | grid | get | =/api/operations/grid/usage= | bff | projects/ores.web/packages/bff/src/operations.ts:540 | Who uses the grid, the results grouped by tenant or by party with each group's share, the results read and the party names beside them. |
 | resource | operations | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 | One page of telemetry entries a filter selects, with the count of everything it matches. |
+| resource | operations | get | =/api/operations/logs= | ores.http | projects/ores.http/workflow/src/routes/workflow/operations_routes.cpp:268 | One page of telemetry entries at the address and in the shape the BFF answered: the window from a range, the filters combined with and, and the page and its total. |
 | resource | operations | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 | Every expected service instance with the age of its last report, read from the telemetry samples. |
+| resource | operations | get | =/api/operations/services= | ores.http | projects/ores.http/workflow/src/routes/workflow/operations_routes.cpp:242 | Every expected service instance at the address and in the shape the BFF answered, each with the age of its last report subtracted on the deployment's own clock, which is the clock the sample was stamped against. |
 | transport capability | (none) | post | =/api/oresmd/compose= | bff | projects/ores.web/packages/bff/src/oresmd.ts:136 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
 | transport capability | (none) | post | =/api/oresmd/compose= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp:203 | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
 | transport capability | (none) | post | =/api/oresmd/parse= | bff | projects/ores.web/packages/bff/src/oresmd.ts:106 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
@@ -1438,16 +1446,16 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | put | =/api/tenors/tenors= | bff | projects/ores.web/packages/bff/src/tenors.ts:309 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
 | resource | reference-data | put | =/api/tenors/tenors= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:218 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | composed view | workflow | get | =/api/timeline= | bff | projects/ores.web/packages/bff/src/timeline.ts:61 | One person's, party's or request's story as one stream, each source gated by the permission its owner puts on it and a source that refuses becoming a gap in the answer. |
-| resource | trading | get | =/api/trade-link-types= | bff | projects/ores.web/packages/bff/src/booking.ts:284 | The link types a person can record between trades, a lookup the server holds. |
+| resource | trading | get | =/api/trade-link-types= | bff | projects/ores.web/packages/bff/src/booking.ts:286 | The link types a person can record between trades, a lookup the server holds. |
 | resource | trading | get | =/api/trade-link-types= | ores.http | projects/ores.http/trading/src/routes/trading/booking_routes.cpp:464 | The booking screens at the address and in the shape the BFF answered: what the form offers, the reasons a deal is a draft, the link types a person records, a link between two trades, and the booking write itself. |
 | resource | trading | get | =/api/trades= | bff | projects/ores.web/packages/bff/src/trades.ts:196 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | resource | trading | get | =/api/trades= | ores.http | projects/ores.http/trading/src/routes/trading/trade_read_routes.cpp:419 | The trade screens' reads at the address and in the shape the BFF answered: a page of the trade list enriched with what a person reads, one trade's page, and one trade at one version. |
-| resource | trading | post | =/api/trades= | bff | projects/ores.web/packages/bff/src/booking.ts:389 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | post | =/api/trades= | bff | projects/ores.web/packages/bff/src/booking.ts:391 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | resource | trading | post | =/api/trades= | ores.http | projects/ores.http/trading/src/routes/trading/booking_routes.cpp:513 | The booking screens at the address and in the shape the BFF answered: what the form offers, the reasons a deal is a draft, the link types a person records, a link between two trades, and the booking write itself. |
 | resource | trading | get | =/api/trades/:id= | bff | projects/ores.web/packages/bff/src/trades.ts:308 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
-| resource | trading | post | =/api/trades/:id/links= | bff | projects/ores.web/packages/bff/src/booking.ts:308 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | post | =/api/trades/:id/links= | bff | projects/ores.web/packages/bff/src/booking.ts:310 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | resource | trading | get | =/api/trades/:id/versions/:version= | bff | projects/ores.web/packages/bff/src/trades.ts:174 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
-| resource | trading | get | =/api/trades/new= | bff | projects/ores.web/packages/bff/src/booking.ts:208 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | get | =/api/trades/new= | bff | projects/ores.web/packages/bff/src/booking.ts:210 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | resource | trading | get | =/api/trades/new= | ores.http | projects/ores.http/trading/src/routes/trading/booking_routes.cpp:418 | The booking screens at the address and in the shape the BFF answered: what the form offers, the reasons a deal is a draft, the link types a person records, a link between two trades, and the booking write itself. |
 | resource | trading | get | =/api/trades/{id}= | ores.http | projects/ores.http/trading/src/routes/trading/trade_read_routes.cpp:434 | The trade screens' reads at the address and in the shape the BFF answered: a page of the trade list enriched with what a person reads, one trade's page, and one trade at one version. |
 | resource | trading | post | =/api/trades/{id}/links= | ores.http | projects/ores.http/trading/src/routes/trading/booking_routes.cpp:483 | The booking screens at the address and in the shape the BFF answered: what the form offers, the reasons a deal is a draft, the link types a person records, a link between two trades, and the booking write itself. |
@@ -1862,6 +1870,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | tenancy | get | =/api/v1/tenancy/tenants/{code}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/tenant_routes.cpp:508 | A generated tenancy collection: the list, one row by key, its versions and the bulk get, published under the area a tenant's own rows answer on. |
 | composed view | workflow | get | =/api/workflow/:instanceId= | bff | projects/ores.web/packages/bff/src/server.ts:2659 | A run's progress as a rail renders it: the run's status, the step executing and one summary per step, three reads, so a page follows the run rather than the engine's events. |
 | resource | workflow | post | =/api/workflow/:instanceId/retry= | bff | projects/ores.web/packages/bff/src/server.ts:2673 | A command on one run: retrying a run that stopped asks the engine to start it again, and answers the run rather than a collection the client reads. |
+| resource | workflow | post | =/api/workflow/{instanceId}/retry= | ores.http | projects/ores.http/workflow/src/routes/workflow/retry_routes.cpp:93 | One run resumed at the address and in the shape the BFF answered: the step the page chose, or the step the run stopped at, and the engine's own answer saying which step it re-dispatched or why it refused. |
 | transport capability | (none) | get | =/{path}= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:102 | A file of the built bundle, or the application shell for a screen path, and an /api path is answered 404 so the shell never stands in for JSON. |
 | transport capability | (none) | get | ={bucket_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:294 | path composed from bucket_pattern (declared at 236). A page of the keys one bucket of the object store holds. |
 | transport capability | (none) | delete | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:285 | path composed from object_pattern (declared at 234). One object of the object store, uploaded, downloaded, checked or removed by bucket and key. |

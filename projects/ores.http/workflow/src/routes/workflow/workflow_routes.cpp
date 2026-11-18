@@ -18,7 +18,11 @@
  *
  */
 #include "ores.http/routes/workflow/workflow_routes.hpp"
+#include "ores.http/routes/workflow/lookup_routes.hpp"
+#include "ores.http/routes/workflow/notification_routes.hpp"
+#include "ores.http/routes/workflow/operations_routes.hpp"
 #include "ores.http/routes/workflow/request_routes.hpp"
+#include "ores.http/routes/workflow/retry_routes.hpp"
 
 namespace ores::http::routes::workflow {
 
@@ -27,6 +31,10 @@ void workflow_routes::register_routes(
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     ores::nats::service::nats_client& session) {
     request_routes::register_routes(router, registry, session);
+    notification_routes::register_routes(router, registry, session);
+    retry_routes::register_routes(router, registry, session);
+    operations_routes::register_routes(router, registry, session);
+    lookup_routes::register_routes(router, registry, session);
 }
 
 }

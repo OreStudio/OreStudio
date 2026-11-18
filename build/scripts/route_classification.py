@@ -467,6 +467,12 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "A command on one run: retrying a run that stopped asks the engine to start it"
          " again, and answers the run rather than a collection the client reads."),
+    Rule("the run's retry route",
+         ("exact", "POST /api/workflow/{instanceId}/retry"),
+         CPP, RESOURCE, "workflow",
+         "One run resumed at the address and in the shape the BFF answered: the step the page"
+         " chose, or the step the run stopped at, and the engine's own answer saying which step"
+         " it re-dispatched or why it refused."),
     Rule("the tenor catalogue",
          ("exact", "GET /api/tenors/catalogue"),
          BFF, COMPOSED, "reference-data",
@@ -878,11 +884,22 @@ RULES = (
          BFF, RESOURCE, "operations",
          "Every expected service instance with the age of its last report, read from the"
          " telemetry samples."),
+    Rule("the services roster's route",
+         ("exact", "GET /api/operations/services"),
+         CPP, RESOURCE, "operations",
+         "Every expected service instance at the address and in the shape the BFF answered, each"
+         " with the age of its last report subtracted on the deployment's own clock, which is the"
+         " clock the sample was stamped against."),
     Rule("the telemetry logs",
          ("exact", "GET /api/operations/logs"),
          BFF, RESOURCE, "operations",
          "One page of telemetry entries a filter selects, with the count of everything it"
          " matches."),
+    Rule("the telemetry logs' route",
+         ("exact", "GET /api/operations/logs"),
+         CPP, RESOURCE, "operations",
+         "One page of telemetry entries at the address and in the shape the BFF answered: the"
+         " window from a range, the filters combined with and, and the page and its total."),
     Rule("the system settings",
          ("exact", "GET /api/v1/system-settings"),
          CPP, RESOURCE, "operations",
@@ -914,6 +931,12 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "Whether auto-approval is on, its scope, and who set it, when and why, read from"
          " the one subject the inbox answers it on."),
+    Rule("the approvals mode route",
+         ("exact", "GET /api/approvals-mode"),
+         CPP, RESOURCE, "workflow",
+         "Whether the tenant enforces approvals at the address and in the shape the BFF answered:"
+         " the mode read as whether it auto-approves, with its scope and the person who set it,"
+         " when and why."),
     Rule("the principal's requests route",
          ("regex", r"^((GET|POST) /api/me/requests|DELETE /api/me/requests/\{id\})$"),
          CPP, RESOURCE, "workflow",
@@ -926,6 +949,14 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "The signed-in person's own requests, raised, read and taken back, the withdrawal"
          " carrying the version the person saw."),
+    Rule("the principal's notifications' route",
+         ("regex", r"^(GET|POST) /api/me/notifications"
+                   r"(/(unread-count|read|clear))?$"),
+         CPP, RESOURCE, "workflow",
+         "The signed-in person's notices at the addresses and in the shapes the BFF answered: a"
+         " page of them, or only the unread ones; how many are unread, for the bell; and the two"
+         " writes that mark them read or clear them, an empty list naming every one they apply"
+         " to."),
     Rule("the principal's notifications",
          ("regex", r"^(GET|POST) /api/me/notifications"),
          BFF, RESOURCE, "workflow",
@@ -936,6 +967,12 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "The codes a decider may park a request with, a tenant-wide lookup that carries no"
          " personal data."),
+    Rule("the hold reasons' route",
+         ("exact", "GET /api/hold-reasons"),
+         CPP, RESOURCE, "workflow",
+         "The codes a decider may park a request with at the address and in the shape the BFF"
+         " answered, and the kinds that allow a hold: a refused kind read costs the rules and"
+         " not the reasons, because a panel that offers no hold asks for a grant."),
 
     Rule("an access screen's route",
          ("regex", r"^(GET|POST|PUT|DELETE) /api/(me|accounts|roles|permissions|reporting-tree)(/.*)?$"),

@@ -372,6 +372,20 @@ PAIRS = {
     ("DELETE", "/api/me/requests/:id"): ("DELETE", "/api/me/requests/{id}"),
     ("POST", "/api/requests/:id/decision"): ("POST", "/api/requests/{id}/decision"),
     ("GET", "/api/requests/:id"): ("GET", "/api/requests/{id}"),
+    ("GET", "/api/me/notifications"): ("GET", "/api/me/notifications"),
+    ("GET", "/api/me/notifications/unread-count"): (
+        "GET",
+        "/api/me/notifications/unread-count"),
+    ("POST", "/api/me/notifications/read"): ("POST", "/api/me/notifications/read"),
+    ("POST", "/api/me/notifications/clear"): ("POST", "/api/me/notifications/clear"),
+    ("POST", "/api/workflow/:instanceId/retry"): (
+        "POST",
+        "/api/workflow/{instanceId}/retry"),
+    ("GET", "/api/approvals-mode"): ("GET", "/api/approvals-mode"),
+    ("GET", "/api/hold-reasons"): ("GET", "/api/hold-reasons"),
+    # operations
+    ("GET", "/api/operations/services"): ("GET", "/api/operations/services"),
+    ("GET", "/api/operations/logs"): ("GET", "/api/operations/logs"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

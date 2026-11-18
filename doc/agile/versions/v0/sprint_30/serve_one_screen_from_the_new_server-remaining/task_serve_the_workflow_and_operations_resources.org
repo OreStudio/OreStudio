@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-workflow-and-operations-resources
-#+pr: 4853
+#+pr: 4866
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,12 +26,12 @@ The gateway has no part for the workflow and operations area. Add the part with 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The part is stood up and registered; its routes follow. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the notices a person is given. |
-| Last touched | 2026-11-17                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-18                               |
 
 * Acceptance
 
@@ -103,9 +103,37 @@ task and name that file in the Command column.
 | The part's test suite | 14 cases, 169 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the request page commit |
 | The workflow area's routes the C++ server answers | 5 of 18 paired | =python3 build/scripts/route_inventory.py --check= | the request page commit |
 | The gateway's routes in the inventory | 1367 routes, 1039 answered by the gateway, 273 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the request page commit |
+| The part's test suite | 19 cases, 253 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the notices commit |
+| The workflow area's routes the C++ server answers | 9 of 18 paired | =python3 build/scripts/route_inventory.py --check= | the notices commit |
+| The gateway's routes in the inventory | 1371 routes, 1043 answered by the gateway, 277 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the notices commit |
+| The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the notices commit |
+| The whole tree | 381 edges, succeeded in 1:42 | =./compass.sh build -j 3 ores.http.workflow.tests= | the lookups commit |
+| The part's test suite | 31 cases, 399 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the lookups commit |
+| The workflow area's routes the C++ server answers | 12 of 18 paired | =./compass.sh generate= then =build/scripts/route_inventory.py --check= | the lookups commit |
+| The gateway's routes in the inventory | 1376 routes, 1048 answered by the gateway, 282 of the BFF's 328 paired | =build/scripts/route_inventory.py --check= | the lookups commit |
+| The inventory and the checks that read it | regenerate clean, nothing to write | =./compass.sh diff= | the lookups commit |
+| The local gate | 48 of 48 checks pass | =./compass.sh check --exclude-heavy= | the lookups commit |
 |      |       |         |        |
 
 * Notes
+
+The build queue was held by other environments for hours, so the user built the
+branch. That build stopped at edge 225 of 381 on a warning in the ORE portfolio
+projection test, which is main's and not this branch's; once it was fixed the
+build finished in 1:42 and every number above was measured on it.
+
+The first run of the suite failed four cases, all of the run's retry: the tests
+stated the run's address without the /retry it ends in, so they reached a path no
+route answers and the router's own match reported it. The paths are fixed and the
+suite is green. The gate passed on its first run after that.
+
+Main was red when this work was rebased onto it, in three places the basket and
+rainbow option families left behind: the BFF's booking batch named neither new
+array, so the web workspace did not build; the two basket builders defined one
+file-local name in a shared unity batch; and the ORE test that case sits in
+declared a parameter helper it never calls, which -Werror refuses. All three are
+fixed in their own commit, before the route work, so the branch's checks are
+about the routes.
 
 * Test Scenarios
 
@@ -122,6 +150,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4866][#4866]] | [http] Serve the workflow and operations resources |
 | [[https://github.com/OreStudio/OreStudio/pull/4853][#4853]] | [http] Stand the workflow part up and serve its request routes |
 
 * Review
@@ -131,3 +160,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The part exists and all fourteen of the area's resource routes answer at the
+BFF's addresses, in its shapes and with its status codes: the requests a person
+raises, withdraws and decides, the notices they are given, the resume of a
+stopped run, the services roster, the telemetry logs, the approvals mode and the
+hold reasons. The workflow area stands at 12 of 18 paired and the gateway at 282
+of the BFF's 328 routes.
+
+The nine routes left in the area are its composed views, and they are the
+story's own task: each weaves two or more collections, and what it weaves is
+settled before it is served.
+
+Everything here was verified on the rebased tree: the build succeeded in 5:37,
+the part's suite passed 31 cases and 399 assertions, the local gate passed 47 of
+47 checks, and the inventory regenerates to itself.
+
+Three breakages that the basket and rainbow option families left on main were
+fixed first, in their own commit, because the branch could not build or gate
+over them: the BFF's booking batch did not name the two new instrument arrays,
+the two basket builders defined one file-local name in a shared unity batch, and
+the ORE portfolio projection test declared a parameter helper its case never
+calls, which -Werror refuses.

@@ -20,6 +20,10 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "lookup_routes_tests.cpp"
     "main.cpp"
+    "notification_routes_tests.cpp"
+    "operations_routes_tests.cpp"
     "request_routes_tests.cpp"
+    "retry_routes_tests.cpp"
 )

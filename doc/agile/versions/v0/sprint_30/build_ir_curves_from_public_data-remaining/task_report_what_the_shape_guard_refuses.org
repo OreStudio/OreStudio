@@ -140,6 +140,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4834 review 1: a series the guard refuses is counted in =unstated= as well, because the test runs before the refusal, so the message reads as both unguarded and refused | =market_series_identity_projector.cpp= | Accept | The count moved after the check, so it means what its doc says: projected without a shape. The refused case now asserts =unstated= does not move, which the old =>= 1= could not |
+| 2 | PR #4834 review 1: a refused series warns again on every backfill, because it stays unprojected | =market_series_identity_projector.cpp= | Decline | Stated in the comment beside the log: this is an operator's repair, not a sweep, and the count is how a scheduled caller would notice |
+| 3 | PR #4834 review 1: the new tests assert =>= 1=, which cannot catch a miscount | =repository_series_identity_backfill_tests.cpp= | Accept | Both cases take a baseline call and assert the difference this fixture makes, so a shared tenant cannot weaken them |
+| 4 | PR #4834 review 1: the message's "N of M" does not name =already_projected= | =market_series_handler.hpp= | Decline | The counts are on the response; the message is a summary and the field names are the interface. Revisited if a caller ever parses it |
+| 5 | PR #4834 review 1: =component-drift= is red on marketdata files the branch did not touch | PR | Accept as a capture | [[id:AAA470A4-D202-4E6B-B56B-490E5EE54174][The service config options ignore the default a model states]] |
 
 * Result

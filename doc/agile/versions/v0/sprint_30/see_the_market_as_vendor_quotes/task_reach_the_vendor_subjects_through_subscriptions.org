@@ -39,6 +39,7 @@ Every live consumer watches the vendor subjects its party subscribes to, and not
 - A party cannot watch a vendor it does not subscribe to, by the enforcement the analysis chose.
 - The system tenant watches every vendor.
 - Two parties with the same subscriptions receive the same ticks.
+- When a party's route or subscription changes during a watch, the watcher asks again and drops the feeds the party may no longer watch.
 
 * Plan
 

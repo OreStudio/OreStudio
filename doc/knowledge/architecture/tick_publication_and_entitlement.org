@@ -93,8 +93,14 @@ is made where a watch starts:
 - The server that serves a person's session asks the market data service which
   feeds the session's party may watch for display, and subscribes only to those.
 - A service that watches for a party asks the same question for its own use.
+  Every new watcher asks it before it subscribes. A watcher that subscribes to a
+  feed subject without the answer skips the entitlement, and that is a defect.
 - The market data service answers from the routes and the subscriptions, by the
   rule above, with the system tenant's answer being every feed.
+
+A watch can last for hours, and a route or a subscription can change while it
+runs. When a party's route or subscription changes, the watcher asks again, adds
+the feeds that the answer now holds and drops the feeds that it no longer holds.
 
 Checking the subjects on the broker itself needs an account and permissions for
 each client. That is a separate change, and this target does not need it.
@@ -102,8 +108,11 @@ each client. That is a separate change, and this target does not need it.
 ** Metering
 
 Billing counts what a party is entitled to receive, as it does today. The ingest
-keeps a count for each route of the ticks it publishes on the route's feed, so a
-party's numbers do not change when the copy is removed
+already reads the routes to build the copies. In the target it keeps reading
+them, and for each tick it publishes it adds one to the count of every route that
+picks the tick's feed at that moment. So the count for a party, a provider and an
+item is the same as the count of the copies the party received before, and the
+bill does not change when the copy is removed
 ([[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]]).
 
 ** History

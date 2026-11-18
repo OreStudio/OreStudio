@@ -517,7 +517,7 @@ unit of isolation is the series that a party reads through. See [[id:D71F9446-C6
 
 ** What is built today
 
-This page states the design. On 2026-11-18 the ingest
+This page states the design. At commit =0a63e9a679= (2026-11-18) the ingest
 (=feed_ingest_loop.cpp=) does not yet have all of it:
 
 - It has no lanes, no conflation and no recent window. It takes each batch, stores

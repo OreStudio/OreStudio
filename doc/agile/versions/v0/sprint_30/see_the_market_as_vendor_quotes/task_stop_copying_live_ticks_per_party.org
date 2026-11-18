@@ -37,6 +37,7 @@ The ingest publishes each live tick once, per vendor, and the per-party copy and
 
 - No code publishes or subscribes to the party live subjects.
 - The ingest publishes each tick once, and its publish count no longer grows with the number of parties.
+- For the same run, the delivery meter holds the same count for each party, provider and item before and after the copies go; a test compares the two.
 - The docs name only the vendor subjects.
 
 * Plan

@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/move-the-gate-baselines-to-inline-exceptions
-#+pr:
+#+pr: 4844
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4844][#4844]] | [compass] Excuse every baseline entry, so compass-ng check passes |
 
 * Review
 

@@ -54,19 +54,15 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | rls_widenings | yes | |
 | sql_hygiene | yes | |
 | sql_reachability | yes | |
-| convention_kind_terms | yes | |
 | conventions_coverage | yes | |
 | conventions_dataset | yes | |
-| curve_column_guards | yes | |
-| curve_sections_wiring | yes | |
+| curve_sections_wiring | yes | clang_format=clang-format |
+| model_rules | yes | |
 | entity_binary_types | yes | |
 | entity_writes | yes | |
 | er_diagram | yes | |
 | generated_column_refs | yes | |
-| http_areas | yes | |
 | marketdata_identity_columns | yes | |
-| model_drift | yes | |
-| money_decimal_columns | yes | |
 | open_reads | yes | |
 | ore_renderings_tables | yes | |
 | ore_value_sets | yes | |
@@ -85,7 +81,6 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | lint | yes | |
 | no_pr_triggers | yes | |
 | org_links | yes | |
-| pattern_uses | yes | |
 | physical_inventory | yes | |
 | prototypes | yes | |
 | recipe_inventories | yes | |
@@ -96,6 +91,5 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | skill_levels | yes | |
 | skill_namespace | yes | |
 | skill_type_tables | yes | |
-| structure_notes | yes | |
 | trade_type_coverage | yes | |
 | rls_coverage | yes | |

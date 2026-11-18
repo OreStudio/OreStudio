@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/run-the-ported-gates-through-compass-check
+#+pr: 4839
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -26,11 +26,11 @@ A local check of a change takes seconds for the build-free gates, and gives the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -79,12 +79,40 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4839][#4839]] | [build] Run the ported gates as one compass-ng check |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | COMPASS_CODECS is not checked against .compass.org | test_local_checks.py | Accepted | A test asserts every mapped codec is an enabled row; it fails naming the codec when a row is removed. |
+| 2 | Codec or rule names with a digit are not read | local_checks.py | Accepted | Both groups read [a-z0-9_]+. |
+| 3 | A run that fails part way can pass the gates it did not reach | local_checks.py | Accepted | A failed run without compass-ng's closing summary fails every gate it answers for. |
+| 4 | One shared codec fails several gates at once | local_checks.py | Declined | Each gate's tail shows the findings that failed it; a finer split is compass-ng's codec layout. |
+| 5 | Nits: plan output test, tuple commas, shared log | local_checks.py | Declined | Cosmetic; the report names compass-ng as the answer for each gate. |
 
 * Result
+
+- local_checks.py runs one compass-ng check --ratchet against the base in
+  place of the 75 gates compass-ng ports, and reports each gate by its own id;
+  COMPASS_CODECS maps every gate to the codecs that answer for it. Without
+  compass-ng on the PATH the gates run as scripts, and a compass-ng run that
+  stops before checking fails every gate it answers for.
+- Still Python: boost-deps, xml-benchmark-recorded, format,
+  no-committed-credentials, xml-bindings-drift, file-types-seed,
+  ore-parameters-seed, site-page, web, the tool test suites and the build,
+  database and test checks.
+- Planted-violation proof (evidence/plant_proof.txt, plant_every_gate.py.txt):
+  one violation per gate. compass-ng 21ae16d fails all 75 gates in one 7.9 s
+  run. The Python scripts fail 67 of 74 in 1,834 s; of their 7 passes, 3 are
+  expected and 4 are script gaps compass-ng catches (no-pr-triggers,
+  structure-notes, route-inventory, template-sections).
+- Wall time, gate run without the heavy checks, load 7 to 10: a docs-only
+  change 13 s with the scripts and 22 s with compass-ng (site-page, then one
+  compass-ng ratchet of 7.5 s over every codec); a model change 1,151 s with
+  the scripts and 109 s with compass-ng, of which about 100 s is the codegen
+  test suite both run.
+- The planted gates also found two compass-ng defects, fixed upstream before
+  the switch: the unit_of_work.hpp false positive and curve_sections_wiring
+  missing its two C++ outputs.
+

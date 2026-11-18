@@ -1,5 +1,5 @@
 # The compass-ng build ORE Studio needs. bearings asks for a newer build when
 # the installed one was committed before this one. Raise it when ORE Studio
 # starts to depend on a newer compass-ng.
-commit: 21ae16da5fcc55a2855606726c82770c3c08e080
-committed: 2026-11-18T01:30:12Z
+commit: e689a2ebf5444a13bda58a6f49600bf6b940ef94
+committed: 2026-11-18T03:52:04Z

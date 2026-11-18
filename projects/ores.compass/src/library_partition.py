@@ -1,4 +1,4 @@
-"""Compute common vs. per-service shared libraries via ldd intersection.
+"""Compute the libraries the service images share, and stage them once.
 
 Example
 -------
@@ -8,15 +8,12 @@ Given three services with these dependencies::
     svc_b needs {libores.service, libores.logging}
     svc_c needs {libores.service, libores.nats}
 
-The *intersection* (common to all) is {libores.service}.
-Per-service extras::
-
-    svc_a → {libores.logging, libores.utility}
-    svc_b → {libores.logging}
-    svc_c → {libores.nats}
-
-The base image carries common_libs; each per-service overlay carries its
-binary plus its extra libs (if any).
+The *union* is {libores.service, libores.logging, libores.utility,
+libores.nats}. One shared image carries that union, so each library is
+stored and transferred once and each per-service image carries only its
+own binary. An intersection instead pushes every library that two
+services do not both need into the per-service images, which copies a
+large library once per service that uses it.
 
 Excluded from consideration
 ---------------------------
@@ -115,12 +112,12 @@ def _ldd_libs(binary: Path, lib_dir: Path) -> set[str]:
     return libs
 
 
-def compute_partition(
+def compute_shared_libraries(
     bin_dir: Path,
     lib_dir: Path,
     services: list[str],
-) -> tuple[set[str], dict[str, set[str]]]:
-    """Compute common and per-service library sets.
+) -> set[str]:
+    """Return the libraries the shared image must carry.
 
     Parameters
     ----------
@@ -134,41 +131,20 @@ def compute_partition(
 
     Returns
     -------
-    (common_libs, service_extras)
-        ``common_libs`` is the set of SONAMEs needed by **every** service
-        (the intersection).  ``service_extras`` maps each service name to
-        the set of SONAMEs it needs beyond the common set (may be empty).
-
-        A service whose binary is missing from *bin_dir* (or is statically
-        linked) contributes an empty set — it does not shrink the
-        intersection (an empty set intersected with anything yields the
-        empty set, so we skip it to preserve the meaningful intersection).
+    set[str]
+        The union of the SONAMEs the services resolve inside *lib_dir*.
+        A statically linked service contributes nothing, which cannot
+        remove a library another service needs.
     """
-    service_libs: dict[str, set[str]] = {}
+    shared: set[str] = set()
     for svc in services:
         binary = bin_dir / svc
         if not binary.is_file():
             raise FileNotFoundError(
                 f"Service binary not found: {binary}"
             )
-        libs = _ldd_libs(binary, lib_dir)
-        if libs:
-            service_libs[svc] = libs
-
-    if not service_libs:
-        return set(), {}
-
-    # Intersection of all non-empty lib sets.
-    common = set.intersection(*service_libs.values()) if service_libs else set()
-
-    extras: dict[str, set[str]] = {}
-    for svc in services:
-        libs = service_libs.get(svc, set())
-        extra = libs - common
-        if extra:
-            extras[svc] = extra
-
-    return common, extras
+        shared |= _ldd_libs(binary, lib_dir)
+    return shared
 
 
 def stage_for_build(
@@ -176,51 +152,42 @@ def stage_for_build(
     bin_dir: Path,
     lib_dir: Path,
     services: list[str],
-    common_libs: set[str],
-    service_extras: dict[str, set[str]],
+    shared_libs: set[str],
 ) -> None:
-    """Stage files for the base and per-service image builds.
+    """Stage files for the library and per-service image builds.
 
     Creates under *stage_dir*::
 
-        base/lib/         ← common_libs (SONAME symlink + real file)
-        base/log/         ← empty, mode 777
-        base/run/         ← empty, mode 777
-        base/storage/     ← empty, mode 777
+        libs/lib/         ← shared_libs (SONAME symlink + real file)
         services/<svc>/bin/<svc>       ← service binary
         services/<svc>/bin/version.manifest ← the build record it reads
-        services/<svc>/lib/<soname>…   ← extra libs (if any)
 
     Each lib is copied as both the unversioned SONAME symlink **and** its
     real file (following the symlink), matching the convention in
-    ``stage-runtime.sh``.
+    ``stage-runtime.sh``. The empty runtime directories that the base
+    image carries are created by ``stage-runtime.sh``.
+
+    A per-service image carries no library: everything the services load
+    is in the shared image.
     """
-    base_dir = stage_dir / "base"
     services_root = stage_dir / "services"
+    (stage_dir / "libs" / "lib").mkdir(parents=True, exist_ok=True)
 
-    # -- Base directories ------------------------------------------------
-    (base_dir / "lib").mkdir(parents=True, exist_ok=True)
-    for d in ("log", "run", "storage"):
-        p = base_dir / d
-        p.mkdir(parents=True, exist_ok=True)
-        p.chmod(0o777)
-
-    # -- Common libs ------------------------------------------------------
-    for soname in sorted(common_libs):
+    # -- Shared libs ------------------------------------------------------
+    for soname in sorted(shared_libs):
         src_symlink = lib_dir / soname
         if not src_symlink.is_symlink():
             # Some SONAMEs are the real file, not a symlink.
-            _copy_file(src_symlink, base_dir / "lib" / soname)
+            _copy_file(src_symlink, stage_dir / "libs" / "lib" / soname)
             continue
         real = src_symlink.resolve()
-        _copy_file(src_symlink, base_dir / "lib" / soname)       # the symlink
-        _copy_file(real, base_dir / "lib" / real.name)           # the real file
+        _copy_file(src_symlink, stage_dir / "libs" / "lib" / soname)
+        _copy_file(real, stage_dir / "libs" / "lib" / real.name)
 
     # -- Per-service ------------------------------------------------------
     for svc in services:
         svc_dir = services_root / svc
         (svc_dir / "bin").mkdir(parents=True, exist_ok=True)
-        # Service binary
         _copy_file(bin_dir / svc, svc_dir / "bin" / svc)
         # The build record goes beside the binary that reads it. A service
         # resolves the manifest from its own executable path, so an image
@@ -234,18 +201,6 @@ def stage_for_build(
         if entrypoint.exists():
             entrypoint.unlink()
         entrypoint.symlink_to(f"./{svc}")
-        # Extra libs
-        extras = service_extras.get(svc, set())
-        if extras:
-            (svc_dir / "lib").mkdir(parents=True, exist_ok=True)
-            for soname in sorted(extras):
-                src_symlink = lib_dir / soname
-                if not src_symlink.is_symlink():
-                    _copy_file(src_symlink, svc_dir / "lib" / soname)
-                    continue
-                real = src_symlink.resolve()
-                _copy_file(src_symlink, svc_dir / "lib" / soname)
-                _copy_file(real, svc_dir / "lib" / real.name)
 
 
 def _copy_file(src: Path, dst: Path) -> None:

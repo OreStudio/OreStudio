@@ -310,6 +310,42 @@ jobs:
           fi
           ctest -VV --timeout ${timeout} --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
+      - name: Stage the release images
+        # Only the release build is published: the debug build is several
+        # times larger, and no host runs it. The runner's job container has
+        # no container engine, so this stages the tree and the publish job
+        # builds the images from it.
+        #
+        # The web bundle is part of the fleet, so a stage without it would
+        # silently publish every image but ores-web. The build wires npm into
+        # CMake, so its absence means the TypeScript build broke and the run
+        # should say so rather than ship a fleet without the browser.
+        if: ${{ matrix.buildtype == 'release' && matrix.compiler == 'clang' }}
+        run: |
+          ./compass.sh image stage --preset ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          if [[ ! -d build/docker-stage/web ]]; then
+            echo "::error::the web bundle was not staged, so ores-web would not be published"
+            exit 1
+          fi
+
+      - name: Upload the staged images
+        if: ${{ matrix.buildtype == 'release' && matrix.compiler == 'clang' }}
+        uses: actions/upload-artifact@v7
+        with:
+          # The shared libraries are most of the payload. The service
+          # binaries are a few MB in total; the empty runtime directories are
+          # what the base image copies. build/docker-stage/bin is left out:
+          # it fed the library partition, which has already run.
+          name: image-stage
+          path: |
+            build/docker-stage/libs
+            build/docker-stage/services
+            build/docker-stage/web
+            build/docker-stage/log
+            build/docker-stage/run
+            build/docker-stage/storage
+          retention-days: 1
+
       - name: Check the compiler cache is worth saving
         id: sccache_worth
         # Restore takes the newest match, so a run that fails before it
@@ -490,4 +526,90 @@ jobs:
           | while read -r id; do
               [ -n "$id" ] && gh api --method DELETE \
                 "/repos/${GITHUB_REPOSITORY}/actions/caches/${id}" >/dev/null || true
+            done
+
+  publish_images:
+    name: publish-images
+    needs: [check_changes, image, build]
+    # One release image set per nightly run, whichever build matrix entry
+    # produced the staged tree. Every other entry skips the staging step, so
+    # this job fails loudly rather than silently publishing nothing if the
+    # artifact is missing.
+    # Publishing follows the clang-release build, not the whole matrix: that
+    # job is the one that stages the images, so its artifact is both the
+    # trigger and the proof that the configuration the images are made from is
+    # green. A failure in another variant does not hold the images back.
+    if: ${{ !cancelled() && needs.check_changes.outputs.should_run != 'false' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Look for the staged images
+        # The stage step runs in the clang-release job only, so its artifact
+        # is the signal that the configuration the images are made from built
+        # and passed. A failure in another variant leaves the artifact in
+        # place; a failure in this one leaves it absent, and the run says so
+        # without publishing a fleet nobody built.
+        id: staged
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" \
+               --jq '.artifacts[].name' | grep -qx image-stage; then
+            echo "found=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "found=false" >> "${GITHUB_OUTPUT}"
+            echo "::notice::The clang-release build did not stage the images, so nothing is published."
+          fi
+
+      - name: Download the staged images
+        if: steps.staged.outputs.found == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          name: image-stage
+          path: build/docker-stage
+
+      - name: Log in to GitHub Container Registry
+        if: steps.staged.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "${GH_TOKEN}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build and publish the images
+        # --from-stage builds from the downloaded tree instead of staging
+        # again, which this job cannot do: it has no build. A tag the registry
+        # already holds is skipped, so a rerun only fills the gaps.
+        if: steps.staged.outputs.found == 'true'
+        run: |
+          ./compass.sh image publish \
+            --from-stage \
+            --engine docker \
+            --registry ghcr.io/orestudio \
+            --alias main
+
+      - name: Make the published packages public
+        if: steps.staged.outputs.found == 'true'
+        # A package is created private, and a host that pulls without
+        # credentials needs it public. A failure here is a warning, not a red
+        # build: the images are published either way, and an owner can change
+        # the visibility in the organisation's package settings.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "/orgs/${GITHUB_REPOSITORY_OWNER}/packages?package_type=container&per_page=100" \
+            --jq '.[] | select(.name | startswith("ores")) | select(.visibility != "public") | .name' \
+          | while read -r name; do
+              if gh api --method PATCH \
+                   "/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${name}" \
+                   -f visibility=public > /dev/null; then
+                echo "public: ${name}"
+              else
+                echo "::warning::Could not make ${name} public. Set it in the organisation's package settings."
+              fi
             done

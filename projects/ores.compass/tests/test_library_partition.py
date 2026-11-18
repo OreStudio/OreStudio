@@ -16,7 +16,7 @@ from library_partition import (
     _is_system_lib,
     _ldd_libs,
     _copy_file,
-    compute_partition,
+    compute_shared_libraries,
     stage_for_build,
 )
 
@@ -173,43 +173,30 @@ class TestLddLibs:
         assert captured_env["LD_LIBRARY_PATH"] == "/my/custom/lib"
 
 
-# ── compute_partition ───────────────────────────────────────────────────
+# ── compute_shared_libraries ────────────────────────────────────────────
 
-class TestComputePartition:
+class TestComputeSharedLibraries:
     """Tests using mocked _ldd_libs — no real binaries needed."""
 
-    def test_computes_intersection(self, monkeypatch):
+    def test_unions_every_service(self, monkeypatch):
         svc_libs = {
-            "ores.iam.service":    {"libores.service", "libores.logging", "libores.utility"},
+            "ores.iam.service":     {"libores.service", "libores.logging", "libores.utility"},
             "ores.refdata.service": {"libores.service", "libores.logging"},
-            "ores.dq.service":     {"libores.service", "libores.nats"},
+            "ores.dq.service":      {"libores.service", "libores.nats"},
         }
         def fake_ldd(binary, lib_dir):
             return svc_libs.get(binary.name, set())
         monkeypatch.setattr("library_partition._ldd_libs", fake_ldd)
         monkeypatch.setattr(Path, "is_file", lambda self: True)
 
-        common, extras = compute_partition(
+        shared = compute_shared_libraries(
             Path("/fake/bin"), Path("/fake/lib"),
             ["ores.iam.service", "ores.refdata.service", "ores.dq.service"],
         )
-        assert common == {"libores.service"}
-        assert extras["ores.iam.service"] == {"libores.logging", "libores.utility"}
-        assert extras["ores.refdata.service"] == {"libores.logging"}
-        assert extras["ores.dq.service"] == {"libores.nats"}
-
-    def test_all_common_no_extras(self, monkeypatch):
-        def fake_ldd(binary, lib_dir):
-            return {"libores.service", "libores.logging"}
-        monkeypatch.setattr("library_partition._ldd_libs", fake_ldd)
-        monkeypatch.setattr(Path, "is_file", lambda self: True)
-
-        common, extras = compute_partition(
-            Path("/fake/bin"), Path("/fake/lib"),
-            ["a", "b", "c"],
-        )
-        assert common == {"libores.service", "libores.logging"}
-        assert extras == {}  # no extras when all identical
+        assert shared == {
+            "libores.service", "libores.logging", "libores.utility",
+            "libores.nats",
+        }
 
     def test_single_service(self, monkeypatch):
         def fake_ldd(binary, lib_dir):
@@ -217,37 +204,31 @@ class TestComputePartition:
         monkeypatch.setattr("library_partition._ldd_libs", fake_ldd)
         monkeypatch.setattr(Path, "is_file", lambda self: True)
 
-        common, extras = compute_partition(
-            Path("/fake/bin"), Path("/fake/lib"), ["only_svc"],
-        )
-        # With one service, intersection is all its libs.
-        assert common == {"libores.service", "libores.logging"}
-        assert extras == {}
+        shared = compute_shared_libraries(
+            Path("/fake/bin"), Path("/fake/lib"), ["only_svc"])
+        assert shared == {"libores.service", "libores.logging"}
 
     def test_binary_not_found_raises(self, monkeypatch):
         with pytest.raises(FileNotFoundError, match="not found"):
-            compute_partition(
+            compute_shared_libraries(
                 Path("/nonexistent/bin"), Path("/nonexistent/lib"),
                 ["missing.service"],
             )
 
-    def test_static_service_preserves_intersection(self, monkeypatch):
-        """A statically-linked service contributes empty set but should
-        not zero out the intersection for other services."""
+    def test_static_service_contributes_nothing(self, monkeypatch):
+        """A statically-linked service adds no library and removes none."""
         def fake_ldd(binary, lib_dir):
             if binary.name == "static_svc":
-                return set()  # statically linked
+                return set()
             return {"libores.service", "libores.logging"}
         monkeypatch.setattr("library_partition._ldd_libs", fake_ldd)
         monkeypatch.setattr(Path, "is_file", lambda self: True)
 
-        common, extras = compute_partition(
+        shared = compute_shared_libraries(
             Path("/fake/bin"), Path("/fake/lib"),
             ["ores.iam.service", "static_svc", "ores.refdata.service"],
         )
-        # The static binary is skipped entirely; intersection of the two
-        # real services is the full set they share.
-        assert common == {"libores.service", "libores.logging"}
+        assert shared == {"libores.service", "libores.logging"}
 
 
 # ── stage_for_build ─────────────────────────────────────────────────────
@@ -291,7 +272,7 @@ class TestStageForBuild:
         manifest.write_text("commit=abc123\n", encoding="utf-8")
 
         stage_for_build(self.stage, self.bin_dir, self.lib_dir,
-                        ["ores.iam.service"], set(), {})
+                        ["ores.iam.service"], set())
 
         staged = self.stage / "services/ores.iam.service/bin/version.manifest"
         assert staged.is_file()
@@ -306,63 +287,55 @@ class TestStageForBuild:
         self._make_binary("ores.iam.service")
 
         stage_for_build(self.stage, self.bin_dir, self.lib_dir,
-                        ["ores.iam.service"], set(), {})
+                        ["ores.iam.service"], set())
 
         bin_dir = self.stage / "services/ores.iam.service/bin"
         assert (bin_dir / "ores.iam.service").is_file()
         assert not (bin_dir / "version.manifest").exists()
 
-    def test_creates_base_and_service_dirs(self):
+    def test_stages_the_shared_libraries_once(self):
         self._make_binary("ores.iam.service")
         self._make_lib("libores.service.so.0", "libores.service.so.0.1.0")
         self._make_lib("libores.logging.so.0", "libores.logging.so.0.1.0")
 
-        common = {"libores.service.so.0"}
-        extras = {"ores.iam.service": {"libores.logging.so.0"}}
+        shared = {"libores.service.so.0", "libores.logging.so.0"}
 
         stage_for_build(self.stage, self.bin_dir, self.lib_dir,
-                        ["ores.iam.service"], common, extras)
+                        ["ores.iam.service"], shared)
 
-        # Base
-        assert (self.stage / "base/lib/libores.service.so.0").is_symlink()
-        assert (self.stage / "base/lib/libores.service.so.0.1.0").is_file()
-        assert (self.stage / "base/log").is_dir()
-        assert (self.stage / "base/run").is_dir()
-        assert (self.stage / "base/storage").is_dir()
-        # Permissions
-        for d in ("log", "run", "storage"):
-            mode = (self.stage / "base" / d).stat().st_mode
-            assert stat.S_IMODE(mode) == 0o777
+        libs = self.stage / "libs/lib"
+        assert (libs / "libores.service.so.0").is_symlink()
+        assert (libs / "libores.service.so.0.1.0").is_file()
+        assert (libs / "libores.logging.so.0.1.0").is_file()
 
-        # Per-service
-        svc = self.stage / "services/ores.iam.service"
-        assert (svc / "bin/ores.iam.service").is_file()
-        assert (svc / "lib/libores.logging.so.0").is_symlink()
-        assert (svc / "lib/libores.logging.so.0.1.0").is_file()
-
-    def test_service_with_no_extras(self):
+    def test_no_library_lands_in_a_service_dir(self):
+        """Every library is in the shared image, so a service image carries
+        no library at all."""
         self._make_binary("ores.iam.service")
         self._make_lib("libores.service.so.0", "libores.service.so.0.1.0")
 
-        common = {"libores.service.so.0"}
-        extras = {}  # no extras
-
         stage_for_build(self.stage, self.bin_dir, self.lib_dir,
-                        ["ores.iam.service"], common, extras)
+                        ["ores.iam.service"], {"libores.service.so.0"})
 
         svc = self.stage / "services/ores.iam.service"
         assert (svc / "bin/ores.iam.service").is_file()
-        assert not (svc / "lib").exists()  # no lib dir needed
+        assert not (svc / "lib").exists()
+
+    def test_creates_no_base_directories(self):
+        """The base image's runtime directories come from stage-runtime.sh,
+        so this step must not invent its own copy of them."""
+        self._make_binary("ores.iam.service")
+
+        stage_for_build(self.stage, self.bin_dir, self.lib_dir,
+                        ["ores.iam.service"], set())
+
+        assert not (self.stage / "base").exists()
 
     def test_preserves_executable_bit_on_binary(self):
         self._make_binary("ores.iam.service")
-        self._make_lib("libores.service.so.0", "libores.service.so.0.1.0")
-
-        common = {"libores.service.so.0"}
-        extras = {}
 
         stage_for_build(self.stage, self.bin_dir, self.lib_dir,
-                        ["ores.iam.service"], common, extras)
+                        ["ores.iam.service"], set())
 
         st = (self.stage / "services/ores.iam.service/bin/ores.iam.service").stat()
         assert st.st_mode & stat.S_IXUSR
@@ -377,34 +350,28 @@ class TestStageForBuild:
         real.chmod(0o755)
 
         stage_for_build(self.stage, self.bin_dir, self.lib_dir,
-                        ["ores.iam.service"],
-                        {"libores.foo.so.0"}, {})
+                        ["ores.iam.service"], {"libores.foo.so.0"})
 
-        dst = self.stage / "base/lib/libores.foo.so.0"
+        dst = self.stage / "libs/lib/libores.foo.so.0"
         assert dst.is_file()
         assert not dst.is_symlink()
 
-    def test_multiple_services(self):
-        for svc in ["ores.iam.service", "ores.refdata.service", "ores.dq.service"]:
+    def test_multiple_services_share_one_library_dir(self):
+        services = ["ores.iam.service", "ores.refdata.service", "ores.dq.service"]
+        for svc in services:
             self._make_binary(svc)
         for lib in ["libores.service.so.0", "libores.logging.so.0", "libores.nats.so.0"]:
             self._make_lib(lib, lib + ".1.0")
 
-        common = {"libores.service.so.0", "libores.logging.so.0"}
-        extras = {"ores.dq.service": {"libores.nats.so.0"}}
+        shared = {"libores.service.so.0", "libores.logging.so.0", "libores.nats.so.0"}
 
         stage_for_build(self.stage, self.bin_dir, self.lib_dir,
-                        ["ores.iam.service", "ores.refdata.service", "ores.dq.service"],
-                        common, extras)
+                        services, shared)
 
-        # All three service dirs exist
-        for svc in ["ores.iam.service", "ores.refdata.service", "ores.dq.service"]:
+        for svc in services:
             assert (self.stage / "services" / svc / "bin" / svc).is_file()
-
-        # Only dq has extra libs
-        assert not (self.stage / "services/ores.iam.service/lib").exists()
-        assert not (self.stage / "services/ores.refdata.service/lib").exists()
-        assert (self.stage / "services/ores.dq.service/lib/libores.nats.so.0").is_symlink()
+            assert not (self.stage / "services" / svc / "lib").exists()
+        assert (self.stage / "libs/lib/libores.nats.so.0.1.0").is_file()
 
 
 # ── _copy_file ──────────────────────────────────────────────────────────
@@ -449,7 +416,7 @@ class TestRealBinaries:
         if not (self.stage / "bin").is_dir():
             pytest.skip("build/docker-stage not staged — run stage-runtime.sh first")
 
-    def test_computes_partition_with_real_binaries(self):
+    def test_computes_shared_libraries_with_real_binaries(self):
         services = [
             "ores.iam.service",
             "ores.refdata.service",
@@ -460,12 +427,9 @@ class TestRealBinaries:
         if len(present) < 2:
             pytest.skip("need at least 2 staged service binaries")
 
-        common, extras = compute_partition(
+        shared = compute_shared_libraries(
             self.stage / "bin", self.stage / "lib", present,
         )
-        # Common should be non-empty — all services share at least
-        # libores.service.so.0 and a few others.
-        assert len(common) >= 1, f"Expected common libs, got none for {present}"
-        # Every common lib should be a valid SONAME format.
-        for lib in common:
+        assert len(shared) >= 1, f"Expected shared libs, got none for {present}"
+        for lib in shared:
             assert lib.startswith("libores."), f"Unexpected non-ores lib: {lib}"

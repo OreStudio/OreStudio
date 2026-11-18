@@ -117,18 +117,25 @@ they are copied into the transfer with their basenames.
    =~=-prefixed =ORES_REMOTE_ROOT= against the remote =HOME= and
    pinning the expansion back into the profile (podman's =--env-file=
    and the C++ parsers never expand =~=).
-2. *Stage*: =docker/stage-runtime.sh= (default mode — every supervised
-   service binary plus its ldd closure).
-3. *Build*: =podman build --format docker= for
-   =localhost/ores-service-runtime:local= and =localhost/ores-nats:local=
-   (the =--format docker= is required — OCI silently drops the
-   Dockerfile's HEALTHCHECK).
-4. *Transfer*: =podman save ... | gzip -1 | ssh <host> podman load=
-   (load auto-detects the gzip stream); the rendered NATS config
+2. *Stage*: =docker/stage-runtime.sh --services <names>= — the binaries
+   the service registry reports plus the closure of their libraries,
+   stripped with =strip --strip-all= on the host.
+3. *Partition*: every library any service loads goes into one shared
+   image, so a library that eleven services use is stored and transferred
+   once; each service image carries only its binary.
+4. *Build*: =podman build --format docker= for
+   =localhost/ores-service-base:local=, =localhost/ores-service-libs:local=
+   (the two shared layers), one =localhost/<service>:local= per service,
+   and =localhost/ores-nats:local= (the =--format docker= is required —
+   OCI silently drops the Dockerfile's HEALTHCHECK).
+5. *Transfer*: =podman save ... | gzip -1 | ssh <host> podman load=
+   (load auto-detects the gzip stream) for the shared images and NATS, then
+   the per-service staging dirs are =scp='d and the images built on the
+   host on top of the loaded library image; the rendered NATS config
    (path-rewritten copy), the NATS client certs, the IAM JWT key and
    the profile are =scp='d to =$REMOTE_ROOT= under the mirrored layout
    (=build/config/...=, =build/keys/...=, =docker/.env=).
-5. *Remote up*: both containers run with =--network=host= (the
+6. *Remote up*: both containers run with =--network=host= (the
    Newton-proven model: Postgres is native on the WSL host at
    =localhost:5433=, unreachable through a pod's slirp4netns — no pod
    object, no =-p= mappings), the services container passes
@@ -187,6 +194,122 @@ podman keeps working after logout) and starts the user dbus socket
   of this pipeline by hand; the cutover to running the dev environment
   on Newton day-to-day via =compass env deploy= is the story's
   end-to-end acceptance.
+
+* Published images
+
+The nightly build publishes the release image set to GitHub Container
+Registry, so a host can pull the images instead of receiving a transfer:
+
+#+begin_src sh :results verbatim
+# Inside the nightly build job, which has no container engine: stage the
+# tree and upload it.
+compass image stage --preset linux-clang-release-ninja
+
+# In the publish job, which has docker: build from the staged tree and push.
+compass image publish --from-stage --engine docker \
+    --registry ghcr.io/orestudio --alias main
+#+end_src
+
+Three commands do the work: =compass image stage= writes the shared
+libraries and one directory per service binary into =build/docker-stage=,
+=compass image build= turns that tree into the images, and
+=compass image publish= tags each image as
+=<registry>/<name>:<version>-<commit>= and pushes it. The image names are
+the repository names without a prefix (=ores-service-base=,
+=ores-service-libs=, =ores-nats=, =ores-web= for the Node service, and one
+per compiled service such as =ores.iam.service=). A tag the registry already holds is skipped, so a
+rerun after a failed push only fills the gaps, and =--dry-run= lists what
+would be pushed.
+
+Only the release configuration is published: the debug build is several
+times larger and no host runs it.
+
+* Deploying from the published images
+
+A host that can reach GitHub Container Registry pulls the images instead
+of receiving a transfer:
+
+#+begin_src sh :results verbatim
+compass env deploy pauli --pull
+compass env deploy pauli --pull --image-tag main
+compass env deploy pauli --pull --registry ghcr.io/orestudio
+#+end_src
+
+Without =--image-tag= the deploy pulls the tag this checkout would
+publish — the version and the short commit — so the host runs the exact
+build of the working tree. =--image-tag main= takes the newest nightly
+instead. The pulled images are tagged under the local names
+=docker/remote-run.sh= resolves, so the rest of the deploy, including
+=--stop=, is the same as a transfer.
+
+A =--pull= deploy does not need =compass image build= on this machine and
+does not check that the local images exist.
+
+Two ways a pull deploy fails before anything starts:
+
+- The tag is not published. The default tag names the version and the
+  commit of the checkout, so a commit the nightly has not reached yet has
+  no image. Use =--image-tag main= for the newest published build, or
+  =compass image publish= the checkout first.
+- The profile holds paths from an older remote root. The profile pins the
+  expanded =ORES_REMOTE_ROOT= when it is generated, so changing
+  =ORES_REMOTE_HOST= afterwards leaves every path under the old root —
+  a deploy then fails on the first =mkdir= into a directory the remote
+  user cannot write. Regenerate the profile, or rewrite the old prefix
+  in =.env.<host>=.
+
+* The web service image
+
+=ores.web.service= runs on Node, so it is packaged differently from the
+compiled services: =docker/stage-web.sh= stages the compiled BFF, the
+browser bundle, the site configuration and the pruned dependencies, and
+=docker/service-web.Dockerfile= runs them on Alpine's =nodejs=. The host
+needs no Node installation — the image carries its own.
+
+Three choices keep the image at 143 MB rather than 486 MB:
+
+- =npm prune --omit=dev= on the staged copy, which drops the compiler and
+  the test runner from =node_modules= (207 MB to 60 MB).
+- No =*.map= files: they are for a debugger, and they were 28 MB.
+- Alpine plus =apk add nodejs= rather than the official node image, which
+  carries npm, corepack and native-addon headers a runtime image never
+  uses (171 MB against about 60 MB).
+
+The container starts after the compiled services, takes no service
+arguments, and gets a copy of the profile with =ORES_WEB_DOC_ROOT= removed:
+that path is the checkout, which the container does not have, and without it
+the agile and scenario runners stay off.
+
+* The database stays on the host
+
+The remote PostgreSQL listens on loopback only. The services reach it
+because they run with =--network=host=, so nothing off the machine can
+open a connection — not the internet and not the tailnet. Administer it
+through ssh:
+
+#+begin_src sh :results verbatim
+# One-off SQL
+ssh <host> sudo -u postgres psql -p 5433
+
+# A psql session from this machine, without a listener
+ssh -N -L 5433:127.0.0.1:5433 <host> &
+PGPASSWORD=... psql -h 127.0.0.1 -p 5433 -U postgres
+#+end_src
+
+A local =listen_addresses= is also why =compass db ... --env <host>= does
+not reach the host directly: it would need the tunnel above, and the
+profile's =ORES_DB_HOST= stays =localhost= so the services on the host
+use the socket.
+
+** Connection slots
+
+Every service keeps its own pool, so a host that runs the whole fleet
+must allow more connections than the default 100 — with nineteen
+services the pools alone reach about a hundred and the last two services
+fail with =remaining connection slots are reserved for roles with the
+SUPERUSER attribute=. The setting costs little because the backends are
+mostly idle; the buffers are what cost memory, as =ores_sizing.conf= on
+the host shows.
 
 * See also
 

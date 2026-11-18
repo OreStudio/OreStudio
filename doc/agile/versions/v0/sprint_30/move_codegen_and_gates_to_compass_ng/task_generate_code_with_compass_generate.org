@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-code-with-compass-generate
+#+pr: 4840
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -26,11 +26,11 @@ A model or template edit is regenerated in seconds by one command, with byte-ide
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4840][#4840]] | [doc] Point the codegen recipes and skills at compass-ng generate |
 
 * Review
 
@@ -86,3 +86,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- How do I run codegen? leads with ./compass.sh diff and ./compass.sh generate;
+  the Python entry points stay for scaffolding and single-address runs, and the
+  whole-component section points at compass-ng.
+- The eight per-layer regeneration recipes, Regenerate all layers and Add a new
+  codegen entity model name ./compass.sh generate instead of codegen
+  regenerate; the revert-the-other-entities steps are gone, because compass-ng
+  writes only what changed.
+- The two memories that forbade tree-wide runs (generate one entity at a time;
+  regenerate only the drift-free components) now state that compass-ng
+  generate is the tree-wide run on a drift-free tree, and keep their rule for
+  the Python codegen.
+- The CMake source-list recipe and the compass-codegen-sync-cmake-sources skill
+  lead with ./compass.sh generate; regenerate_cmake_component_files.py stays as
+  the fallback without compass-ng. component_files and er_diagram are
+  confirmed: each caught its planted drift, and each writes its outputs byte
+  for byte as its script does.
+

@@ -7,9 +7,9 @@
 #+level: cross
 #+filetags: :codegen:recipe:nats:handler:cpp:messaging:regenerate:entity:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-18
 
-Runs the =nats-handler= profile via =compass codegen regenerate=, generating the per-entity NATS message handler header and implementation. See [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
+The =nats-handler= profile's outputs come from =./compass.sh generate=, which runs compass-ng over every model whose inputs changed, generating the per-entity NATS message handler header and implementation. See [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 
 * Question
 
@@ -20,7 +20,8 @@ How do I regenerate the NATS message handler files for a domain entity?
 The =nats-handler= profile generates the per-entity NATS handler header and implementation in the core sub-component.
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata --address ores.cpp.nats-handler
+./compass.sh diff
+./compass.sh generate
 #+end_src
 
 Expected output (entity =rounding_type=, =component_core=refdata.core=):
@@ -33,7 +34,7 @@ Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata --address ores.cpp.nats-handler=.
+=./compass.sh generate=.
 
 * Tested by
 

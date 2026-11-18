@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: 
 #+created: 2026-07-29
-#+updated: 2026-07-29
+#+updated: 2026-11-18
 
 Every component's =src/CMakeLists.txt=/=tests/CMakeLists.txt= =include()=s
 a generated =component_files.cmake= instead of using
@@ -29,6 +29,13 @@ How do I regenerate CMake component file lists?
 1. After *any* rebase or merge onto a branch that may have added or
    removed source files (not just your own branch's changes) —
    before your next build:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh generate
+   #+end_src
+
+   compass-ng writes every list byte-identical to the script, which stays
+   for a machine without compass-ng:
 
    #+begin_src sh :results verbatim
    python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all

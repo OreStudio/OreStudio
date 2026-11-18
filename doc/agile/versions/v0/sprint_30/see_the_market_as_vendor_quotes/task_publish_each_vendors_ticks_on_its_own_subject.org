@@ -8,7 +8,7 @@
 #+filetags: :marketdata:ticks:routing:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
 #+branch: feature/publish-each-vendors-ticks-on-its-own-subject
-#+pr:
+#+pr: 4864
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4864][#4864]] | [marketdata] Publish each tick once on the subject of its feed |
 
 * Review
 

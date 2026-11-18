@@ -69,7 +69,8 @@ namespace ores::marketdata::service::app {
  * names its datum by its oresmd quote URI and its producer by its source; it
  * carries no owner. refresh() caches the routes by source, and each route of
  * the tick's source is one consumer. The tick is stored once, as one row of the
- * tick table on the stream its provider and series URI name, and republished on
+ * tick table on the stream its provider and series URI name, published once on
+ * feed_tick_subject() for the source's feed, and republished on
  * market_tick_subject() for each consumer and the datum's canonical oresmd URI.
  * A tick from a source that no route names is dropped, with one warning per
  * source, and so is a tick whose URI names no datum or whose value is not a
@@ -311,23 +312,23 @@ private:
     std::set<std::string> adapter_drop_warned_;
     using consumers_map = std::map<std::string, std::vector<consumer>>;
 
-    /// The routes by source, and the targets built from them for each source and
-    /// datum. The targets are a function of the consumers and the datum, so they live and die
+    /// The routes by source, and the delivery built from them for each source and
+    /// datum. The delivery is a function of the consumers and the datum, so it lives and dies
     /// with the snapshot, and a refresh() leaves none that is stale.
     struct consumers_snapshot {
         consumers_map by_source;
 
-        /// The targets of a tick of @p named from @p source, which must be a bound source.
-        [[nodiscard]] std::shared_ptr<const std::vector<tick_target>>
-        targets_for(const std::string& source, const named_datum& named) const;
+        /// The delivery of a tick of @p named from @p source, which must be a bound source.
+        [[nodiscard]] std::shared_ptr<const tick_delivery>
+        delivery_for(const std::string& source, const named_datum& named) const;
 
     private:
         mutable std::mutex mu_;
         mutable std::size_t built_ = 0;
         mutable std::unordered_map<
             std::string,
-            std::unordered_map<std::string, std::shared_ptr<const std::vector<tick_target>>>>
-            targets_;
+            std::unordered_map<std::string, std::shared_ptr<const tick_delivery>>>
+            deliveries_;
     };
 
     /// Consumers by source, rebuilt by refresh(). A batch reads one snapshot.

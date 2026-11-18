@@ -41,26 +41,30 @@ std::expected<std::shared_ptr<const named_datum>, tick_drop> name_datum(std::str
         named_datum{std::move(*datum), std::move(*canonical), std::move(*series)});
 }
 
-std::shared_ptr<const std::vector<tick_target>> make_targets(const std::vector<consumer>& consumers,
-                                                             const named_datum& named) {
-    auto targets = std::make_shared<std::vector<tick_target>>();
-    targets->reserve(consumers.size());
+std::shared_ptr<const tick_delivery> make_delivery(const std::vector<consumer>& consumers,
+                                                   const named_datum& named) {
+    auto delivery = std::make_shared<tick_delivery>();
+    const auto& feed = consumers.front();
+    delivery->feed_subject = domain::feed_tick_subject(
+        feed.provider_code, boost::uuids::to_string(feed.feed_id), named.datum, named.series_uri);
+    auto& targets = delivery->targets;
+    targets.reserve(consumers.size());
     for (const auto& c : consumers) {
         auto tenant = c.tenant_id.to_string();
         auto party = boost::uuids::to_string(c.party_id);
         auto subject = domain::market_tick_subject(tenant, party, named.uri);
         auto source = boost::uuids::to_string(c.feed_id);
-        targets->push_back(
+        targets.push_back(
             {c, std::move(subject), std::move(tenant), std::move(party), std::move(source)});
     }
-    return targets;
+    return delivery;
 }
 
 std::expected<tick_plan, tick_drop>
 plan_tick(const ores::marketdata::messaging::market_tick& tick,
           const std::vector<consumer>& consumers,
           std::shared_ptr<const named_datum> named,
-          std::shared_ptr<const std::vector<tick_target>> targets) {
+          std::shared_ptr<const tick_delivery> delivery) {
     if (consumers.empty())
         return std::unexpected(tick_drop::unbound_source);
 
@@ -75,9 +79,9 @@ plan_tick(const ores::marketdata::messaging::market_tick& tick,
     if (!value)
         return std::unexpected(tick_drop::not_a_number);
 
-    if (!targets)
-        targets = make_targets(consumers, *named);
-    return tick_plan{std::move(named), *value, std::move(targets)};
+    if (!delivery)
+        delivery = make_delivery(consumers, *named);
+    return tick_plan{std::move(named), *value, std::move(delivery)};
 }
 
 }

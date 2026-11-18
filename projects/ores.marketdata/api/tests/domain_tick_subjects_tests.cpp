@@ -18,6 +18,8 @@
  *
  */
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
@@ -85,4 +87,59 @@ TEST_CASE("a_consumer_reads_a_datum_under_its_encoded_oresmd_uri", "[domain][tic
 TEST_CASE("a_party_reads_all_its_data_under_one_wildcard", "[domain][tick_subjects]") {
     CHECK(ores::marketdata::domain::market_tick_subject_all("t", "p") ==
           std::string(ores::marketdata::messaging::market_tick::nats_subject) + ".t.p.>");
+}
+
+namespace {
+
+const std::string tick_subjects_feed = "0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0";
+
+/// The feed subject of @p uri, with its series URI written by the codec.
+std::string tick_subjects_feed_subject(const std::string& uri) {
+    using ores::marketdata::datum::oresmd_uri_codec;
+    const auto datum = oresmd_uri_codec::read(uri).value();
+    const auto series = oresmd_uri_codec::write(ores::marketdata::datum::series_of(datum)).value();
+    return ores::marketdata::domain::feed_tick_subject("bloomberg", tick_subjects_feed, datum, series);
+}
+
+}
+
+TEST_CASE("a_feed_publishes_a_datum_under_its_provider_feed_type_series_and_coordinates",
+          "[domain][tick_subjects]") {
+    const auto subject = tick_subjects_feed_subject(
+        "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=5Y");
+
+    CHECK(subject == "marketdata.v1.ops.market_tick.bloomberg." + tick_subjects_feed +
+                         ".ir_swap." +
+                         ores::marketdata::domain::subject_token(
+                             "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate"
+                             "&fwd_start=0D&tenor=3M") +
+                         ".term%3D5Y");
+}
+
+TEST_CASE("a_datum_without_coordinates_has_the_fixed_coordinate_token", "[domain][tick_subjects]") {
+    const auto subject = tick_subjects_feed_subject(
+        "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+
+    CHECK(subject == "marketdata.v1.ops.market_tick.bloomberg." + tick_subjects_feed +
+                         ".fx_spot." +
+                         ores::marketdata::domain::subject_token(
+                             "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD") +
+                         "._");
+}
+
+TEST_CASE("one_wildcard_covers_a_series_and_nothing_else", "[domain][tick_subjects]") {
+    using ores::marketdata::domain::subject_matches;
+    const auto five_years = tick_subjects_feed_subject(
+        "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=5Y");
+    const auto ten_years = tick_subjects_feed_subject(
+        "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=10Y");
+    const auto six_months_tenor = tick_subjects_feed_subject(
+        "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M&term=5Y");
+
+    const auto series = five_years.substr(0, five_years.rfind('.')) + ".>";
+
+    CHECK(five_years != ten_years);
+    CHECK(subject_matches(series, five_years));
+    CHECK(subject_matches(series, ten_years));
+    CHECK_FALSE(subject_matches(series, six_months_tenor));
 }

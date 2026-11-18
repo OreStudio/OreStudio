@@ -99,15 +99,26 @@ struct tick_target final {
 };
 
 /**
- * @brief The targets of a tick of @p named: one for each consumer, each with the republish
- * subject for that consumer's tenant and party.
- *
- * The targets depend on the consumers and the datum alone, so the loop builds them once for each
- * source and datum and shares them. They are a delivery plan: the store writes one row for each
- * tick, whatever the number of targets.
+ * @brief Where a tick of one datum from one source goes: once on the subject of the source's
+ * feed, and to each consumer the routes name.
  */
-ORES_MARKETDATA_SERVICE_EXPORT std::shared_ptr<const std::vector<tick_target>>
-make_targets(const std::vector<consumer>& consumers, const named_datum& named);
+struct tick_delivery final {
+    /// The subject of the feed, which carries the tick once for every party that may watch it.
+    std::string feed_subject;
+    std::vector<tick_target> targets;
+};
+
+/**
+ * @brief The delivery of a tick of @p named from the source that @p consumers consume: the feed
+ * subject, and one target for each consumer, each with the republish subject for that consumer's
+ * tenant and party. @p consumers must not be empty, and every consumer names the same feed.
+ *
+ * The delivery depends on the consumers and the datum alone, so the loop builds it once for each
+ * source and datum and shares it. It is a delivery plan: the store writes one row for each tick,
+ * whatever the number of targets.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::shared_ptr<const tick_delivery>
+make_delivery(const std::vector<consumer>& consumers, const named_datum& named);
 
 /**
  * @brief What the ingest loop does with a tick it accepts: the datum it names,
@@ -117,7 +128,7 @@ make_targets(const std::vector<consumer>& consumers, const named_datum& named);
 struct tick_plan final {
     std::shared_ptr<const named_datum> named;
     double value = 0;
-    std::shared_ptr<const std::vector<tick_target>> targets;
+    std::shared_ptr<const tick_delivery> delivery;
 };
 
 /**
@@ -129,13 +140,13 @@ struct tick_plan final {
  * republish subject for that consumer's tenant and party.
  *
  * A caller that has read the URI already passes @p named, and the URI is not read again. A
- * caller that has built the targets for this source and datum passes @p targets.
+ * caller that has built the delivery for this source and datum passes @p delivery.
  */
 ORES_MARKETDATA_SERVICE_EXPORT std::expected<tick_plan, tick_drop>
 plan_tick(const messaging::market_tick& tick,
           const std::vector<consumer>& consumers,
           std::shared_ptr<const named_datum> named = nullptr,
-          std::shared_ptr<const std::vector<tick_target>> targets = nullptr);
+          std::shared_ptr<const tick_delivery> delivery = nullptr);
 
 }
 

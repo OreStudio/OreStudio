@@ -135,15 +135,18 @@ feed through its route and its subscription, as
 [[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]] states.
 
 The series token is the percent-encoded series URI. The coordinate token is the
-percent-encoded coordinates, or one fixed character for a series without any. A
+percent-encoded coordinates, each coordinate field that holds a value written as
+=<name>=<value>= in the schema row's order and joined by =&=. A datum without
+any has the token =_=, which no encoded coordinate can equal. A
 consumer then subscribes to a feed with =...<provider>.<feed>.>=, to a class with
 =...<instrument_type>.>=, to a series with =...<instrument_type>.<series_token>.>=,
 or to one datum. A chart subscribes to the series that it shows, and the broker
 sends nothing else.
 
-Today the subject is =marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=, with
-one token for the whole datum URI, and the ingest publishes one copy for each routed
-party. No wildcard covers one series on it.
+The ingest builds this subject with =feed_tick_subject()= and publishes each tick
+on it once. It still publishes one copy for each routed party as well, on
+=marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=, with one token for the
+whole datum URI, until the consumers move to the feed subject.
 
 The ingress subject is =marketdata.v1.ingress.<adapter>.<id token>=.
 
@@ -522,9 +525,9 @@ This page states the design. At commit =0a63e9a679= (2026-11-18) the ingest
 
 - It has no lanes, no conflation and no recent window. It takes each batch, stores
   it and publishes every accepted tick that is not too old.
-- It publishes a copy of each tick for each routed party, on
-  =marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=, not once on the feed's
-  subject.
+- It publishes each tick once on the feed's subject, and also a copy for each
+  routed party, on =marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=. The
+  copies go when the consumers move to the feed subject.
 - The history read answers from the store only.
 
 The story [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] moves the live subject to the

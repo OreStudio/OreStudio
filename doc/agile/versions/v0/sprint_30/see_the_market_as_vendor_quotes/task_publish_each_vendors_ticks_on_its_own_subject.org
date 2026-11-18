@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:ticks:routing:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/publish-each-vendors-ticks-on-its-own-subject
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Each vendor's accepted ticks are on one live subject per vendor, published once 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,23 @@ Each vendor's accepted ticks are on one live subject per vendor, published once 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Build the subject in =tick_subjects.hpp=: =feed_tick_subject()= names the
+   provider, the feed, the instrument type, the series token and the
+   coordinate token. The coordinate token is the coordinate fields that hold a
+   value, as =name=value= in the schema row's order, or =_= for a datum with
+   none.
+2. Give the plan one delivery for each source and datum: the feed subject and
+   the targets for each route. The loop caches it as it cached the targets, so
+   no tick builds a subject.
+3. In =announce()=, publish each tick once on the feed subject after the age
+   gate, beside the copies for each party. The meter, the stats and the CRM
+   bridge stay for each route.
+4. Pin the subject with unit tests, and show in a loop test that a tick of two
+   consumers arrives once on the feed and once on each party.
+
+A tick from a source that no route names is still dropped before it is stored,
+so it reaches no subject. The quotes view of the system tenant needs those
+ticks too; that is a change to the drop, and it belongs to a later task.
 
 * Measurements
 

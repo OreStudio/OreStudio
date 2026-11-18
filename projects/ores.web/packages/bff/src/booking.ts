@@ -163,6 +163,8 @@ function emptyBatch(): InstrumentBatch {
         fx_asian_option_instruments: [],
         rate_digital_option_instruments: [],
         fx_pairwise_variance_swap_instruments: [],
+        equity_basket_option_instruments: [],
+        fx_basket_option_instruments: [],
     };
 } /** The intent every write of a booking carries. */
 function intent(): { readonly reason_code: string; readonly commentary: string } {

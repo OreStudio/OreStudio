@@ -150,20 +150,20 @@ void feed_ingest_loop::start() {
     status_thread_ = std::thread(&feed_ingest_loop::status_loop, this);
 }
 
-std::shared_ptr<const std::vector<tick_target>>
-feed_ingest_loop::consumers_snapshot::targets_for(const std::string& source,
-                                                  const named_datum& named) const {
+std::shared_ptr<const tick_delivery>
+feed_ingest_loop::consumers_snapshot::delivery_for(const std::string& source,
+                                                   const named_datum& named) const {
     std::lock_guard lock(mu_);
-    auto& by_uri = targets_[source];
+    auto& by_uri = deliveries_[source];
     const auto found = by_uri.find(named.uri);
     if (found != by_uri.end())
         return found->second;
-    auto targets = make_targets(by_source.at(source), named);
+    auto delivery = make_delivery(by_source.at(source), named);
     if (built_ < named_cache_limit) {
-        by_uri.emplace(named.uri, targets);
+        by_uri.emplace(named.uri, delivery);
         ++built_;
     }
-    return targets;
+    return delivery;
 }
 
 namespace {
@@ -468,7 +468,7 @@ feed_ingest_loop::prepare(std::vector<ores::marketdata::messaging::market_tick> 
         // The URI is read only for a bound source, as plan_tick does, and once for each
         // distinct URI.
         std::shared_ptr<const named_datum> named;
-        std::shared_ptr<const std::vector<tick_target>> targets;
+        std::shared_ptr<const tick_delivery> delivery;
         if (!source_consumers.empty()) {
             auto read = name_of(ticks[i].oresmd_uri);
             if (!read) {
@@ -478,9 +478,9 @@ feed_ingest_loop::prepare(std::vector<ores::marketdata::messaging::market_tick> 
                 continue;
             }
             named = std::move(*read);
-            targets = consumers->targets_for(ticks[i].source, *named);
+            delivery = consumers->delivery_for(ticks[i].source, *named);
         }
-        auto plan = plan_tick(ticks[i], source_consumers, std::move(named), std::move(targets));
+        auto plan = plan_tick(ticks[i], source_consumers, std::move(named), std::move(delivery));
         if (!plan) {
             warn_dropped(ticks[i], plan.error());
             if (outcomes)
@@ -500,7 +500,7 @@ feed_ingest_loop::prepare(std::vector<ores::marketdata::messaging::market_tick> 
     for (std::size_t i = 0; i < ticks.size(); ++i) {
         if (!batch->plans[i])
             continue;
-        for (const auto& target : *batch->plans[i]->targets) {
+        for (const auto& target : batch->plans[i]->delivery->targets) {
             const auto& b = target.owner;
             auto ctx_it = tenant_ctxs.find(target.tenant_text);
             if (ctx_it == tenant_ctxs.end())
@@ -610,6 +610,8 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
     }
 
     std::vector<std::vector<std::byte>> payloads(ticks.size());
+    // A tick is published on its feed's subject once, whatever the number of its targets.
+    std::vector<bool> on_feed(ticks.size(), false);
     // The deliveries of this batch, by consumer and item. The views point into the ticks of the
     // batch, which outlive this function.
     std::map<std::pair<const tick_target*, std::string_view>, std::int64_t> delivered;
@@ -651,6 +653,16 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
         auto& payload = payloads[it.tick_index];
         if (payload.empty())
             payload = ores::nats::default_wire_codec().encode(tick);
+        if (!on_feed[it.tick_index]) {
+            on_feed[it.tick_index] = true;
+            const auto& subject = it.plan->delivery->feed_subject;
+            try {
+                nats_.publish(subject, payload);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Failed to publish a tick on '" << subject << "': " << e.what();
+            }
+        }
         try {
             nats_.publish(it.target->subject, payload);
             if (meter_)

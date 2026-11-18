@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-code-with-compass-generate
-#+pr:
+#+pr: 4840
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4840][#4840]] | [doc] Point the codegen recipes and skills at compass-ng generate |
 
 * Review
 

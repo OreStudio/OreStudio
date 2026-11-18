@@ -163,6 +163,9 @@ via its "Verifies task" field.
 | 10 | PR #4821 review 4: a family with no shape passes unguarded, and coverage can drift | story | Accept as a task | [[id:AECE7F12-9EFB-4F3E-AFEF-0D61BEB8E811][Check every family in use has a shape]] |
 | 11 | PR #4821 review 5: the PR is large and mixes concerns | PR | Decline | Each concern is its own commit, so the history bisects |
 | 12 | PR #4821 review 6: confirm the failing checks are main's, and the shared policy | PR | Accept | The create script ends with =series_identity_shapes_tbl_shared_reference_read_policy=; bright_faraday owns the FX vol suites and the resend |
+| 13 | After merge, found: the pgTAP scan joins the shape on the identity's tenant, which describes the per-tenant copy the shared catalogue removed | =marketdata_series_identity_shape_test.sql= | Accept as a task | A latent inconsistency, not a coverage hole: the suite is bounded by row-level security to one tenant and reads 330 of the table's 3,803 identities, so reverting the join fails none of its assertions. Fixed to the writer's read and the suite's scope stated; [[id:15A60BBE-102B-40BA-8F6A-83E2FB92E96B][Report what the shape guard refuses]]. My first reading called it blindness over ninety per cent of the rows, from a =bypassrls= session, and that was wrong |
+| 14 | After merge, found: =backfill_result::refused= and =unstated= are computed and never leave the process, because the response carries neither | =operations_protocol.hpp= | Accept as a task | Same task: a refusal and an unguarded family are exactly what an operator needs reported |
+| 15 | After merge, found: the generated eventing and shell-command tests for this entity have never run | tree | Open | The build that would have run them was cancelled at 263 of 299 targets; the next PR's suite run settles it |
 
 * Result
 

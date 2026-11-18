@@ -29,8 +29,8 @@ A family with no shape row is projected unguarded, by design, so the catalogue c
 | State        | BACKLOG                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Waiting on   | [[id:15A60BBE-102B-40BA-8F6A-83E2FB92E96B][Report what the shape guard refuses]]: the check reads the count of series in an unstated family, which that task takes from the projector to the protocol. |
+| Next         | Write the check against the reported count, and list the deliberate gaps. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -59,6 +59,20 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The projector already counts what this task asks about: =backfill_result::unstated= is
+incremented for every series whose family no shape states, and the backfill response
+does not carry it. The check is therefore mostly a reader, and it is taken after
+[[id:15A60BBE-102B-40BA-8F6A-83E2FB92E96B][Report what the shape guard refuses]] rather
+than beside it.
+
+What the count says at =67803175ce=, which shapes the deliberate-gap list: the system
+tenant holds 330 identities in 5 families and every one of them is stated, so the check
+passes on today's data. The 66 unstated families in use are a test tenant's fixtures --
+the synthetic series generator writes a faker URI and a drawn subclass -- so the list
+is not a catalogue gap but a fixture gap, and the answer may be to fix the generator
+instead of listing 66 entries. That is
+[[id:474E8968-C7B4-4740-839F-9328B93A5FEA][Generate a series that is an identity]].
 
 * Test Scenarios
 

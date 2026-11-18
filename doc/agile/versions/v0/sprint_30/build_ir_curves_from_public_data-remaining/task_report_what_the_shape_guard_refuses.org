@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: 15A60BBE-102B-40BA-8F6A-83E2FB92E96B
+:END:
+#+title: Task: Report what the shape guard refuses
+#+description: The shape guard refuses a row and reports nothing: the backfill drops the counts it makes, and the pgTAP scan reads the shapes through a tenant join the shared catalogue no longer has.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:market_data:identity:sprint_30:build_ir_curves_from_public_data-remaining:v0:
+#+owner: marco
+#+branch: feature/hold-the-shape-guard-to-what-it-reports
+#+pr: 4834
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-18
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shape guard is observable and honest: every refusal and every family no shape states reaches a caller, and the test that holds the catalogue to the stored identities reads the shapes the writer reads.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-18                               |
+
+* Acceptance
+
+- The pgTAP scan joins the shapes the way the projector reads them, and the suite states
+  the scope row-level security gives it, so no reader mistakes it for a cross-tenant check.
+- The backfill response carries how many rows the shape refused and how many series fall
+  in a family no shape states.
+- The counts are asserted in a test, so a guard that refuses silently cannot return.
+- A tenant's own identity is held to the shared catalogue, either by the two facts the
+  suite and the guard's unit test already establish or directly, if a later task gives the
+  fixture tenant an account.
+
+* Plan
+
+Two findings, both measured against the tree at =67803175ce=.
+
+The pgTAP suite joins the shape row on the identity's own tenant:
+
+#+begin_src sql
+  join ores_marketdata_series_identity_shapes_tbl st
+    on st.tenant_id = i.tenant_id
+#+end_src
+
+That described the per-tenant copy the shared catalogue removed. The writer reads
+=tenant_id == tid || tenant_id == sys=, so the view is corrected to the same read and
+now describes what the code does rather than a copy no tenant holds.
+
+The correction is a latent one, and the record should say so plainly. The suite runs
+under row-level security with one tenant in context, so it sees that tenant's identities
+and no others: 330 rows of the 3,803 the table holds. The tenant-equal join therefore
+could not be observed from inside the suite, and a temporary copy of the file with the
+join reverted passes all eight of its assertions. My first reading of this called it a
+coverage hole over ninety per cent of the rows; that reading came from a session with
+=bypassrls= and it was wrong. What the suite proves is what the session can see, and the
+file now says that in its own words.
+
+The cross-tenant property is not lost, it is composed: this suite asserts that a
+provisioned tenant reads the system tenant's shapes and holds no copy, and the guard's
+unit test asserts that whatever shapes it is given are enforced. Together those say a
+tenant's identity is held to the shared catalogue. Writing a tenant's identity in SQL to
+prove it directly needs a series row, whose trigger validates an account username, and
+the provisioner creates no accounts; that is why the proof is composed rather than
+direct, and the price of a direct one is more fixture than the claim is worth.
+
+The second finding stands as first reported. The projector counts what it refuses
+(=backfill_result::refused=) and how many series fall in a family no shape states
+(=unstated=), and the backfill response carries neither: it reports projected, already
+projected and unreadable. A refusal and an unguarded family are what an operator most
+needs to see, and today neither leaves the process. The response gains =refused_count=
+and =unstated_count= from the model, the handler fills them and says them in its message,
+and the projector's backfill counts are asserted by two cases: one series the shape refuses
+is counted and left without an identity, and one series in a family no shape states is
+projected and counted as unguarded. The refusal is also logged by name, which the field's
+comment promised and the code did not do: the exception already names the series, its
+family and the field.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Identities the suite's session reads | 330 of 3,803 | psql as the test DML user with =app.current_tenant_id= set to the system tenant | 67803175ce |
+| Pairs the scan examines, tenant-equal join | 1,320 | the =shape_scan= query as a =bypassrls= session | 67803175ce |
+| Pairs the scan examines, writer's read | 8,370 | the same query with the join on the shared read | 67803175ce |
+| Assertions that fail with the join reverted | 0 of 9 | a temporary copy of the suite with =st.tenant_id = i.tenant_id= | 7f8a3089e2 |
+| Counts the response carries for refusals and unguarded families | =refused_count= and =unstated_count= | =backfill_series_identity_response= in =operations_protocol.hpp= | 727350300a |
+| Identity tests after the change | 42 assertions in 17 cases, pass | `publish/bin/ores.marketdata.core.tests "[series_identity]"` | 727350300a |
+| Market data core suite, rebased on 4834e28b1c | 28,727 assertions in 452 cases, pass | `publish/bin/ores.marketdata.core.tests` | 77e1249ab2 |
+| Shape suite | 9 tests, pass | `projects/ores.sql/test/run_tests.sh marketdata_series_identity_shape_test.sql` | 77e1249ab2 |
+| Build of the rebased tree | succeeded, 1:10:43 | `compass build` | 77e1249ab2 |
+| Market data core suite after review round 1, rebased on 6756a03acb | 44,427 assertions in 453 cases, pass | `compass build test_ores.marketdata.core.tests` | f56a5b66e8 |
+| Component documentation | all 40 components pass | `projects/ores.codegen/validate_docs.sh` | 6be40ce8ec |
+| Local gate, compass-ng part | pass | `compass check --only lint --only backlog-indexes` | a66cb4ac43 |
+
+* Notes
+
+The join correction is worth keeping even though it changes no assertion: a query that
+describes a copy nobody holds is a trap for the next reader, and a system-level check
+that runs with elevated rights would read it as the writer does only after the fix.
+
+The suite's scope is now stated where it is used. If a later task wants a tenant's own
+identities held to the catalogue in SQL, it needs an account in the fixture tenant first,
+which is a seeding question and not a shape question.
+
+The local gate fails =component-drift= for the marketdata component on a tree this branch
+did not touch: the service options header carries two initialisers by hand, because the
+options template never emits the =:default:= its model states, and the fixing repository
+carries a four-argument read that nothing calls. Regenerating deletes both, so the branch
+leaves them alone, and the finding is captured as
+[[id:AAA470A4-D202-4E6B-B56B-490E5EE54174][The service config options ignore the default a model states]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4834][#4834]] | [marketdata] Report the rows the shape guard refuses |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #4834 review 1: a series the guard refuses is counted in =unstated= as well, because the test runs before the refusal, so the message reads as both unguarded and refused | =market_series_identity_projector.cpp= | Accept | The count moved after the check, so it means what its doc says: projected without a shape. The refused case now asserts =unstated= does not move, which the old =>= 1= could not |
+| 2 | PR #4834 review 1: a refused series warns again on every backfill, because it stays unprojected | =market_series_identity_projector.cpp= | Decline | Stated in the comment beside the log: this is an operator's repair, not a sweep, and the count is how a scheduled caller would notice |
+| 3 | PR #4834 review 1: the new tests assert =>= 1=, which cannot catch a miscount | =repository_series_identity_backfill_tests.cpp= | Accept | Both cases take a baseline call and assert the difference this fixture makes, so a shared tenant cannot weaken them |
+| 4 | PR #4834 review 1: the message's "N of M" does not name =already_projected= | =market_series_handler.hpp= | Decline | The counts are on the response; the message is a summary and the field names are the interface. Revisited if a caller ever parses it |
+| 5 | PR #4834 review 1: =component-drift= is red on marketdata files the branch did not touch | PR | Accept as a capture | [[id:AAA470A4-D202-4E6B-B56B-490E5EE54174][The service config options ignore the default a model states]] |
+
+* Result
+
+The shape guard now reports what it does. The backfill response carries =refused_count=
+and =unstated_count=, the handler says both in its message, and the projector logs each
+refusal by name. =unstated= counts only the series that the call projected without a shape,
+so a refused series is not counted twice. Two backfill cases assert the exact difference
+that their fixture makes. The pgTAP suite joins the shapes the way the writer reads them,
+and it states the scope that row-level security gives it.
+
+All four acceptance points are met. The fourth is met by composition: the suite proves that
+a tenant reads the shared shapes, and the guard's unit test proves that the guard enforces
+the shapes it reads.
+
+The task changes no component's shape: it adds no file, part or facet, and
+=validate_docs.sh= passes for all 40 components. The local gate passes, except for three
+checks that fail in code this branch does not touch. Two of them are filed as captures:
+[[id:4712BE7F-25E7-477E-90AE-524C91569671][The ingest loop tests fail when the machine is loaded]]
+and [[id:CCCEC773-0198-4190-B004-E4816FC6F343][Two iam pgTAP suites cannot call the account exists function]].
+The third, =ticks-smoke=, timed out while the host was under heavy IO load.

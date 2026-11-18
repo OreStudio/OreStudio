@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 4712BE7F-25E7-477E-90AE-524C91569671
+:END:
+#+title: The ingest loop tests fail when the machine is loaded
+#+description: Two staged-batch cases in the marketdata service suite wait on wall-clock time, so a loaded host fails one of them on most runs.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:testing:flaky:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the staged-batch cases in =app_feed_ingest_loop_tests.cpp= pass on a loaded host. Each
+case waits on wall-clock time for the republish tap or the tick store to catch up, so a slow
+host fails them although the loop is correct.
+
+* Why
+
+On 2026-11-18 the host ran with an IO pressure of about 45% "full". In that state,
+=ores.marketdata.service.tests= failed one case on each of three runs, and the failing case
+changed between runs:
+
+- =a_small_batch_does_not_pass_the_batches_that_are_in_the_stages= failed twice, at line
+  1304: =wait_until([&] { return tap.count() == sent; })=.
+- =a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits=
+  failed once, at line 1147: the =wait_until= that reads the warm tick back from the store.
+
+The third run had the live =ores.marketdata.service= and =ores.synthetic.service= stopped, so
+those services did not cause the failure. The branch under test did not touch
+=ores.marketdata.service=. A check that fails when the host is loaded teaches people to
+ignore the =ctest= gate.
+
+* Acceptance
+
+- Each staged-batch case waits on an event that the loop or the writer signals, not on a
+  deadline in wall-clock time.
+- The suite passes five runs in a row under =compass check= while another worktree builds.
+
+* References
+
+- =projects/ores.marketdata/service/tests/app_feed_ingest_loop_tests.cpp=
+
+* See also
+
+-

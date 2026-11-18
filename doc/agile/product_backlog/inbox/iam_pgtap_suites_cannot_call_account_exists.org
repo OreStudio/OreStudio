@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: CCCEC773-0198-4190-B004-E4816FC6F343
+:END:
+#+title: Two iam pgTAP suites cannot call the account exists function
+#+description: The shared-visibility and service-actor pgTAP suites stop with permission denied for ores_iam_account_exists_fn, so the pgtap check fails on a branch that does not touch iam.
+#+type: capture
+#+level: cross
+#+filetags: :iam:sql:pgtap:testing:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give the role that the iam pgTAP suites run as permission to execute
+=ores_iam_account_exists_fn=, or change the suites so that they do not call it. Then
+=iam_accounts_shared_visibility_test.sql= and =iam_service_actor_test.sql= run their plans
+to the end.
+
+* Why
+
+On 2026-11-18 the =pgtap= check failed on a branch that changes no iam SQL, after the
+database was recreated from that checkout:
+
+- =iam_accounts_shared_visibility_test.sql=, line 65: =ERROR: permission denied for function
+  ores_iam_account_exists_fn=. The plan was 15 tests and 0 ran.
+- =iam_service_actor_test.sql=, line 74: the same error. The plan was 4 tests and 2 ran.
+
+The other 95 pgTAP files passed. Recent main commits changed the tenant policy suites and the
+junction trigger. One of these commits probably caused the failure, but nobody has confirmed
+this. While the check is red, every branch that runs =pgtap= reports it, and real failures
+are hidden.
+
+* Acceptance
+
+- Both suites run their full plan and pass on a fresh database.
+- =./projects/ores.sql/test/run_tests.sh= reports =Result: PASS=.
+
+* References
+
+- =build/output/local_checks/logs/pgtap.log= in the clever_dijkstra worktree (2026-11-18)
+
+* See also
+
+-

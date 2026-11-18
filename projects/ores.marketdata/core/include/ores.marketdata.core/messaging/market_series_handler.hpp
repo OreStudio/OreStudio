@@ -542,10 +542,16 @@ public:
             resp.projected_count = static_cast<int>(done.projected);
             resp.already_projected_count = static_cast<int>(done.already_projected);
             resp.unreadable_count = static_cast<int>(done.unreadable);
+            // A refusal is the caller's to repair and an unstated family is the
+            // catalogue's, so both are reported rather than logged and dropped.
+            resp.refused_count = static_cast<int>(done.refused);
+            resp.unstated_count = static_cast<int>(done.unstated);
             resp.success = true;
             resp.message = "Projected " + std::to_string(done.projected) + " of " +
                            std::to_string(total) + " series, " + std::to_string(done.unreadable) +
-                           " with an unreadable URI.";
+                           " with an unreadable URI, " + std::to_string(done.refused) +
+                           " refused by their shape and " + std::to_string(done.unstated) +
+                           " in a family no shape states.";
             BOOST_LOG_SEV(market_series_handler_lg(), info) << msg.subject << ": " << resp.message;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_series_handler_lg(), error)

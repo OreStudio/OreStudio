@@ -463,6 +463,85 @@ describe("a run's step", () => {
         expect(html).toContain('there was nothing to import');
     });
 
+    it('keeps a short warning where it stands, with no disclosure', () => {
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'completed_with_warnings',
+                    log: [{ level: 'warn', message: 'There was nothing to import.', context: '' }],
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).toContain('There was nothing to import.');
+        expect(html).not.toContain('<details');
+    });
+
+    it('folds a warning that names more items than the rail can hold', () => {
+        const named = Array.from(
+            { length: 120 },
+            (_, index) => `Acme Corporation Plc: PAIR${index}`,
+        );
+        const message = `120 surface(s) were not published. A rerun is safe: ${named.join('; ')}.`;
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'completed_with_warnings',
+                    log: [{ level: 'warn', message, context: '' }],
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).toContain('<details');
+        expect(html).toContain('120 surface(s) were not published.');
+        expect(html).toContain('<summary');
+        const summary = html.slice(html.indexOf('<summary'), html.indexOf('</summary>'));
+        expect(summary).toContain('120 surface(s) were not published.');
+        expect(summary).not.toContain('PAIR119');
+        expect(html).toContain('PAIR119');
+    });
+
+    it('reads a warning of the fold length where it stands', () => {
+        const message = 'w'.repeat(200);
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'completed_with_warnings',
+                    log: [{ level: 'warn', message, context: '' }],
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).not.toContain('<details');
+        expect(html).toContain(message);
+    });
+
+    it('cuts a folded summary that has no sentence to stop at', () => {
+        const message = 'Acme Corporation Plc: PAIR'.repeat(40);
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'completed_with_warnings',
+                    log: [{ level: 'warn', message, context: '' }],
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).toContain('<summary');
+        const summary = html.slice(html.indexOf('<summary'), html.indexOf('</summary>'));
+        const text = summary.slice(summary.indexOf('>') + 1);
+        expect(text).toContain('…');
+        expect(text.length).toBeLessThanOrEqual(120);
+    });
+
     it('states the step in the words the server sent for it', () => {
         const html = render(<RunStep step={step} words={(sentence) => sentence} />);
 

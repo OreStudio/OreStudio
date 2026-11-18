@@ -635,6 +635,11 @@ private:
 
     /// The most attempts one curve gets when the store makes it wait for a
     /// connection, on the same terms as a surface.
+    ///
+    /// The wait between attempts is the surface's, a fifth of a second and
+    /// rising, because a busy store is the thing being waited on. The ten
+    /// seconds a deferred curve waits are a different thing: they wait for a
+    /// feed to tick, which no second attempt makes sooner.
     static constexpr int curve_attempts = 3;
 
     /**

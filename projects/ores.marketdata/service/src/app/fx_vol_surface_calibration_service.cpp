@@ -72,6 +72,22 @@ auto& calibration_log() {
     return instance;
 }
 
+/// Whether the identifier a request states is the blueprint's own.
+///
+/// The request carries the identifier as text, and two spellings name one
+/// blueprint: an upper-case one, or one written with braces. The comparison is
+/// of what the text names rather than of how it spells it, so a caller that
+/// spells it another way is answered about the blueprint it named.
+bool names_blueprint(const std::string& stated, const boost::uuids::uuid& blueprint_id) {
+    if (stated.empty())
+        return false;
+    try {
+        return boost::uuids::string_generator{}(stated) == blueprint_id;
+    } catch (const std::exception&) {
+        return false;
+    }
+}
+
 surface_calibration_recipe
 read_recipe(const context& ctx, const std::string& blueprint_id, const boost::uuids::uuid& party) {
     const auto blueprints =
@@ -297,15 +313,26 @@ fx_vol_surface_calibration_service::read_party_quotes(const context& ctx, time_p
 mm::calibrate_fx_vol_surface_response
 fx_vol_surface_calibration_service::calibrate(const context& ctx,
                                               const mm::calibrate_fx_vol_surface_request& req) {
-    const auto party = ores::service::messaging::session_party(ctx, "A surface");
-    const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
-    const auto recipe = read_recipe(ctx, req.blueprint_id, party);
-    std::map<boost::uuids::uuid, surface_series_quotes> quotes;
-    for (const auto& source : recipe.sources)
-        if (!quotes.contains(source.market_series_id))
-            quotes.emplace(source.market_series_id,
-                           read_quotes(ctx, source.market_series_id, as_of));
-    return calibrate_from(ctx, recipe, quotes, req);
+    // The gather is this call's and not the fit's, and it fails the same way: a
+    // session without a party or a blueprint the catalogue does not hold is an
+    // answer the caller reads, because the caller is a handler that replies
+    // with what it is given rather than catching what it is thrown.
+    mm::calibrate_fx_vol_surface_response out;
+    try {
+        const auto party = ores::service::messaging::session_party(ctx, "A surface");
+        const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
+        const auto recipe = read_recipe(ctx, req.blueprint_id, party);
+        std::map<boost::uuids::uuid, surface_series_quotes> quotes;
+        for (const auto& source : recipe.sources)
+            if (!quotes.contains(source.market_series_id))
+                quotes.emplace(source.market_series_id,
+                               read_quotes(ctx, source.market_series_id, as_of));
+        return calibrate_from(ctx, recipe, quotes, req);
+    } catch (const std::exception& e) {
+        out.success = false;
+        out.message = e.what();
+    }
+    return out;
 }
 
 mm::calibrate_fx_vol_surface_response fx_vol_surface_calibration_service::calibrate_from(
@@ -319,7 +346,7 @@ mm::calibrate_fx_vol_surface_response fx_vol_surface_calibration_service::calibr
         if (as_of == time_point{})
             throw std::invalid_argument(
                 "Name the as-of instant the calibration reads the market at.");
-        if (req.blueprint_id != boost::uuids::to_string(recipe.blueprint.id))
+        if (!names_blueprint(req.blueprint_id, recipe.blueprint.id))
             throw std::invalid_argument("The recipe is not the blueprint the calibration names.");
         // A published surface never changes: its grid is what the publish authorised.
         for (const auto& published :

@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :marketdata:market_data:identity:sprint_30:build_ir_curves_from_public_data-remaining:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-a-series-and-its-identity-in-one-act
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
-#+updated: 2026-11-15
+#+updated: 2026-11-18
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,24 +26,18 @@ A series write the identity shape refuses stores nothing at all: the projection 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Last touched | 2026-11-18                               |
 
 * Acceptance
 
 - The repository template pastes a block before the generated write, and the market series model states the projection there.
 - A write the shape refuses leaves the series row count unchanged.
 - A write that is not refused stores the series and its identity in that order, and a batch does the same.
-
-* Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
 
 * Plan
 

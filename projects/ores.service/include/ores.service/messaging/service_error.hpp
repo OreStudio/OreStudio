@@ -39,10 +39,8 @@ namespace ores::service::messaging {
  */
 class ORES_SERVICE_EXPORT service_error : public std::runtime_error {
 public:
-    service_error(std::string error_code, std::string_view subject)
-        : std::runtime_error("Request to " + std::string(subject) +
-                             " rejected by server: " + error_code)
-        , error_code_(std::move(error_code)) {}
+    service_error(std::string error_code, std::string_view subject);
+    ~service_error() override;
 
     [[nodiscard]] const std::string& error_code() const noexcept {
         return error_code_;

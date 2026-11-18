@@ -3579,13 +3579,6 @@ TEST_CASE("an_option_on_an_equity_future_and_on_a_bond_future_hold_their_terms_a
     </BondFutureOptionData>
   </Trade>
 </Portfolio>)");
-    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
-                             std::string_view name) -> std::string {
-        for (const auto& p : data.parameters)
-            if (p.name == name)
-                return p.value.value_or("");
-        return "<absent>";
-    };
     const auto check_equity = [&](const ores::ore::xml::trade_import_item& item) {
         const auto* data =
             std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);

@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "config/standard_service_options.cpp"
+    "messaging/service_error.cpp"
     "messaging/step_progress_board.cpp"
     "service/request_context.cpp"
     "service/systemd_notify.cpp"

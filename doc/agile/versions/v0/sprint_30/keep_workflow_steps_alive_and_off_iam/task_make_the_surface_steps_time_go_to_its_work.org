@@ -136,6 +136,14 @@ task and name that file in the Command column.
   read therefore asks a datum whether it holds the field before it asks for its
   value: asking a TWD overnight swap for an expiry is the error the first run
   of this shape reported, =IR_SWAP does not hold expiry=.
+- The lists the catalogue reads pass are large enough to check rather than
+  assume, because the review of #4855 asked whether one =IN= list of every
+  blueprint or pillar could outgrow the store. Measured on this tree
+  (=select count(*) ... where tenant_id = ores_utility_system_tenant_id_fn()=):
+  the system catalogue is 35 blueprints, 2,275 pillars, 2,275 pillar sources,
+  35 curve configs and 245 curve pillars. Those are the id lists a party's
+  steps read by, so the parameter counts are in the low thousands against
+  PostgreSQL's 65,535.
 - The plan a curve or a surface step writes stays a request, and that is a
   decision and not an omission: the configs, their pillars and the blueprints
   are refdata's tables, and the marketdata service's role holds the read

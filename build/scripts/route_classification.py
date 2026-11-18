@@ -888,11 +888,23 @@ RULES = (
          CPP, RESOURCE, "operations",
          "The deployment's system settings, the variability component's own collection."),
 
+    Rule("one request's route",
+         ("exact", "GET /api/requests/{id}"),
+         CPP, RESOURCE, "workflow",
+         "One request at the address and in the shape the BFF answered: what it asks for, what"
+         " was decided about it, where each part it named stands, and the trades it is about with"
+         " the identifier each is known by."),
     Rule("one request",
          ("exact", "GET /api/requests/:id"),
          BFF, RESOURCE, "workflow",
          "One request an identifier names, when the person may open it, which a queue read"
          " cannot answer because a notice is read after the request stopped waiting."),
+    Rule("a request decision's route",
+         ("exact", "POST /api/requests/{id}/decision"),
+         CPP, RESOURCE, "workflow",
+         "One request decided at the address and in the shape the BFF answered: approved,"
+         " refused, held or resumed against the version read, with the part the decider answers"
+         " for and the reason a hold names."),
     Rule("a request decision",
          ("exact", "POST /api/requests/:id/decision"),
          BFF, RESOURCE, "workflow",
@@ -902,6 +914,13 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "Whether auto-approval is on, its scope, and who set it, when and why, read from"
          " the one subject the inbox answers it on."),
+    Rule("the principal's requests route",
+         ("regex", r"^((GET|POST) /api/me/requests|DELETE /api/me/requests/\{id\})$"),
+         CPP, RESOURCE, "workflow",
+         "The signed-in person's own requests at the addresses and in the shapes the BFF"
+         " answered: the page they raised, newest first, each row with the roles it asks for"
+         " and the latest thing said about it; the ask that raises one; and the withdrawal"
+         " that carries the version the person saw."),
     Rule("the principal's requests",
          ("regex", r"^(GET|POST|DELETE) /api/me/requests"),
          BFF, RESOURCE, "workflow",

@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -83,3 +83,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The population rule now refuses any config shorter than its class's code list on
+every path, and both seeded profiles state one trade per code, so no run books a
+prefix of a class and calls it the class. A forward rate agreement draws an Ibor
+index, so both interest rate configs are no longer refused for the index they
+name.
+
+The code counts are held by the rule rather than by a fixture: the test that
+keeps a recipe's counts now states one trade per code, which is what the seeds
+do, and a case states the review's own failure.
+
+What is still owed is the live proof of the whole provision. On a recreated
+database the trade step began writing and then the run aborted at
+=set_staff_passwords= on a NATS timeout, on a host holding both build slots for
+hours; the earlier =free(): invalid pointer= in the iam service was a partial
+rebuild, cleared by a full rebuild. The 16-config run needs a quiet host, and the
+story's proof task recreates one anyway.

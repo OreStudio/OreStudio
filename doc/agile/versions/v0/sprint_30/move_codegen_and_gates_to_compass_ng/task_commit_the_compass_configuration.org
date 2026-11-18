@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/commit-the-compass-configuration
+#+pr: 4837
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -26,11 +26,11 @@ compass reads one committed configuration, so every environment, --ratchet and -
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4837][#4837]] | [compass] Commit the configuration compass-ng reads |
 
 * Review
 
@@ -86,3 +86,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- .compass.org is a meta page under the document contract at the repository
+  root. Every codec compass-ng 0071eb0 knows is on, with the guide's options
+  and year=2026, except document_index, required_sections and rule_table; the
+  four codecs compass dropped have no row.
+- compass-ng config reports no error, and compass-ng check reports the 201
+  baseline findings and the one forward_declarable_includes false positive
+  compass is fixing; the page itself adds no finding.
+- local_checks.py classifies .compass.org as tooling, so a change to it runs
+  the tooling checks rather than every check.
+- The --commit acceptance item no longer applies: compass-ng d2c6595 and later
+  read the working tree's .compass.org when the commit has none.
+

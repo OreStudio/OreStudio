@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 72CFDCCE-09F0-4AE2-9B18-D31BEEEBDAF5
+:END:
+#+title: Compass configuration
+#+description: The configuration compass-ng reads at the root of ORE Studio: which codecs run, and their options.
+#+type: meta
+#+level: cross
+#+filetags: :meta:compass:configuration:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+output: .
+#+meta: doc/meta
+
+compass-ng, the C++ compass, reads this page before every run. The codec
+table names each codec, whether it runs, and its options as =key=value=
+pairs. A codec with no row does not run. The rows follow the integration
+guide in the compass repository; document_index, required_sections and
+rule_table stay off, because ORE Studio has its own index and contract checks.
+
+* Codecs
+
+| name | enabled | options |
+|------+---------+---------|
+| document_index | no | |
+| required_sections | no | |
+| tangle | yes | directory=projects/ores.codegen/library/templates |
+| tangle_check | yes | directory=projects/ores.codegen/library/templates |
+| codegen | yes | library=projects/ores.codegen/library year=2026 convention_component=refdata clang_format=clang-format clang_format_style=.clang-format prettier=projects/ores.web/node_modules/.bin/prettier,prettier prettier_style=.prettierrc.yaml |
+| ore_output_catalogue | yes | clang_format=clang-format |
+| rule_table | no | |
+| component_files | yes | year=2026 |
+| pending_models | yes | |
+| bff_list_requests | yes | |
+| core_link_edges | yes | |
+| event_registrars | yes | |
+| exported_types | yes | |
+| forward_declarable_includes | yes | |
+| handler_registrars | yes | |
+| history_registrars | yes | |
+| portable_stop | yes | |
+| route_auth | yes | |
+| shell_command_composition | yes | |
+| shell_command_units | yes | |
+| shell_menus | yes | |
+| stream_coverage | yes | |
+| test_case_reachability | yes | |
+| translation_unit_budget | yes | |
+| unique_type_names | yes | |
+| unity_collisions | yes | |
+| xml_family_census | yes | |
+| curve_parameter_paths | yes | |
+| handler_permissions | yes | |
+| populate_refs | yes | |
+| rls_widenings | yes | |
+| sql_hygiene | yes | |
+| sql_reachability | yes | |
+| convention_kind_terms | yes | |
+| conventions_coverage | yes | |
+| conventions_dataset | yes | |
+| curve_column_guards | yes | |
+| curve_sections_wiring | yes | |
+| entity_binary_types | yes | |
+| entity_writes | yes | |
+| er_diagram | yes | |
+| generated_column_refs | yes | |
+| http_areas | yes | |
+| marketdata_identity_columns | yes | |
+| model_drift | yes | |
+| money_decimal_columns | yes | |
+| open_reads | yes | |
+| ore_renderings_tables | yes | |
+| ore_value_sets | yes | |
+| parameter_value_sets | yes | |
+| protocol_twins | yes | |
+| registry_exceptions | yes | |
+| route_inventory | yes | |
+| route_units | yes | |
+| script_library_seed | yes | |
+| subject_conformance | yes | |
+| template_sections | yes | |
+| backlog_indexes | yes | |
+| component_docs | yes | |
+| heading_numbers | yes | |
+| http_recipe_library | yes | |
+| lint | yes | |
+| no_pr_triggers | yes | |
+| org_links | yes | |
+| pattern_uses | yes | |
+| physical_inventory | yes | |
+| prototypes | yes | |
+| recipe_inventories | yes | |
+| rule_identifiers | yes | |
+| shell_recipe_library | yes | |
+| shell_recipe_provenance | yes | |
+| skill_catalogue | yes | |
+| skill_levels | yes | |
+| skill_namespace | yes | |
+| skill_type_tables | yes | |
+| structure_notes | yes | |
+| trade_type_coverage | yes | |
+| rls_coverage | yes | |

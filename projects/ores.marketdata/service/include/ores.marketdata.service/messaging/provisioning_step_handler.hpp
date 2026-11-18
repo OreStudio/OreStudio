@@ -41,9 +41,12 @@
 #include "ores.marketdata.core/messaging/party_surface_blueprints.hpp"
 #include "ores.marketdata.core/messaging/party_surface_hold_back.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
+#include "ores.marketdata.service/app/published_curve_reader.hpp"
+#include "ores.marketdata.service/messaging/approval_gated_curve_publish_handler.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -66,7 +69,6 @@
 #include "ores.refdata.core/repository/ir_curve_bootstrap_pillar_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.service/messaging/request_retry.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/member_count.hpp"
@@ -474,49 +476,6 @@ private:
     }
 
 
-    /// The instant a step's requests must stop being tried.
-    ///
-    /// The engine gives a step a budget of standing still, not of wall clock
-    /// time, so this is that budget read from the moment of the call.
-    static std::chrono::steady_clock::time_point deadline_of(const std::string& kind) {
-        return std::chrono::steady_clock::now() +
-               ores::iam::workflow::words_for_step_kind(kind).timeout;
-    }
-
-    /// Records a retry attempt where a person watching the run can read it.
-    static std::function<void(const std::string&)>
-    attempts_recorded_in(std::vector<ores::workflow::messaging::step_log_entry>& step_log,
-                         const ores::service::messaging::workflow_step_context& wf) {
-        return [&step_log, &wf](const std::string& line) {
-            step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
-                                .message = line,
-                                .context = {}});
-            wf.progress(line);
-        };
-    }
-
-    /// The party the step names, by its exact full name, one page at a time.
-    static std::optional<ores::refdata::domain::party>
-    find_party(ores::nats::service::nats_client& client, const std::string& full_name) {
-        std::uint32_t offset = 0;
-        constexpr std::uint32_t page_size = 1000;
-        while (true) {
-            ores::refdata::messaging::list_parties_request request;
-            request.offset = offset;
-            request.limit = page_size;
-            const auto response = ask(client, request);
-            if (response.result.outcome != ores::utility::domain::outcome::ok)
-                throw std::runtime_error("The parties of the tenant were not read: " +
-                                         response.result.message);
-            for (const auto& party : response.parties)
-                if (party.full_name == full_name)
-                    return party;
-            if (response.parties.size() < page_size)
-                return std::nullopt;
-            offset += page_size;
-        }
-    }
-
     /**
      * @brief The curve blueprints the installation keeps, with every series they
      * name.
@@ -557,37 +516,23 @@ private:
         return catalogue;
     }
 
-    /// The series and curve configs one party holds, one page at a time.
+    /// The series and curve configs one party holds, read where the step stands.
     ///
-    /// A page that comes back short is the last: a party with more rows than a
-    /// page holds is read whole, because a holding mistaken for absent would be
-    /// written a second time under new ids.
+    /// The context is the tenant narrowed to the party the step serves, so the
+    /// rows a read returns are that party's own: one statement for each table,
+    /// rather than a request for each page of each of them. A holding mistaken
+    /// for absent would be written a second time under new ids, so the read is
+    /// whole and never a page.
     static ores::marketdata::messaging::party_curve_holdings
-    read_party_curve_holdings(ores::nats::service::nats_client& client,
+    read_party_curve_holdings(const ores::database::context& ctx,
                               const boost::uuids::uuid& party_id) {
-        constexpr std::uint32_t page_size = 1000;
         ores::marketdata::messaging::party_curve_holdings holdings;
         holdings.party_id = party_id;
-        for (std::uint32_t offset = 0;; offset += page_size) {
-            ores::marketdata::messaging::list_market_series_request series;
-            series.offset = offset;
-            series.limit = page_size;
-            const auto page = ask(client, series).market_series;
-            holdings.series.insert(holdings.series.end(), page.begin(), page.end());
-            if (page.size() < page_size)
-                break;
-        }
-        for (std::uint32_t offset = 0;; offset += page_size) {
-            ores::refdata::messaging::list_ir_curve_bootstrap_configs_request configs;
-            configs.offset = offset;
-            configs.limit = page_size;
-            const auto page = ask(client, configs).bootstrap_configs;
-            for (const auto& c : page)
-                if (c.party_id == party_id)
-                    holdings.config_ids.insert(c.id);
-            if (page.size() < page_size)
-                break;
-        }
+        holdings.series = ores::marketdata::repository::market_series_repository{}.read_latest(ctx);
+        for (const auto& c :
+             ores::refdata::repository::ir_curve_bootstrap_config_repository{}.read_latest(ctx))
+            if (c.party_id == party_id)
+                holdings.config_ids.insert(c.id);
         return holdings;
     }
 
@@ -599,6 +544,10 @@ private:
     static constexpr std::size_t max_rows_per_write = 1000;
 
     /// Sends @p changes in batches, @p what naming them in a failure.
+    ///
+    /// A party's plan is one act and may hold more rows than a request does, so
+    /// the rows go in as many requests as the store needs rather than being
+    /// refused for the size of the plan.
     template <typename Request, typename Change>
     static void write_in_batches(ores::nats::service::nats_client& client,
                                  const std::vector<Change>& changes,
@@ -622,6 +571,12 @@ private:
 
     /// Writes the rows a curve plan names, series first, because a config names
     /// its output series and a pillar names its config.
+    ///
+    /// The write is asked of refdata and not made here, though the rows are the
+    /// step's own copy of its blueprints: the configuration and its pillars are
+    /// refdata's tables, and the service that owns a table is the one that
+    /// writes it. This process holds the read privilege on them and no more, so
+    /// a plan written where the step stands would be refused by the store.
     static void write_party_curve_plan(ores::nats::service::nats_client& client,
                                        const ores::marketdata::messaging::party_curve_plan& plan,
                                        const std::string& party_name) {
@@ -677,210 +632,197 @@ private:
             client, pillars, reason, commentary, "curve pillars", party_name);
     }
 
-    /// The bootstrap configs a party already has a current published curve for,
-    /// one page at a time.
-    static std::set<std::string> published_configs_of(ores::nats::service::nats_client& client,
+    /// The bootstrap configs a party already has a current published curve for.
+    ///
+    /// The read is the published curves' own, made where the step stands rather
+    /// than asked of the service: a party's sets cost a statement, not a request.
+    static std::set<std::string> published_configs_of(const ores::database::context& ctx,
                                                       const boost::uuids::uuid& party_id) {
         constexpr std::uint32_t page_size = 1000;
+        const auto party_text = boost::uuids::to_string(party_id);
         std::set<std::string> out;
         for (std::uint32_t offset = 0;; offset += page_size) {
             ores::marketdata::messaging::list_published_curves_request request;
-            request.party_id = boost::uuids::to_string(party_id);
+            request.party_id = party_text;
             request.offset = offset;
             request.limit = page_size;
-            const auto page = ask(client, request).sets;
-            for (const auto& set : page)
+            const auto page = ores::marketdata::service::app::list_published_curves(ctx, request);
+            // A read that failed would make every curve look unpublished, and a
+            // curve published twice is a second act for one set.
+            if (!page.success)
+                throw std::runtime_error("The published curves of party " + party_text +
+                                         " were not read: " + page.message);
+            for (const auto& set : page.sets)
                 out.insert(set.bootstrap_config_id);
-            if (page.size() < page_size)
+            if (page.sets.size() < page_size)
                 break;
         }
         return out;
     }
 
-    /// The set one curve publish is about, once an earlier attempt wrote it.
-    static std::optional<ores::marketdata::messaging::published_curve_set>
-    published_curve_of(ores::nats::service::nats_client& client,
-                       const boost::uuids::uuid& party_id,
-                       const std::string& config_id,
-                       std::chrono::system_clock::time_point as_of,
-                       std::chrono::milliseconds patience) {
-        ores::marketdata::messaging::list_published_curves_request request;
-        request.party_id = boost::uuids::to_string(party_id);
-        request.include_candidates = true;
-        request.limit = 1000;
-        const auto wanted = std::chrono::floor<std::chrono::microseconds>(as_of);
-        for (const auto& set : ask(client, request, patience).sets) {
-            if (set.bootstrap_config_id != config_id)
-                continue;
-            if (std::chrono::floor<std::chrono::microseconds>(set.as_of) != wanted)
-                continue;
-            // A withdrawn or superseded set is not the one this publish is
-            // about: the work it names has since been undone or replaced.
-            if (set.state_code == "withdrawn" || set.state_code == "superseded")
-                continue;
-            return set;
-        }
-        return std::nullopt;
-    }
-
-    /// What one round of curve publishes did, a line for each curve.
-    struct curve_publish_outcome {
-        std::vector<std::string> published;
-        std::vector<std::string> not_published;
+    /// What one curve of a party came to, in the step's own terms.
+    struct curve_outcome {
+        enum class state { published, waiting_approval, not_published } how;
+        /// The curve's name, as the party reads it.
+        std::string name;
+        /// The detail a person reads for the state, when the state has one.
+        std::string detail;
     };
 
+    /// The most attempts one curve gets when the store makes it wait for a
+    /// connection, on the same terms as a surface.
+    static constexpr int curve_attempts = 3;
+
     /**
-     * @brief Previews and publishes each curve, and asks again while its quotes
-     * have not arrived.
+     * @brief Computes and publishes one curve, where the step already is.
      *
-     * A curve whose preview fails is asked again every ten seconds for two
-     * minutes, because its feeds may not have ticked yet. A curve whose request
-     * waits for a person is not asked again, since a second ask would raise a
-     * second request for one act.
+     * The bootstrap and the approved publish are the service's own work, so they
+     * are called rather than asked for: a request to itself would queue behind
+     * the tick ingest and the due-curve sweep, which is what the step spent most
+     * of its time doing.
+     *
+     * A curve whose quotes have not arrived is asked again every ten seconds
+     * until @p give_up, because its feeds may not have ticked yet. A curve whose
+     * request waits for a person is not asked again, since a second ask would
+     * raise a second request for one act.
      */
-    curve_publish_outcome
-    publish_curves(const ores::service::messaging::workflow_step_context& wf,
-                   ores::nats::service::nats_client& client,
-                   const boost::uuids::uuid& party_id,
-                   const std::vector<std::pair<std::string, std::string>>& curves,
-                   std::string_view reason,
-                   std::string_view label,
-                   std::vector<ores::workflow::messaging::step_log_entry>& step_log,
-                   std::chrono::steady_clock::time_point deadline) {
-        constexpr auto curve_quote_patience = std::chrono::minutes{2};
-        constexpr auto curve_retry_interval = std::chrono::seconds{10};
-        constexpr auto work_request_deadline = std::chrono::seconds{120};
+    static curve_outcome compute_and_publish_curve(const ores::database::context& ctx,
+                                                   const std::string& config_id,
+                                                   const std::string& name,
+                                                   std::string_view publish_reason,
+                                                   std::chrono::steady_clock::time_point give_up) {
+        using ores::marketdata::service::app::publish_status_deferred;
+        using ores::marketdata::service::app::publish_status_published;
+        using ores::marketdata::service::app::publish_status_raised;
 
-        std::map<std::string, std::string> pending;
-        std::map<std::string, std::string> names;
-        for (const auto& [id, name] : curves) {
-            pending.emplace(id, "not yet asked");
-            names.emplace(id, name);
-        }
+        constexpr auto retry_interval = std::chrono::seconds{10};
+        const boost::uuids::string_generator parse;
+        const auto config_uuid = parse(config_id);
+        for (;;) {
+            // The as-of moves with each attempt, so quotes a feed writes while
+            // the step waits are inside the snapshot the next attempt reads. The
+            // preview and the publish state the same instant.
+            const auto as_of = std::chrono::system_clock::now();
+            const auto computed = ores::marketdata::service::app::curve_republish_service::compute(
+                ctx, config_uuid, as_of);
+            // A deferral is an input the curve declares that is not there yet,
+            // so waiting is the only thing that puts it right.
+            std::optional<std::string> deferred;
+            std::size_t points = 0;
+            if (!computed)
+                deferred = computed.error().reason;
+            else
+                points = computed->size();
 
-        curve_publish_outcome outcome;
-        const auto started = std::chrono::steady_clock::now();
-        const auto give_up = started + curve_quote_patience;
-        while (!pending.empty()) {
-            for (auto it = pending.begin(); it != pending.end();) {
-                // The as-of moves with each attempt, so quotes a feed writes
-                // while the step waits are inside the snapshot the next attempt
-                // reads. A preview and its publish state the same instant.
-                const auto as_of = std::chrono::system_clock::now();
-                const auto curve_work = std::string(label) + ": " + names.at(it->first);
-                wf.progress(curve_work,
-                            static_cast<std::int64_t>(curves.size() - pending.size()),
-                            static_cast<std::int64_t>(curves.size()));
-
-                ores::marketdata::messaging::compute_curve_request preview;
-                preview.bootstrap_config_id = it->first;
-                preview.as_of = as_of;
-                const auto computed = ores::service::messaging::call_with_retry(
-                    [&](const ores::service::messaging::retry_attempt& attempt)
-                        -> ores::marketdata::messaging::compute_curve_response {
-                        const auto patience =
-                            std::max(attempt.budget_left, std::chrono::milliseconds{1});
-                        return ask(client,
-                                   preview,
-                                   std::min(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                                work_request_deadline),
-                                            patience));
-                    },
-                    {.deadline = deadline,
-                     .what = curve_work + " curve bootstrap",
-                     .note = attempts_recorded_in(step_log, wf)});
-                if (!computed.success) {
-                    it->second = computed.message;
-                    ++it;
-                    continue;
-                }
-
+            if (!deferred) {
                 ores::marketdata::messaging::publish_curve_request publish;
-                publish.bootstrap_config_id = it->first;
+                publish.bootstrap_config_id = config_id;
                 publish.as_of = as_of;
-                publish.reason = std::string(reason);
-                const auto published = ores::service::messaging::call_with_retry(
-                    [&](const ores::service::messaging::retry_attempt& attempt)
-                        -> ores::marketdata::messaging::publish_curve_response {
-                        return ores::service::messaging::do_unless_already_done(
-                            attempt,
-                            [&]() -> std::optional<
-                                      ores::marketdata::messaging::publish_curve_response> {
-                                const auto found = published_curve_of(
-                                    client, party_id, it->first, as_of, attempt.budget_left);
-                                if (!found)
-                                    return std::nullopt;
-                                return ores::marketdata::messaging::publish_curve_response{
-                                    .success = true,
-                                    .message = "Published by an earlier attempt.",
-                                    .approval_request_id = found->request_id,
-                                    .state_code = found->state_code,
-                                    .published_at = found->published_at,
-                                    .published_by = found->published_by};
-                            },
-                            [&] {
-                                const auto patience =
-                                    std::max(attempt.budget_left, std::chrono::milliseconds{1});
-                                return ask(
-                                    client,
-                                    publish,
-                                    std::min(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                                 work_request_deadline),
-                                             patience));
-                            });
-                    },
-                    {.deadline = deadline,
-                     .what = curve_work + " curve publish",
-                     .note = attempts_recorded_in(step_log, wf)});
-                if (published.success && published.published_at) {
-                    BOOST_LOG_SEV(lg(), ores::logging::info)
-                        << label << ": published " << names.at(it->first) << " at "
-                        << ores::platform::time::datetime::to_iso8601_utc(*published.published_at)
-                        << " by " << published.published_by << ", " << computed.points.size()
-                        << " point(s)";
-                    outcome.published.push_back(
-                        names.at(it->first) + " as of " +
-                        ores::platform::time::datetime::to_iso8601_utc(as_of));
-                } else if (published.success) {
-                    BOOST_LOG_SEV(lg(), ores::logging::warn)
-                        << label << ": " << names.at(it->first) << " waits for approval: request "
-                        << published.approval_request_id << " is " << published.state_code;
-                    outcome.not_published.push_back(
-                        names.at(it->first) + ": the request " + published.approval_request_id +
-                        " is " + published.state_code + " and no person has answered it");
-                } else {
-                    // The preview passed and the publish did not, which no wait
-                    // puts right: the reason is reported and the curve is done.
-                    BOOST_LOG_SEV(lg(), ores::logging::warn)
-                        << label << ": did not publish " << names.at(it->first) << ": "
-                        << published.message;
-                    outcome.not_published.push_back(names.at(it->first) + ": " + published.message);
-                }
-                it = pending.erase(it);
+                publish.reason = std::string(publish_reason);
+                ores::marketdata::messaging::publish_curve_response answer;
+                // The same path a person's publish and the sweep take, so the
+                // gate and the record cannot answer one act two ways.
+                ores::marketdata::messaging::approval_gated_curve_publish_handler::answer(
+                    ctx, publish, answer);
+                if (answer.status == publish_status_published)
+                    return {.how = curve_outcome::state::published,
+                            .name = name,
+                            .detail = "as of " +
+                                      ores::platform::time::datetime::to_iso8601_utc(as_of) + ", " +
+                                      std::to_string(points) + " point(s)"};
+                if (answer.status == publish_status_deferred)
+                    deferred = answer.message;
+                else if (answer.status == publish_status_raised)
+                    return {.how = curve_outcome::state::waiting_approval,
+                            .name = name,
+                            .detail = "the request " + answer.approval_request_id + " is " +
+                                      answer.state_code + " and no person has answered it"};
+                else
+                    return {.how = curve_outcome::state::not_published,
+                            .name = name,
+                            .detail = answer.message};
             }
-            if (pending.empty() || std::chrono::steady_clock::now() >= give_up)
-                break;
-            const auto waited = std::chrono::duration_cast<std::chrono::seconds>(
-                                    std::chrono::steady_clock::now() - started)
-                                    .count();
-            const auto waiting = std::to_string(pending.size()) + " curve(s) have no quotes yet (" +
-                                 std::to_string(waited) + "s of " +
-                                 std::to_string(curve_quote_patience.count() * 60) +
-                                 "s), asking again in " +
-                                 std::to_string(curve_retry_interval.count()) + "s";
-            BOOST_LOG_SEV(lg(), ores::logging::info) << label << ": " << waiting;
-            step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
-                                .message = waiting,
-                                .context = {}});
-            std::this_thread::sleep_for(curve_retry_interval);
-        }
 
-        for (const auto& [id, last_reason] : pending) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
-                << label << ": did not publish " << names.at(id) << ": " << last_reason;
-            outcome.not_published.push_back(names.at(id) + ": " + last_reason);
+            if (std::chrono::steady_clock::now() + retry_interval >= give_up)
+                return {.how = curve_outcome::state::not_published,
+                        .name = name,
+                        .detail = "Deferred. " + *deferred};
+            std::this_thread::sleep_for(retry_interval);
         }
-        return outcome;
+    }
+
+    /// The same, offered twice more when the store made it wait.
+    static curve_outcome
+    compute_and_publish_curve_with_retry(const ores::database::context& ctx,
+                                         const std::string& config_id,
+                                         const std::string& name,
+                                         std::string_view publish_reason,
+                                         std::chrono::steady_clock::time_point give_up) {
+        for (int attempt = 1;; ++attempt) {
+            try {
+                return compute_and_publish_curve(ctx, config_id, name, publish_reason, give_up);
+            } catch (const ores::database::pq::store_error& e) {
+                if (!e.retryable() || attempt >= curve_attempts)
+                    throw;
+                std::this_thread::sleep_for(std::chrono::milliseconds{200 * attempt});
+            }
+        }
+    }
+
+    /**
+     * @brief Computes and publishes a party's curves, several at a time.
+     *
+     * A curve is the party's own work and no curve reads another's output, so
+     * the party's curves run in parallel lanes: the party costs the slowest lane
+     * and not the sum of them. Each lane reports the progress the engine reads as
+     * the step's heartbeat. A lane that throws is one curve that did not publish,
+     * named with its reason, so one bad curve cannot take the party's other
+     * curves with it.
+     */
+    std::vector<curve_outcome>
+    run_party_curves(ores::service::messaging::workflow_step_context& wf,
+                     const ores::database::context& ctx,
+                     const std::vector<ores::marketdata::messaging::party_curve>& curves,
+                     std::string_view publish_reason,
+                     const std::string& party_name,
+                     std::chrono::seconds patience) const {
+        constexpr std::size_t lanes = 4;
+        const auto lane_count = std::min(lanes, curves.size());
+        const auto total = static_cast<std::int64_t>(curves.size());
+        std::vector<curve_outcome> outcomes(curves.size());
+        std::atomic<std::size_t> next{0};
+        std::atomic<std::int64_t> done{0};
+
+        const auto lane = [&] {
+            for (;;) {
+                const auto i = next.fetch_add(1);
+                if (i >= curves.size())
+                    return;
+                const auto config_id = boost::uuids::to_string(curves[i].config_id);
+                try {
+                    outcomes[i] = compute_and_publish_curve_with_retry(
+                        ctx,
+                        config_id,
+                        curves[i].name,
+                        publish_reason,
+                        std::chrono::steady_clock::now() + patience);
+                } catch (const std::exception& e) {
+                    outcomes[i] = {.how = curve_outcome::state::not_published,
+                                   .name = curves[i].name,
+                                   .detail = e.what()};
+                }
+                const auto finished = done.fetch_add(1) + 1;
+                wf.progress(party_name + ": " + curves[i].name, finished, total);
+            }
+        };
+
+        std::vector<std::thread> workers;
+        workers.reserve(lane_count);
+        for (std::size_t l = 0; l < lane_count; ++l)
+            workers.emplace_back(lane);
+        for (auto& worker : workers)
+            worker.join();
+        return outcomes;
     }
 
     /**
@@ -894,13 +836,23 @@ private:
      * reach its series, then publishes each curve the party has not published
      * yet. Under the tenant's auto-approval the publish closes at once.
      *
+     * The step does the work itself rather than asking its own service for it:
+     * the holds, the plan and the publish act on the context it already holds,
+     * and the party's curves run in lanes beside each other. A request to itself
+     * would queue behind the tick ingest and the due-curve sweep, which is what
+     * the step spent most of its time doing.
+     *
      * A curve that does not publish fails the step, named with its party. A
      * second run writes no row twice and publishes only the curves that are
      * still missing.
      */
     void publish_party_curves(ores::service::messaging::workflow_step_context& wf,
                               const ores::iam::workflow::provision_tenant_step_command& command) {
+        // A curve is given the quotes it waits for, and then the quotes it has
+        // published from: the two waits are separate because the second is the
+        // curve's own.
         constexpr auto quote_patience = std::chrono::minutes{3};
+        constexpr auto curve_quote_patience = std::chrono::minutes{2};
         constexpr auto retry_interval = std::chrono::seconds{10};
         constexpr std::string_view publish_reason =
             "Provisioning bootstraps the party's own funding curve from the quotes its "
@@ -909,10 +861,13 @@ private:
         const auto parties =
             ores::iam::workflow::parse_party_curves_arguments(command.arguments_json);
 
-        ores::nats::service::nats_client tenant_nats(
-            nats_,
-            ores::iam::client::make_tenant_session_provider(
-                nats_, service_token_, command.tenant_id));
+        // The step acts in the tenant as its own service account, and then in
+        // each party it names.
+        const auto tenant_ctx =
+            ores::database::service::tenant_context::with_tenant(ctx_, command.tenant_id);
+        const auto service_ctx =
+            tenant_ctx.with_tenant(tenant_ctx.tenant_id(), ctx_.service_account());
+
         const auto catalogue = read_curve_catalogue();
         if (catalogue.configs.empty()) {
             wf.fail("The system tenant holds no curve blueprint to copy.");
@@ -923,12 +878,12 @@ private:
         result.kind = command.kind;
         std::vector<ores::workflow::messaging::step_log_entry> step_log;
         for (const auto& party_name : parties) {
-            const auto party = find_party(tenant_nats, party_name);
+            const auto party = read_party_named(service_ctx, party_name);
             if (!party)
                 throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
 
-            // A curve is the party's own work, so it is read and written in a
-            // session scoped to that party.
+            // A curve is the party's own work, so it is read, written and
+            // published in a context scoped to that party.
             const auto party_text = boost::uuids::to_string(party->id);
             ores::nats::service::nats_client party_nats(
                 nats_,
@@ -937,10 +892,11 @@ private:
                                                                 command.tenant_id,
                                                                 std::chrono::seconds{60},
                                                                 party_text));
+            const auto party_ctx = context_for_party(service_ctx, party->id);
 
             const auto started = std::chrono::steady_clock::now();
             auto plan = ores::marketdata::messaging::plan_party_curves(
-                catalogue, read_party_curve_holdings(party_nats, party->id));
+                catalogue, read_party_curve_holdings(party_ctx, party->id));
             while (!plan.waiting.empty() &&
                    std::chrono::steady_clock::now() < started + quote_patience) {
                 const auto line = party_name + ": " + std::to_string(plan.waiting.size()) +
@@ -957,36 +913,41 @@ private:
                                     .context = {}});
                 std::this_thread::sleep_for(retry_interval);
                 plan = ores::marketdata::messaging::plan_party_curves(
-                    catalogue, read_party_curve_holdings(party_nats, party->id));
+                    catalogue, read_party_curve_holdings(party_ctx, party->id));
             }
             write_party_curve_plan(party_nats, plan, party_name);
             for (const auto& waiting : plan.waiting)
                 result.curves_not_published.push_back(party_name + ": " + waiting);
 
-            const auto published = published_configs_of(party_nats, party->id);
-            std::vector<std::pair<std::string, std::string>> curves;
-            for (const auto& curve : plan.ready) {
-                const auto id = boost::uuids::to_string(curve.config_id);
-                if (!published.contains(id))
-                    curves.emplace_back(id, curve.name);
+            // A curve an earlier run published is read once for the party, so a
+            // rerun raises no second request for a set that is already there.
+            const auto published = published_configs_of(party_ctx, party->id);
+            std::vector<ores::marketdata::messaging::party_curve> curves;
+            for (const auto& curve : plan.ready)
+                if (!published.contains(boost::uuids::to_string(curve.config_id)))
+                    curves.push_back(curve);
+
+            const auto already_published = plan.ready.size() - curves.size();
+            const auto outcomes = run_party_curves(
+                wf, party_ctx, curves, publish_reason, party_name, curve_quote_patience);
+            std::size_t published_now = 0;
+            for (const auto& outcome : outcomes) {
+                const auto line = party_name + ": " + outcome.name;
+                switch (outcome.how) {
+                    case curve_outcome::state::published:
+                        ++published_now;
+                        result.curves.push_back(line + ": " + outcome.detail);
+                        break;
+                    case curve_outcome::state::waiting_approval:
+                    case curve_outcome::state::not_published:
+                        result.curves_not_published.push_back(line + ": " + outcome.detail);
+                        break;
+                }
             }
-            auto outcome = publish_curves(wf,
-                                          party_nats,
-                                          party->id,
-                                          curves,
-                                          publish_reason,
-                                          "publish_party_curves " + party_name,
-                                          step_log,
-                                          deadline_of(command.kind));
             BOOST_LOG_SEV(lg(), ores::logging::info)
-                << "publish_party_curves: " << party_name << ": published "
-                << outcome.published.size() << ", already published "
-                << plan.ready.size() - curves.size() << ", not published "
-                << outcome.not_published.size() + plan.waiting.size();
-            for (auto& line : outcome.published)
-                result.curves.push_back(party_name + ": " + line);
-            for (auto& line : outcome.not_published)
-                result.curves_not_published.push_back(party_name + ": " + line);
+                << "publish_party_curves: " << party_name << ": published " << published_now
+                << ", already published " << already_published << ", not published "
+                << outcomes.size() - published_now + plan.waiting.size();
             result.parties.push_back(party_text);
         }
 
@@ -1272,39 +1233,28 @@ private:
         return catalogue;
     }
 
-    /// The series and surface blueprints one party holds, one page at a time.
+    /// The series and surface blueprints one party holds, read where the step
+    /// stands, on the same terms as the curve holdings.
     static ores::marketdata::messaging::party_surface_holdings
-    read_party_surface_holdings(ores::nats::service::nats_client& client,
+    read_party_surface_holdings(const ores::database::context& ctx,
                                 const boost::uuids::uuid& party_id) {
-        constexpr std::uint32_t page_size = 1000;
         ores::marketdata::messaging::party_surface_holdings holdings;
         holdings.party_id = party_id;
-        for (std::uint32_t offset = 0;; offset += page_size) {
-            ores::marketdata::messaging::list_market_series_request series;
-            series.offset = offset;
-            series.limit = page_size;
-            const auto page = ask(client, series).market_series;
-            holdings.series.insert(holdings.series.end(), page.begin(), page.end());
-            if (page.size() < page_size)
-                break;
-        }
-        for (std::uint32_t offset = 0;; offset += page_size) {
-            ores::refdata::messaging::list_fx_vol_surface_blueprints_request blueprints;
-            blueprints.offset = offset;
-            blueprints.limit = page_size;
-            const auto page = ask(client, blueprints).blueprints;
-            for (const auto& b : page)
-                if (b.party_id == party_id)
-                    holdings.blueprint_ids.insert(b.id);
-            if (page.size() < page_size)
-                break;
-        }
+        holdings.series = ores::marketdata::repository::market_series_repository{}.read_latest(ctx);
+        for (const auto& b :
+             ores::refdata::repository::fx_vol_surface_blueprint_repository{}.read_latest(ctx))
+            if (b.party_id == party_id)
+                holdings.blueprint_ids.insert(b.id);
         return holdings;
     }
 
     /// Writes the rows a surface plan names: the output series, then the
     /// blueprints, their pillars and the pillars' sources, each of which names
     /// the row before it.
+    ///
+    /// The write is asked of refdata and not made here, on the same terms as the
+    /// curve plan: the blueprints, their pillars and their sources are refdata's
+    /// tables, and this process holds the read privilege on them and no more.
     static void
     write_party_surface_plan(ores::nats::service::nats_client& client,
                              const ores::marketdata::messaging::party_surface_plan& plan,
@@ -1389,10 +1339,13 @@ private:
         const auto parties =
             ores::iam::workflow::parse_party_curves_arguments(command.arguments_json);
 
-        ores::nats::service::nats_client tenant_nats(
-            nats_,
-            ores::iam::client::make_tenant_session_provider(
-                nats_, service_token_, command.tenant_id));
+        // The step acts in the tenant as its own service account, and then in
+        // each party it names.
+        const auto tenant_ctx =
+            ores::database::service::tenant_context::with_tenant(ctx_, command.tenant_id);
+        const auto service_ctx =
+            tenant_ctx.with_tenant(tenant_ctx.tenant_id(), ctx_.service_account());
+
         const auto catalogue = read_surface_catalogue();
         if (catalogue.blueprints.empty()) {
             wf.fail("The system tenant holds no surface blueprint to copy.");
@@ -1404,7 +1357,7 @@ private:
         std::vector<ores::workflow::messaging::step_log_entry> step_log;
         std::vector<std::string> waiting;
         for (const auto& party_name : parties) {
-            const auto party = find_party(tenant_nats, party_name);
+            const auto party = read_party_named(service_ctx, party_name);
             if (!party)
                 throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
 
@@ -1416,10 +1369,11 @@ private:
                                                                 command.tenant_id,
                                                                 std::chrono::seconds{60},
                                                                 party_text));
+            const auto party_ctx = context_for_party(service_ctx, party->id);
 
             const auto started = std::chrono::steady_clock::now();
             auto plan = ores::marketdata::messaging::plan_party_surfaces(
-                catalogue, read_party_surface_holdings(party_nats, party->id));
+                catalogue, read_party_surface_holdings(party_ctx, party->id));
             while (!plan.waiting.empty() &&
                    std::chrono::steady_clock::now() < started + quote_patience) {
                 const auto line = party_name + ": " + std::to_string(plan.waiting.size()) +
@@ -1435,7 +1389,7 @@ private:
                                     .context = {}});
                 std::this_thread::sleep_for(retry_interval);
                 plan = ores::marketdata::messaging::plan_party_surfaces(
-                    catalogue, read_party_surface_holdings(party_nats, party->id));
+                    catalogue, read_party_surface_holdings(party_ctx, party->id));
             }
             write_party_surface_plan(party_nats, plan, party_name);
             BOOST_LOG_SEV(lg(), ores::logging::info)

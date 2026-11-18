@@ -23,4 +23,5 @@ set(files
     "main.cpp"
     "notification_routes_tests.cpp"
     "request_routes_tests.cpp"
+    "retry_routes_tests.cpp"
 )

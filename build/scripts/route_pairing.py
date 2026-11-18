@@ -378,6 +378,9 @@ PAIRS = {
         "/api/me/notifications/unread-count"),
     ("POST", "/api/me/notifications/read"): ("POST", "/api/me/notifications/read"),
     ("POST", "/api/me/notifications/clear"): ("POST", "/api/me/notifications/clear"),
+    ("POST", "/api/workflow/:instanceId/retry"): (
+        "POST",
+        "/api/workflow/{instanceId}/retry"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

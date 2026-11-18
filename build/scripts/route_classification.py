@@ -467,6 +467,12 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "A command on one run: retrying a run that stopped asks the engine to start it"
          " again, and answers the run rather than a collection the client reads."),
+    Rule("the run's retry route",
+         ("exact", "POST /api/workflow/{instanceId}/retry"),
+         CPP, RESOURCE, "workflow",
+         "One run resumed at the address and in the shape the BFF answered: the step the page"
+         " chose, or the step the run stopped at, and the engine's own answer saying which step"
+         " it re-dispatched or why it refused."),
     Rule("the tenor catalogue",
          ("exact", "GET /api/tenors/catalogue"),
          BFF, COMPOSED, "reference-data",

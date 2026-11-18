@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/check-each-edit-with-the-compass-hook
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ An agent sees the findings an edit causes within a second of the edit, without r
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -86,3 +86,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- claude_code_settings.org adds a PostToolUse hook on Edit, Write and
+  MultiEdit that runs compass-ng hook, behind a guard that exits 0 on a machine
+  without compass-ng; the settings tangle to it.
+- The wait on the baselines is gone: compass-ng d2c6595 and later report only
+  findings the last check did not record. On main, an edit to
+  publish_service.cpp, which carries a recorded entity-writer finding, adds
+  context and does not block (0.61 s); an edit that plants a duplicate index
+  in refdata_currencies_create.sql blocks with the two findings it caused,
+  sql_hygiene/duplicate_index and codegen/drift (1.17 s), with the machine
+  otherwise idle.
+- The settings section tells the reader to run ./compass.sh check after a pull
+  or a rebase, because the hook trusts the last check's record.
+

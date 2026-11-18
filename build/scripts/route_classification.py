@@ -888,6 +888,12 @@ RULES = (
          CPP, RESOURCE, "operations",
          "The deployment's system settings, the variability component's own collection."),
 
+    Rule("one request's route",
+         ("exact", "GET /api/requests/{id}"),
+         CPP, RESOURCE, "workflow",
+         "One request at the address and in the shape the BFF answered: what it asks for, what"
+         " was decided about it, where each part it named stands, and the trades it is about with"
+         " the identifier each is known by."),
     Rule("one request",
          ("exact", "GET /api/requests/:id"),
          BFF, RESOURCE, "workflow",

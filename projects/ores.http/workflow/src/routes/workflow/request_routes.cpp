@@ -28,6 +28,8 @@
 #include "ores.inbox.api/messaging/approval_decision_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_request_protocol.hpp"
+#include "ores.trading.api/messaging/trade_authorisation_request_protocol.hpp"
+#include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -52,6 +54,7 @@ namespace inbox_domain = ores::inbox::domain;
 namespace inbox_messaging = ores::inbox::messaging;
 namespace iam_domain = ores::iam::domain;
 namespace iam_messaging = ores::iam::messaging;
+namespace trading_messaging = ores::trading::messaging;
 
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
@@ -317,12 +320,100 @@ std::string decision_json(const inbox_domain::approval_decision& decision,
            ",\"comment\":" + json::write(decision.comment) + "}";
 }
 
+/// Where each part of one request stands, or none when it names no parts.
+std::vector<inbox_messaging::approval_part_progress>
+parts_of(const http_request& req, nats_client& session, const std::string& request_id) {
+    try {
+        inbox_messaging::get_approval_parts_request msg;
+        msg.request_id = request_id;
+        const auto reply = forwarding::forward(req, session, msg);
+        if (reply.result.outcome != ores::utility::domain::outcome::ok)
+            return {};
+        return reply.parts;
+    } catch (const std::exception&) {
+        return {};
+    }
+}
+
+/// One thing a request is about, as a screen links it.
+struct subject final {
+    std::string trade_id;
+    int trade_version = 0;
+    std::string label;
+};
+
+/// The label of one trade: its first identifier, or the identifier itself.
+std::string label_of(const http_request& req, nats_client& session, const std::string& trade_id) {
+    if (!rr::is_uuid(trade_id))
+        return trade_id;
+    try {
+        trading_messaging::list_trade_identifiers_request msg;
+        msg.limit = join_page;
+        msg.filter.emplace();
+        msg.filter->trade_id_one_of = std::vector{boost::uuids::string_generator()(trade_id)};
+        const auto reply = forwarding::forward(req, session, msg);
+        rr::require_ok(reply.result);
+        for (const auto& identifier : reply.identifiers)
+            if (!identifier.id_value.empty())
+                return identifier.id_value;
+    } catch (const std::exception&) {
+        // The identifier is still a link, so a refused read costs only the label.
+    }
+    return trade_id;
+}
+
+/// The trades a request is about, by the link the trading component keeps.
+std::vector<subject>
+subjects_of(const http_request& req, nats_client& session, const std::string& request_id) {
+    if (!rr::is_uuid(request_id))
+        return {};
+    std::vector<subject> subjects;
+    try {
+        trading_messaging::list_trade_authorisation_requests_request msg;
+        msg.limit = join_page;
+        msg.filter.emplace();
+        msg.filter->request_id_one_of = std::vector{boost::uuids::string_generator()(request_id)};
+        const auto reply = forwarding::forward(req, session, msg);
+        rr::require_ok(reply.result);
+        for (const auto& link : reply.trade_authorisation_requests) {
+            if (subjects.size() == 10)
+                break;
+            const auto trade_id = rr::as_text(link.trade_id);
+            subjects.push_back({trade_id, link.trade_version, label_of(req, session, trade_id)});
+        }
+    } catch (const std::exception&) {
+        return subjects;
+    }
+    return subjects;
+}
+
+/// Where one part of a request stands, as the screen draws it.
+std::string part_json(const inbox_messaging::approval_part_progress& part,
+                      const std::map<std::string, std::string>& usernames) {
+    const auto named = usernames.find(part.decided_by);
+    return "{\"code\":" + json::write(part.code) + ",\"name\":" + json::write(part.name) +
+           ",\"answerOrder\":" + json::write(part.answer_order) +
+           ",\"stateCode\":" + json::write(part.state) + ",\"decidedBy\":" +
+           json::write(named == usernames.end() ? part.decided_by : named->second) +
+           ",\"decidedAt\":" + json::write(part.decided_at) +
+           ",\"comment\":" + json::write(part.comment) + "}";
+}
+
+/// One thing a request is about, as the screen links it.
+std::string subject_json(const subject& link) {
+    return "{\"tradeId\":" + json::write(link.trade_id) +
+           ",\"tradeVersion\":" + json::write(link.trade_version) +
+           ",\"label\":" + json::write(link.label) + "}";
+}
+
 /// One request as the screen reads it.
 std::string request_json(const inbox_domain::approval_request& request,
                          const std::vector<iam_messaging::requested_role>& roles,
                          const std::map<std::string, std::string>& requesters,
                          const std::map<std::string, std::string>& usernames,
-                         const std::map<std::string, inbox_domain::approval_decision>& decisions) {
+                         const std::map<std::string, inbox_domain::approval_decision>& decisions,
+                         const std::string& parts,
+                         const std::string& subjects) {
     const auto id = rr::as_text(request.id);
     const auto raised_by = rr::as_text(request.requested_by);
     const auto account = requesters.find(id);
@@ -347,7 +438,7 @@ std::string request_json(const inbox_domain::approval_request& request,
            ",\"reason\":" + json::write(request.reason) +
            ",\"expiresAt\":" + json::write(request.expires_at) +
            ",\"roles\":" + rr::array_of(written) + ",\"decision\":" + decision +
-           ",\"parts\":[],\"subjects\":[]}";
+           ",\"parts\":" + parts + ",\"subjects\":" + subjects + "}";
 }
 
 }
@@ -406,9 +497,63 @@ void request_routes::register_routes(
                                          roles_of(req, session, rr::as_text(request.id)),
                                          requesters,
                                          usernames,
-                                         decisions));
+                                         decisions,
+                                         "[]",
+                                         "[]"));
                     return http_response::json("{\"items\":" + rr::array_of(written) +
                                                ",\"total\":" + std::to_string(reply.total) + "}");
+                });
+            }));
+
+    add(router->get("/api/requests/{id}")
+            .summary("One request, with what it asks for, what was decided and what it is about")
+            .description("A notice carries the request it is about, and is read after the request "
+                         "stopped waiting, so this read does not depend on a queue. A request the "
+                         "caller may not open answers as one that does not exist.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<inbox_messaging::get_approval_request>([&] {
+                    rr::refuse_unknown_params(req, {});
+                    const auto id = request_id_of(req);
+                    inbox_messaging::get_approval_request msg;
+                    msg.request_id = id;
+                    const auto reply = forwarding::forward(req, session, msg);
+                    if (reply.result.outcome == ores::utility::domain::outcome::missing ||
+                        !reply.request)
+                        rr::refuse(http_status::not_found, "not-found", "No such request.");
+                    rr::require_ok(reply.result);
+
+                    const auto request = *reply.request;
+                    const std::vector<boost::uuids::uuid> ids{request.id};
+                    const auto requesters = requesters_of(req, session, ids);
+                    const auto decisions = decisions_of(req, session, ids);
+                    const auto parts = parts_of(req, session, id);
+
+                    std::set<std::string> accounts{rr::as_text(request.requested_by)};
+                    for (const auto& [request_id, decision] : decisions)
+                        accounts.insert(rr::as_text(decision.decided_by));
+                    for (const auto& part : parts)
+                        if (!part.decided_by.empty())
+                            accounts.insert(part.decided_by);
+                    const auto usernames = usernames_of(req, session, accounts);
+
+                    std::vector<std::string> written_parts;
+                    written_parts.reserve(parts.size());
+                    for (const auto& part : parts)
+                        written_parts.push_back(part_json(part, usernames));
+
+                    const auto links = subjects_of(req, session, id);
+                    std::vector<std::string> written_subjects;
+                    written_subjects.reserve(links.size());
+                    for (const auto& link : links)
+                        written_subjects.push_back(subject_json(link));
+
+                    return http_response::json(request_json(request,
+                                                            roles_of(req, session, id),
+                                                            requesters,
+                                                            usernames,
+                                                            decisions,
+                                                            rr::array_of(written_parts),
+                                                            rr::array_of(written_subjects)));
                 });
             }));
 

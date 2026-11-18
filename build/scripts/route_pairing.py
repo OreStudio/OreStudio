@@ -371,6 +371,7 @@ PAIRS = {
     ("POST", "/api/me/requests"): ("POST", "/api/me/requests"),
     ("DELETE", "/api/me/requests/:id"): ("DELETE", "/api/me/requests/{id}"),
     ("POST", "/api/requests/:id/decision"): ("POST", "/api/requests/{id}/decision"),
+    ("GET", "/api/requests/:id"): ("GET", "/api/requests/{id}"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

@@ -38,6 +38,7 @@ namespace {
 const std::string mine_pattern = "/api/me/requests";
 const std::string one_pattern = "/api/me/requests/{id}";
 const std::string decision_pattern = "/api/requests/{id}/decision";
+const std::string detail_pattern = "/api/requests/{id}";
 
 const std::string a_request_id = "11111111-1111-1111-1111-111111111111";
 const std::string a_role_id = "22222222-2222-2222-2222-222222222222";
@@ -223,4 +224,35 @@ TEST_CASE("a_decision_is_named_by_the_requests_identifier", "[workflow_requests]
         http_method::post, "/api/requests/not-an-id/decision", req, decision_pattern);
     CHECK(refused.status == http_status::bad_request);
     CHECK(body_holds(refused.body, id_refused));
+}
+
+TEST_CASE("one_request_is_named_by_its_identifier", "[workflow_requests]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the identifier one request names";
+
+    const auto refused = answer_at<workflow_routes>(
+        http_method::get, "/api/requests/not-an-id", http_request{}, detail_pattern);
+    CHECK(refused.status == http_status::bad_request);
+    CHECK(body_holds(refused.body, id_refused));
+}
+
+TEST_CASE("one_request_answers_the_service_is_absent", "[workflow_requests]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing one request with no service behind it";
+
+    CHECK(answer_at<workflow_routes>(
+              http_method::get, "/api/requests/" + a_request_id, http_request{}, detail_pattern)
+              .status == http_status::bad_gateway);
+}
+
+TEST_CASE("one_request_refuses_a_parameter_it_does_not_take", "[workflow_requests]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a parameter one request does not name";
+
+    http_request req;
+    req.query_params["asOf"] = "2026-01-01";
+    const auto refused = answer_at<workflow_routes>(
+        http_method::get, "/api/requests/" + a_request_id, req, detail_pattern);
+    CHECK(refused.status == http_status::bad_request);
+    CHECK(body_holds(refused.body, "asOf"));
 }

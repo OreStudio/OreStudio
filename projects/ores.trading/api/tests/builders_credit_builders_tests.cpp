@@ -356,3 +356,23 @@ TEST_CASE("a_single_name_option_that_expires_after_the_swap_starts_fails", credi
     REQUIRE_FALSE(option.has_value());
     CHECK(option.error().term == "expiry");
 }
+
+TEST_CASE("a_cbo_is_its_investment_fact", credit_tags) {
+    const auto built = cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                    .notional = *decimal::from_string("1802750.20"),
+                                    .structure_id = std::string("Pegasus")})
+                           .build();
+    REQUIRE(built.has_value());
+    CHECK(built->instrument.identity.trade_type_code == "CBO");
+    REQUIRE(built->cbo_instruments.size() == 1);
+    CHECK(built->cbo_instruments[0].tranche_name == "JuniorNote");
+    CHECK(built->cbo_instruments[0].notional == *decimal::from_string("1802750.20"));
+    CHECK(built->cbo_instruments[0].structure_id == "Pegasus");
+
+    const auto unnamed = cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                      .notional = *decimal::from_string("1"),
+                                      .structure_id = std::string()})
+                             .build();
+    REQUIRE_FALSE(unnamed.has_value());
+    CHECK(unnamed.error().term == "structure_id");
+}

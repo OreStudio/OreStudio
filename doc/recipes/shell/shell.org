@@ -2181,6 +2181,10 @@ tangled into the runnable script library
 
 - [[id:1DE55EAC-4CAF-5317-A3DD-74BF926C8D93][How do I run the cash_position_instruments commands from the shell?]]
 
+* Cbo Instruments
+
+- [[id:6CEF2BC7-BFC1-5452-9212-87689618C81D][How do I run the cbo_instruments commands from the shell?]]
+
 * Equity Pairwise Variance Swap Instruments
 
 - [[id:603779D2-32E3-51C1-ADB0-C194B62A30A7][How do I run the equity_pairwise_variance_swap_instruments commands from the shell?]]
@@ -2192,3 +2196,7 @@ tangled into the runnable script library
 * Fx Pairwise Variance Swap Instruments
 
 - [[id:D385D2DE-92AA-5A4E-BB8E-8A3C9D5BD461][How do I run the fx_pairwise_variance_swap_instruments commands from the shell?]]
+
+* Rate Digital Option Instruments
+
+- [[id:2FF607F2-5F32-5E47-BED2-F33C8F9FC6A2][How do I run the rate_digital_option_instruments commands from the shell?]]

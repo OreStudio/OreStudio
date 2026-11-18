@@ -162,7 +162,8 @@ Entry price; absent for market-price positions.
 :END:
 
 The volatility an auto delta hedged option's hedge is run at, as its
-=Volatility= states it; other positions leave it null.
+=Volatility= states it; other positions leave it null. A volatility is a
+continuous quantity, so it is held as ORE's schema reads it, a float.
 
 ** drift_rate
 :PROPERTIES:

@@ -118,6 +118,8 @@
 \ir ./trading_fra_instruments_drop.sql
 \ir ./trading_vanilla_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_vanilla_swap_instruments_drop.sql
+\ir ./trading_rate_digital_option_instruments_notify_trigger_drop.sql
+\ir ./trading_rate_digital_option_instruments_drop.sql
 \ir ./trading_cap_floor_instruments_notify_trigger_drop.sql
 \ir ./trading_cap_floor_instruments_drop.sql
 \ir ./trading_swaption_instruments_notify_trigger_drop.sql
@@ -230,6 +232,8 @@
 \ir ./trading_index_credit_default_swap_instruments_drop.sql
 \ir ./trading_index_credit_default_swap_option_instruments_notify_trigger_drop.sql
 \ir ./trading_index_credit_default_swap_option_instruments_drop.sql
+\ir ./trading_cbo_instruments_notify_trigger_drop.sql
+\ir ./trading_cbo_instruments_drop.sql
 \ir ./trading_synthetic_cdo_instruments_notify_trigger_drop.sql
 \ir ./trading_synthetic_cdo_instruments_drop.sql
 \ir ./trading_credit_linked_swap_instruments_notify_trigger_drop.sql

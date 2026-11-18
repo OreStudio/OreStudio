@@ -74,7 +74,7 @@ create table if not exists "ores_trading_bond_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot')),
+    check ("trade_type_code" in ('BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot')),
     check ("issue_id" is not null or "trade_type_code" = 'BondPosition')
 );
 

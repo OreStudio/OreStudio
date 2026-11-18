@@ -327,9 +327,11 @@ TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_popul
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
-        // A CBO names a structure the reference data holds, in the scripted table.
+        // A CBO holds its investment, and the structure it names is a task of
+        // its own, so the batch carries the credit header and the CBO fact.
         if (slot.trade_type_code == "CBO") {
-            CHECK(slot.instruments.scripted_instruments.size() == 1u);
+            CHECK(slot.instruments.credit_instruments.size() == 1u);
+            CHECK(slot.instruments.cbo_instruments.size() == 1u);
             continue;
         }
         REQUIRE(slot.instruments.credit_instruments.size() == 1u);
@@ -634,10 +636,13 @@ TEST_CASE("a_bond_slot_states_its_instrument_and_its_security", "[trade_populati
     const auto plan = plan_of(bond_scope());
 
     for (const auto& slot : plan.slots) {
-        // An option on a bond future names a contract, so its batch is scripted.
+        // An option on a bond future names a contract rather than the slot's
+        // security, and it is held on the bond family's own future and option
+        // rows.
         if (slot.trade_type_code == "BondFutureOption") {
-            CHECK(slot.instruments.scripted_instruments.size() == 1u);
-            CHECK(slot.bond_issue.has_value());
+            CHECK(slot.instruments.bond_instruments.size() == 1u);
+            CHECK_FALSE(slot.instruments.bond_futures.empty());
+            CHECK_FALSE(slot.instruments.bond_options.empty());
             continue;
         }
         /*
@@ -799,9 +804,12 @@ TEST_CASE("a_rate_population_states_its_legs_in_the_book_currency", "[trade_popu
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
-        // A rate digital option holds no legs; the scripted table holds its terms.
+        // A rate digital option holds no legs: its terms are a row of the rates
+        // family's own table, under the family header.
         if (slot.trade_type_code == "RateDigitalOption") {
-            CHECK(slot.instruments.scripted_instruments.size() == 1u);
+            CHECK(slot.instruments.rate_instruments.size() == 1u);
+            CHECK(slot.instruments.rate_digital_option_instruments.size() == 1u);
+            CHECK(slot.instruments.swap_legs.empty());
             continue;
         }
         /*

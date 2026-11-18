@@ -181,7 +181,8 @@ struct equity_position_option_underlying final {
     /**
      * @brief The number of options in an auto delta hedged option's batch, as its Quantity states
      * it; an option position's entries leave it null, as the position states one quantity for all
-     * of them.
+     * of them. ORE's schema reads Quantity as an xs:float, so a batch's count is held as a float
+     * and not rounded to twelve places.
      */
     std::optional<double> quantity;
 

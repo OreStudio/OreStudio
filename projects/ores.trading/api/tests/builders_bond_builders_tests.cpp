@@ -275,3 +275,36 @@ TEST_CASE("an_american_call_on_one_date_fails_and_names_the_term", bond_tags) {
     REQUIRE_FALSE(callable.has_value());
     CHECK(callable.error().term == "calls");
 }
+
+TEST_CASE("a_bond_future_option_states_its_contract_option_and_exercise", bond_tags) {
+    const auto built = bond_future_option_builder({.holding = holding(),
+                                                   .contract = std::string("FGBL"),
+                                                   .contract_notional = bond_amount("100000"),
+                                                   .strike = bond_amount("128.5"),
+                                                   .kind = option_kind::put,
+                                                   .position = option_position::short_option,
+                                                   .expiry = 2026y / 2 / 20})
+                           .build();
+    REQUIRE(built.has_value());
+    CHECK(built->row.instrument.identity.trade_type_code == "BondFutureOption");
+    REQUIRE(built->futures.size() == 1);
+    CHECK(built->futures[0].contract_name == "FGBL");
+    CHECK(built->futures[0].long_short == "Short");
+    REQUIRE(built->options.size() == 1);
+    CHECK(built->options[0].option_type == "Put");
+    CHECK(built->options[0].option_strike == bond_amount("128.5"));
+    REQUIRE(built->option_block.size() == 1);
+    REQUIRE(built->schedule_dates.size() == 1);
+    CHECK(built->schedule_dates[0].schedule_date == 2026y / 2 / 20);
+
+    const auto unnamed = bond_future_option_builder({.holding = holding(),
+                                                     .contract = std::string(),
+                                                     .contract_notional = bond_amount("100000"),
+                                                     .strike = bond_amount("128.5"),
+                                                     .kind = option_kind::put,
+                                                     .position = option_position::short_option,
+                                                     .expiry = 2026y / 2 / 20})
+                             .build();
+    REQUIRE_FALSE(unnamed.has_value());
+    CHECK(unnamed.error().term == "contract");
+}

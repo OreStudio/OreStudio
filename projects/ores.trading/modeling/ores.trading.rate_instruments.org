@@ -332,6 +332,12 @@ them rather than widening them.
 :column: trade_id
 :END:
 
+** rate_digital_option_instruments
+:PROPERTIES:
+:table:  ores_trading_rate_digital_option_instruments_tbl
+:column: trade_id
+:END:
+
 ** swaption_instruments
 :PROPERTIES:
 :table:  ores_trading_swaption_instruments_tbl

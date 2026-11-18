@@ -7,6 +7,7 @@
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2026-02-02</ExerciseDate>
         </ExerciseDates>
@@ -23,6 +24,7 @@
         <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2026-02-02</ExerciseDate>
         </ExerciseDates>

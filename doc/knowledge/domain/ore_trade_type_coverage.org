@@ -101,12 +101,12 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =BalanceGuaranteedSwap= | native | native | =BalanceGuaranteedSwapData= | =rate_instrument= | yes | - | - | - |
 | =Bond= | native | native | =BondData= | =bond_instrument= | yes | - | - | - |
 | =BondFuture= | native | native | =BondFutureData= | =bond_instrument= | yes | - | - | - |
-| =BondFutureOption= | native | native | =BondFutureOptionData= | =scripted_instrument= | yes | - | - | [[id:1A039407-DDBF-4EB6-B9A2-92746C0CB6CD][Hold the native rates, bond and credit types on their tables]], [[id:567D67C8-B166-4E68-834F-F94B5876939D][Model the options on futures]] |
+| =BondFutureOption= | native | native | =BondFutureOptionData= | =bond_instrument= | yes | - | - | [[id:1A039407-DDBF-4EB6-B9A2-92746C0CB6CD][Hold the native rates, bond and credit types on their tables]], [[id:567D67C8-B166-4E68-834F-F94B5876939D][Model the options on futures]] |
 | =BondOption= | native | native | =BondOptionData= | =bond_instrument= | yes | - | - | - |
 | =BondPosition= | native | native | =BondBasketData= | =bond_instrument= | yes | - | - | - |
 | =BondRepo= | native | native | =BondRepoData= | =bond_instrument= | yes | - | - | - |
 | =BondTRS= | native | native | =BondTRSData= | =bond_instrument= | yes | - | - | - |
-| =CBO= | native | native | =CBOData= | =scripted_instrument= | yes | - | - | [[id:1A039407-DDBF-4EB6-B9A2-92746C0CB6CD][Hold the native rates, bond and credit types on their tables]], [[id:92988930-440A-4E1C-A1FC-050F6F6EA396][Model the credit products left out]] |
+| =CBO= | native | native | =CBOData= | =credit_instrument= | yes | - | - | [[id:70A950DD-F516-44D3-8859-6FEA30766589][Hold a CBO structure stated inline]], [[id:1A039407-DDBF-4EB6-B9A2-92746C0CB6CD][Hold the native rates, bond and credit types on their tables]], [[id:92988930-440A-4E1C-A1FC-050F6F6EA396][Model the credit products left out]] |
 | =CallableBond= | native | native | =CallableBondData= | =bond_instrument= | yes | - | - | [[id:8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A][Fix the trade errors ORE raises on the recorded trades]] |
 | =CallableSwap= | native | native | =CallableSwapData= | =rate_instrument= | yes | - | - | - |
 | =CapFloor= | native | native | =CapFloorData= | =rate_instrument= | yes | - | - | - |
@@ -209,7 +209,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =IntradayPowerForward= | native | native | =IntradayPowerForwardData= | =commodity_instrument= | yes | - | - | - |
 | =KnockOutSwap= | scripted | scripted | =KnockOutSwapData= | =rate_instrument= | yes | - | - | - |
 | =PerformanceOption_01= | scripted | scripted | =PerformanceOption01Data= | =scripted_instrument= | yes | - | - | [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]], [[id:8763CC4E-82DC-447D-A97C-BFA4ED0F7D1C][Hold the remaining fixed-element products on their tables]] |
-| =RateDigitalOption= | native | native | =RateDigitalOptionData= | =scripted_instrument= | yes | - | - | [[id:1A039407-DDBF-4EB6-B9A2-92746C0CB6CD][Hold the native rates, bond and credit types on their tables]], [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] |
+| =RateDigitalOption= | native | native | =RateDigitalOptionData= | =rate_instrument= | yes | - | - | [[id:1A039407-DDBF-4EB6-B9A2-92746C0CB6CD][Hold the native rates, bond and credit types on their tables]], [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] |
 | =RiskParticipationAgreement= | native | native | =RiskParticipationAgreementData= | =credit_instrument= | yes | - | - | - |
 | =ScriptedTrade= | scripted | script | =ScriptedTradeData= | =scripted_instrument= | yes | - | - | [[id:DB302F8B-6376-48C0-9721-06D8B10064E8][Compare the two forms of each product]], [[id:8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A][Fix the trade errors ORE raises on the recorded trades]], [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]], [[id:CF1384A9-A358-4E56-82F7-AFC089AD4FEB][Generate the script-only equity, FX and commodity payoffs]], [[id:3ACCEBF0-131F-49EC-BB5D-24F2BBCD6ED0][Hold ORE's script library as reference data]], [[id:65AD3D3E-EDD6-411B-A3D4-28D5B20CC399][Hold the basket and rainbow options on their tables]], [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]], [[id:80315472-7360-4C53-B6F7-57F7BCE78A1C][Tag the types the engine cannot carry]] |
 | =Swap= | native | native | =SwapData= | =rate_instrument= | yes | - | - | - |

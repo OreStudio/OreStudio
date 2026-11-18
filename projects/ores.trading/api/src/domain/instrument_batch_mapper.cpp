@@ -72,7 +72,8 @@ inline constexpr auto credit_fact_arrays_batch =
                &instrument_batch::index_credit_default_swap_option_instruments,
                &instrument_batch::synthetic_cdo_instruments,
                &instrument_batch::credit_linked_swap_instruments,
-               &instrument_batch::risk_participation_agreement_instruments};
+               &instrument_batch::risk_participation_agreement_instruments,
+               &instrument_batch::cbo_instruments};
 
 static_assert(std::tuple_size_v<decltype(credit_fact_arrays_batch)> ==
               std::tuple_size_v<decltype(credit_fact_arrays)>);
@@ -431,6 +432,8 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
             return as_swap(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.cap_floor_instruments, trade_id))
             return as_swap(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.rate_digital_option_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.swaption_instruments, trade_id))
             return as_swap(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.balance_guaranteed_swap_instruments, trade_id))
@@ -516,6 +519,8 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
         if (const auto* v = find(batch.credit_linked_swap_instruments, trade_id))
             return as_credit(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.risk_participation_agreement_instruments, trade_id))
+            return as_credit(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.cbo_instruments, trade_id))
             return as_credit(batch, *header, *v, trade_id);
     }
     if (const auto* v = find(batch.commodity_instruments, trade_id))

@@ -473,38 +473,6 @@ constexpr std::size_t bond_type_count = sizeof(bond_types) / sizeof(bond_types[0
 
 constexpr std::string_view bond_futures[] = {"FGBL", "FGBM", "ZN", "ZB"};
 
-/*
- * An option on a bond future is read through a class of its own, so it is a
- * scripted batch rather than a bond product. It expires a month out, before
- * any listed contract's delivery.
- */
-ores::trading::domain::instrument_batch
-build_bond_future_option(const domain::trade_generation_scope& scope,
-                         const domain::trade_population_slot& entry) {
-    namespace tb = ores::trading::builders;
-    using ores::utility::decimal::decimal;
-    const auto name = slot_name(scope, entry.slot);
-    const auto money = [](double value) {
-        return decimal::from_double(std::round(value * 100.0) / 100.0).value();
-    };
-    auto built = tb::bond_future_option_builder(
-                     {.contract = std::string(bond_futures[entry.slot % 4]),
-                      .contract_notional = money(100000.0),
-                      .strike = money(100.0 + 30.0 * draw(name, 6)),
-                      .kind = draw(name, 5) < 0.5 ? tb::option_kind::call : tb::option_kind::put,
-                      .position = first_way(entry) ? tb::option_position::long_option :
-                                                     tb::option_position::short_option,
-                      .expiry = add_months(scope.as_of_date, 1)})
-                     .build();
-    if (!built)
-        throw trade_population_error("The BondFutureOption builder refuses the drawn " +
-                                     built.error().term + ": " + built.error().message);
-    ores::trading::domain::instrument_batch batch;
-    ores::trading::domain::append_instrument(
-        batch, ores::trading::domain::trade_instrument{std::move(*built)});
-    return batch;
-}
-
 ores::trading::domain::bond_product bond_product_of(
     std::expected<ores::trading::domain::bond_product, ores::trading::builders::build_error> built,
     const std::string& trade_type_code) {
@@ -611,6 +579,18 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
                                                .lock_rate = rate(0.02, 0.03, 7)})
                          .build());
     }
+    if (type == "BondFutureOption")
+        // The option expires a month out, before any listed contract's delivery.
+        return built(
+            tb::bond_future_option_builder(
+                {.holding = holding,
+                 .contract = std::string(bond_futures[slot % 4]),
+                 .contract_notional = money(100000.0),
+                 .strike = money(std::round((100.0 + 30.0 * draw(name, 6)) * 100.0) / 100.0),
+                 .kind = draw(name, 5) < 0.5 ? tb::option_kind::call : tb::option_kind::put,
+                 .position = position,
+                 .expiry = add_months(scope.as_of_date, 1)})
+                .build());
     if (type == "BondFuture")
         return built(tb::bond_future_builder({.holding = holding,
                                               .contract = std::string(bond_futures[slot % 4]),
@@ -766,19 +746,10 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         entry.bond_issue_leg_amounts = std::move(security->amounts);
         entry.bond_issue_leg_rates = std::move(security->rates);
         entry.bond_issue_leg_schedules = std::move(security->schedules);
-        /*
-         * An option on a bond future names a contract rather than the slot's
-         * security, so its batch is scripted; the slot states the security as
-         * every bond slot does.
-         */
-        if (entry.trade_type_code == "BondFutureOption") {
-            entry.instruments = build_bond_future_option(scope, entry);
-        } else {
-            auto product = build_bond_trade(scope, swaps, entry, security_id, issue_id, maturity);
-            entry.bond_issue_call_dates = product.call_dates;
-            entry.bond_issue_conversion_targets = product.conversion_targets;
-            append(entry.instruments, std::move(product));
-        }
+        auto product = build_bond_trade(scope, swaps, entry, security_id, issue_id, maturity);
+        entry.bond_issue_call_dates = product.call_dates;
+        entry.bond_issue_conversion_targets = product.conversion_targets;
+        append(entry.instruments, std::move(product));
 
         plan.slots.push_back(std::move(entry));
     }
@@ -2571,11 +2542,11 @@ build_credit_trade(const domain::trade_generation_scope& scope,
     }
     if (type == "CBO")
         // An investment in the junior note of the structure ORE's own example names.
-        return scripted_batch_of(tb::cbo_builder({.tranche_name = std::string("JuniorNote"),
-                                                  .notional = money(entry.notional),
-                                                  .structure_id = std::string("Pegasus")})
-                                     .build(),
-                                 type);
+        return batch_of(tb::cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                         .notional = money(entry.notional),
+                                         .structure_id = std::string("Pegasus")})
+                            .build(),
+                        type);
     if (type == "IndexCreditDefaultSwapOption") {
         const auto expiry = add_months(scope.as_of_date, 3);
         const tb::index_credit_default_swap_option_terms terms{

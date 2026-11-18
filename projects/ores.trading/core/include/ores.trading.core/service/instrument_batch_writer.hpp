@@ -56,6 +56,7 @@
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
 #include "ores.trading.core/repository/cash_position_instrument_repository.hpp"
+#include "ores.trading.core/repository/cbo_instrument_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
@@ -103,6 +104,7 @@
 #include "ores.trading.core/repository/instrument_underlying_repository.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/range_bound_repository.hpp"
+#include "ores.trading.core/repository/rate_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/risk_participation_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/scripted_instrument_repository.hpp"
@@ -311,6 +313,8 @@ void write_instrument_batch(const ores::database::context& ctx,
         ctx, batch.callable_swap_instruments, keys, stamp, claim);
     write_rows<repository::cap_floor_instrument_repository>(
         ctx, batch.cap_floor_instruments, keys, stamp, claim);
+    write_rows<repository::cbo_instrument_repository>(
+        ctx, batch.cbo_instruments, keys, stamp, claim);
     write_rows<repository::commodity_basket_constituent_repository>(
         ctx, batch.commodity_basket_constituents, keys, stamp, claim);
     write_rows<repository::credit_basket_constituent_repository>(
@@ -362,6 +366,8 @@ void write_instrument_batch(const ores::database::context& ctx,
     write_rows<repository::knock_out_swap_instrument_repository>(
         ctx, batch.knock_out_swap_instruments, keys, stamp, claim);
     write_rows<repository::range_bound_repository>(ctx, batch.range_bounds, keys, stamp, claim);
+    write_rows<repository::rate_digital_option_instrument_repository>(
+        ctx, batch.rate_digital_option_instruments, keys, stamp, claim);
     write_rows<repository::risk_participation_agreement_instrument_repository>(
         ctx, batch.risk_participation_agreement_instruments, keys, stamp, claim);
     write_rows<repository::swap_leg_repository>(ctx, batch.swap_legs, keys, stamp, claim);
@@ -554,6 +560,8 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("callable_swap_instruments");
     if (!batch.cap_floor_instruments.empty())
         names.emplace_back("cap_floor_instruments");
+    if (!batch.cbo_instruments.empty())
+        names.emplace_back("cbo_instruments");
     if (!batch.commodity_basket_constituents.empty())
         names.emplace_back("commodity_basket_constituents");
     if (!batch.credit_basket_constituents.empty())
@@ -606,6 +614,8 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("knock_out_swap_instruments");
     if (!batch.range_bounds.empty())
         names.emplace_back("range_bounds");
+    if (!batch.rate_digital_option_instruments.empty())
+        names.emplace_back("rate_digital_option_instruments");
     if (!batch.risk_participation_agreement_instruments.empty())
         names.emplace_back("risk_participation_agreement_instruments");
     if (!batch.swap_legs.empty())

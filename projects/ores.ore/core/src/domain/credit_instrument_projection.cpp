@@ -21,12 +21,14 @@
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -70,6 +72,7 @@ using trading::domain::swap_leg;
 using trading::domain::swap_leg_amount;
 using trading::domain::swap_leg_rate;
 using trading::domain::synthetic_cdo_instrument;
+using trading::domain::cbo_instrument;
 
 using xml::record_reader;
 using xml::record_writer;
@@ -92,7 +95,7 @@ constexpr bool is_credit_trade_type(std::string_view type) {
     return type == "CreditDefaultSwap" || type == "IndexCreditDefaultSwap" ||
            type == "IndexCreditDefaultSwapOption" || type == "CreditDefaultSwapOption" ||
            type == "CreditLinkedSwap" || type == "SyntheticCDO" ||
-           type == "RiskParticipationAgreement";
+           type == "RiskParticipationAgreement" || type == "CBO";
 }
 
 void stamp(swap_leg& row) {
@@ -147,15 +150,15 @@ auto credit_instrument_projection_to_ore_date(const std::optional<std::chrono::y
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto credit_instrument_projection_text_of(const record_reader& r,
-                                          std::string_view name) -> std::string {
+auto credit_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto credit_instrument_projection_spelling_of(const record_reader& r,
-                                              std::string_view name) -> std::string {
+auto credit_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -391,8 +394,8 @@ auto read_index_swap(const record_reader& d) -> index_credit_default_swap_instru
 }
 
 /// The CreditDefaultSwapData element, as the swap's fact row and its premium leg.
-auto read_cds_data(credit_instrument_data& result,
-                   const std::optional<record_reader>& d) -> credit_default_swap_instrument {
+auto read_cds_data(credit_instrument_data& result, const std::optional<record_reader>& d)
+    -> credit_default_swap_instrument {
     credit_default_swap_instrument fact;
     if (d) {
         if (const auto curve = d->text("CreditCurveId"))
@@ -589,6 +592,31 @@ auto read_synthetic_cdo(const record_reader& trade) -> credit_instrument_data {
     }
     credit_instrument_projection_stamp_row(fact);
     result.synthetic_cdo_instruments.push_back(std::move(fact));
+    return result;
+}
+
+// The structure a CBO may state inline is held by a task of its own; until it
+// is, a document that states one is refused rather than read without it.
+auto read_cbo(const record_reader& trade) -> credit_instrument_data {
+    credit_instrument_data result;
+    result.instrument = make_header("CBO");
+    cbo_instrument fact;
+    if (const auto d = trade.child("CBOData")) {
+        if (d->has("CBOStructure"))
+            throw std::invalid_argument(
+                "A CBO that states its structure inline is not held yet; name the structure by "
+                "its StructureId instead.");
+        if (const auto investment = d->child("CBOInvestment")) {
+            const auto text = [&](std::string_view element) {
+                return scalar_terms::read_text(*investment, element).value_or("");
+            };
+            fact.tranche_name = text("TrancheName");
+            fact.notional = decimal::from_string(text("Notional")).value_or(decimal{});
+            fact.structure_id = text("StructureId");
+        }
+    }
+    credit_instrument_projection_stamp_row(fact);
+    result.cbo_instruments.push_back(std::move(fact));
     return result;
 }
 
@@ -1082,7 +1110,19 @@ auto read_credit_instrument(xml::record_reader trade, std::string_view trade_typ
         return trading::domain::trade_instrument{read_credit_linked_swap(trade)};
     if (trade_type == "SyntheticCDO")
         return trading::domain::trade_instrument{read_synthetic_cdo(trade)};
+    if (trade_type == "CBO")
+        return trading::domain::trade_instrument{read_cbo(trade)};
     return trading::domain::trade_instrument{read_rpa(trade)};
+}
+
+void write_cbo(record_writer& trade, const credit_instrument_data& v) {
+    if (v.cbo_instruments.empty())
+        return;
+    auto investment = trade.child("CBOData").child("CBOInvestment");
+    const auto& fact = v.cbo_instruments.front();
+    scalar_terms::write_text(investment, "TrancheName", fact.tranche_name);
+    scalar_terms::write_text(investment, "Notional", fact.notional.to_string());
+    scalar_terms::write_text(investment, "StructureId", fact.structure_id);
 }
 
 auto write_credit_instrument(xml::record_writer& trade,
@@ -1129,6 +1169,8 @@ auto write_credit_instrument(xml::record_writer& trade,
         write_credit_linked_swap(trade, *v);
     else if (trade_type == "SyntheticCDO")
         write_synthetic_cdo(trade, *v);
+    else if (trade_type == "CBO")
+        write_cbo(trade, *v);
     else
         write_rpa(trade, *v);
     return true;

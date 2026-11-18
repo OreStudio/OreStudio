@@ -124,7 +124,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An unparsed notional becomes zero | basket_option_projection.hpp | No change | The schema types Notional as a float, so unparsable text never reaches the reader. |
+| 2 | A basket built without a strike stores zero | basket_option_builders.cpp | No change | The terms require a strike, and the generator books only Vanilla baskets, which state one. |
+| 3 | The builder emits no observation dates | basket_option_builders.cpp | No change | A Vanilla basket states none; a document that states them is read into the schedule row. |
+| 4 | The payoff type has no table constraint | instrument option row | Decline | The payoff type is on the shared option row every option product of the family uses. |
+| 5 | Say the scripted forms are not yet booked | task document | Accept | The Result now says so. |
 
 * Result
 
@@ -143,3 +147,6 @@ catalogue names the scripted forms: =VanillaBasketOption= for a basket and
 
 The schema refuses a rainbow without a strike, and a basket without a currency
 or a notional, before the reader runs, so the reader does not check them again.
+
+The catalogue names the scripted forms, but nothing books them yet. The task
+[[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both forms]] does that.

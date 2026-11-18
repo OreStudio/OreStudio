@@ -28,9 +28,9 @@ Serve these composed views from ores.workflow and ores.inbox: one subject's stor
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Two views' worth of groundwork is in: the run's progress answers, and the request joins are shared. |
+| Now          | Two of the six views answer: the run's progress and the approval inbox. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the approval inbox at GET /api/requests: the queue read with the kind-subject joins. |
+| Next         | The two subject joins the inbox owes: the curve publish a request authorises, and the cut. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -96,6 +96,10 @@ task and name that file in the Command column.
 | The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the progress commit |
 | The part's test suite | 35 cases, 425 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the joins commit |
 | The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the joins commit |
+| The part's test suite | 38 cases, 466 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the inbox commit |
+| The workflow area's routes the C++ server answers | 14 of 18 paired | =./compass.sh generate= then =build/scripts/route_inventory.py --check= | the inbox commit |
+| The gateway's routes in the inventory | 1378 routes, 1050 answered by the gateway, 284 of the BFF's 328 paired | =build/scripts/route_inventory.py --check= | the inbox commit |
+| The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the inbox commit |
 |      |       |         |        |
 
 * Notes

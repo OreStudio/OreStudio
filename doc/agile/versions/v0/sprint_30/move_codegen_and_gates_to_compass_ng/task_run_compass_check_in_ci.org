@@ -8,11 +8,11 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch:
-#+pr:
-#+blocked_on:
-#+blocked_since:
+#+pr: 4845
+#+blocked_on: the compass story Publish installable binaries: CI and external developers install a release, never build compass
+#+blocked_since: 2026-11-18
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-18
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,11 +26,11 @@ CI runs every ported gate in one job of seconds, from the same binary and config
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Blocked. |
+| Waiting on   | The compass story Publish installable binaries: CI and external developers install a release, never build compass. |
+| Next         | Install the first compass-ng release in CI once Publish installable binaries ships one. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4845][#4845]] | [agile] Record the blocked compass-ng tasks and the story's state |
 
 * Review
 

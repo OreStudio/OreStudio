@@ -10,6 +10,7 @@ reach the compiler, a header change must, and a path nobody classified must
 ask for everything rather than nothing.
 """
 import importlib.util
+import re
 import sys
 from pathlib import Path
 
@@ -458,7 +459,8 @@ def test_a_finding_fails_the_gate_its_codec_answers_for(tmp_path):
     run = _compass_result(
         tmp_path,
         "$ compass-ng check\n\n"
-        "projects/ores.sql/create/a.sql:3:1: sql_hygiene/duplicate_index: index i is defined twice\n",
+        "projects/ores.sql/create/a.sql:3:1: sql_hygiene/duplicate_index: index i is defined twice\n"
+        "1 diagnostics (11000 documents)\n",
         "FAIL")
     by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
     assert by_id["sql-hygiene"].failed
@@ -471,7 +473,8 @@ def test_a_finding_no_selected_gate_claims_fails_compass_ng(tmp_path):
     covered = [local_checks.CHECKS_BY_ID["sql-hygiene"]]
     run = _compass_result(
         tmp_path,
-        "projects/ores.x/core/src/CMakeLists.txt:7:1: core_link_edges/forbidden_edge: links a core\n",
+        "projects/ores.x/core/src/CMakeLists.txt:7:1: core_link_edges/forbidden_edge: links a core\n"
+        "1 diagnostics (11000 documents)\n",
         "FAIL")
     by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
     assert by_id["sql-hygiene"].status == "PASS"
@@ -490,3 +493,32 @@ def test_compass_ng_failing_to_run_fails_every_gate_it_answers_for(tmp_path):
 
 def test_every_gate_compass_ng_answers_for_is_in_the_catalogue():
     assert set(local_checks.COMPASS_CODECS) <= set(local_checks.CHECKS_BY_ID)
+
+
+def test_a_run_that_stops_after_some_findings_fails_every_gate(tmp_path):
+    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "entity-writes")]
+    run = _compass_result(
+        tmp_path,
+        "projects/ores.sql/create/a.sql:3:1: sql_hygiene/duplicate_index: index i is defined twice\n"
+        "compass: codegen: a model did not load\n",
+        "FAIL")
+    by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
+    assert by_id["entity-writes"].failed
+
+
+def test_a_codec_name_with_a_digit_is_read(tmp_path):
+    covered = [local_checks.CHECKS_BY_ID["sql-hygiene"]]
+    run = _compass_result(
+        tmp_path,
+        "projects/a.sql:1:1: sql2_hygiene/rule3: planted\n1 diagnostics (1 documents)\n",
+        "FAIL")
+    by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
+    assert by_id["compass-ng"].failed
+    assert "sql2_hygiene" in by_id["compass-ng"].tail
+
+
+def test_every_codec_a_gate_maps_to_is_enabled_in_the_configuration():
+    rows = re.findall(r"^\| (\w+) \| (yes|no) \|", (REPO_ROOT / ".compass.org").read_text(), re.M)
+    enabled = {name for name, state in rows if state == "yes"}
+    mapped = {codec for codecs in local_checks.COMPASS_CODECS.values() for codec in codecs}
+    assert mapped <= enabled, sorted(mapped - enabled)

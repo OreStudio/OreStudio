@@ -1515,7 +1515,9 @@ COMPASS_CHECK = Check(
         " that says why; ./compass.sh generate rewrites the generated files.",
 )
 
-COMPASS_FINDING = re.compile(r"^[^:\s][^:]*:\d+:\d+: ([a-z_]+)/[a-z_]+: ")
+COMPASS_FINDING = re.compile(r"^[^:\s][^:]*:\d+:\d+: ([a-z0-9_]+)/[a-z0-9_]+: ")
+# compass-ng ends every run that checked the tree with this summary.
+COMPASS_SUMMARY = re.compile(r"^\d+ diagnostics", re.M)
 
 
 def through_compass(selected: list[Check]) -> tuple[list[Check], list[Check]]:
@@ -1550,9 +1552,9 @@ def expand_compass(results: list[Result], covered: list[Check]) -> list[Result]:
         match = COMPASS_FINDING.match(line)
         if match:
             findings.setdefault(match.group(1), []).append(line)
-    # A run that failed with no finding did not check the tree, so no gate it
-    # answers for has passed.
-    errored = run.failed and not findings
+    # A run that failed without its summary did not finish checking the tree, so
+    # no gate it answers for has passed.
+    errored = run.failed and not COMPASS_SUMMARY.search(output)
     claimed: set[str] = set()
     expanded: list[Result] = []
     for check in covered:

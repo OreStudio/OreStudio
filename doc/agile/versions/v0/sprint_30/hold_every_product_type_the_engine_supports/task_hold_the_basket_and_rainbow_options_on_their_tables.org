@@ -28,11 +28,11 @@ table holds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -89,7 +89,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.trading.api.tests | 4937 test cases, all pass | =./ores.trading.api.tests= | fa1786077f |
+| ores.trading.core.tests | 260 test cases, all pass | =./ores.trading.core.tests= | fa1786077f |
+| ores.shell.trading.tests | 1466 test cases, all pass | =./ores.shell.trading.tests= | fa1786077f |
+| ores.ore.core.tests, with the ORE engine | 566 test cases, all pass | =./ores.ore.core.tests= | fa1786077f |
+| ores.synthetic.core.tests, with the ORE engine | 148 test cases, all pass | =./ores.synthetic.core.tests= | fa1786077f |
+| Generated trades after two refreshes | no file changed | =ORES_UPDATE_GENERATED_TRADES=1 ./ores.synthetic.core.tests "[generated]"= | fa1786077f |
 
 * Notes
 
@@ -122,3 +127,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The four types are held natively. =EquityBasketOption= and
+=EquityRainbowOption= route to =equity_basket_option_instrument=;
+=FxBasketOption= and =FxRainbowOption= route to =fx_basket_option_instrument=.
+Each table holds the element's scalars: currency, notional, strike and
+settlement date, with a check that a rainbow states a strike. The members, the
+option block with its exercise dates, and a basket's observation dates are the
+families' shared rows. The projection reads and writes them, and round-trip
+tests cover the user guide's equity basket and rainbow and an FX rainbow. The
+builder returns the family's rows, the generator books them, and the generated
+trades are unchanged. The scripted class-read entries are removed, and the
+catalogue names the scripted forms: =VanillaBasketOption= for a basket and
+=MaxRainbowOption= for a rainbow.
+
+The schema refuses a rainbow without a strike, and a basket without a currency
+or a notional, before the reader runs, so the reader does not check them again.

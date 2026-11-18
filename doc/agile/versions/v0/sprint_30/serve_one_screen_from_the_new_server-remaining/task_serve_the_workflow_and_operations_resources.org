@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-workflow-and-operations-resources
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The gateway has no part for the workflow and operations area. Add the part with 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The part is stood up and registered; its routes follow. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Serve the requests a person raises and withdraws. |
+| Last touched | 2026-11-17                               |
 
 * Acceptance
 
@@ -42,9 +42,45 @@ The gateway has no part for the workflow and operations area. Add the part with 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The area holds twenty-three routes the BFF answered and the gateway does not,
+and they are not one kind:
+
+| Kind | Routes |
+|------+--------|
+| Resource | /api/approvals-mode, /api/hold-reasons, the four notices, the three
+  paths a person's own requests take, one request, its decision, the retry of a
+  run, the services roster and the logs |
+| Composed view | /api/requests, /api/queue/authorisations, /api/requests/:id/story,
+  :id/changes, :id/checks, /api/timeline, /api/workflow/:instanceId and
+  /api/operations/bus |
+
+The composed views are the story's own task, as they are for the other areas:
+each weaves two or more collections, and the design of what it weaves is
+settled before it is served. This task takes the fourteen resources.
+
+The part comes first, by the adapter recipe that stood up =ores.http.compute=:
+the model, the four hand-authored CMake files, the composite root, the generated
+umbrella header, the hand-written aggregate, the file lists, the diagram, and
+the server's registration. It is named =ores.http.workflow= after the area it
+serves, and it holds the operations roster and logs beside the workflow routes
+because both are answered from the telemetry service and neither is big enough
+to be a part of its own.
+
+The routes then follow in families, one commit each:
+
+- The requests a person raises and withdraws: the two reads and the write of
+  their own, against the version they read.
+- One request and its decision: the read of a request this person may open, and
+  the decision they give it.
+- The notices they are given: the page, its unread count, the marks that read
+  them, and the clear.
+- The run: the retry of a stopped run, which the engine decides.
+- The operations roster and the logs.
+- The two lookups the request screens ask for: the approvals mode and the hold
+  reasons.
+
+Each route keeps the BFF's path, its JSON member names and its status codes, and
+is paired in the inventory under the =workflow= or =operations= area.
 
 * Measurements
 

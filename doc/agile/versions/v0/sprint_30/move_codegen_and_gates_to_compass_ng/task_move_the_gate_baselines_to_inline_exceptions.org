@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-gate-baselines-to-inline-exceptions
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ compass check reports nothing on main, and every accepted violation is visible w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

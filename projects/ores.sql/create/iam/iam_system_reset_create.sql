@@ -47,6 +47,7 @@
 -- -----------------------------------------------------------------------------
 -- System bootstrap reset
 -- -----------------------------------------------------------------------------
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_reset_system_fn() returns void as $$
 declare
     v_system_tenant_id uuid;

@@ -81,6 +81,9 @@ task and name that file in the Command column.
 | Acme parties receiving vendor volatility | ice: 5 parties, 910 items, 5025 deliveries; tradeweb: 5 parties, 910 items, 5330 deliveries; bloomberg: 6 parties, 910 items | `compass sql`: delivery counts by provider for fx_option items | e915379707 |
 | One latent path, before the noise fix | the three vendors ticked at the same instants with the same value, e.g. EUR/USD 1Y 25RR -0.004050565207424209 at 03:16:11 | `compass sql`: ticks by publisher for one item | e915379707 |
 | One latent path, after the noise fix | 1813, 1810, 1813 volatility ticks at the same instants, values apart by their noise, e.g. GBP/USD 1Y ATM 0.0985, 0.0995, 0.09 at 03:33:50 | `compass sql`: ticks by publisher at one instant | a2e2757bb9 |
+| Local gate | 36 of 38 passed; ctest failed in ores.synthetic.service.tests (the feed config fixture took the system tenant's demo contributor), ticks-smoke failed as ores.marketdata.official hit its start timeout beside ctest | `compass check` | 2ec9ff7dac on c25e952663 |
+| Synthetic service suite after the fixture fix | 1 of 1 passed | `compass test run -- -R ores.synthetic.service.tests` | 3054d24177 |
+| Ticks smoke run alone | passed; ice-a accepted 966 ids, tradeweb-a 959 | `compass smoke ticks --fresh` | 3054d24177 |
 
 * Notes
 
@@ -113,7 +116,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: misspell on the changed files. | all | Accept | Clean. |
+| 2 | Local review: the registry reads the contributor table twice per surface build, once for providers and once for profiles. | =feed_kind_registry.cpp= | Decline | Once per build of a surface, not per tick; merging the two reads would couple the offer path to the build path. |
 
 * Result
 

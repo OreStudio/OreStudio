@@ -5699,6 +5699,62 @@ def _claude_refresh_warnings():
         print()
 
 
+COMPASS_NG_PIN = Path("build/scripts/compass_ng.pin")
+COMPASS_NG_INSTALL = "build/scripts/install_compass.sh, run from a compass checkout"
+
+
+def _version_fields(text):
+    return dict(re.findall(r"^(commit|committed): (\S+)", text, re.M))
+
+
+def _committed_at(fields):
+    from datetime import datetime
+    return datetime.fromisoformat(fields["committed"])
+
+
+def compass_ng_problem(root=None):
+    """Why this machine's compass-ng does not meet the pin, or None when it does.
+
+    The pin names the build ORE Studio needs. An installed build committed at or
+    after it meets it; commit times order the builds without the compass history.
+    """
+    root = Path(root or PROJECT_ROOT)
+    pin_path = root / COMPASS_NG_PIN
+    if not pin_path.is_file():
+        return None
+    pin = _version_fields(pin_path.read_text())
+    try:
+        wanted = _committed_at(pin)
+    except (KeyError, ValueError):
+        return f"{COMPASS_NG_PIN} does not state a commit and a commit time"
+    exe = shutil.which("compass-ng")
+    if exe is None:
+        return "compass-ng is not installed"
+    try:
+        out = subprocess.run([exe, "--version"], capture_output=True, text=True,
+                             timeout=10).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return "compass-ng does not answer --version"
+    installed = _version_fields(out)
+    try:
+        built = _committed_at(installed)
+    except (KeyError, ValueError):
+        return "compass-ng does not state when its build was committed"
+    if built < wanted:
+        return (f"compass-ng {installed.get('commit', 'unknown')[:7]} is older than the "
+                f"{pin.get('commit', 'unknown')[:7]} ORE Studio needs")
+    return None
+
+
+def _compass_ng_warning():
+    problem = compass_ng_problem()
+    if problem:
+        print_instruction(INSTRUCTION_MANDATORY,
+                          f"{problem}; install the pinned build, as How do I install and "
+                          "update compass-ng? says:", COMPASS_NG_INSTALL)
+        print()
+
+
 def _claude_project_slug(path):
     """Mirror Claude Code's ~/.claude/projects/<slug> naming: every
     non-alphanumeric character in the absolute path becomes a dash."""
@@ -5818,6 +5874,7 @@ def cmd_bearings(argv):
     print(f"  Your name is: {identity}\n")
 
     _claude_refresh_warnings()
+    _compass_ng_warning()
 
     # ── LLM entry point ─────────────────────────────────────────────────────
     _bearings_section("🤖", "If you are an LLM, read this first",

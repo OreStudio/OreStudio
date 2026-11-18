@@ -32,3 +32,60 @@ def test_a_missing_compass_ng_is_refused(tmp_path, monkeypatch, capsys):
     assert compass.cmd_compass_ng(["generate"]) == 2
     assert "compass-ng is not on the PATH" in capsys.readouterr().err
 
+
+def _pinned_root(tmp_path, committed="2026-11-18T01:30:12Z"):
+    root = tmp_path / "root"
+    (root / "build" / "scripts").mkdir(parents=True)
+    (root / "build" / "scripts" / "compass_ng.pin").write_text(
+        f"commit: 21ae16da5fcc55a2855606726c82770c3c08e080\ncommitted: {committed}\n")
+    return root
+
+
+def _installed(tmp_path, monkeypatch, committed):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True)
+    exe = bin_dir / "compass-ng"
+    exe.write_text("#!/bin/sh\nprintf 'compass 0.0.1\\ncommit: af0f0bedb886 (af0f0be)\\n"
+                   f"committed: {committed}\\n'\n")
+    exe.chmod(0o755)
+    monkeypatch.setenv("PATH", str(bin_dir))
+
+
+def test_a_missing_compass_ng_is_reported(tmp_path, monkeypatch):
+    monkeypatch.setenv("PATH", str(tmp_path))
+    assert compass.compass_ng_problem(_pinned_root(tmp_path)) == "compass-ng is not installed"
+
+
+def test_a_build_older_than_the_pin_is_reported(tmp_path, monkeypatch):
+    _installed(tmp_path, monkeypatch, "2026-11-18T00:41:28Z")
+    problem = compass.compass_ng_problem(_pinned_root(tmp_path))
+    assert problem == "compass-ng af0f0be is older than the 21ae16d ORE Studio needs"
+
+
+def test_the_pinned_build_or_a_newer_one_meets_the_pin(tmp_path, monkeypatch):
+    _installed(tmp_path, monkeypatch, "2026-11-18T01:30:12Z")
+    assert compass.compass_ng_problem(_pinned_root(tmp_path)) is None
+    _installed(tmp_path / "newer", monkeypatch, "2026-12-01T00:00:00Z")
+    assert compass.compass_ng_problem(_pinned_root(tmp_path / "newer")) is None
+
+
+def test_no_pin_reports_nothing(tmp_path, monkeypatch):
+    monkeypatch.setenv("PATH", str(tmp_path))
+    assert compass.compass_ng_problem(tmp_path) is None
+
+
+def test_a_pin_without_a_commit_time_is_reported(tmp_path, monkeypatch):
+    root = _pinned_root(tmp_path)
+    (root / "build" / "scripts" / "compass_ng.pin").write_text("commit: 21ae16d\n")
+    assert "does not state a commit and a commit time" in compass.compass_ng_problem(root)
+
+
+def test_a_build_without_a_commit_time_is_reported(tmp_path, monkeypatch):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    exe = bin_dir / "compass-ng"
+    exe.write_text("#!/bin/sh\nprintf 'compass 0.0.1\\n'\n")
+    exe.chmod(0o755)
+    monkeypatch.setenv("PATH", str(bin_dir))
+    problem = compass.compass_ng_problem(_pinned_root(tmp_path))
+    assert problem == "compass-ng does not state when its build was committed"

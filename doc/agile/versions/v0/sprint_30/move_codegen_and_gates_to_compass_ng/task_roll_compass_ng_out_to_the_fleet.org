@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/roll-compass-ng-out-to-the-fleet
+#+pr: 4842
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -26,11 +26,11 @@ Every environment on the machine runs the same pinned compass-ng, and an environ
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -79,12 +79,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4842][#4842]] | [compass] Pin the compass-ng build and report a missing or older one |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An installed build with no commit time passes silently | compass.py | Accepted | Reported as a problem. |
+| 2 | Commit times compared as strings | compass.py | Accepted | Parsed with datetime.fromisoformat. |
+| 3 | A malformed pin reports nothing or raises | compass.py | Accepted | Reported as a problem. |
+| 4 | Three blank lines in the test file | test_compass_ng_verbs.py | Accepted | Two. |
+| 5 | No test for an absent pin or a malformed one | test_compass_ng_verbs.py | Accepted | Three tests added. |
+| 6 | The install hint names a script outside this repository | compass.py | Accepted | The instruction names the recipe. |
+| 7 | The tests' PATH would not suit a Windows runner | test_compass_ng_verbs.py | Declined | The compass tests run on the Linux environments only. |
 
 * Result
+
+- build/scripts/compass_ng.pin names the build ORE Studio needs, 21ae16d,
+  with its commit time. bearings runs compass-ng --version and prints a NEXT
+  ACTION when compass-ng is missing or was committed before the pin; commit
+  times order the builds without the compass history. Tests cover a missing,
+  an older, the pinned and a newer build.
+- How do I install and update compass-ng? covers the install, the full check
+  that builds a new worktree's record, compass-ng gc, and the fallback to the
+  Python gates; the compass recipe index links it.
+- The store is no longer a growth risk: compass-ng d2c6595 packs it, and on
+  this machine it went from 323,894 files and 2.9 GB to 4 files and 591 MB;
+  gc is an occasional command, not a schedule.
+- The fleet hears of it through bearings, which every session runs first:
+  there is no broadcast channel beyond it. The pull that brings this change
+  also brings the PostToolUse hook and the switch-over, so a session that
+  pulls main sees the instruction before it runs a gate.
+

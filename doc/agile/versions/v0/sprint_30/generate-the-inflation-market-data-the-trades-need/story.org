@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: E96F7F3D-E7EE-4385-A5FD-68B0612A1E96
+:END:
+#+title: Story: Generate the inflation market data the generated trades need
+#+description: The generated population books inflation trades whose market data no source provides: there is no inflation curve or inflation fixing in any party's market, so ORE cannot price them. Generate the inflation data the resolved requirements name, deterministically for a seed, and publish it through the synthetic feeds the market data service forwards to each party.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Give every generated inflation trade the market data it needs, so an ACME run prices the inflation book to completion.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | The IR and FX market data generation, and their valuation, to be signed off. |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-17                               |
+
+* Acceptance
+
+- The demands the inflation trades resolve are satisfied by series the synthetic service generates and publishes, in the oresmd the conventions name.
+- The data are deterministic for a seed, and a rerun of a generate step writes the same values.
+- The export writes the inflation series the population requires, read at the run's as-of.
+- A report prices every generated inflation type on a freshly provisioned tenant, with no market data error the trade causes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+Not started until the interest rate and FX market data generation and their
+valuation are signed off, so the inflation work builds on a path that is known to
+price. The other three asset classes follow the same rule.
+
+* Out of scope
+
+-

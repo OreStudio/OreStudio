@@ -794,6 +794,7 @@ feed_kind make_fx_vol_surface_kind() {
                 /*
                  * A quote means what the pair's market means by it, so each expiry is quoted in
                  * the convention the pair's own row states for it, the row the calibration reads.
+                 * The id comes from the derived source's rule, so both feeds read the same row.
                  */
                 const auto convention_id = feed::fx_option_convention_id(
                     {.base = cfg.base_currency_code, .quote = cfg.quote_currency_code});

@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/run-the-ported-gates-through-compass-check
-#+pr: 4839
+#+pr: 4846
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -79,6 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4846][#4846]] | [build] Follow compass-ng e689a2e: route_units moves into model_rules |
 | [[https://github.com/OreStudio/OreStudio/pull/4839][#4839]] | [build] Run the ported gates as one compass-ng check |
 
 * Review

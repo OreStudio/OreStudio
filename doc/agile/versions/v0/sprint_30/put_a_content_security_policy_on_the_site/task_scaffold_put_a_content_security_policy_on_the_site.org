@@ -8,7 +8,7 @@
 #+filetags: :put_a_content_security_policy_on_the_site:sprint_30:v0:
 #+owner: marco
 #+branch: feature/put-a-content-security-policy-on-the-site
-#+pr:
+#+pr: 4863
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4863][#4863]] | [web] Record the story for a content security policy |
 
 * Review
 

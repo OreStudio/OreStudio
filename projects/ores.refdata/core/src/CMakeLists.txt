@@ -67,10 +67,12 @@ target_link_libraries(${lib_target_name}
         ores.analytics.quant.lib
     PRIVATE
         ores.dq.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.history.core.lib
         ores.service.lib
         pugixml::pugixml
         ores.variability.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.variability.core.lib
         ores.platform.lib
         ores.utility.lib

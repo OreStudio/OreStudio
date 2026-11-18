@@ -43,10 +43,15 @@ namespace {
 
 const fx_market feed_eur_usd{
     .spot = 1.0842, .domestic_discount = 0.9752, .foreign_discount = 0.9851};
-const fx_quote_convention feed_convention{.atm = fx_atm_type::delta_neutral,
-                                          .delta = fx_delta_type::spot,
-                                          .favour = fx_risk_reversal_favour::call,
-                                          .butterfly = fx_butterfly_style::smile};
+ores::refdata::domain::fx_option_convention feed_convention() {
+    ores::refdata::domain::fx_option_convention c;
+    c.id = "EUR-USD-FXOPTION";
+    c.atm_type = "AtmDeltaNeutral";
+    c.delta_type = "Spot";
+    c.risk_reversal_in_favor_of = "Call";
+    c.butterfly_style = "Smile";
+    return c;
+}
 
 ores::synthetic::domain::fx_vol_surface_feed feed_row() {
     ores::synthetic::domain::fx_vol_surface_feed row;
@@ -98,7 +103,7 @@ fx_vol_surface_feed_build_input feed_input() {
     // Given out of order, so the maker's own ordering is what the test sees.
     in.expiries = {feed_expiry("6M", 0.075), feed_expiry("1M", 0.070), feed_expiry("3M", 0.0725)};
     in.contributors = {"reference"};
-    in.convention = feed_convention;
+    in.convention = feed_convention();
     in.deltas = {0.25, 0.10};
     in.expiry_rule = feed_rule();
     return in;
@@ -182,6 +187,16 @@ TEST_CASE("a feed row whose expiries cannot make a surface is refused", "[fx_vol
     auto no_deltas = feed_input();
     no_deltas.deltas.clear();
     CHECK_FALSE(make_fx_vol_surface_emitter(no_deltas, 1).has_value());
+
+    // A convention whose long-term delta type the quant library does not model gives the
+    // expiries past its switch no meaning, and the refusal names the first of them.
+    auto unread = feed_input();
+    unread.convention.switch_tenor = "3M";
+    unread.convention.long_term_delta_type = "Forward";
+    const auto unreadable = make_fx_vol_surface_emitter(unread, 1);
+    REQUIRE_FALSE(unreadable.has_value());
+    CHECK(unreadable.error() ==
+          "The convention at 3M: the delta type 'Forward' is not Spot, Fwd, PaSpot or PaFwd");
 }
 
 TEST_CASE("a surface is quoted against the market a step hands it", "[fx_vol_surface_feed]") {

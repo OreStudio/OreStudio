@@ -26,10 +26,12 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
 #include "ores.refdata.core/service/pair_expiry_date_rule.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
+#include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
@@ -789,27 +791,32 @@ feed_kind make_fx_vol_surface_kind() {
                             .skip_reason = "The surface " + pair_code +
                                            " cannot date its expiries: " + expiry_rule.error()};
 
+                /*
+                 * A quote means what the pair's market means by it, so each expiry is quoted in
+                 * the convention the pair's own row states for it, the row the calibration reads.
+                 */
+                const auto convention_id = feed::fx_option_convention_id(
+                    {.base = cfg.base_currency_code, .quote = cfg.quote_currency_code});
+                auto conventions =
+                    ores::refdata::repository::fx_option_convention_repository().read_latest(
+                        ctx, convention_id);
+                if (conventions.empty())
+                    return {.input = std::nullopt,
+                            .skip_reason = "The surface " + pair_code +
+                                           " has no FX option convention '" + convention_id + "'"};
+
                 fx_vol_surface_feed_build_input in;
                 in.config = cfg;
                 in.expiries = std::move(expiries);
                 in.contributors = std::move(contributors);
                 in.contributor_profiles = std::move(profiles);
                 in.expiry_rule = expiry_rule->rule;
+                in.convention = std::move(conventions.front());
                 /*
                  * The market is not a fact of the row: the feed reads its pair's spot and its
                  * two currencies' curves from the run's values on every tick, and solves each
                  * expiry against the forward they imply.
                  */
-                /*
-                 * The pair's own convention is a refdata row, and the mapping from it lives in
-                 * the market data service. Until the feed is handed that mapping, it quotes
-                 * the convention the derived source quotes and states that it does.
-                 */
-                in.convention = {
-                    .atm = ores::analytics::quant::math::fx_atm_type::delta_neutral,
-                    .delta = ores::analytics::quant::math::fx_delta_type::spot,
-                    .favour = ores::analytics::quant::math::fx_risk_reversal_favour::call,
-                    .butterfly = ores::analytics::quant::math::fx_butterfly_style::smile};
                 in.deltas = {0.25, 0.10};
                 return {.input = feed::feed_build_input{std::move(in)}, .skip_reason = {}};
             };

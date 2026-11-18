@@ -56,10 +56,31 @@ constexpr double round_trip_usd_rate = 0.01;
 const std::chrono::year_month_day round_trip_spot_date{
     std::chrono::year{2026}, std::chrono::November, std::chrono::day{16}};
 
-const fx_quote_convention round_trip_convention{.atm = fx_atm_type::delta_neutral,
-                                                .delta = fx_delta_type::spot,
-                                                .favour = fx_risk_reversal_favour::call,
-                                                .butterfly = fx_butterfly_style::smile};
+/// A convention that switches delta type inside the surface, as the stored rows do at 2Y or 7Y,
+/// with the broker butterfly they all quote: 1M is quoted in spot delta, 3M and 6M in
+/// premium-adjusted forward delta.
+ores::refdata::domain::fx_option_convention round_trip_convention() {
+    ores::refdata::domain::fx_option_convention c;
+    c.id = "EUR-USD-FXOPTION";
+    c.atm_type = "AtmDeltaNeutral";
+    c.delta_type = "Spot";
+    c.switch_tenor = "3M";
+    c.long_term_atm_type = "AtmDeltaNeutral";
+    c.long_term_delta_type = "PaFwd";
+    c.risk_reversal_in_favor_of = "Call";
+    c.butterfly_style = "Broker";
+    return c;
+}
+
+/// The quoting convention the calibration reads for an expiry, from the same row.
+fx_quote_convention round_trip_convention_at(const std::string& tenor) {
+    const auto period = ores::refdata::mapping::parse_tenor_text(tenor);
+    REQUIRE(period);
+    const auto convention =
+        ores::refdata::mapping::to_quote_convention(round_trip_convention(), *period);
+    REQUIRE(convention);
+    return *convention;
+}
 
 
 /// The pair's rule, with weekends closed and no dated holidays: the calendar this fixture
@@ -113,7 +134,7 @@ fx_vol_surface_feed_build_input round_trip_input() {
                    round_trip_expiry("3M", 0.0725),
                    round_trip_expiry("6M", 0.075)};
     in.contributors = {"reference"};
-    in.convention = round_trip_convention;
+    in.convention = round_trip_convention();
     in.deltas = {0.25, 0.10};
     in.expiry_rule = round_trip_rule();
     return in;
@@ -186,6 +207,11 @@ double delta_of(const std::string& label) {
 
 TEST_CASE("the surface a run publishes is the surface a calibration recovers",
           "[fx_vol_surface_round_trip]") {
+    // The row switches inside the surface, so a surface quoted in one convention throughout
+    // would be read wrong at one end of it.
+    REQUIRE(round_trip_convention_at("1M").delta == fx_delta_type::spot);
+    REQUIRE(round_trip_convention_at("3M").delta == fx_delta_type::premium_adjusted_forward);
+
     auto emitter = make_fx_vol_surface_emitter(round_trip_input(), 99);
     REQUIRE(emitter);
 
@@ -226,10 +252,11 @@ TEST_CASE("the surface a run publishes is the surface a calibration recovers",
     request.pillar_tolerance = 0.0;
     for (std::size_t i = 0; i < shown.size(); ++i) {
         const double years = *fx_vol_tenor_years(shown[i].expiry_id);
+        const auto convention = round_trip_convention_at(shown[i].expiry_id);
         ssvi_expiry_quotes quotes{.expiry_id = shown[i].expiry_id,
                                   .years = years,
                                   .market = markets[i],
-                                  .convention = round_trip_convention,
+                                  .convention = convention,
                                   .pillars = {}};
         for (std::size_t k = 0; k < 5; ++k) {
             const auto& point = points[i * 5 + k];
@@ -244,7 +271,7 @@ TEST_CASE("the surface a run publishes is the surface a calibration recovers",
         request.grid_expiries.push_back({.expiry_id = quotes.expiry_id,
                                          .years = years,
                                          .market = markets[i],
-                                         .convention = round_trip_convention});
+                                         .convention = convention});
         request.expiries.push_back(std::move(quotes));
     }
     request.grid_strikes.push_back({.strike_id = "ATM", .at = ssvi_atm_strike{}});
@@ -274,7 +301,7 @@ TEST_CASE("the surface a run publishes is the surface a calibration recovers",
             worst_wing = std::max(worst_wing, std::abs(fit.error));
     }
     INFO("worst ATM error " << worst_atm << ", worst wing error " << worst_wing);
-    // Measured on this fixture: 2.55e-09 at ATM and 6.56e-09 at the wings. The margins sit just
+    // Measured on this fixture: 2.41e-09 at ATM and 5.83e-09 at the wings. The margins sit just
     // above that -- four times and three times the measurement -- so a fit that cost twice as much
     // fails here.
     CHECK(worst_atm < 1e-8);
@@ -294,8 +321,9 @@ TEST_CASE("the surface a run publishes is the surface a calibration recovers",
                     return fit.quoted;
             return 0.0;
         }();
-        const double expected = fx_atm_strike(round_trip_convention.atm,
-                                              round_trip_convention.delta,
+        const auto convention = round_trip_convention_at(point.expiry_id);
+        const double expected = fx_atm_strike(convention.atm,
+                                              convention.delta,
                                               expiry.market,
                                               vol * std::sqrt(expiry.years));
         const double strike = expiry.market.forward() * std::exp(point.log_moneyness);

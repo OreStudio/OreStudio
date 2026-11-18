@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_FEEDS_FX_VOL_SURFACE_FEED_HPP
 
 #include "ores.analytics.quant/domain/date_convention.hpp"
+#include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
@@ -63,8 +64,8 @@ struct fx_vol_surface_feed_build_input final {
     std::vector<std::string> contributors;
     /// Their noise profiles, in the same order; empty means every one is the clean contributor.
     std::vector<ores::analytics::quant::service::fx_vol_noise_profile> contributor_profiles;
-    /// The pair's quoting convention, which every expiry of the surface is quoted in.
-    ores::analytics::quant::math::fx_quote_convention convention;
+    /// The pair's FX option convention, which states the quoting convention of each expiry.
+    ores::refdata::domain::fx_option_convention convention;
     /// The deltas, besides ATM, to quote a risk reversal and a butterfly at.
     std::vector<double> deltas;
     /// The pair's expiry date rule: the date each expiry the surface quotes is struck at.
@@ -141,8 +142,12 @@ fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
  * latent market correlates the shocks and a surface that correlated them again would move
  * twice as far with spot as it says.
  *
+ * Each expiry is quoted in the convention the pair's FX option convention states for its
+ * tenor, read by reference data's mapper as the calibration reads it.
+ *
  * Refuses a tenor that does not read, expiries that do not rise, ATM total variances that
- * do not rise with them, a segment with no expiry, and a contributor who is named twice.
+ * do not rise with them, a segment with no expiry, a convention that states no quoting
+ * convention for an expiry, and a contributor who is named twice.
  */
 [[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::expected<fx_vol_surface_emitter, std::string>
 make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::uint64_t run_seed);

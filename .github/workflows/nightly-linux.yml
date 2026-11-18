@@ -577,10 +577,10 @@ jobs:
 
       - name: Restore the empty runtime directories
         if: steps.staged.outputs.found == 'true'
-        # An artifact carries files, not directories, and the staging creates
-        # three runtime directories empty. The base image copies all three, so
-        # without them the first build cannot resolve its COPY and nothing is
-        # published.
+        # An artifact carries files, not directories, and docker/stage-runtime.sh
+        # creates these three empty. The base image copies all three, so without
+        # them the first build cannot resolve its COPY and nothing is published.
+        # A fourth directory there means a fourth here.
         run: mkdir -p build/docker-stage/log build/docker-stage/run build/docker-stage/storage
 
       - name: Log in to GitHub Container Registry

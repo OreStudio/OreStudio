@@ -83,3 +83,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+The publish job recreates =build/docker-stage/log=, =run= and =storage= after it
+downloads the artifact and before it builds, and its comment names
+=docker/stage-runtime.sh= as the place they come from. The directories stay
+empty in the staging, so no placeholder file reaches an image.
+
+Proved by the failure it removes: the nightly's publish job stopped on
+"failed to compute cache key: /build/docker-stage/storage: not found" before
+building anything. The first nightly after the merge is the proof it works.

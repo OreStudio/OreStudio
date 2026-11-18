@@ -18,7 +18,23 @@ How do I run the ORE Studio C++ code generator?
 
 * Answer
 
-There are three entry points depending on scope:
+** Everything that changed (preferred)
+
+compass-ng regenerates every output whose model, template or other input
+changed, writes nothing else, and formats C++ and TypeScript as the committed
+tree is formatted. A warm run with no change takes a few seconds. Preview with
+diff, which writes nothing, then write with generate:
+
+#+begin_src sh
+./compass.sh diff
+./compass.sh generate
+#+end_src
+
+The Python codegen below stays for scaffolding new entities and for rendering
+one address of one model. Its output is byte-identical to compass-ng's, so a
+=./compass.sh diff= after it shows nothing.
+
+There are three Python entry points depending on scope:
 
 ** By entity name (preferred for single-entity work)
 
@@ -58,16 +74,15 @@ Generate from a specific org model file:
 
 ** Across a whole component
 
-Regenerate every entity in a component:
-
-#+begin_src sh
-./compass.sh codegen regenerate --component refdata --address ores.cpp
-./compass.sh codegen regenerate --component refdata --address ores.sql.schema
-#+end_src
+Use =./compass.sh generate=: it regenerates every component whose inputs
+changed, so there is no per-component run to make.
 
 * Script
 
-All three entry points are implemented in
+=./compass.sh generate= and =diff= forward to compass-ng through =cmd_compass_ng=
+in [[proj:projects/ores.compass/src/compass.py][=compass.py=]].
+
+The three Python entry points are implemented in
 [[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]] (entity-name
 workflow) and =cmd_codegen= in
 [[proj:projects/ores.compass/src/compass.py][=compass.py=]] (model-file and component-wide workflows).

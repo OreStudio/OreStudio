@@ -2,13 +2,20 @@
 :ID: E2D03F58-02F1-4CBF-A3BE-FD9522BDD2E4
 :END:
 #+title: Regenerate only the drift-free components, never with --all
-#+description: compass codegen regenerate --all rewrites every component, including those whose drift is untracked, and floods the working tree with output nobody has verified.
+#+description: With the Python codegen, regenerate --all rewrites every component, including those whose drift is untracked; compass-ng generate is the tree-wide run now that the tree is drift-free.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-09-19
-#+updated: 2026-10-01
+#+updated: 2026-11-18
+
+With compass-ng the tree-wide run is the normal one: =./compass.sh generate=
+writes only the outputs whose inputs changed, and the gate fails any drift
+anywhere in the tree, so =./compass.sh diff= is clean on main and a
+regeneration shows exactly what a change touched. Preview with
+=./compass.sh diff=, then run =./compass.sh generate=. The rule below holds
+for the Python codegen, which stays for scaffolding and single-address runs.
 
 Never run =compass codegen regenerate --all=, and never regenerate a component that is not ready, such as trading. Regenerate only the components under test, the shared list in =projects/ores.codegen/scripts/component_registry.py=, one =--component <slug>= at a time. Most components are not drift-free, and a full regeneration rewrites their generated output too.
 

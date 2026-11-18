@@ -86,9 +86,11 @@ to add another entity.
 ** Regenerate
 
 #+begin_src sh :results verbatim
-./compass.sh codegen regenerate \
-    --component <component>-cpp --address ores.cpp
+./compass.sh generate
 #+end_src
+
+compass-ng renders the new model at every address it supports, with the
+rest of what changed.
 
 Codegen discovers models through =modeling_dir= alone: org files whose
 =#+type:= says =ores.codegen.entity=.

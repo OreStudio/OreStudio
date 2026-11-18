@@ -31,7 +31,14 @@ build until that generated list is refreshed.
 
 * How to use this skill
 
-1. *Regenerate*:
+1. *Regenerate*. compass-ng's component_files codec writes every
+   =component_files.cmake=, byte-identical to the script below:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh generate
+   #+end_src
+
+   Without compass-ng, run the script, for every component:
 
    #+begin_src sh :results verbatim
    python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all
@@ -52,6 +59,12 @@ build until that generated list is refreshed.
 
 3. *Drift check only* (no writes) — exits non-zero if anything is
    stale:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh diff
+   #+end_src
+
+   Or, without compass-ng:
 
    #+begin_src sh :results verbatim
    python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check

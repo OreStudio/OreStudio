@@ -9,7 +9,7 @@
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-Runs the =repository= profile via =compass codegen regenerate=, generating repository entities, mappers, and CRUD repository header and implementation. See [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
+The =repository= profile's outputs come from =./compass.sh generate=, which runs compass-ng over every model whose inputs changed, generating repository entities, mappers, and CRUD repository header and implementation. See [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 
 * Question
 
@@ -20,7 +20,8 @@ How do I regenerate the C++ repository files (entity, mapper, repository) for a 
 The =repository= profile generates the repository entity, mapper, and repository header/implementation pairs.
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata --address ores.cpp.repository
+./compass.sh diff
+./compass.sh generate
 #+end_src
 
 Expected output (entity =rounding_type=, =component_core=refdata.core=):
@@ -37,7 +38,7 @@ Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata --address ores.cpp.repository=.
+=./compass.sh generate=.
 
 * Tested by
 

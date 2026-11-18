@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-workflow-views
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Serve these composed views from ores.workflow and ores.inbox: one subject's stor
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The plan is written; the run's progress is the first view. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Serve the run's progress, then the request story. |
+| Last touched | 2026-11-18                               |
 
 * Acceptance
 
@@ -42,9 +42,41 @@ Serve these composed views from ores.workflow and ores.inbox: one subject's stor
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Seven routes in six views. The inventory states what each one weaves and how
+long its answer is kept, and that statement is the design: it is not decided
+again here.
+
+| View | Route | Weaves | Kept |
+|------+-------+--------+------|
+| the run's progress | GET /api/workflow/:instanceId | one read of the run's steps, which is already the shape the rail renders | fresh for 5 s |
+| the request story | GET /api/requests/:id/story | the request's versions, the decisions taken on it, the roles it asked for and the notices, or the change lines of its kind beside the live record | fresh for 15 s |
+| the request changes | GET /api/requests/:id/changes | the change lines of the request's kind beside the live record | fresh for 15 s |
+| the approval inbox | GET /api/requests | every kind of request this person may decide, gathered into one queue with each kind's subject | fresh for 15 s |
+| the authorisation queue | GET /api/queue/authorisations | the queue for this viewer, each open and answered request joined to the deal it names | not kept |
+| the request checks | GET /api/requests/:id/checks | each proposed line run through the real write against the record as it stands | fresh for 30 s |
+| one subject's story | GET /api/timeline | every component's rows for one subject, each source read under its owner's permission, a refused source reported as a gap | fresh for 30 s |
+
+They are served in that order, one commit each, smallest first: the run's
+progress weaves nothing, and one subject's story reads every area the
+deployment holds. A view is finished when its route answers at the BFF's
+address, in its member names and with its status codes, its ETag and freshness
+rule are tested, and its BFF route is paired in the inventory.
+
+The gateway composes and does not compute. A view that needs a collection no
+service exposes gets that read added to the service that owns the data, beside
+the operations it already answers, and never a database connection in the
+gateway: the reporting views were served that way, and the workflow views take
+the same road.
+
+A source that cannot be read is a gap and not a failure, where the view states
+one: one subject's story names the sources it could not read and answers the
+rest, and a source that refuses its permission is reported as a gap because
+that is what the person's grant allows. A view whose only read fails is the
+service not answering, which is a 502.
+
+Every view answers through =ores::http::net::view_answer=, the one place the
+ETag, the =If-None-Match= answer and the freshness rule are stated, so the four
+obligations are met once rather than once per view.
 
 * Measurements
 

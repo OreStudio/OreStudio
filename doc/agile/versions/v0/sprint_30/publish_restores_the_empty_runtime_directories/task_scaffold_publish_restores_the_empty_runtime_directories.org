@@ -8,7 +8,7 @@
 #+filetags: :publish_restores_the_empty_runtime_directories:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/publish-restores-the-empty-runtime-directories
-#+pr:
+#+pr: 4861
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4861][#4861]] | [ci] Recreate the runtime directories the artifact cannot carry |
 
 * Review
 

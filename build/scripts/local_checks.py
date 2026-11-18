@@ -1426,7 +1426,8 @@ CHECKS_BY_ID = {check.id: check for check in CATALOGUE}
 # Python script. paste-blocks, model-sql-types and skill-recipes have no codec of
 # their own: compass dropped them, and the codecs named cover what they checked;
 # lint now holds the pattern-uses and structure-notes rules.
-# curve-sections-wiring stays in Python until compass checks its two C++ outputs.
+# model_rules holds the model rules of money-decimal-columns, http-areas,
+# model-drift, subject-conformance and protocol-twins.
 COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "tangle-templates": ("tangle", "tangle_check",),
     "tangle-shell": ("shell_recipe_library",),
@@ -1448,7 +1449,7 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "unity-collisions": ("unity_collisions",),
     "unique-type-names": ("unique_type_names",),
     "xml-family-census": ("xml_family_census",),
-    "http-areas": ("http_areas",),
+    "http-areas": ("model_rules",),
     "route-units": ("route_units",),
     "route-inventory": ("route_inventory",),
     "prototypes": ("prototypes",),
@@ -1458,9 +1459,9 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "component-drift": ("codegen",),
     "drift-sweep": ("codegen",),
     "paste-blocks": ("codegen",),
-    "model-drift": ("model_drift",),
+    "model-drift": ("model_rules",),
     "er-diagram": ("er_diagram", "rls_coverage",),
-    "money-decimal-columns": ("money_decimal_columns",),
+    "money-decimal-columns": ("model_rules",),
     "model-sql-types": ("codegen",),
     "entity-binary-types": ("entity_binary_types",),
     "sql-hygiene": ("sql_hygiene",),
@@ -1468,15 +1469,16 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "ore-renderings-tables": ("ore_renderings_tables",),
     "ore-parameter-value-sets": ("ore_value_sets",),
     "parameter-value-sets-only": ("parameter_value_sets",),
-    "convention-kind-terms": ("convention_kind_terms",),
+    "convention-kind-terms": ("ore_value_sets",),
     "shell-command-units": ("shell_command_units",),
     "curve-parameter-paths": ("curve_parameter_paths",),
     "ore-element-map": ("ore_value_sets",),
-    "curve-column-guards": ("curve_column_guards",),
+    "curve-column-guards": ("curve_sections_wiring",),
+    "curve-sections-wiring": ("curve_sections_wiring",),
     "marketdata-identity-columns": ("marketdata_identity_columns",),
     "generated-column-refs": ("generated_column_refs",),
-    "protocol-twins": ("protocol_twins",),
-    "subject-conformance": ("subject_conformance",),
+    "protocol-twins": ("protocol_twins", "model_rules"),
+    "subject-conformance": ("subject_conformance", "model_rules"),
     "handler-permissions": ("handler_permissions",),
     "open-reads": ("open_reads",),
     "shell-menus": ("shell_menus",),

@@ -56,7 +56,8 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | sql_reachability | yes | |
 | conventions_coverage | yes | |
 | conventions_dataset | yes | |
-| curve_sections_wiring | yes | |
+| curve_sections_wiring | yes | clang_format=clang-format |
+| model_rules | yes | |
 | entity_binary_types | yes | |
 | entity_writes | yes | |
 | er_diagram | yes | |

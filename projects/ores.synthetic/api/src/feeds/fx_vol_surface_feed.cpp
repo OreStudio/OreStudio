@@ -107,6 +107,8 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
 
     double previous_years = 0.0;
     double previous_theta = 0.0;
+    std::vector<fx_quote_convention> conventions;
+    conventions.reserve(ordered.size());
     for (std::size_t i = 0; i < ordered.size(); ++i) {
         const auto& [years, expiry] = ordered[i];
         if (!(years > previous_years))
@@ -118,6 +120,15 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
                 "The ATM total variance of {} does not rise from the expiry before it, so its "
                 "forward variance would not be positive.",
                 expiry->tenor));
+        const auto convention =
+            ores::refdata::mapping::parse_tenor_text(expiry->tenor)
+                .and_then([&](ores::analytics::quant::domain::date_period period) {
+                    return ores::refdata::mapping::to_quote_convention(input.convention, period);
+                });
+        if (!convention)
+            return std::unexpected(
+                std::format("The convention at {}: {}", expiry->tenor, convention.error()));
+        conventions.push_back(*convention);
         start.expiries.push_back(
             {.expiry_id = expiry->tenor, .years = years, .atm_total_variance = theta});
         dynamics.variance_reversion.push_back(expiry->variance_reversion);
@@ -129,8 +140,6 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
     // The latent market correlates the shocks, so the surface's own matrix is the identity.
     const auto size = static_cast<Eigen::Index>(ordered.size() + 3);
     dynamics.correlation = Eigen::MatrixXd::Identity(size, size);
-
-    // The convention is the pair's and does not move; the market arrives with each step.
 
     std::vector<fx_vol_contributor_spec> contributors;
     contributors.reserve(input.contributors.size());
@@ -154,7 +163,7 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
     return fx_vol_surface_emitter::make(start,
                                         std::move(dynamics),
                                         1.0 / days_in_a_year,
-                                        input.convention,
+                                        std::move(conventions),
                                         input.deltas,
                                         std::move(contributors));
 }

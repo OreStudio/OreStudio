@@ -123,11 +123,13 @@ make_emitter(std::vector<fx_vol_contributor_spec> contributors,
              std::vector<double> deltas = emitter_deltas) {
     const auto start = emitter_start();
     current_markets = markets_of(markets);
-    const auto convention = markets.empty() ? emitter_convention : markets.front().convention;
+    std::vector<fx_quote_convention> conventions;
+    for (std::size_t i = 0; i < start.expiries.size(); ++i)
+        conventions.push_back(i < markets.size() ? markets[i].convention : emitter_convention);
     return fx_vol_surface_emitter::make(start,
                                         std::move(dynamics),
                                         emitter_day,
-                                        convention,
+                                        std::move(conventions),
                                         std::move(deltas),
                                         std::move(contributors));
 }
@@ -282,6 +284,16 @@ TEST_CASE("the emitter refuses what it cannot step", "[fx_vol_surface_emitter]")
     // A surface with nobody to quote it is not a feed.
     CHECK_FALSE(make_emitter({}, emitter_markets(start), emitter_dynamics(start.expiries.size()))
                     .has_value());
+    // An expiry with no convention has no meaning for its quotes, so one short is refused.
+    const auto short_of_one =
+        fx_vol_surface_emitter::make(start,
+                                     emitter_dynamics(start.expiries.size()),
+                                     emitter_day,
+                                     std::vector(start.expiries.size() - 1, emitter_convention),
+                                     emitter_deltas,
+                                     {emitter_clean()});
+    REQUIRE_FALSE(short_of_one.has_value());
+    CHECK(short_of_one.error() == "A surface of 3 expiries needs one convention for each, not 2.");
     // A market per expiry: the count is a step's business now, and a step one market short is
     // refused rather than reading the expiry beside it.
     auto full = make_emitter(

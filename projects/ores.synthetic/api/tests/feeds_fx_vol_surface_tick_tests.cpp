@@ -160,10 +160,11 @@ fx_vol_surface_emitter tick_emitter(std::size_t expiries) {
          .stream = rng_stream(stream_key{.run_seed = 5,
                                          .series = series_key("synthetic.fx_vol.tick"),
                                          .purpose = draw_purpose::market})}};
-    auto built = fx_vol_surface_emitter::make(tick_start(),
+    const auto start = tick_start();
+    auto built = fx_vol_surface_emitter::make(start,
                                               tick_dynamics(expiries),
                                               tick_day,
-                                              tick_convention,
+                                              std::vector(start.expiries.size(), tick_convention),
                                               {0.25, 0.10},
                                               std::move(contributors));
     REQUIRE(built);

@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: 4F12410B-665A-4685-946B-481EE5916CBE
+:END:
+#+title: The listener recovery test races the listener's reconnect
+#+description: postgres_listener_service_tests.cpp:381 fails with received[0] == '{"entity":"ores.database.lost"}' where it expects the recovered payload. The test kills the listener backend, waits until pg_stat_activity no longer shows it, and only then sends the lost NOTIFY. The listener can reconnect and reissue LISTEN between that check and the send, so the lost notification arrives. Seen twice on 2026-11-18 on bright_faraday, once in the full gate and once with ores.database.tests run alone at load 16. The branch under test did not touch ores.database.
+#+type: capture
+#+level: cross
+#+filetags: :testing:flaky:ores.database:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The listener recovery test in postgres_listener_service_tests.cpp sends its lost NOTIFY after it sees the old backend gone. The listener can reconnect in that gap, so it receives the lost payload and the test fails at line 381.
+
+* Why
+
+The failure blocks the local gate for branches that do not touch ores.database. A fix must hold the listener down until the lost NOTIFY is sent, for example by pausing its reconnect in the test.
+

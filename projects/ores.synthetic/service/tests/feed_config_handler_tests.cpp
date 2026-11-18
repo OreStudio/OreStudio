@@ -29,6 +29,7 @@
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
+#include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/payment_frequency.hpp"
 #include "ores.refdata.api/domain/tenor.hpp"
@@ -37,6 +38,7 @@
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
+#include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
 #include "ores.refdata.core/repository/instrument_code_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/repository/payment_frequency_repository.hpp"
@@ -143,6 +145,29 @@ struct seeded_configs {
 // conventions: a surface dates its expiries on its pair's convention and
 // calendars, and refuses to start without them, so the test states them the way
 // an environment's reference data does.
+/// The pair's FX option convention, under the id the surface feed reads, such as
+/// EUR-USD-FXOPTION.
+void seed_fx_option_convention(ores::testing::scoped_database_helper& h,
+                               const boost::uuids::uuid& party,
+                               const std::string& id) {
+    ores::refdata::domain::fx_option_convention convention;
+    convention.id = id;
+    convention.tenant_id = h.tenant_id();
+    convention.party_id = party;
+    convention.atm_type = "AtmDeltaNeutral";
+    convention.delta_type = "Spot";
+    convention.switch_tenor = "2Y";
+    convention.long_term_atm_type = "AtmDeltaNeutral";
+    convention.long_term_delta_type = "Fwd";
+    convention.risk_reversal_in_favor_of = "Call";
+    convention.butterfly_style = "Broker";
+    convention.modified_by = h.db_user();
+    convention.performed_by = h.db_user();
+    convention.change_reason_code = "system.test";
+    convention.change_commentary = "Synthetic test data";
+    ores::refdata::repository::fx_option_convention_repository().write(h.context(), convention);
+}
+
 void seed_pair_expiry_calendar(ores::testing::scoped_database_helper& h,
                                const std::string& pair_code,
                                const std::string& calendar_code,
@@ -683,9 +708,24 @@ TEST_CASE("feed_config_starts_a_volatility_surface_by_config_id",
                                    "synthetic::fx_vol_surface_feeds:read",
                                    "synthetic::feeds:run"});
 
-    // The surface resolves its feed row, its expiry rows and its contributor rows, and the
-    // factory builds it: a surface with no market still starts and publishes the level it was
-    // configured with.
+    // A surface's quotes mean what its pair's convention says, so a pair with none is refused
+    // and named rather than quoted in a convention nobody stated.
+    const auto unconventional = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.surface_enabled_id)});
+    CHECK_FALSE(unconventional.success);
+    INFO("refused with: " << unconventional.message);
+    CHECK(unconventional.message.find("has no FX option convention 'EUR-USD-FXOPTION'") !=
+          std::string::npos);
+    CHECK(f.fleet.running_count() == 0);
+
+    seed_fx_option_convention(f.db, test_party, "EUR-USD-FXOPTION");
+
+    // The surface resolves its feed row, its expiry rows, its contributor rows and its pair's
+    // convention, and the factory builds it: a surface with no market still starts and
+    // publishes the level it was configured with.
     const auto surface_start = send_request<start_feed_request, start_feed_response>(
         f.nats,
         test_start_subject,

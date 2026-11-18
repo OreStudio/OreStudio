@@ -20,9 +20,8 @@
 # The host terminates TLS with Caddy, which obtains and renews a Let's Encrypt
 # certificate for the name it is given and reverse-proxies to the BFF bound to
 # loopback. While closed the machine accepts no traffic at all from the
-# internet: the rule that opens 443 lives in a table of its own, so closing
-# deletes it in one operation and never edits the host's main ruleset, and
-# Caddy is stopped rather than left listening.
+# internet: closing deletes the one rule that opens 443 and stops Caddy, so
+# nothing is left listening and the host's other rules are untouched.
 #
 # Only 443 is opened. The certificate is validated with TLS-ALPN-01, which
 # happens on 443, so port 80 is never needed.
@@ -48,26 +47,32 @@ helper="/usr/local/bin/ores-web-close"
 # the handle nftables gives it. A separate table does not work here: every base
 # chain on a hook sees the packet, so an accept in a chain of its own is
 # followed by the host's chain and its drop policy, and the packet is dropped
-# anyway. The handle is kept in a runtime file so the close — and the scheduled
-# close — remove exactly the rule that was added.
+# anyway. The rule carries a comment, so the close removes that rule and never
+# a rule the host wrote: the host may already accept 443 somewhere in the same
+# chain, and a handle read back by port would name the wrong one.
 handle_file="/run/ores-web-expose.handle"
+rule_comment="ores-web-expose"
+
+# The handle of the rule this script adds, from its comment, or nothing.
+find_handle='nft -a list chain inet filter input 2>/dev/null \
+    | grep "comment \"ores-web-expose\"" | tail -1 | sed "s/.*# handle //"'
 
 open_rules() {
     ssh "$host" "
-        nft delete rule inet filter input handle \$(cat ${handle_file} 2>/dev/null) 2>/dev/null || true
-        nft insert rule inet filter input tcp dport 443 accept
-        nft -a list chain inet filter input \
-            | awk '/tcp dport 443/ {print \$NF}' | tail -1 > ${handle_file}
+        nft insert rule inet filter input tcp dport 443 accept comment \"${rule_comment}\"
+        ${find_handle} > ${handle_file}
         cat ${handle_file}
     "
 }
 
 close_rules() {
     ssh "$host" "
-        if [ -s ${handle_file} ]; then
-            nft delete rule inet filter input handle \$(cat ${handle_file}) 2>/dev/null || true
-            rm -f ${handle_file}
+        handle=\$(cat ${handle_file} 2>/dev/null || true)
+        if [ -z \"\$handle\" ]; then handle=\$(${find_handle}); fi
+        if [ -n \"\$handle\" ]; then
+            nft delete rule inet filter input handle \"\$handle\" 2>/dev/null || true
         fi
+        rm -f ${handle_file}
     "
 }
 
@@ -78,10 +83,15 @@ install_helper() {
 #!/bin/sh
 # Written by build/scripts/expose-web.sh. Ends a scheduled exposure.
 systemctl stop caddy >/dev/null 2>&1 || true
-if [ -s ${handle_file} ]; then
-    nft delete rule inet filter input handle \$(cat ${handle_file}) 2>/dev/null || true
-    rm -f ${handle_file}
+handle=\$(cat ${handle_file} 2>/dev/null || true)
+if [ -z \"\$handle\" ]; then
+    handle=\$(nft -a list chain inet filter input 2>/dev/null \
+        | grep 'comment \"${rule_comment}\"' | tail -1 | sed 's/.*# handle //')
 fi
+if [ -n \"\$handle\" ]; then
+    nft delete rule inet filter input handle \"\$handle\" 2>/dev/null || true
+fi
+rm -f ${handle_file}
 EOF
 chmod 755 ${helper}"
 }
@@ -122,6 +132,12 @@ caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null 2>&1
 case "$action" in
     setup)
         hostname="${3:?setup needs the hostname the certificate is issued for}"
+        # The name reaches a heredoc that writes the host's configuration, so it
+        # may hold only what a DNS name holds.
+        if [[ ! "$hostname" =~ ^[A-Za-z0-9.-]+$ ]]; then
+            echo "the hostname may hold only letters, digits, dots and dashes: $hostname" >&2
+            exit 2
+        fi
         ssh "$host" "command -v caddy >/dev/null 2>&1 || DEBIAN_FRONTEND=noninteractive apt-get install -y caddy >/dev/null"
         write_caddyfile
         # Closed is the default, so the service must not start with the machine.
@@ -143,7 +159,14 @@ case "$action" in
         ssh "$host" "systemctl stop ores-web-close.service 2>/dev/null || true"
         if [[ -n "$duration" ]]; then
             install_helper
-            ssh "$host" "systemd-run --on-active='${duration}' --unit=ores-web-close ${helper} >/dev/null 2>&1 || true"
+            # A timer that did not start leaves the exposure open for good, so
+            # a failure closes it now rather than leaving it to a person.
+            if ! ssh "$host" "systemd-run --on-active='${duration}' --unit=ores-web-close ${helper} >/dev/null 2>&1"; then
+                echo "the close timer did not start; closing now" >&2
+                ssh "$host" "systemctl stop caddy >/dev/null 2>&1 || true" || true
+                close_rules || true
+                exit 1
+            fi
         fi
         hostname="$(ssh "$host" "awk '\$2 == \"{\" {print \$1; exit}' /etc/caddy/Caddyfile")"
         echo "Open on https://${hostname}/"
@@ -158,7 +181,7 @@ case "$action" in
         ;;
     status)
         printf 'caddy      : %s\n' "$(ssh "$host" "systemctl is-active caddy 2>/dev/null || true")"
-        printf 'firewall   : %s\n' "$(ssh "$host" "nft list chain inet filter input 2>/dev/null | grep -q 'tcp dport 443' && echo 'open (443)' || echo closed")"
+        printf 'firewall   : %s\n' "$(ssh "$host" "nft -a list chain inet filter input 2>/dev/null | grep -q 'comment \"${rule_comment}\"' && echo 'open (443)' || echo closed")"
         printf 'certificate: %s\n' "$(ssh "$host" "ls -1 /var/lib/caddy/.local/share/caddy/certificates/*/*.crt 2>/dev/null | head -2 | tr '\n' ' ' || true")"
         ;;
     *)

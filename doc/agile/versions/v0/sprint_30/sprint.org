@@ -182,6 +182,8 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:51A61A3A-AB4B-4E7A-A8CE-014CA1C50840][Link the shared service error on Windows]] | DONE | | 2026-11-18 | Both Windows nightlies fail to link: ores.iam.core imports ores::service::messaging::service_error, and no translation unit in ores.service defines it, so the DLL never exports its constructor, destructor or vtable. |
 | [[id:BF27F4FE-E493-4C5D-A30E-6DDBC4F47A4C][Publish restores the empty runtime directories]] | DONE | | 2026-11-18 | The nightly publish job fails before it builds anything, because the artifact carries files but not the three empty runtime directories the base image copies. |
 
+| [[id:B4323872-B3AA-4038-ACF6-813949721CF0][Fold a long warning on the run's rail]] | BACKLOG | | | Step 13 of the setup names all 120 surfaces it could not publish in one sentence, and the run rail prints that sentence in full under the step, so the report is a wall of text. A long warning should keep its first sentence and put the rest behind a disclosure. |
+
 * Achievements
 
 Milestones worth capturing as they happen, so the release notes at

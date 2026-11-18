@@ -463,6 +463,47 @@ describe("a run's step", () => {
         expect(html).toContain('there was nothing to import');
     });
 
+    it('keeps a short warning where it stands, with no disclosure', () => {
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'completed_with_warnings',
+                    log: [{ level: 'warn', message: 'There was nothing to import.', context: '' }],
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).toContain('There was nothing to import.');
+        expect(html).not.toContain('<details');
+    });
+
+    it('folds a warning that names more items than the rail can hold', () => {
+        const named = Array.from(
+            { length: 120 },
+            (_, index) => `Acme Corporation Plc: PAIR${index}`,
+        );
+        const message = `120 surface(s) were not published. A rerun is safe: ${named.join('; ')}.`;
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'completed_with_warnings',
+                    log: [{ level: 'warn', message, context: '' }],
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).toContain('<details');
+        expect(html).toContain('120 surface(s) were not published.');
+        expect(html).toContain('summar');
+        expect(html.slice(html.indexOf('<summary'), html.indexOf('</summary>'))).not.toContain(
+            'PAIR119',
+        );
+    });
+
     it('states the step in the words the server sent for it', () => {
         const html = render(<RunStep step={step} words={(sentence) => sentence} />);
 

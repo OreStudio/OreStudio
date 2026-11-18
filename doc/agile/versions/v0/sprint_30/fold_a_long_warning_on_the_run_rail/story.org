@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: B4323872-B3AA-4038-ACF6-813949721CF0
+:END:
+#+title: Story: Fold a long warning on the run's rail
+#+description: Step 13 of the setup names all 120 surfaces it could not publish in one sentence, and the run rail prints that sentence in full under the step, so the report is a wall of text. A long warning should keep its first sentence and put the rest behind a disclosure.
+#+type: story
+#+level: s2
+#+filetags: :web:setup:ux:sprint_30:v0:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A step that finishes with a warning shows the reason under its name on the
+run rail, and a warning that names hundreds of items keeps that sentence short
+enough to read: the first sentence stands, and the rest waits behind a
+disclosure beside it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not started. The rail prints the step's last sentence in full. |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-18                               |
+
+* Acceptance
+
+- A warning of one short sentence is read where it stands, as it is now.
+- A warning long enough to bury the rail keeps its first sentence and puts the
+  whole text behind a disclosure labelled with that sentence.
+- The folded text is scrollable and wraps, so a list of hundreds of items
+  neither widens the page nor runs past its end.
+- The step's own log still holds every message, unchanged, for the person who
+  opens the details.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DF440ADF-B861-4772-95A8-59AFFFB4C5D5][Scaffold story: Fold a long warning on the run's rail]] | STARTED | 2026-11-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:2901BC21-3EBF-4005-939E-27B0B6B0AA68][Implement Fold a long warning on the run's rail]] | BACKLOG | | | Initial task for: Fold a long warning on the run's rail |
+
+* Decisions
+
+- *The rail folds, the setup report keeps its list.* The setup report already
+  shows one warning per entry under a counted disclosure, and a person reading
+  it there wants every line. The rail is a summary of the run, so it is the one
+  that folds.
+- *The first sentence, not a character count.* A step that warns of one thing
+  says it in its first sentence; a step that warns of many leads with the count
+  and then names them.
+
+* Out of scope
+
+- Rewriting the step's message on the server so it says less.

@@ -739,6 +739,21 @@ const LOG_TONE: Record<string, string> = {
  * buries the steps around it. Open, the error comes first, one piece of work to
  * a line.
  */
+/**
+ * The length past which a step's warning is folded on the rail.
+ *
+ * A step that names a handful of items is read where it stands; the one that
+ * names every surface it could not publish is a paragraph, and it is the only
+ * reason the rail needs a disclosure.
+ */
+const FOLDED_WARNING_FROM = 200;
+
+/** The first sentence of a text, with its full stop, or the whole text. */
+function firstSentenceOf(text: string): string {
+    const end = text.search(/[.!?](\s|$)/);
+    return end === -1 ? text : text.slice(0, end + 1);
+}
+
 export function RunStep({
     step,
     words,
@@ -787,6 +802,7 @@ export function RunStep({
         step.status === 'completed_with_warnings' && lastLogged !== undefined
             ? words(lastLogged.message)
             : '';
+    const foldedWarning = warning.length > FOLDED_WARNING_FROM;
     return (
         <li key={step.id} className={cx('flex items-start gap-3 text-sm', tone)}>
             <span
@@ -838,8 +854,18 @@ export function RunStep({
                         label={counts}
                     />
                 )}
-                {warning !== '' && (
+                {warning !== '' && !foldedWarning && (
                     <span className="mt-0.5 block text-xs text-warn">{warning}</span>
+                )}
+                {warning !== '' && foldedWarning && (
+                    <details className="mt-0.5 text-xs">
+                        <summary className="cursor-pointer select-none text-warn">
+                            {firstSentenceOf(warning)}
+                        </summary>
+                        <p className="mt-1 max-h-48 overflow-auto whitespace-pre-wrap break-words border-l border-line-subtle pl-3 text-ink-muted">
+                            {warning}
+                        </p>
+                    </details>
                 )}
                 {(step.started_at !== null || step.error !== '') && (
                     <details className="mt-1 text-xs">

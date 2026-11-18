@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 58E7AD14-ED53-478B-AA37-34FE6607E794
+:END:
+#+title: Story: Read a party's published surfaces
+#+description: A party's volatility surfaces get the published-curve pattern: a list of the party's surfaces and a record page with its details, its grid and smiles, a comparison as of and its history. To be fleshed out when the vendor quotes story closes.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:surfaces:web:sprint_30:v0:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person reads a party's published volatility surfaces the way they read its published curves: a list, and a record page that shows each surface with its associated details, such as the blueprint, the model, the option convention at each tenor, the sources it was built from and its calibration error.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-18                               |
+
+* Acceptance
+
+- To be written when the story is fleshed out, after the vendor quotes story closes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

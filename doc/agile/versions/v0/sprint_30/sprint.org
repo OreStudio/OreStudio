@@ -180,6 +180,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:291B09A9-AF7D-4B8D-A012-6C021442120D][Share the service libraries and publish the images to GitHub Container Registry]] | DONE | | 2026-11-17 | Each service image today carries every library that is not in the 10-library intersection, so 19 images hold 6.6 GB of duplicated library payload. Put the libraries in one shared image, keep each service image to its own binary, and publish the hierarchy from the release nightly build so a test host pulls instead of receiving a transfer. |
 | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] | STARTED | 2026-11-17 | | Test compass-ng, the C++ compass, against ores.codegen and the Python gates, then replace them one area at a time and roll the new tool out to the fleet, to CI and to external developers. |
 | [[id:51A61A3A-AB4B-4E7A-A8CE-014CA1C50840][Link the shared service error on Windows]] | DONE | | 2026-11-18 | Both Windows nightlies fail to link: ores.iam.core imports ores::service::messaging::service_error, and no translation unit in ores.service defines it, so the DLL never exports its constructor, destructor or vtable. |
+| [[id:BF27F4FE-E493-4C5D-A30E-6DDBC4F47A4C][Publish restores the empty runtime directories]] | DONE | | 2026-11-18 | The nightly publish job fails before it builds anything, because the artifact carries files but not the three empty runtime directories the base image copies. |
 
 * Achievements
 

@@ -26,11 +26,11 @@ The gateway has no part for the workflow and operations area. Add the part with 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Every resource route the plan takes is served: the fourteen answer at the BFF's addresses. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The composed views, which are the story's own task. |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -160,3 +160,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The part exists and all fourteen of the area's resource routes answer at the
+BFF's addresses, in its shapes and with its status codes: the requests a person
+raises, withdraws and decides, the notices they are given, the resume of a
+stopped run, the services roster, the telemetry logs, the approvals mode and the
+hold reasons. The workflow area stands at 12 of 18 paired and the gateway at 282
+of the BFF's 328 routes.
+
+The nine routes left in the area are its composed views, and they are the
+story's own task: each weaves two or more collections, and what it weaves is
+settled before it is served.
+
+Everything here was verified on the rebased tree: the build succeeded in 5:37,
+the part's suite passed 31 cases and 399 assertions, the local gate passed 47 of
+47 checks, and the inventory regenerates to itself.
+
+Three breakages that the basket and rainbow option families left on main were
+fixed first, in their own commit, because the branch could not build or gate
+over them: the BFF's booking batch did not name the two new instrument arrays,
+the two basket builders defined one file-local name in a shared unity batch, and
+the ORE portfolio projection test declared a parameter helper its case never
+calls, which -Werror refuses.

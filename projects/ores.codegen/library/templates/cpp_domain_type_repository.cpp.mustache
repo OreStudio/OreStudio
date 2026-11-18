@@ -362,7 +362,6 @@ void {{entity_singular}}_repository::write(
 void {{entity_singular}}_repository::write(const context& ctx, const domain::{{entity_singular}}& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
-{{#current_state}}
     const auto t = {{entity_singular}}_apply_claim(
         v, claim,
 {{#system_tenant_visible}}
@@ -374,6 +373,8 @@ void {{entity_singular}}_repository::write(const context& ctx, const domain::{{e
         {{entity_singular}}_claim_reads_current(claim) ? read_latest(ctx, {{{primary_key.v_args}}})
                                                         : std::vector<domain::{{entity_singular}}>{});
 {{/system_tenant_visible}}
+<<paste:088215F5-7268-40D1-A9B3-673D4060A7B4>>
+{{#current_state}}
 {{#immutable}}
     query_builder::execute_write_op(ctx, query_builder::insert({{entity_singular}}_mapper::map(t)),
         lg(), "Writing {{entity_singular_words}} to database.");
@@ -384,17 +385,6 @@ void {{entity_singular}}_repository::write(const context& ctx, const domain::{{e
 {{/immutable}}
 {{/current_state}}
 {{^current_state}}
-    const auto t = {{entity_singular}}_apply_claim(
-        v, claim,
-{{#system_tenant_visible}}
-        {{entity_singular}}_claim_reads_current(claim)
-            ? {{entity_singular}}_claim_rows(ctx, read_latest(ctx, {{{primary_key.v_args}}}))
-            : std::vector<domain::{{entity_singular}}>{});
-{{/system_tenant_visible}}
-{{^system_tenant_visible}}
-        {{entity_singular}}_claim_reads_current(claim) ? read_latest(ctx, {{{primary_key.v_args}}})
-                                                        : std::vector<domain::{{entity_singular}}>{});
-{{/system_tenant_visible}}
     query_builder::execute_write_query(ctx, {{entity_singular}}_mapper::map(t),
         lg(), "Writing {{entity_singular_words}} to database.");
 {{/current_state}}
@@ -418,6 +408,7 @@ void {{entity_singular}}_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back({{entity_singular}}_apply_claim(v[i], claims[i], {{entity_singular}}_rows_of(current, v[i])));
+<<paste:2101380B-30AD-44F8-A684-568978786FF8>>
 {{#current_state}}
 {{#immutable}}
     query_builder::execute_write_op(ctx, query_builder::insert({{entity_singular}}_mapper::map(batch)),

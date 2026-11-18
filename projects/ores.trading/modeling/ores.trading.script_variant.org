@@ -134,7 +134,6 @@ The script the row belongs to.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
 #include <string>
 #+end_src
 

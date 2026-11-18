@@ -36,6 +36,7 @@
 #include "ores.trading.core/messaging/instrument_schedule_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_strike_registrar.hpp"
 #include "ores.trading.core/messaging/knock_out_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/rate_digital_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/rate_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/swap_leg_registrar.hpp"
@@ -75,6 +76,12 @@ register_rates_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(swaption_instrument_subs.begin()),
                 std::make_move_iterator(swaption_instrument_subs.end()));
+
+    auto rate_digital_option_instrument_subs =
+        register_rate_digital_option_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(rate_digital_option_instrument_subs.begin()),
+                std::make_move_iterator(rate_digital_option_instrument_subs.end()));
 
     auto balance_guaranteed_swap_instrument_subs =
         register_balance_guaranteed_swap_instrument_handlers(nats, ctx, verifier);

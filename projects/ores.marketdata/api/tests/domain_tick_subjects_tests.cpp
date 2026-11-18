@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
@@ -98,7 +98,8 @@ std::string tick_subjects_feed_subject(const std::string& uri) {
     using ores::marketdata::datum::oresmd_uri_codec;
     const auto datum = oresmd_uri_codec::read(uri).value();
     const auto series = oresmd_uri_codec::write(ores::marketdata::datum::series_of(datum)).value();
-    return ores::marketdata::domain::feed_tick_subject("bloomberg", tick_subjects_feed, datum, series);
+    return ores::marketdata::domain::feed_tick_subject(
+        "bloomberg", tick_subjects_feed, datum, series);
 }
 
 }
@@ -108,8 +109,7 @@ TEST_CASE("a_feed_publishes_a_datum_under_its_provider_feed_type_series_and_coor
     const auto subject = tick_subjects_feed_subject(
         "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=5Y");
 
-    CHECK(subject == "marketdata.v1.ops.market_tick.bloomberg." + tick_subjects_feed +
-                         ".ir_swap." +
+    CHECK(subject == "marketdata.v1.ops.market_tick.bloomberg." + tick_subjects_feed + ".ir_swap." +
                          ores::marketdata::domain::subject_token(
                              "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate"
                              "&fwd_start=0D&tenor=3M") +
@@ -120,8 +120,7 @@ TEST_CASE("a_datum_without_coordinates_has_the_fixed_coordinate_token", "[domain
     const auto subject = tick_subjects_feed_subject(
         "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
 
-    CHECK(subject == "marketdata.v1.ops.market_tick.bloomberg." + tick_subjects_feed +
-                         ".fx_spot." +
+    CHECK(subject == "marketdata.v1.ops.market_tick.bloomberg." + tick_subjects_feed + ".fx_spot." +
                          ores::marketdata::domain::subject_token(
                              "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD") +
                          "._");

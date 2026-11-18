@@ -60,11 +60,10 @@ std::shared_ptr<const tick_delivery> make_delivery(const std::vector<consumer>& 
     return delivery;
 }
 
-std::expected<tick_plan, tick_drop>
-plan_tick(const ores::marketdata::messaging::market_tick& tick,
-          const std::vector<consumer>& consumers,
-          std::shared_ptr<const named_datum> named,
-          std::shared_ptr<const tick_delivery> delivery) {
+std::expected<tick_plan, tick_drop> plan_tick(const ores::marketdata::messaging::market_tick& tick,
+                                              const std::vector<consumer>& consumers,
+                                              std::shared_ptr<const named_datum> named,
+                                              std::shared_ptr<const tick_delivery> delivery) {
     if (consumers.empty())
         return std::unexpected(tick_drop::unbound_source);
 

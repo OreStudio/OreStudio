@@ -1479,13 +1479,13 @@ TEST_CASE("a_tick_of_two_consumers_is_published_once_on_the_subject_of_its_feed"
     std::atomic<std::size_t> on_parties{0};
     std::string feed_subject;
     std::mutex mu;
-    const auto feed_sub = f.nats.subscribe(
-        std::string(messaging::market_tick::nats_subject) + ".ore." + feed + ".>",
-        [&](ores::nats::message msg) {
-            std::lock_guard lock(mu);
-            feed_subject = msg.subject;
-            ++on_feed;
-        });
+    const auto feed_sub =
+        f.nats.subscribe(std::string(messaging::market_tick::nats_subject) + ".ore." + feed + ".>",
+                         [&](ores::nats::message msg) {
+                             std::lock_guard lock(mu);
+                             feed_subject = msg.subject;
+                             ++on_feed;
+                         });
     const auto first_sub = f.nats.subscribe(
         domain::market_tick_subject_all(tenant, boost::uuids::to_string(f.party_id)),
         [&](ores::nats::message) { ++on_parties; });
@@ -1506,7 +1506,8 @@ TEST_CASE("a_tick_of_two_consumers_is_published_once_on_the_subject_of_its_feed"
     CHECK(on_feed == 1);
     CHECK(on_parties == 2);
     std::lock_guard lock(mu);
-    const auto series_uri = ores::marketdata::service::app::name_datum(quote_uri).value()->series_uri;
+    const auto series_uri =
+        ores::marketdata::service::app::name_datum(quote_uri).value()->series_uri;
     CHECK(feed_subject.ends_with(std::string(messaging::market_tick::nats_subject) + ".ore." +
                                  feed + ".fx_spot." + domain::subject_token(series_uri) + "._"));
 }

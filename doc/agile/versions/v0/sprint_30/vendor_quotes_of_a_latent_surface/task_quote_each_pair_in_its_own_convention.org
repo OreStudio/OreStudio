@@ -101,7 +101,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the convention row is per party, and read_latest(ctx, id) takes front() | feed_kind_registry.cpp | Decline | The calibration and the publish service read the row the same way, so the feed and the calibration see the same row. A party-explicit read belongs to all three readers. |
+| 2 | Local review: the feed derives the id BASE-QUOTE-FXOPTION; the calibration reads the blueprint's fx_option_convention_id | feed_kind_registry.cpp | Decline | Every populated blueprint names the BASE-QUOTE-FXOPTION id. The feed config has no blueprint link; the task "Point the blueprints at the vendor contributors" joins them. |
+| 3 | Local review: misspell-fixer on the changed files | (all) | Accept | Clean, exit 0. |
 
 * Result
 

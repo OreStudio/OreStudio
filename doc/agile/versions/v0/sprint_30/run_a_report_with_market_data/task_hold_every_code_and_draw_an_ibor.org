@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: F28EB7EE-7252-402E-9BAD-35560888DD9C
+:END:
+#+title: Task: Hold every code on every path, and draw an Ibor for an agreement
+#+description: The review of #4828 found that a run stating a size and no mix, or no knobs at all, keeps the seeded configs' ten bond trades and so books ten of the eleven bond codes. The same rule on a fresh provision found both interest rate configs refused because a forward rate agreement drew an overnight index. Refuse any count shorter than its class's code list on every path, seed one trade per code, and draw an Ibor for a forward rate agreement.
+#+type: task
+#+level: s1
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
+#+owner: marco
+#+branch: feature/hold-the-codes-and-draw-an-ibor
+#+pr: 4852
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4852][#4852]] | [rates,synthetic] Hold every code and draw an Ibor for an agreement |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The population rule now refuses any config shorter than its class's code list on
+every path, and both seeded profiles state one trade per code, so no run books a
+prefix of a class and calls it the class. A forward rate agreement draws an Ibor
+index, so both interest rate configs are no longer refused for the index they
+name.
+
+The code counts are held by the rule rather than by a fixture: the test that
+keeps a recipe's counts now states one trade per code, which is what the seeds
+do, and a case states the review's own failure.
+
+What is still owed is the live proof of the whole provision. On a recreated
+database the trade step began writing and then the run aborted at
+=set_staff_passwords= on a NATS timeout, on a host holding both build slots for
+hours; the earlier =free(): invalid pointer= in the iam service was a partial
+rebuild, cleared by a full rebuild. The 16-config run needs a quiet host, and the
+story's proof task recreates one anyway.

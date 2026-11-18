@@ -296,11 +296,15 @@ cross join (values
     --   interest rates  154 x 3 entities             462   42%
     --   FX              69 + 69 + 69 + 68            275   25%
     --   equity          132                            132   12%
-    --   credit          66                              66    6%
+    --   credit          66                              66   6%
     --   commodity       55                              55    5%
     --   inflation       33                              33    3%
     --   scripted        33                              33    3%
-    --                                                1100  100%
+    --                                               1100  100%
+    --
+    -- The configs themselves state one trade per code, so a run that states a
+    -- size and no mix, or none at all, also books every code rather than a
+    -- prefix of it.
     --
     -- The book count and the population size are the config's, so a tenant that
     -- wants a thinner book changes a row and not the generator, and gives up the
@@ -328,7 +332,7 @@ cross join (values
          "description": "The bonds the group books, in its intercompany book.",
          "asset_class_code": "bond", "book": "Group Intercompany Loans",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 10, "structures_per_book": 2,
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 11, "structures_per_book": 2,
          "trade_type_codes": ["Bond"]},
                 {"party": "Acme Corporation Plc", "name": "ACME ACMCOR FX",
          "description": "The foreign exchange trades the group books, in its hedge book.",
@@ -340,7 +344,7 @@ cross join (values
          "description": "The bonds the UK entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 45, "trades_per_book": 10, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 45, "trades_per_book": 11, "structures_per_book": 2},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK rates",
          "description": "The interest rate trades the UK entity books, in its sterling swaps book.",
          "asset_class_code": "interest_rates", "book": "GBP Vanilla Swaps",
@@ -380,7 +384,7 @@ cross join (values
          "description": "The bonds the US entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 48, "trades_per_book": 10, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 48, "trades_per_book": 11, "structures_per_book": 2},
         {"party": "ACME Corporation US Inc", "name": "ACME ACCOUS rates",
          "description": "The interest rate trades the US entity books, in its dollar swaps book.",
          "asset_class_code": "interest_rates", "book": "USD Vanilla Swaps",
@@ -395,7 +399,7 @@ cross join (values
          "description": "The bonds the Hong Kong entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 51, "trades_per_book": 10, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 51, "trades_per_book": 11, "structures_per_book": 2},
         {"party": "ACME Corporation HK Ltd", "name": "ACME ACCOHK rates",
          "description": "The interest rate trades the Hong Kong entity books, in its Hong Kong dollar swaps book.",
          "asset_class_code": "interest_rates", "book": "HKD Vanilla Swaps",
@@ -458,17 +462,17 @@ cross join (values
          "description": "The bonds Northwind Traders books in its London GBP book, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "GBP Bonds Book",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 11},
         {"party": "Northwind Traders Ltd", "name": "Northwind USD bond population",
          "description": "The bonds Northwind Traders books in its London USD book, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "USD Bonds Book",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 11},
         {"party": "Northwind Traders Ltd", "name": "Northwind EUR bond population",
          "description": "The bonds Northwind Traders books in its London EUR book, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "EUR Bonds Book",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 43, "trades_per_book": 8},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 43, "trades_per_book": 11},
         {"party": "Northwind Traders Ltd", "name": "Northwind USD rates population",
          "description": "The interest rate trades Northwind Traders books in its Seattle USD rates book.",
          "asset_class_code": "interest_rates", "book": "USD Rates Book",

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:recipe:service:cpp:regenerate:entity:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-18
 
 The =service= profile's outputs come from =./compass.sh generate=, which runs compass-ng over every model whose inputs changed, generating the per-entity business-logic service header and implementation. See [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 

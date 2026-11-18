@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:recipe:nats:eventing:cpp:regenerate:entity:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-18
 
 The =nats-eventing= profile's outputs come from =./compass.sh generate=, which runs compass-ng over every model whose inputs changed, generating the per-entity NATS event type header. See [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 

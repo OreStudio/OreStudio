@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: 
 #+created: 2026-07-29
-#+updated: 2026-07-29
+#+updated: 2026-11-18
 
 Every component's =src/CMakeLists.txt=/=tests/CMakeLists.txt= =include()=s
 a generated =component_files.cmake= instead of using

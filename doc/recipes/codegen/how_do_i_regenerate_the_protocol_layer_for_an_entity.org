@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:recipe:protocol:cpp:messaging:regenerate:entity:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-18
 
 The =protocol= profile's outputs come from =./compass.sh generate=, which runs compass-ng over every model whose inputs changed, generating per-entity NATS request and response struct headers. See [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 

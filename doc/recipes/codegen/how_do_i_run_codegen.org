@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:cmake:build:python:recipe:
 #+created: 2026-05-18
-#+updated: 2026-06-27
+#+updated: 2026-11-18
 
 For background on what the generator is and what it generates, see
 [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] (the component model).
@@ -34,9 +34,11 @@ The Python codegen below stays for scaffolding new entities and for rendering
 one address of one model. Its output is byte-identical to compass-ng's, so a
 =./compass.sh diff= after it shows nothing.
 
+** The Python codegen
+
 There are three Python entry points depending on scope:
 
-** By entity name (preferred for single-entity work)
+*** By entity name
 
 Resolve by name — no need to know the model file path or component:
 
@@ -64,7 +66,7 @@ Preview what would change without writing:
 
 See [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] for the full workflow.
 
-** By model file
+*** By model file
 
 Generate from a specific org model file:
 
@@ -72,7 +74,7 @@ Generate from a specific org model file:
 ./compass.sh codegen generate --model projects/path/to/model.org --address <address>
 #+end_src
 
-** Across a whole component
+*** Across a whole component
 
 Use =./compass.sh generate=: it regenerates every component whose inputs
 changed, so there is no per-component run to make.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:recipe:repository:cpp:regenerate:entity:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-18
 
 The =repository= profile's outputs come from =./compass.sh generate=, which runs compass-ng over every model whose inputs changed, generating repository entities, mappers, and CRUD repository header and implementation. See [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 

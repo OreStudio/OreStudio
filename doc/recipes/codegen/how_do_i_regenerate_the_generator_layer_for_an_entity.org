@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:recipe:generator:cpp:regenerate:entity:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-18
 
 The =generator= profile's outputs come from =./compass.sh generate=, which runs compass-ng over every model whose inputs changed, generating the per-entity test-data generator header and implementation. See [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 

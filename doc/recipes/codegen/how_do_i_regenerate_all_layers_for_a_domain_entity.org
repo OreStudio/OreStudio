@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:recipe:entity:regenerate:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-18
 
 This recipe covers all code generation profiles for a =domain_entity= model.
 See [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system and [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] for output location checks and drift classification.

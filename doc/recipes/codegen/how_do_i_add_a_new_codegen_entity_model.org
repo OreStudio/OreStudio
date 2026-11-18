@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:entity:org_mode:literate:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-11-18
 
 Entity models drive C++ + SQL codegen. The current form is a literate
 =ores.<component>.<entity>.org= file under the component's =modeling/=

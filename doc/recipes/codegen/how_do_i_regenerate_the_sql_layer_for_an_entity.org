@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:recipe:sql:regenerate:entity:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-18
 
 The =sql= profile's outputs come from =./compass.sh generate=, which runs compass-ng over every model whose inputs changed, writing SQL DDL create/drop scripts and notify-trigger scripts. See [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] for the template list and [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]] for component-to-model-root mapping.
 

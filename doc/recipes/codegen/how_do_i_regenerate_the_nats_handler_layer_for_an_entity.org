@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:recipe:nats:handler:cpp:messaging:regenerate:entity:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-18
 
 The =nats-handler= profile's outputs come from =./compass.sh generate=, which runs compass-ng over every model whose inputs changed, generating the per-entity NATS message handler header and implementation. See [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 

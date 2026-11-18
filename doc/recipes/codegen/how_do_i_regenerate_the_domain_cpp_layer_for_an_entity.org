@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:recipe:domain:cpp:regenerate:entity:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-18
 
 The =domain= profile's outputs come from =./compass.sh generate=, which runs compass-ng over every model whose inputs changed, generating the domain POCO header and its JSON I/O, table I/O, and secondary include. See [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 

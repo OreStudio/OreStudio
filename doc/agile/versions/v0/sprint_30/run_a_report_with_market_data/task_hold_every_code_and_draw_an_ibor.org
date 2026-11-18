@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/hold-the-codes-and-draw-an-ibor
-#+pr:
+#+pr: 4852
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4852][#4852]] | [rates,synthetic] Hold every code and draw an Ibor for an agreement |
 
 * Review
 

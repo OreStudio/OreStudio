@@ -89,6 +89,9 @@ via its "Verifies task" field.
 | 2 | Local review: misspell-fixer on the changed files | all | Accepted | Clean; the exit 1 over the whole tree comes from files this branch does not touch. |
 | 3 | Gate: pgtap trading_script_library_visibility expected the old 42501 refusal | trading_script_library_visibility_test.sql | Accepted | The split policy matches no system row; the test asserts the update changes none (e63b1b6b58). |
 | 4 | Gate: codegen-tests, drift tests outside a git checkout and two RLS template tests | check_component_drift.py, test_rls_own_or_system_tenant_rows.py | Accepted | Fixed (e21296d146, fab4b4d91b); two failures already on main are captured. |
+| 5 | PR review: the tenor convention resolution read now includes the system tenant's rows | tenor_convention_resolution_repository.cpp | Accepted, filed | The model sets system_tenant_visible and rls_own_or_system_tenant_rows, and its select policy admits the rows. The review found that the pair template builds claims, and the entity template's remove reads, from shared rows; captured as "Keep the system tenant's rows out of writes and removals" (about 100 models). |
+| 6 | PR review: the drift render root falls back to the system temp dir silently | check_component_drift.py | Declined | It falls back only outside a git checkout, as in the drift tests; inside one, git rev-parse cannot fail. A killed run's render stays on disk under the git common directory, not in the shared tmpfs. |
+| 7 | PR review: the two retyped columns need a migration | trading create scripts | Declined | ORE Studio has no migration path: every environment recreates its database from the create scripts, and the schema fingerprint refuses a database built from others. |
 
 * Result
 

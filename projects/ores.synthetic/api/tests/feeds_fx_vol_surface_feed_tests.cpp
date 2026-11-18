@@ -21,14 +21,18 @@
 #include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.analytics.quant/service/run_clock.hpp"
 #include "ores.analytics.quant/service/run_market.hpp"
+#include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <string>
+#include <thread>
 #include <vector>
 
 using namespace ores::analytics::quant::math;
@@ -281,4 +285,95 @@ TEST_CASE("a tick whose run has not published what the surface reads says which 
     const auto inputs = fx_vol_board_inputs(market.values(), eur, usd_id, spot);
     REQUIRE(inputs);
     CHECK(inputs->spot.spot == 1.0842);
+}
+
+TEST_CASE("a contributor no adapter serves records its points while the vendors quote theirs",
+          "[fx_vol_surface_feed]") {
+    using namespace std::chrono;
+    using ores::analytics::quant::domain::market_member_kind;
+    manual_run_clock clock(system_clock::now());
+    run_market market(clock, {}, 7);
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+
+    auto input = feed_input();
+    input.contributors = {"vendor", "clean"};
+    const std::string market_subject = "test.synthetic.fx_vol.clean.market";
+    const std::string adapter_subject = "test.synthetic.fx_vol.clean.adapter";
+    fx_vol_surface_feed feed(
+        nats,
+        "synthetic.fx_vol.eurusd",
+        market_subject,
+        input,
+        7,
+        market,
+        1.0,
+        ores::analytics::quant::domain::arrival_spec{.mode = "periodic", .ticks_per_hour = 1.0});
+
+    // The vendor's adapter is given every point the surface quotes, under an id of its own.
+    const auto emitter = make_fx_vol_surface_emitter(input, 7);
+    REQUIRE(emitter);
+    const auto per_contributor = emitter->points_per_contributor();
+    REQUIRE(per_contributor == 15);
+    fx_vol_surface_feed::point_targets targets;
+    for (std::size_t i = 0; i < per_contributor; ++i) {
+        const auto& point = emitter->points()[i];
+        targets.emplace(std::pair{point.expiry_id, point.label},
+                        adapter_target{.id = {.id_scheme = "test_ticker",
+                                              .external_id = point.expiry_id + point.label,
+                                              .field = "BID"},
+                                       .subject = adapter_subject,
+                                       .faults = {}});
+    }
+    feed.attach("adapter-vendor", "vendor", std::move(targets));
+
+    auto market_ticks = nats.subscribe_buffered(market_subject, 64);
+    auto adapter_ticks = nats.subscribe_buffered(adapter_subject, 64);
+
+    // Flat curves a year long and the spot: what the surface strikes every expiry against.
+    const year_month_day spot_date{year{2026}, November, day{16}};
+    const auto flat = [&](double rate) {
+        return std::vector<ores::analytics::quant::domain::curve_point>{
+            {.date = spot_date, .discount_factor = 1.0},
+            {.date = year_month_day{sys_days{spot_date} + days{365}},
+             .discount_factor = std::exp(-rate)}};
+    };
+    const auto at = system_clock::now();
+    const auto eur = market.values().member_of(market_member_kind::curve, "EUR");
+    const auto usd = market.values().member_of(market_member_kind::curve, "USD");
+    const auto spot = market.values().member_of(market_member_kind::spot, "EUR/USD");
+    market.values().publish_curve(eur, spot_date, flat(0.03), at);
+    market.values().publish_curve(usd, spot_date, flat(0.01), at);
+    market.values().publish_spot(spot, 1.0842, at);
+
+    const std::vector<double> drivers(5, 0.0);
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = at, .drivers = drivers}) ==
+          "30 point(s)");
+
+    for (int i = 0; i < 50 && (market_ticks.size() < per_contributor ||
+                               adapter_ticks.size() < per_contributor);
+         ++i)
+        std::this_thread::sleep_for(milliseconds(100));
+
+    // Every one of the clean contributor's points is a market tick under its own name, and none
+    // of the vendor's is: the vendor's go to its adapter alone.
+    const auto shown = market_ticks.snapshot();
+    REQUIRE(shown.size() == per_contributor);
+    for (const auto& message : shown) {
+        const auto tick =
+            ores::nats::default_wire_codec().decode<ores::marketdata::messaging::market_tick>(
+                message.data);
+        REQUIRE(tick);
+        CHECK(tick->source == "synthetic.fx_vol.eurusd.clean");
+    }
+    const auto quoted = adapter_ticks.snapshot();
+    REQUIRE(quoted.size() == per_contributor);
+    for (const auto& message : quoted) {
+        const auto tick =
+            ores::nats::default_wire_codec().decode<ores::marketdata::messaging::adapter_tick>(
+                message.data);
+        REQUIRE(tick);
+        CHECK(tick->id_scheme == "test_ticker");
+    }
 }

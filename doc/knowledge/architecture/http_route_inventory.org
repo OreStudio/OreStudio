@@ -73,7 +73,7 @@ an API publishes no area, so it is counted under =(none)=.
 | changes | core, server | 5 | transport capability 5 |
 | grid | compute, grid-app-versions, grid-downloads, grid-jobs, operations | 25 | composed view 3, resource 22 |
 | market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, series, subscriptions | 60 | composed view 6, resource 54 |
-| operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
+| operations | core, inbox, operations, server, workflow | 9 | composed view 2, resource 5, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 306 | composed view 2, resource 304 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 88 | composed view 20, resource 68 |
@@ -151,7 +151,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | changes | 2 | 2 | 0 |
 | grid | 14 | 11 | 3 |
 | market-data | 35 | 25 | 10 |
-| operations | 5 | 1 | 4 |
+| operations | 5 | 3 | 2 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 30 | 0 |
 | reporting | 44 | 44 | 0 |
@@ -160,7 +160,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 10 | 8 |
 | (none) | 35 | 28 | 7 |
-| total | 328 | 278 | 50 |
+| total | 328 | 280 | 48 |
 
 * The pairing
 
@@ -312,8 +312,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/operations/grid/jobs/workunits/:id/results= | GET /api/operations/grid/jobs/workunits/{id}/results |
 | GET =/api/operations/grid/series= | none |
 | GET =/api/operations/grid/usage= | none |
-| GET =/api/operations/logs= | none |
-| GET =/api/operations/services= | none |
+| GET =/api/operations/logs= | GET /api/operations/logs |
+| GET =/api/operations/services= | GET /api/operations/services |
 | POST =/api/oresmd/compose= | POST /api/oresmd/compose |
 | POST =/api/oresmd/parse= | POST /api/oresmd/parse |
 | POST =/api/oresmd/parse-many= | POST /api/oresmd/parse-many |
@@ -497,7 +497,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1372 routes: 328 answered by the BFF and 1044 by ores.http.
+1374 routes: 328 answered by the BFF and 1046 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -927,7 +927,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | composed view | grid | get | =/api/operations/grid/series= | bff | projects/ores.web/packages/bff/src/operations.ts:480 | The grid counters per bucket and one row of buckets per node on one time axis, two reads joined onto the host registry. |
 | composed view | grid | get | =/api/operations/grid/usage= | bff | projects/ores.web/packages/bff/src/operations.ts:540 | Who uses the grid, the results grouped by tenant or by party with each group's share, the results read and the party names beside them. |
 | resource | operations | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 | One page of telemetry entries a filter selects, with the count of everything it matches. |
+| resource | operations | get | =/api/operations/logs= | ores.http | projects/ores.http/workflow/src/routes/workflow/operations_routes.cpp:268 | One page of telemetry entries at the address and in the shape the BFF answered: the window from a range, the filters combined with and, and the page and its total. |
 | resource | operations | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 | Every expected service instance with the age of its last report, read from the telemetry samples. |
+| resource | operations | get | =/api/operations/services= | ores.http | projects/ores.http/workflow/src/routes/workflow/operations_routes.cpp:242 | Every expected service instance at the address and in the shape the BFF answered, each with the age of its last report subtracted on the deployment's own clock, which is the clock the sample was stamped against. |
 | transport capability | (none) | post | =/api/oresmd/compose= | bff | projects/ores.web/packages/bff/src/oresmd.ts:136 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
 | transport capability | (none) | post | =/api/oresmd/compose= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp:203 | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
 | transport capability | (none) | post | =/api/oresmd/parse= | bff | projects/ores.web/packages/bff/src/oresmd.ts:106 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |

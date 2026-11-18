@@ -381,6 +381,9 @@ PAIRS = {
     ("POST", "/api/workflow/:instanceId/retry"): (
         "POST",
         "/api/workflow/{instanceId}/retry"),
+    # operations
+    ("GET", "/api/operations/services"): ("GET", "/api/operations/services"),
+    ("GET", "/api/operations/logs"): ("GET", "/api/operations/logs"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

@@ -884,11 +884,22 @@ RULES = (
          BFF, RESOURCE, "operations",
          "Every expected service instance with the age of its last report, read from the"
          " telemetry samples."),
+    Rule("the services roster's route",
+         ("exact", "GET /api/operations/services"),
+         CPP, RESOURCE, "operations",
+         "Every expected service instance at the address and in the shape the BFF answered, each"
+         " with the age of its last report subtracted on the deployment's own clock, which is the"
+         " clock the sample was stamped against."),
     Rule("the telemetry logs",
          ("exact", "GET /api/operations/logs"),
          BFF, RESOURCE, "operations",
          "One page of telemetry entries a filter selects, with the count of everything it"
          " matches."),
+    Rule("the telemetry logs' route",
+         ("exact", "GET /api/operations/logs"),
+         CPP, RESOURCE, "operations",
+         "One page of telemetry entries at the address and in the shape the BFF answered: the"
+         " window from a range, the filters combined with and, and the page and its total."),
     Rule("the system settings",
          ("exact", "GET /api/v1/system-settings"),
          CPP, RESOURCE, "operations",

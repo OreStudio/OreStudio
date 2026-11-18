@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/name-the-two-compass-tools-apart
-#+pr:
+#+pr: 4836
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4836][#4836]] | [compass] Forward compass-ng's verbs from compass.sh |
 
 * Review
 

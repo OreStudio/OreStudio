@@ -462,6 +462,13 @@ RULES = (
          "A run's progress as a rail renders it: the run's status, the step executing and one"
          " summary per step, three reads, so a page follows the run rather than the engine's"
          " events."),
+    Rule("the run's progress",
+         ("exact", "GET /api/workflow/{instanceId}"),
+         CPP, COMPOSED, "workflow",
+         "A run's progress answered by ores.http at the address and in the shape the BFF"
+         " answered: the run's status, the step it is executing and one summary per step, from"
+         " the one read the engine already answers in that shape, kept for the interval a page"
+         " asks again."),
     Rule("the run's retry",
          ("prefix", "POST /api/workflow/"),
          BFF, RESOURCE, "workflow",

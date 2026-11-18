@@ -498,10 +498,48 @@ describe("a run's step", () => {
 
         expect(html).toContain('<details');
         expect(html).toContain('120 surface(s) were not published.');
-        expect(html).toContain('summar');
-        expect(html.slice(html.indexOf('<summary'), html.indexOf('</summary>'))).not.toContain(
-            'PAIR119',
+        expect(html).toContain('<summary');
+        const summary = html.slice(html.indexOf('<summary'), html.indexOf('</summary>'));
+        expect(summary).toContain('120 surface(s) were not published.');
+        expect(summary).not.toContain('PAIR119');
+        expect(html).toContain('PAIR119');
+    });
+
+    it('reads a warning of the fold length where it stands', () => {
+        const message = 'w'.repeat(200);
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'completed_with_warnings',
+                    log: [{ level: 'warn', message, context: '' }],
+                }}
+                words={(sentence) => sentence}
+            />,
         );
+
+        expect(html).not.toContain('<details');
+        expect(html).toContain(message);
+    });
+
+    it('cuts a folded summary that has no sentence to stop at', () => {
+        const message = 'Acme Corporation Plc: PAIR'.repeat(40);
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'completed_with_warnings',
+                    log: [{ level: 'warn', message, context: '' }],
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).toContain('<summary');
+        const summary = html.slice(html.indexOf('<summary'), html.indexOf('</summary>'));
+        const text = summary.slice(summary.indexOf('>') + 1);
+        expect(text).toContain('…');
+        expect(text.length).toBeLessThanOrEqual(120);
     });
 
     it('states the step in the words the server sent for it', () => {

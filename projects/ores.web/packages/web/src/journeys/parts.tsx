@@ -724,6 +724,32 @@ const LOG_TONE: Record<string, string> = {
 };
 
 /**
+ * The length past which a step's warning is folded on the rail.
+ *
+ * A step that names a handful of items is read where it stands; the one that
+ * names every surface it could not publish is a paragraph, and it is the only
+ * reason the rail needs a disclosure.
+ */
+const FOLDED_WARNING_FROM = 200;
+
+/** The longest summary the rail shows for a folded warning. */
+const SUMMARY_LIMIT = 120;
+
+/**
+ * The first sentence of a text, cut to a readable length.
+ *
+ * A warning with no sentence break is one long string, so it is cut here rather
+ * than shown whole inside a summary that cannot scroll.
+ */
+function firstSentenceOf(text: string): string {
+    const end = text.search(/[.!?](\s|$)/);
+    const first = end === -1 ? text : text.slice(0, end + 1);
+    return first.length <= SUMMARY_LIMIT
+        ? first
+        : `${first.slice(0, SUMMARY_LIMIT - 1).trimEnd()}…`;
+}
+
+/**
  * One line of the rail.
  *
  * The run states each step's name and description in a person's words, and the
@@ -739,21 +765,6 @@ const LOG_TONE: Record<string, string> = {
  * buries the steps around it. Open, the error comes first, one piece of work to
  * a line.
  */
-/**
- * The length past which a step's warning is folded on the rail.
- *
- * A step that names a handful of items is read where it stands; the one that
- * names every surface it could not publish is a paragraph, and it is the only
- * reason the rail needs a disclosure.
- */
-const FOLDED_WARNING_FROM = 200;
-
-/** The first sentence of a text, with its full stop, or the whole text. */
-function firstSentenceOf(text: string): string {
-    const end = text.search(/[.!?](\s|$)/);
-    return end === -1 ? text : text.slice(0, end + 1);
-}
-
 export function RunStep({
     step,
     words,

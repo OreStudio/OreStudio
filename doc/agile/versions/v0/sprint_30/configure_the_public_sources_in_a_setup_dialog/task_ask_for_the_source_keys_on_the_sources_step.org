@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The public sources step draws the credential fields of each publisher, fills each one from the environment of the service when the variable is set, and saves what the person continues with as a tenant secret.
 
 * Status
 
@@ -38,6 +38,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 - A publisher whose catalogue row names a credential shows a key field, or a user and a password.
 - A field with no stored secret is filled in from the service's environment.
 - Continue saves each value as a tenant secret and the row names it.
+- The service refuses to hand back a prefilled value to a caller who is not the environment's administrator, and the response that carries one is neither cached nor logged.
 
 * Plan
 

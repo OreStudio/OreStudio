@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The official rates adapter hosts the providers whose terms the tenant accepted, with the credential each row names, so the deployment passes no source list and holds no key.
 
 * Status
 
@@ -37,6 +37,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 - The adapter announces the accepted providers without a --source argument.
 - The deploy scripts and the host profiles pass no source list and no source key.
+- A deployment that still passes =--source= is told it is ignored, and keeps serving; the argument is removed in a later release rather than silently honoured.
 
 * Plan
 

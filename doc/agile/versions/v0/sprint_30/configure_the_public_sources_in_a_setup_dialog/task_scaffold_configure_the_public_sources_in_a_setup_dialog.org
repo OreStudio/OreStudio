@@ -20,17 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The story's documents, its sprint wiring and the PR that carries them.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5F23EDE1-2076-4A0C-8DAA-48A7812BDE2E][Configure the public sources in a setup dialog]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -83,3 +83,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+The story and its four tasks are on main with the review's corrections: the
+sprint row follows the story's state, every task states its own goal, the
+prefilled value is guarded on the server and neither cached nor logged, a stored
+secret is encrypted with a key outside the database, a provider without a key is
+left out rather than stopping the adapter, and a deployment that still passes
+--source is told it is ignored.

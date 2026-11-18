@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The story is delivered: the setup screen configures the public sources and their keys, the keys live
+in the database as tenant secrets, and the adapter starts from the sources the tenant accepted. The
+four tasks beside this one carry the parts.
 
 * Status
 

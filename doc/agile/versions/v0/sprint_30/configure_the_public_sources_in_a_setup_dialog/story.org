@@ -35,7 +35,7 @@ today decides only the terms of each publisher.
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | The story is scaffolded. The source list still reaches the adapter only on its command line. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Start the tenant secret task.          |
 | Last touched  | 2026-11-17                               |
 
 * Acceptance
@@ -48,6 +48,10 @@ today decides only the terms of each publisher.
   continues.
 - A stored secret is never sent to the browser: a field shows that a value is
   stored and asks for a new one only when the person replaces it.
+- A value filled in from the environment reaches the browser once, in a response
+  the browser neither caches nor a log records.
+- A stored secret is protected at rest by a key that is not in the database, and
+  the tenant boundary is enforced where the value is read, as on any tenant row.
 - The adapter starts on the providers the tenant accepted and holds a credential
   for, with no =--source= argument and no key in its environment.
 - A provider whose key is missing is named on the step and in the adapter's log,
@@ -58,7 +62,7 @@ today decides only the terms of each publisher.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CC9DB37B-6145-45F6-BCD9-13B39F466923][Scaffold story: Configure the public sources in a setup dialog]] | STARTED | 2026-11-17 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:CC9DB37B-6145-45F6-BCD9-13B39F466923][Scaffold story: Configure the public sources in a setup dialog]] | DONE | 2026-11-17 | 2026-11-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:F41E92B0-9A06-44CA-B88B-51D71EE1885E][Implement Configure the public sources in a setup dialog]] | BACKLOG | | | Initial task for: Configure the public sources in a setup dialog |
 | [[id:0CC501C4-DAFB-4707-83DA-1AE98E9A024A][Store a tenant secret in the database]] | BACKLOG | | | A value that a service needs and a person supplies, such as the key of a public source, is stored against the tenant, is written once and is read only by name. The browser learns that a value is stored, never the value. |
 | [[id:1DF9EF52-D9D2-43D2-A1BA-40CDA62EEFC4][Name the stored secret on the provider row]] | BACKLOG | | | A provider row states where its credential comes from. It gains a form that names a stored secret, and the official rates adapter resolves that secret instead of a variable when it starts. |

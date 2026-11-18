@@ -1,0 +1,31 @@
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+for f in ("projects/ores.refdata/service/src/app/application.cpp",
+          "projects/ores.nats/src/service/jetstream_admin.cpp",
+          "projects/ores.refdata/modeling/ores.refdata.tenor_convention_resolution.org"):
+    subprocess.run(["git", "checkout", "-q", "origin/main", "--", f], check=True)
+
+
+def replace(path, old, new):
+    p = Path(path)
+    t = p.read_text()
+    assert t.count(old) == 1, (path, old)
+    p.write_text(t.replace(old, new))
+
+
+replace("projects/ores.refdata/core/src/messaging/registrar.cpp",
+        "    append(register_asset_class_code_handlers(nats, ctx, verifier));\n", "")
+replace("projects/ores.workflow/service/src/app/application.cpp",
+        "                                                    step_completed_event::nats_subject}));\n",
+        "                                                    step_completed_event::nats_subject}));\n"
+        "        admin.ensure_stream(stream_name,\n"
+        "                            nats.covering_subjects({step_completed_event::nats_subject}));\n")
+replace("projects/ores.trading/modeling/ores.trading.average_type.org",
+        ":profile:   simple-lookup\n", ":profile:   simple-lookup\n:has_uuid_primary_key: true\n")
+replace("projects/ores.ore/core/src/domain/conventions_family_tenor_basis_swap.cpp",
+        "    refdata::domain::convention central;\n",
+        "    refdata::domain::convention central;\n    refdata::domain::commodity_future_contract_terms planted;\n")
+print("applied")

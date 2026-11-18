@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/hold-the-basket-and-rainbow-options-on-their-tables
-#+pr:
+#+pr: 4857
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4857][#4857]] | [trading] Hold the basket and rainbow options on their tables |
 
 * Review
 

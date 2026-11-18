@@ -104,6 +104,12 @@ via its "Verifies task" field.
 | 1 | Local review: the convention row is per party, and read_latest(ctx, id) takes front() | feed_kind_registry.cpp | Decline | The calibration and the publish service read the row the same way, so the feed and the calibration see the same row. A party-explicit read belongs to all three readers. |
 | 2 | Local review: the feed derives the id BASE-QUOTE-FXOPTION; the calibration reads the blueprint's fx_option_convention_id | feed_kind_registry.cpp | Decline | Every populated blueprint names the BASE-QUOTE-FXOPTION id. The feed config has no blueprint link; the task "Point the blueprints at the vendor contributors" joins them. |
 | 3 | Local review: misspell-fixer on the changed files | (all) | Accept | Clean, exit 0. |
+| 4 | @claude: say why the registry uses the derived source's id rule | feed_kind_registry.cpp | Accept | One sentence added to the existing comment, f3b9eb6fa3. |
+| 5 | @claude: confirm read_latest returns at most one row per id | feed_kind_registry.cpp | Decline | Current rows are unique on (tenant, id, party). More than one comes back only when the session sees several parties, and the calibration reads the row the same way (row 1). |
+| 6 | @claude: the per-tick cost is fine | fx_vol_surface_feed.cpp | No change | The mapping runs once per expiry at build time. |
+| 7 | @claude: check that the convention_ member left the header | fx_vol_surface_emitter.hpp | No change | The member is removed in this diff. |
+| 8 | @claude: test an unreadable tenor and a convention with no quoting convention for a tenor | feeds_fx_vol_surface_feed_tests.cpp | No change | Both are pinned: the 6X tenor and the Forward delta at 3M, with its exact error, in "a feed row whose expiries cannot make a surface is refused". |
+| 9 | @claude: rerun ticks-smoke before merge | (gate) | Accept | It will run before merge, when the host load allows. |
 
 * Result
 

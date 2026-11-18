@@ -429,9 +429,13 @@ TEST_CASE("a_bloomberg_volatility_ticker_names_its_pair_expiry_and_label_and_rou
                                     .field = "PX_LAST"});
         CHECK_FALSE((read && std::holds_alternative<vendor::fx_option_quote>(*read)));
     }
-    // Another notation does not write a volatility point.
-    CHECK_FALSE(vendor::notation_of("lseg")->write(
-        vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "1Y", "ATM"}}));
+    // Another notation does not write a volatility point. Demo's refusal is what keeps the
+    // latent surface's clean contributor off every adapter.
+    for (const auto* provider : {"lseg", "demo"}) {
+        INFO(provider);
+        CHECK_FALSE(vendor::notation_of(provider)->write(
+            vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "1Y", "ATM"}}));
+    }
 }
 
 TEST_CASE("an_ice_or_tradeweb_volatility_id_names_its_pair_expiry_and_label_and_roundtrips",

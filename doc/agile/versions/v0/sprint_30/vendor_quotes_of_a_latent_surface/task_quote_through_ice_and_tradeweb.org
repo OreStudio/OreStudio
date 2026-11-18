@@ -84,6 +84,9 @@ task and name that file in the Command column.
 | Local gate | 36 of 38 passed; ctest failed in ores.synthetic.service.tests (the feed config fixture took the system tenant's demo contributor), ticks-smoke failed as ores.marketdata.official hit its start timeout beside ctest | `compass check` | 2ec9ff7dac on c25e952663 |
 | Synthetic service suite after the fixture fix | 1 of 1 passed | `compass test run -- -R ores.synthetic.service.tests` | 3054d24177 |
 | Ticks smoke run alone | passed; ice-a accepted 966 ids, tradeweb-a 959 | `compass smoke ticks --fresh` | 3054d24177 |
+| Local gate after the review round | 36 of 38 passed, ctest green; ticks-smoke and step-consumers failed when the fleet target did not start in time | `compass check` | 65a887865c on 7f4feaf2df |
+| Step consumers on the started fleet | 19 of 19 streams passed | `check_step_consumers.py` | 65a887865c |
+| Ticks smoke run alone after the review round | failed at services start: ores.marketdata.service and ores.refdata.service used 1.5s of CPU over 90s and more before their start timeouts, at a host load average of 14, then started in under 10s on restart | `compass smoke ticks --fresh` | 65a887865c |
 
 * Notes
 
@@ -118,6 +121,13 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: misspell on the changed files. | all | Accept | Clean. |
 | 2 | Local review: the registry reads the contributor table twice per surface build, once for providers and once for profiles. | =feed_kind_registry.cpp= | Decline | Once per build of a surface, not per tick; merging the two reads would couple the offer path to the build path. |
+| 3 | Claude: the contributor links are read in no order, and the noise streams are seeded by index, so a restart could swap the vendors' streams. | =feed_kind_registry.cpp= | Accept | The links are sorted by contributor id. |
+| 4 | Claude: nothing pins that demo writes no volatility id, which is what keeps the clean contributor off every adapter. | =vendor_notation_corpus_tests.cpp= | Accept | The refusal test covers demo beside lseg. |
+| 5 | Claude: the clean contributor adds 15 market ticks per tick per surface. | =fx_vol_surface_feed.cpp= | Decline | The intended design: it records the latent surface. |
+| 6 | Claude: compute the served contributors once per tick rather than once per contributor. | =fx_vol_surface_feed.cpp= | Decline | One any_of over the attached adapters per contributor per tick is cheap, and the set would add a structure for no measured cost. |
+| 7 | Claude: the registry's build_input has no unit test. | =feed_kind_registry.cpp= | Decline | It needs feeds, expiries, curves and calendars in a database; stated as a limitation and shown on the fleet. |
+| 8 | Claude: the feed test's fixed spot date could go stale against the system clock. | =feeds_fx_vol_surface_feed_tests.cpp= | Decline | The surface dates its expiries from the curve's spot date, not the clock, and the sibling tick tests use the same fixed date. |
+| 9 | Claude: run the full gate before merge. | all | Accept | Rerun after this round's fixes. |
 
 * Result
 

@@ -727,7 +727,11 @@ feed_kind make_fx_vol_surface_kind() {
                 repo::fx_vol_surface_feed_contributor_repository contributor_repo;
                 std::vector<std::string> contributors;
                 std::vector<ores::analytics::quant::service::fx_vol_noise_profile> profiles;
-                for (auto& link : contributor_repo.read_latest(ctx)) {
+                // Each contributor's noise stream is seeded by its place in the list, so the
+                // list is in contributor id order and a restart keeps each vendor's stream.
+                auto links = contributor_repo.read_latest(ctx);
+                std::ranges::sort(links, {}, [](const auto& l) { return l.contributor_id; });
+                for (auto& link : links) {
                     if (link.feed_id != cfg.id)
                         continue;
                     const auto found = contributor_rows.find(link.contributor_id);

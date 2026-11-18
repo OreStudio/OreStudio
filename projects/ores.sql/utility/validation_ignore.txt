@@ -186,6 +186,11 @@ TENANT_001 ores_database_info_tbl
 # =============================================================================
 TENANT_001 ores_mq_queues_tbl
 
+# A restrictive party policy would hide every tenant- and system-scope queue,
+# whose party_id is NULL. The read policy isolates parties by scope instead:
+# a party-scope row is visible only when its party_id is one of the caller's.
+RLS_002 ores_mq_queues_tbl
+
 # =============================================================================
 # MQ messages, archive, and stats tables - tenant_id not in PK by design.
 # PKs are bigserial (messages) or (queue_id, timestamp) for hypertables.

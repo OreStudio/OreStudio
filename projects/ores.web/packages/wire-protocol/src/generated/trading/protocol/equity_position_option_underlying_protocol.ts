@@ -49,7 +49,7 @@ export interface EquityPositionOptionUnderlyingWrite {
     exercise_date: string | null;
     currency: string | null;
     strike_currency: string | null;
-    quantity: string | null;
+    quantity: number | null;
     premium_amount: string | null;
     premium_currency: string | null;
     premium_pay_date: string | null;

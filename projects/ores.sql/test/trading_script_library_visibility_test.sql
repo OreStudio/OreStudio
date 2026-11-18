@@ -70,15 +70,18 @@ select case when not exists(select 1 from t_other)
               and valid_to = ores_utility_infinity_timestamp_fn()),
            10,
            'a tenant reads the ten inputs of the script, and its delete closes none'),
-        -- The policy reads the system tenant's rows for every command, and its
-        -- check refuses a write that would leave a row outside the tenant.
-        throws_ok($$update ores_trading_script_inputs_tbl set data_type = 'Number'
-                    where tenant_id = ores_utility_system_tenant_id_fn()
-                      and script_name = 'AsianBasketOption'
-                      and input_name = 'Underlyings'
-                      and valid_to = ores_utility_infinity_timestamp_fn()$$,
-                  '42501', null,
-                  'a tenant changes no input of the system tenant'),
+        -- Only the select policy admits the system tenant's rows, so a write
+        -- reaches none of them.
+        results_eq($$with changed as (
+                        update ores_trading_script_inputs_tbl set data_type = 'Number'
+                        where tenant_id = ores_utility_system_tenant_id_fn()
+                          and script_name = 'AsianBasketOption'
+                          and input_name = 'Underlyings'
+                          and valid_to = ores_utility_infinity_timestamp_fn()
+                        returning 1)
+                    select count(*)::int from changed$$,
+                   $$values (0)$$,
+                   'a tenant changes no input of the system tenant'),
         is((select data_type from ores_trading_script_inputs_tbl
             where tenant_id = ores_utility_system_tenant_id_fn()
               and script_name = 'AsianBasketOption'

@@ -697,7 +697,7 @@ auto read_equity_auto_delta_hedged_option(const record_reader& trade) -> equity_
         "EquityAutoDeltaHedgedOption");
     std::vector<equity_position_option_underlying> batches;
     if (const auto data = trade.child("EquityAutoDeltaHedgedOptionData")) {
-        inst.volatility = data->decimal("Volatility");
+        inst.volatility = decimal_as_double(*data, "Volatility");
         inst.drift_rate = data->decimal("DriftRate");
         if (const auto start = data->text("ObservationStartDate"))
             inst.observation_start_date = equity_instrument_projection_to_domain_date(*start);
@@ -712,7 +712,7 @@ auto read_equity_auto_delta_hedged_option(const record_reader& trade) -> equity_
                     equity_address_of(equity_instrument_projection_text_of(entry, "Name"));
                 row.currency = entry.text("Currency");
                 row.strike_currency = entry.text("StrikeCurrency");
-                row.quantity = entry.decimal("Quantity");
+                row.quantity = decimal_as_double(entry, "Quantity");
                 if (const auto strike = entry.text("Strike"))
                     if (const auto parsed = decimal::from_string(*strike))
                         row.strike = *parsed;
@@ -1256,7 +1256,7 @@ void write_equity_auto_delta_hedged_option(
     const std::vector<equity_position_option_underlying>& rows) {
     auto data = trade.child("EquityAutoDeltaHedgedOptionData");
     if (v.volatility)
-        data.set_decimal("Volatility", *v.volatility);
+        set_decimal_from_double(data, "Volatility", *v.volatility);
     if (v.drift_rate)
         data.set_decimal("DriftRate", *v.drift_rate);
     if (v.observation_start_date)
@@ -1304,7 +1304,7 @@ void write_equity_auto_delta_hedged_option(
         if (row->strike_currency)
             entry.set_text("StrikeCurrency", *row->strike_currency);
         if (row->quantity)
-            entry.set_decimal("Quantity", *row->quantity);
+            set_decimal_from_double(entry, "Quantity", *row->quantity);
     }
 }
 

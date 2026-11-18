@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: 684B4233-F5A7-4E16-B6B2-31C2251406B2
+:END:
+#+title: Task: Compare compass-ng with the Python gates on main
+#+description: Run compass-ng and the Python gates on the same commit of main, time both, plant violations to prove each tool sees them, and record every disagreement.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Know whether compass-ng is good enough to replace ores.codegen regeneration and
+the build-free Python gates, from evidence on one commit of main, not from the
+integration guide's numbers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- compass check and local_checks.py --all --exclude-heavy run on the same commit; both are timed with the load recorded.
+- Every gate whose verdict differs between the two tools is listed with its cause and which side is right.
+- On gates that are green, deliberate violations are planted, and each tool is shown to report each one.
+- compass-ng defects are sent to the compass repository, not worked around here.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+All on main at =67803175ce=, 8 cores, Linux. The machine was heavily loaded by
+the rest of the fleet (load 24 to 45) for every run, so every time here is
+pessimistic. compass-ng was =68833c3= (dirty: no, store formats: dependency
+records 6, actions 5, written outputs 1, format cache 1, worktree index 1).
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| compass check, cold (empty store) | 66.5 s wall, 44.0 s of it clang-format; load 43 | =compass check --timings= ([[file:evidence/compass_check_cold.txt][log]]) | 67803175ce |
+| compass check, warm | 4.7 s wall; load 41 | =compass check --timings= | 67803175ce |
+| compass check after edits to 19 files | 8.7 to 10.4 s | =compass check= | 67803175ce + plants |
+| compass check --ratchet origin/main | 11 s, exit 0 | =compass check --ratchet origin/main= | 67803175ce |
+| compass hook, one edit | 0.51 to 0.58 s; load 34 | =compass hook= with a PostToolUse payload | 67803175ce |
+| Findings compass reports on main | 297 in 14 rules | =compass check= | 67803175ce |
+| Python build-free gates | 26 min 9 s wall (8 jobs), 12 of 89 fail; load 31 to 45 | =local_checks.py --all --exclude-heavy --json= ([[file:evidence/python_gates_full_run.txt][log]]) | 67803175ce |
+| Python time of the 75 gates compass ports | 1,844 s summed | per-gate table in [[file:evidence/gate_timings.txt][gate_timings.txt]] | 67803175ce |
+| Slowest ported Python gates | component-drift 655 s, drift-sweep 567 s, sql-hygiene 102 s, exported-types 94 s, tangle-shell 91 s | same | 67803175ce |
+| Planted violations caught | compass 10 of 10; Python 10 of 10 | [[file:evidence/plant_violations.py.txt][plant script]], then =compass check= and =local_checks.py --only ...= | 67803175ce + plants |
+| Python 10 planted gates | 9 min 56 s wall; component-drift alone 11 min 8 s | =local_checks.py --only ...= | 67803175ce + plants |
+
+* Notes
+
+** Verdicts compared
+
+| Gate | Python | compass | Cause | Right side |
+|------+--------+---------+-------+------------|
+| component-drift / drift-sweep | fail / pass, 26 files would change | codegen/drift: 26 files | drift-sweep fails only on files the branch touched; both count the same 26 | both agree |
+| tangle-shell | fail, 52 scripts (12 changed, 40 new) | shell_recipe_library/drift: 52 | 4 new instrument families were never tangled; 3 more gained arguments | both agree |
+| recipe-inventories | fail | recipe_inventories/drift: 1 | stale shell inventory | both agree |
+| money-decimal-columns | fail | 9 findings | baseline no longer matches | both agree |
+| handler-permissions | fail | 12 unseeded permissions | | both agree |
+| bff-list-requests | fail | 1 stale table | | both agree |
+| ore-parameter-value-sets, parameter-value-sets-only, ore-element-map, convention-kind-terms | fail: stop on r.id in conventions_fx_projection.cpp | parameter_value_sets/unresolved: 1; the rest pass | the Python generators stop early on a defect the guide names | cannot compare until the r.id fix |
+| *er-diagram* | *fail* (--strict) | *er_diagram: nothing* | 4 trading tables have no RLS: cash_position_instruments, equity_pairwise_variance_swap_instruments, fx_asian_option_instruments, fx_pairwise_variance_swap_instruments (added in 4f51867bfb, no rows in trading_rls_policies_create.sql) | *Python. compass does not port the RLS validation. Sent to compass.* |
+| route-inventory | pass | route_inventory/drift: 1 | the script's --check ignores the Where line numbers | compass (stricter) |
+| entity-writes, rls-widenings, template-sections, core-link-edges | pass (baseline files) | 136 + 13 + 8 + 37 findings | compass does not read baseline files | expected: move baselines to inline exceptions |
+| codegen-tests | fail | not ported | tool test suite | n/a |
+
+** Planted violations
+
+One throwaway commit on top of main planted one violation for each of 10
+gates that were green in both tools: an uppercase filetag (lint), a colon link
+(org-links), a changed tangled HTTP recipe block (tangle-http), =<stop_token>=
+outside ores.platform (portable-stop), a duplicate index (sql-hygiene), a
+source missing from component_files.cmake (cmake-sources), the same
+file-local name in two sources of one target (unity-collisions), a second
+definition of =ores::refdata::domain::currency= (unique-type-names), a raw SQL
+write to an entity table (entity-writes) and a hand edit in a generated
+repository (component-drift). Both tools reported all 10. The first plant for
+tangle-http was in =assign_role.org=, which is not a tangled recipe; neither
+tool reported it, which is correct.
+
+** Defects found on the way
+
+- *compass-ng shadows the Python compass.* =~/.local/bin/compass= is
+  compass-ng, so =compass services status= fails with =unknown command:
+  services=. The docs and bearings tell agents to type =compass <verb>=.
+- *--commit and --ratchet without .compass.org.* On a commit that has no
+  =.compass.org=, compass runs its defaults (document_index and
+  required_sections on) and reports 4,762 findings, without a warning.
+- *The guide names a rule table page ORE Studio does not have*
+  (=doc/knowledge/compass/rule_table.org=); the pilot ran with rule_table off.
+- *The hook reports findings that were in the file before the edit.* Until
+  the baselines are inline exceptions it will block on every edit to an
+  entity writer or a mustache template.
+- *A hand edit compass generate would delete.*
+  =market_fixing_repository.cpp= has a hand-written
+  =read_latest_for_series= in a generated file; compass generate (and
+  ores.codegen) would remove it.
+- *Python tangle-shell and tangle-http write into the tree* and leave it
+  dirty (52 and 1 files here).
+- *Python component-drift renders into the shared /tmp tmpfs* and crashed
+  with ENOSPC on one run when the fleet had filled it.
+
+** Upstream response
+
+The compass session accepted all seven defects on 2026-11-17:
+
+- D2, the install name: fixed in compass PR #55 (613d778); the binary installs as compass-ng.
+- The integration guide now uses compass-ng, defaults rule_table off (D4), cites this pilot's drift figures (D6), says the ratchet needs .compass.org on the base branch (D3) and puts the hook after the baselines step (D5).
+- D1 (er-diagram RLS), D3 (warn and use the working tree's config), D5 (a hook mode for new findings only) and D6 (warn before deleting hand-written code) are queued in the compass task "Fix the pilot's findings". D7 belongs to its "Design output for LLMs" story.
+- Correctness work in flight will change some verdicts: generators that cannot produce output will report a finding, not pass. The compass session will list the changes before the next install.
+
+
+compass-ng is ready to run next to the Python gates now, and ready to replace
+them once the drift is fixed and the baselines are exceptions. It gives the
+same verdict as Python on every gate it could be compared on except
+er-diagram, where it misses the RLS validation. It catches every planted
+violation, and it is about 400 times faster warm (4.7 s against 1,844 s of
+gate time), and 28 times faster even cold. It is not ready for CI or external
+developers: there is no released binary yet.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+compass-ng gives the same verdicts as the Python gates on every gate it could
+be compared on, except er-diagram's RLS validation, which compass has since
+ported as rls_coverage. It caught 10 of 10 planted violations, and it is about
+400 times faster warm. The 7 defects reported to the compass repository are
+fixed there (PRs #55 to #59); the install name is compass-ng, installed at
+9021d31, and a cold check of that build on this branch matches 68833c3. The
+ORE Studio side of the findings is fixed on this branch by the drift and gate
+defect tasks.
+

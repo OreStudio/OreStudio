@@ -69,7 +69,7 @@ create table if not exists "ores_trading_equity_position_option_underlyings_tbl"
     "exercise_date" date null,
     "currency" text null,
     "strike_currency" text null,
-    "quantity" numeric(38, 12) null,
+    "quantity" double precision null,
     "premium_amount" numeric(38, 12) null,
     "premium_currency" text null,
     "premium_pay_date" date null,

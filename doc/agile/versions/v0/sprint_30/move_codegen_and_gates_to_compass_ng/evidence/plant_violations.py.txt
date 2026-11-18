@@ -1,0 +1,66 @@
+from pathlib import Path
+
+
+def edit(path, old, new):
+    p = Path(path)
+    t = p.read_text()
+    assert t.count(old) == 1, (path, old)
+    p.write_text(t.replace(old, new))
+
+
+def append(path, text):
+    p = Path(path)
+    p.write_text(p.read_text() + text)
+
+
+# P1 lint: an uppercase filetag.
+edit("doc/recipes/shell/how_do_i_test_the_shell.org",
+     "#+filetags: :recipe:shell:testing:",
+     "#+filetags: :recipe:Shell:testing:")
+
+# P2 org-links: a link whose target starts with a colon.
+append("doc/recipes/http/delete_account.org", "\nSee [[:nowhere][nowhere]].\n")
+
+# P3 tangle-http: an http recipe block that no longer matches its tangled script.
+edit("doc/recipes/http/assign_role.org",
+     '    "role_id": "{{(verb-var role_id)}}"\n',
+     '    "role_id": "{{(verb-var role_id)}}",\n    "planted": true\n')
+
+# P4 portable-stop: a C++20 stop type outside ores.platform.
+edit("projects/ores.refdata/core/src/service/asset_class_service.cpp",
+     '#include "ores.utility/domain/protocol.hpp"\n',
+     '#include "ores.utility/domain/protocol.hpp"\n#include <stop_token>\n')
+
+# P5 sql-hygiene: the same index created twice in one file.
+idx = ('create index if not exists currencies_tenant_idx\n'
+       'on "ores_refdata_currencies_tbl" (tenant_id)\n'
+       'where valid_to = ores_utility_infinity_timestamp_fn();\n')
+edit("projects/ores.sql/create/refdata/refdata_currencies_create.sql", idx, idx + "\n" + idx)
+
+# P6 cmake-sources and P11 entity-writes: a new source not in component_files.cmake
+# that writes an entity table in raw SQL.
+Path("projects/ores.refdata/core/src/service/planted_service.cpp").write_text(
+    '#include <string>\n\n'
+    'namespace ores::refdata::service {\n\n'
+    'std::string planted_write() {\n'
+    '    return "insert into ores_refdata_currencies_tbl (iso_code) values ($1)";\n'
+    '}\n\n'
+    '}\n')
+
+# P7 unity-collisions: the same file-local name in two sources of one target.
+helper = "\nnamespace {\nint planted_helper() { return 1; }\n}\n"
+append("projects/ores.refdata/core/src/service/asset_class_code_service.cpp", helper)
+append("projects/ores.refdata/core/src/service/asset_measure_service.cpp", helper)
+
+# P8 unique-type-names: a second definition of a domain type.
+Path("projects/ores.refdata/core/include/ores.refdata.core/service/planted.hpp").write_text(
+    '#ifndef ORES_REFDATA_CORE_SERVICE_PLANTED_HPP\n'
+    '#define ORES_REFDATA_CORE_SERVICE_PLANTED_HPP\n\n'
+    'namespace ores::refdata::domain {\n\n'
+    'struct currency {\n    int planted;\n};\n\n'
+    '}\n\n#endif\n')
+
+# P9 codegen drift: a hand edit in a generated file.
+edit("projects/ores.refdata/core/src/repository/currency_repository.cpp",
+     " * To modify, update the template and regenerate.\n",
+     " * To modify, update the template and regenerate.\n * Planted hand edit.\n")

@@ -1,0 +1,143 @@
+ 17:13:16 up 22 days, 14:56,  2 users,  load average: 36.09, 32.68, 27.90
+🧭 ores.local_checks
+   base     : origin/main (67803175ce)
+   changed  : 1 file(s)
+   classes  : ci, codegen, cpp, docs, modeling, plugins, services, sql, tooling, web
+   checks   : 89
+   preset   : linux-clang-release-ninja
+
+▶  Prepare (12)
+   running tangle-templates…
+   running component-drift…
+   running tangle-shell…
+   running tangle-http…
+   running site-page…
+   running component-docs…
+   running cmake-sources…
+   running model-drift…
+   running recipe-inventories…
+   running physical-inventory…
+   running web…
+   running backlog-indexes…
+   ✅ tangle-templates (19.0s)
+   ❌ component-drift (654.9s)
+   ❌ tangle-shell (91.2s)
+   ✅ tangle-http (8.2s)
+   ✅ site-page (13.3s)
+   ✅ component-docs (1.4s)
+   ✅ cmake-sources (1.3s)
+   ✅ model-drift (0.2s)
+   ❌ recipe-inventories (0.1s)
+   ✅ physical-inventory (0.1s)
+   ✅ web (210.1s)
+   ✅ backlog-indexes (0.3s)
+
+▶  Checks (77)
+   ✅ lint (7.2s)
+   ✅ no-committed-credentials (0.0s)
+   ✅ no-pr-triggers (0.0s)
+   ✅ org-links (9.7s)
+   ✅ heading-numbers (2.1s)
+   ✅ skill-namespace (0.1s)
+   ✅ skill-catalogue (0.1s)
+   ✅ skill-type-tables (0.1s)
+   ✅ skill-levels (0.2s)
+   ✅ skill-recipes (0.1s)
+   ✅ rule-identifiers (0.1s)
+   ✅ structure-notes (0.8s)
+   ✅ pattern-uses (2.1s)
+   ✅ trade-type-coverage (0.2s)
+   ✅ xml-bindings-drift (17.8s)
+   ✅ xml-benchmark-recorded (0.8s)
+   ✅ translation-unit-budget (0.5s)
+   ✅ unity-collisions (24.1s)
+   ✅ unique-type-names (9.6s)
+   ✅ xml-family-census (0.5s)
+   ✅ http-areas (0.2s)
+   ✅ route-units (0.1s)
+   ✅ route-inventory (0.3s)
+   ✅ prototypes (0.1s)
+   ✅ template-sections (0.2s)
+   ✅ drift-sweep (566.7s)
+   ✅ paste-blocks (60.5s)
+   ❌ er-diagram (5.1s)
+   ❌ money-decimal-columns (1.5s)
+   ✅ model-sql-types (0.4s)
+   ✅ entity-binary-types (0.9s)
+   ✅ sql-hygiene (102.2s)
+   ✅ file-types-seed (0.4s)
+   ✅ ore-parameters-seed (0.3s)
+   ✅ script-library-seed (0.1s)
+   ✅ ore-renderings-tables (0.2s)
+   ❌ ore-parameter-value-sets (0.1s)
+   ❌ parameter-value-sets-only (0.1s)
+   ❌ convention-kind-terms (0.1s)
+   ✅ curve-sections-wiring (0.6s)
+   ✅ shell-command-units (0.2s)
+   ✅ curve-parameter-paths (0.2s)
+   ❌ ore-element-map (0.2s)
+   ✅ curve-column-guards (0.2s)
+   ✅ marketdata-identity-columns (0.0s)
+   ✅ generated-column-refs (0.9s)
+   ✅ protocol-twins (0.2s)
+   ✅ subject-conformance (19.5s)
+   ❌ handler-permissions (0.4s)
+   ✅ open-reads (0.8s)
+   ✅ shell-menus (0.2s)
+   ✅ route-auth (3.5s)
+   ✅ registry-exceptions (0.1s)
+   ✅ reachability (26.8s)
+   ✅ portable-stop (24.0s)
+   ✅ event-registrars (0.0s)
+   ✅ history-registrars (0.0s)
+   ✅ handler-registrars (4.9s)
+   ✅ stream-coverage (12.6s)
+   ✅ populate-refs (12.7s)
+   ✅ sql-reachability (1.2s)
+   ✅ rls-widenings (0.1s)
+   ✅ entity-writes (8.4s)
+   ✅ enum-attributes (40.9s)
+   ✅ exported-types (94.2s)
+   ✅ boost-deps (2.6s)
+   ✅ forward-declarable-includes (11.8s)
+   ✅ format (0.1s)
+   ❌ bff-list-requests (3.2s)
+   ✅ conventions-dataset (0.3s)
+   ✅ conventions-coverage (1.9s)
+   ✅ conventions-generator-tests (0.1s)
+   ✅ ore-output-catalogue (1.1s)
+   ✅ dsh-environment (0.8s)
+   ❌ codegen-tests (156.5s)
+   ✅ build-script-tests (2.5s)
+   ✅ compass-tests (12.5s)
+
+❌  local checks: 12 of 89 failed
+   • component-drift: The components this branch changed match their models, rendered without writing
+     fix: Run compass codegen regenerate for the component the report names. The check renders into a temporary root and writes nothing; if a regeneration is needed, --write does it, and refuses on a dirty tree.
+   • tangle-shell: The shell recipes tangle to the committed scripts
+     fix: Commit the regenerated scripts under projects/ores.shell/scripts/library.
+   • recipe-inventories: The shell and HTTP recipe inventories match the tree
+   • er-diagram: The committed ER diagrams match the schema
+     fix: Run projects/ores.codegen/plantuml_er_generate.sh and commit the diagrams.
+   • money-decimal-columns: A money quantity is an exact decimal, not a binary float
+     fix: Give the column an exact decimal type and take the double out of the domain type, or, when the column is a continuous quantity such as a volatility, exclude its entity in the check. The rule is in doc/knowledge/architecture/exact_numbers_and_economic_change.org.
+   • ore-parameter-value-sets: The ore parameter value sets match their sources
+     fix: Run projects/ores.sql/utility/generate_value_sets.py and commit the populate script.
+   • parameter-value-sets-only: A parameter's control and rule come only from its value set
+     fix: State the rule in the setting's value set and run projects/ores.sql/utility/generate_value_sets.py, then commit the seed. A per-pair column has no place here: the set states the rule once.
+   • convention-kind-terms: The convention kind terms match the mapper and the ORE terms
+     fix: Run projects/ores.sql/utility/generate_convention_kind_terms.py and commit the populate script.
+   • ore-element-map: The ORE element map and its columns are the tree's
+     fix: Run projects/ores.sql/utility/generate_ore_element_map.py and commit the map and the column seed.
+   • handler-permissions: Every handler permission code is seeded
+   • bff-list-requests: Every hand-written list request states what the protocol decodes
+     fix: State the member the report names, or pass filter: null.
+   • codegen-tests: The codegen suite passes
+📝 Report: build/output/local_checks/report.md
+
+real	26m9.299s
+user	29m5.495s
+sys	3m23.136s
+ 17:39:25 up 22 days, 15:23,  2 users,  load average: 24.13, 33.17, 34.78
+
+[exited with code 0]

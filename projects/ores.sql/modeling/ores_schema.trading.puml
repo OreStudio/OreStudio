@@ -2333,7 +2333,7 @@ package "trading" #E8F5E9 {
           currency : text
         * quantity : double
           price : numeric(38, 12)
-          volatility : numeric(38, 12)
+          volatility : double
           drift_rate : numeric(38, 12)
           observation_start_date : date
           payment_date : date
@@ -2382,7 +2382,7 @@ package "trading" #E8F5E9 {
           exercise_date : date
           currency : text
           strike_currency : text
-          quantity : numeric(38, 12)
+          quantity : double
           premium_amount : numeric(38, 12)
           premium_currency : text
           premium_pay_date : date

@@ -8,7 +8,7 @@
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
 #+branch: feature/make-the-surface-steps-time-go-to-its-work
-#+pr:
+#+pr: 4855
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -162,7 +162,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4855][#4855]] | [marketdata] Do the provisioning steps' work where the step stands |
 
 * Review
 

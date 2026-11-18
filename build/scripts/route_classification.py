@@ -902,6 +902,13 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "Whether auto-approval is on, its scope, and who set it, when and why, read from"
          " the one subject the inbox answers it on."),
+    Rule("the principal's requests route",
+         ("regex", r"^((GET|POST) /api/me/requests|DELETE /api/me/requests/\{id\})$"),
+         CPP, RESOURCE, "workflow",
+         "The signed-in person's own requests at the addresses and in the shapes the BFF"
+         " answered: the page they raised, newest first, each row with the roles it asks for"
+         " and the latest thing said about it; the ask that raises one; and the withdrawal"
+         " that carries the version the person saw."),
     Rule("the principal's requests",
          ("regex", r"^(GET|POST|DELETE) /api/me/requests"),
          BFF, RESOURCE, "workflow",

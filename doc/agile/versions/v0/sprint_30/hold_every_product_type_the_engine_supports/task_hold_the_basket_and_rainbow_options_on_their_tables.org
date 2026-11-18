@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/hold-the-basket-and-rainbow-options-on-their-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,7 +28,7 @@ table holds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -53,9 +53,29 @@ table holds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+ORE states the four elements in one shape: =Currency=, =Notional=, =Strike=
+(optional on a basket, required on a rainbow), =Underlyings=, =OptionData=,
+=Settlement=, and on a basket the optional =ObservationDates=. The commodity
+family already holds the same shape natively.
+
+- Two tables, one per family, each serving the basket and the rainbow of that
+  family: =equity_basket_option_instrument= (EquityBasketOption,
+  EquityRainbowOption) and =fx_basket_option_instrument= (FxBasketOption,
+  FxRainbowOption). The columns are the element's scalars: =currency=,
+  =notional=, =strike= and =settlement_date=. A check requires the strike on a
+  rainbow.
+- The lists are shared rows, read and written by the families' generic tables:
+  the =OptionData= block and its exercise dates are the instrument option and
+  schedule rows; the members are instrument underlying rows under the role
+  =underlying=, each with its weight and currency; the =ObservationDates= are
+  a schedule row under the role =observation_schedule=.
+- The builder keeps =basket_option_builder<Product>= and its terms, which move
+  to a header of their own because the basket variance swap shares the member;
+  it now returns the family's result instead of the scripted rows.
+- The class-read entries leave the scripted projection. The catalogue routes
+  the four codes to the new tables and names their scripted forms:
+  =VanillaBasketOption= for a basket and =MaxRainbowOption= for a rainbow,
+  the payoffs the generator books.
 
 * Measurements
 

@@ -41,6 +41,7 @@
 #include "ores.trading.core/repository/equity_accumulator_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_basket_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_option_instrument_repository.hpp"
@@ -53,6 +54,7 @@
 #include "ores.trading.core/repository/fx_asian_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_basket_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_pairwise_variance_swap_instrument_repository.hpp"
@@ -120,6 +122,9 @@ void read_instrument_components(const ores::database::context& ctx,
         case domain::instrument_table::equity_barrier_option_instrument:
             append(equity_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
+        case domain::instrument_table::equity_basket_option_instrument:
+            append(equity_basket_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
         case domain::instrument_table::equity_digital_option_instrument:
             append(equity_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
@@ -153,6 +158,9 @@ void read_instrument_components(const ores::database::context& ctx,
             break;
         case domain::instrument_table::fx_barrier_option_instrument:
             append(fx_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_basket_option_instrument:
+            append(fx_basket_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::fx_digital_option_instrument:
             append(fx_digital_option_instrument_repository{}.read_latest(ctx, trade_id));

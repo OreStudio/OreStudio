@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/projection/ore_projection.hpp"
+#include "ores.trading.api/builders/basket_option_builders.hpp"
 #include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/commodity_builders.hpp"
 #include "ores.trading.api/builders/composite_builders.hpp"
@@ -2198,10 +2199,8 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
             .expiry = end,
             .settlement = end};
         if (type == "FxBasketOption")
-            return scripted_batch_of(
-                tb::basket_option_builder<tb::basket_product::fx_basket>(basket).build(), type);
-        return scripted_batch_of(
-            tb::basket_option_builder<tb::basket_product::fx_rainbow>(basket).build(), type);
+            return built(tb::basket_option_builder<tb::basket_product::fx_basket>(basket).build());
+        return built(tb::basket_option_builder<tb::basket_product::fx_rainbow>(basket).build());
     }
     const auto barrier = [&]<tb::fx_barrier_product Product>(std::vector<tb::fx_barrier> barriers) {
         return built(tb::fx_barrier_option_builder<Product>(
@@ -3136,10 +3135,9 @@ build_equity_trade(const domain::trade_generation_scope& scope,
             .expiry = end,
             .settlement = end};
         if (type == "EquityBasketOption")
-            return scripted_batch_of(
-                tb::basket_option_builder<tb::basket_product::equity_basket>(basket).build(), type);
-        return scripted_batch_of(
-            tb::basket_option_builder<tb::basket_product::equity_rainbow>(basket).build(), type);
+            return built(
+                tb::basket_option_builder<tb::basket_product::equity_basket>(basket).build());
+        return built(tb::basket_option_builder<tb::basket_product::equity_rainbow>(basket).build());
     }
     if (type == "EquityWindowBarrierOption" || type == "EquityGenericBarrierOption") {
         // A call knocks out a tenth below the level, a put a tenth above it.

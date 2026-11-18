@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 #define ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 
+#include "ores.trading.api/builders/basket_option_builders.hpp"
 #include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/commodity_builders.hpp"
 #include "ores.trading.api/builders/composite_builders.hpp"

@@ -40,6 +40,7 @@
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_asian_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_basket_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_pairwise_variance_swap_instrument.hpp"
@@ -515,6 +516,11 @@ struct fx_instrument_data {
     std::vector<fx_pairwise_variance_swap_instrument> pairwise_variance_swaps;
 
     /**
+     * @brief The fx_basket_option_instrument rows: FxBasketOption and FxRainbowOption.
+     */
+    std::vector<fx_basket_option_instrument> basket_options;
+
+    /**
      * @brief The range_bound rows: the RangeBounds list an accumulator states.
      *
      * A child of the product rather than a product, so it states no type and
@@ -574,7 +580,8 @@ inline constexpr auto fx_instrument_arrays =
                &fx_instrument_data::accumulators,
                &fx_instrument_data::variance_swaps,
                &fx_instrument_data::asian_options,
-               &fx_instrument_data::pairwise_variance_swaps};
+               &fx_instrument_data::pairwise_variance_swaps,
+               &fx_instrument_data::basket_options};
 
 /**
  * @brief The family's child arrays: rows a product owns rather than rows a

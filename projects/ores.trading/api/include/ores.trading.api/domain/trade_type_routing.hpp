@@ -45,6 +45,7 @@ enum class instrument_table {
     equity_accumulator_instrument,
     equity_asian_option_instrument,
     equity_barrier_option_instrument,
+    equity_basket_option_instrument,
     equity_digital_option_instrument,
     equity_forward_instrument,
     equity_option_instrument,
@@ -56,6 +57,7 @@ enum class instrument_table {
     fx_asian_forward_instrument,
     fx_asian_option_instrument,
     fx_barrier_option_instrument,
+    fx_basket_option_instrument,
     fx_digital_option_instrument,
     fx_forward_instrument,
     fx_pairwise_variance_swap_instrument,
@@ -146,9 +148,9 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "FxBestEntryOption")
         return instrument_table::scripted_instrument;
     if (trade_type == "FxBasketOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::fx_basket_option_instrument;
     if (trade_type == "FxRainbowOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::fx_basket_option_instrument;
     if (trade_type == "FxStrikeResettableOption")
         return instrument_table::scripted_instrument;
     if (trade_type == "CreditDefaultSwap")
@@ -234,9 +236,9 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "EquityBestEntryOption")
         return instrument_table::scripted_instrument;
     if (trade_type == "EquityBasketOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::equity_basket_option_instrument;
     if (trade_type == "EquityRainbowOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::equity_basket_option_instrument;
     if (trade_type == "EquityOutperformanceOption")
         return instrument_table::equity_option_instrument;
     if (trade_type == "EquityStrikeResettableOption")

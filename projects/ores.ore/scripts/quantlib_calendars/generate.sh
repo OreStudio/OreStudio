@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Regenerates refdata_calendar_exceptions_populate.sql from ORE's own QuantLib.
-# Run it when the ORE vendor package moves. Nothing else links QuantLib, so the
-# services keep no runtime dependency on it.
+# Regenerates refdata_calendar_exceptions_seed_populate.sql from ORE's own
+# QuantLib. Run it when the ORE vendor package moves. Nothing else links
+# QuantLib, so the services keep no runtime dependency on it.
 #
 # ORE_ENGINE is a checkout of the ORE tag the package was built from, and it
 # must hold a configured build, whose ql/config.hpp states the library's ABI.
@@ -26,7 +26,7 @@ clang++ -std=c++20 -O1 -Wno-deprecated-declarations \
     -o "$work/generate" "$work/lib/libQuantLib.so.1" \
     -Wl,-rpath,"$work/lib" -Wl,--allow-shlib-undefined
 
-"$work/generate" "$root/projects/ores.sql/populate/refdata/refdata_calendar_exceptions_populate.sql" \
+"$work/generate" "$root/projects/ores.sql/populate/refdata/refdata_calendar_exceptions_seed_populate.sql" \
     | tee "$work/summary"
 
 # The build_calendars step builds to this year. Past the data it would write

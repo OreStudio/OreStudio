@@ -88,8 +88,7 @@ begin
 
     -- The ZZ sentinel (ISO 3166-1's own reserved user-assigned code) is not
     -- part of any real ISO country dataset, so it never arrives via the DQ
-    -- artefact loop below -- ensure it exists for the target tenant here,
-    -- mirroring refdata_countries_populate.sql's system-tenant seed, so
+    -- artefact loop below -- ensure it exists for the target tenant here, so
     -- supranational calendars (e.g. TARGET) can reference it after
     -- provisioning a new tenant.
     insert into ores_refdata_countries_tbl (

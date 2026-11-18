@@ -22,9 +22,9 @@
  * Tenor Schedules Seed Population Script
  *
  * Registers the refdata.tenor_schedules dataset and seeds its DQ artefact
- * table from the system tenant's own tenor schedules, which
- * refdata_tenor_schedules_populate.sql loads during the foundation step.
- * Copying them keeps one list of schedules.
+ * table with the two named schedule axes. The dataset is the one writer of
+ * ores_refdata_tenor_schedules_tbl: the bring-up publishes it into the
+ * system tenant, and no populate script inserts the rows.
  *
  * A tenant gets its schedules from this dataset rather than from
  * provisioning, because FOMC_MEETING names the US.FOMC calendar, which a
@@ -94,12 +94,13 @@ begin
         dataset_id, tenant_id, code, version, name, description, display_order,
         schedule_source, calendar_code, diary_entry_type
     )
-    select
-        v_dataset_id, v_tenant_id, t.code, 0, t.name, t.description, t.display_order,
-        t.schedule_source, t.calendar_code, t.diary_entry_type
-    from ores_refdata_tenor_schedules_tbl t
-    where t.tenant_id = v_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
+    values
+        (v_dataset_id, v_tenant_id, 'ROLL_QUARTER', 0, 'IMM Roll Quarter',
+         'Closed-form IMM quarterly rule: the first business day after the 20th of March, June, September, and December (doc/knowledge/domain/imm_dates.org).',
+         1, 'CLOSED_FORM', null, null),
+        (v_dataset_id, v_tenant_id, 'FOMC_MEETING', 0, 'FOMC Meeting Schedule',
+         'Event-lookup schedule: the central_bank_meeting diary events on US.FOMC, seeded from federalreserve.gov (task calendar-seeding).',
+         2, 'EVENT_LOOKUP', 'US.FOMC', 'central_bank_meeting');
 
     get diagnostics v_count = row_count;
 

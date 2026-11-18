@@ -31,6 +31,11 @@
  * refdata.currency_calendars simply contributes no row for that leg,
  * rather than forcing one.
  *
+ * A central-bank meeting calendar is not a pair's advance calendar, so
+ * US.FOMC is left out: it dates the dollar curve's short end, and taking
+ * it in would put the FOMC meeting dates on every pair the dollar is a
+ * leg of.
+ *
  * Execution order: depends on refdata.currency_pair_conventions and
  * refdata.currency_calendars both being populated first in the same
  * script run (this reads their artefact tables directly).
@@ -142,6 +147,7 @@ begin
             on cc.currency_iso_code = p.base_currency
         where cc.dataset_id = v_currency_calendars_dataset_id
           and cc.tenant_id = v_tenant_id
+          and cc.calendar_code <> 'US.FOMC'
         union
         select p.pair_code, cc.calendar_code
         from pairs p
@@ -149,6 +155,7 @@ begin
             on cc.currency_iso_code = p.quote_currency
         where cc.dataset_id = v_currency_calendars_dataset_id
           and cc.tenant_id = v_tenant_id
+          and cc.calendar_code <> 'US.FOMC'
     )
     insert into ores_dq_currency_pair_convention_calendars_artefact_tbl (
         dataset_id, tenant_id, pair_code, calendar_code, version

@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
-#+branch: feature/collapse-the-double-writers
+#+branch: feature/collapse-the-double-writers-2
 #+pr: 4833
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
-#+updated: 2026-11-17
+#+updated: 2026-11-18
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ No table is written by both a direct seed and a DQ publish, and a check proves i
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | The bundle map is settled: no tenant takes a copy of a world row, and a dataset belongs to one level and one scope. The writer collapse is next. |
+| Now          | Both halves are in the tree. Nine populate scripts no longer write a world table, and the check lists nine tables instead of eighteen, eight of which state why they are not a second copy. |
 | Waiting on   | Nothing.                               |
-| Next         | Take the fifteen tables written both ways, one writer at a time. |
-| Last touched | 2026-11-17                              |
+| Next         | The one table left is the ACME cut-take role, which needs a second role on the account artefact: [[id:ECFD6B90-5AF1-450D-BFA8-550F430BC38C][An account cannot hold two roles from a dataset]]. |
+| Last touched | 2026-11-18                              |
 
 * Acceptance
 
@@ -60,12 +60,17 @@ The reader question is settled, in two steps and in this order.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Tables written both by a direct seed and a DQ publish | 15: the fourteen the investigation names, and =assets_images_tbl= | the intersection of the tables the populate scripts insert into and the tables a publish function inserts into | this commit |
+| Tables written both by a direct seed and a DQ publish | 9, was 18: eight are not a second copy and say why, and the ninth is the ACME cut-take role | `python3 projects/ores.codegen/scripts/check_single_writer.py` | this commit |
+| Populate scripts that write a world catalogue table | 0, was 9 | `grep -rl "insert into ores_refdata_calendars_tbl\|insert into ores_refdata_countries_tbl" projects/ores.sql/populate` | this commit |
+| Rows the artefact seeds took over from the live seeds | 24 calendar events, 26,780 calendar exceptions, 2 tenor schedules, 39 currency countries | the publish counts after a recreate | this commit |
+| Currency calendars the dataset publishes | 37, the live count, including the USD -> US.FOMC row the live seed alone carried | `select count(*) from ores_refdata_currency_calendars_tbl where valid_to = ores_utility_infinity_timestamp_fn()` | this commit |
+| Pair convention calendars | 236, unchanged: the meeting calendar is left out of the derivation | same query, on =ores_refdata_currency_pair_convention_calendars_tbl= | this commit |
+| Tenor convention resolutions | 54, unchanged, 14 of them naming a schedule | same query, on =ores_refdata_tenor_convention_resolutions_tbl= | this commit |
 | System-only tables with no tenant route | 11 | investigation, section 3.3 | e050a2d239 |
-| Seed profiles that name the world bundle, so a demo tenant publishes the world catalogue into itself | 0 of 5, was 5 of 5 | `grep -c '\"world\"' projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql` | this commit |
-| World rows a provisioned tenant holds of its own | 0 calendars and 0 currencies, beside the system tenant's 61 and 170, which it reads | provision a tenant with =ores_iam_provision_tenant_fn=, then count the rows whose =tenant_id= is the caller's | this commit |
-| Datasets that are a member of more than one bundle | 3, was 32: the conventions the map doubles, and two pairs of bundles that share a level and a scope | `select count(*) from (select dataset_code from ores_dq_dataset_bundle_members_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by dataset_code having count(*) > 1) d` | this commit |
-| Members of each bundle | 39 world, 16 system_core, 5 lei_hierarchy, 4 lei_counterparties, 4 tenant_defaults, 2 crypto | `select bundle_code, count(*) from ores_dq_dataset_bundle_members_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1 order by 1` | this commit |
+| Seed profiles that name the world bundle, so a demo tenant publishes the world catalogue into itself | 0 of 5, was 5 of 5 | `grep -c '"world"' projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql` | 388c99bb29 |
+| World rows a provisioned tenant holds of its own | 0 calendars and 0 currencies, beside the system tenant's 61 and 170, which it reads | provision a tenant with =ores_iam_provision_tenant_fn=, then count the rows whose =tenant_id= is the caller's | 388c99bb29 |
+| Datasets that are a member of more than one bundle | 3, was 32: the conventions the map doubles, and two pairs of bundles that share a level and a scope | `select count(*) from (select dataset_code from ores_dq_dataset_bundle_members_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by dataset_code having count(*) > 1) d` | 388c99bb29 |
+| Members of each bundle | 39 world, 16 system_core, 5 lei_hierarchy, 4 lei_counterparties, 4 tenant_defaults, 2 crypto | `select bundle_code, count(*) from ores_dq_dataset_bundle_members_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1 order by 1` | 388c99bb29 |
 
 * Notes
 
@@ -121,7 +126,7 @@ See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipelin
 
 * Result
 
-The first half is in the tree and proven. The world catalogue carries the
+The first half is in PR #4833 and proven. The world catalogue carries the
 shared-reference read, no profile publishes a world bundle into a tenant, and a
 check fails when a table gains a second writer.
 
@@ -142,46 +147,60 @@ check fails when a table gains a second writer.
 - The eleven tables the investigation left with no tenant route are classified:
   they are platform vocabularies, so every tenant reads them where they lie and
   the ten whose repository filtered them out now find them.
-- =check_single_writer.py= states the rule and runs in CI. It finds 18 tables
-  written both ways, three of them legitimately, and fifteen as debt.
+- =check_single_writer.py= states the rule and runs in CI.
 
-What the second half needs, found while measuring:
+The second half is in this branch. Every world table the platform adopted is
+written by its dataset alone, and the populate run stages artefacts and publishes
+last.
 
-- Eight of the fifteen live in the world catalogue, and deleting their populate
-  inserts is not mechanical: =refdata_currency_calendars_seed_populate.sql= and
-  =refdata_currency_countries_seed_populate.sql= *derive* their artefact rows
-  from the live tables at populate time. With the live inserts gone, the
-  derivation reads empty tables and stages nothing. They must derive from the
-  artefact tables instead.
-- The two copies had already drifted: the live insert names USD -> US.FOMC,
-  which the dataset does not carry. Collapsing the writers has to add that row
-  to the dataset, or the collapse loses it.
-- Three of the eighteen are outside the refdata inventory the investigation
-  took: the market data series and their asset classes, and the IAM account
-  roles. Both writers reach the system tenant, and the derived-feed work owns
-  the collapse.
+- Nine populate scripts no longer insert a world row: the calendars, their
+  types, events and exceptions, the countries, the currency calendars, the
+  currency countries, the pair convention calendars and the tenor schedules.
+  Their artefact seeds carry the rows instead, and the seeds say so in their
+  headers.
+- Four seeds carried their rows by copying the live table, and would have staged
+  nothing once the live inserts went. They now state the rows: the 24 FOMC
+  meeting dates, the 26,780 QuantLib exceptions, the two tenor schedules and the
+  39 currency-to-country mappings. The exceptions seed is generated, so
+  =generate_calendar_exceptions.cpp= now emits the seed rather than the live
+  populate script.
+- Two derivations read a live table and now read the artefact rows: the currency
+  countries state their own rows, and the currency calendars derive from them.
+  The currency calendars also keep the USD -> US.FOMC row, which only the live
+  seed carried, and the pair convention calendars leave that meeting calendar
+  out, because a schedule is not a pair's advance calendar.
+- Three tables keep a populate script, and each says why. The =WRLD= business
+  centre is a platform row that the foundation layer's system party names before
+  any dataset can publish. Payment frequencies belong to a dataset no profile
+  carries, so the generated publish function is unreachable. The tenor
+  convention resolutions are the platform's own membership vocabulary, and the
+  world publish re-inserts each row to set its two schedule columns; the seed
+  runs after the bring-up publish, because a row that names a schedule is
+  refused until that schedule exists.
+- =check_single_writer.py= lists 9 tables where it listed 18, and each entry
+  states the rows it covers. The publication-level page now states the rule at
+  row level, and says that a script which runs before the bring-up publish may
+  not read a world table.
+- The one row still written twice is the ACME cut-take role, and it needs a
+  field the account artefact does not carry. It is recorded as
+  [[id:ECFD6B90-5AF1-450D-BFA8-550F430BC38C][An account cannot hold two roles
+  from a dataset]] rather than left in the check's list without a name.
 
-Gates, each run on the tree this task leaves:
+Gates, each run on the tree it names:
 
-| Gate | Result |
-|------+--------|
-| Database recreate from the tree | succeeded, three times |
-| pgTAP | 915 assertions in 97 files; 913 pass, and the two files that fail are main's own (see below) |
-| Build, preset =linux-clang-release-ninja= | succeeded: the first run reached 1152 of 1155 targets before the host signalled it, and the resumed runs finished the rest |
-| ctest | 103 of 103 suites pass |
-| Component drift, for refdata, reporting, dq, iam and assets-cpp | no drift |
-| =check_single_writer.py= | 18 tables written both ways, all listed |
-| =check_rls_system_tenant_widenings.py= | 13 widenings, all listed |
-| =check_populate_references.py=, =check_entity_table_writes.py= | clean, and no new writer |
-| =compass lint= | clean |
+| Gate | Tree | Result |
+|------+------+--------|
+| Database recreate from the tree | this branch | succeeded; the first two runs found the ordering work, the third is clean |
+| pgTAP | this branch | 927 assertions in 98 files, all pass |
+| Codegen suite | this branch | 1814 passed |
+| =check_single_writer.py= | this branch | 9 tables written both ways, all listed |
+| =check_populate_references.py=, =check_entity_table_writes.py=, =check_rls_system_tenant_widenings.py= | this branch | clean, no new writer, 13 widenings |
+| Build, ctest, ticks smoke | this branch | not run here: the host is building elsewhere |
+| Build, ctest 103 of 103 | PR #4833 | succeeded on that tree |
 
-Two SQL suites fail and neither is reachable from this branch. Main's
-=b0243c0361= (2026-11-17) took the FX volatility blueprint set from ten pairs to
-thirty-five and left the tests that assert the old shape: =acme_fx_volatility_configs_test=
-still expects 22 surfaces where the data now has 54, and
-=refdata_fx_vol_surface_blueprints_publish_test= still expects ten pairs and two
-pairs no blueprint names. The fix is to regenerate the ACME curve configurations,
-which is the derived-feed work's, not a change to those expectations.
+The two SQL suites that failed on the first half's tree were main's and main has
+since fixed them; the recreate and pgTAP above are from the tree this task
+leaves.
 
 * Test Scenarios
 
@@ -205,5 +224,3 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result

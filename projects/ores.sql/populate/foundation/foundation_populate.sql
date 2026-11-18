@@ -129,22 +129,14 @@ select ores_utility_allow_version_replace_fn();
 \ir ../refdata/refdata_monetary_natures_populate.sql
 \ir ../refdata/refdata_currency_market_tiers_populate.sql
 \ir ../refdata/refdata_currency_pair_classifications_populate.sql
-\ir ../refdata/refdata_countries_populate.sql
-\ir ../refdata/refdata_calendar_types_populate.sql
 \ir ../refdata/refdata_diary_entry_types_populate.sql
-\ir ../refdata/refdata_calendars_populate.sql
 
--- Tenor schedules (after calendars/diary_entry_types: the FOMC_MEETING row
--- soft-FK-references US.FOMC and central_bank_meeting) and their dependent
--- convention resolutions.
-\ir ../refdata/refdata_tenor_schedules_populate.sql
-\ir ../refdata/refdata_tenor_convention_resolutions_populate.sql
+-- The world catalogue -- countries, calendars, tenor schedules, currency
+-- calendars and their exceptions and events -- is not seeded here. It arrives
+-- from the DQ datasets at the end of the populate run, so that each of its
+-- tables has one writer. The vocabulary above is the platform's: it is
+-- defined rather than adopted, and a populate script is its writer.
 
-\ir ../refdata/refdata_calendar_exceptions_populate.sql
-\ir ../refdata/refdata_calendar_events_populate.sql
-\ir ../refdata/refdata_currency_countries_populate.sql
-\ir ../refdata/refdata_currency_calendars_populate.sql
-\ir ../refdata/refdata_currency_pair_convention_calendars_populate.sql
 \ir ../refdata/refdata_party_categories_populate.sql
 \ir ../refdata/refdata_party_types_populate.sql
 \ir ../refdata/refdata_party_statuses_populate.sql

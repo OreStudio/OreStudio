@@ -385,6 +385,12 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Publishing the platform and world levels ---'
 \ir dq/dq_bootstrap_publish_populate.sql
 
+-- The tenor convention resolutions name tenor schedules, and a schedule row
+-- exists only once the world publish above has written it.
+\echo ''
+\echo '--- Tenor Convention Resolutions ---'
+\ir refdata/refdata_tenor_convention_resolutions_populate.sql
+
 \echo ''
 \echo '=== System Population Complete ==='
 

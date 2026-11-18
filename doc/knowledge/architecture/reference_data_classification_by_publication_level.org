@@ -175,16 +175,19 @@ The level also determines the mechanism, and the choice is not free.
   dataset.
 - A fixed vocabulary that the platform ships is written by a *populate script*,
   and every tenant reads its rows through the shared-reference read.
-- A given table in a given tenant has exactly one mechanism that writes it. One
-  publish function may serve two datasets that fill one table, as the FpML and
-  ORE asset-class datasets do; each row nevertheless belongs to one dataset.
+- A given row in a given tenant has exactly one mechanism that writes it, and a
+  table may therefore carry the rows of two. One publish function may serve two
+  datasets that fill one table, as the FpML and ORE asset-class datasets do;
+  each row nevertheless belongs to one dataset.
 - A row written by a populate script belongs to the platform and is not a
   published row, although every tenant reads it. The system party is of this
-  kind.
+  kind, and so is the =WRLD= business centre: the platform defines it, the
+  foundation layer's system party names it before any dataset can publish, and
+  the world dataset publishes the other business centres beside it.
 
-Three practices are excluded by the rule. A populate script may not insert into
-a table in a tenant that a publish function writes. A platform or world row may
-not be published into a tenant. A dataset may not be a member of two bundles
+Three practices are excluded by the rule. A populate script may not write a row
+that a publish function also writes, in the same tenant. A platform or world row
+may not be published into a tenant. A dataset may not be a member of two bundles
 that differ in level or in scope.
 
 ** The path a publication takes
@@ -223,6 +226,13 @@ dataset from the system tenant's one copy, so no tenant needs a dataset row of
 its own in order to publish. No other caller publishes without the bus, and no
 tenant's creation publishes a world dataset: the tenant reads the world
 catalogue where the bring-up placed it.
+
+A world row therefore does not exist until the bring-up has published it. The
+populate run stages artefact rows and publishes last, so a script that runs
+earlier may not read a world table: a seed that needs one derives it from
+another dataset's artefact rows, as the currency calendars derive theirs from
+the currency countries, and states the dependency edge that orders the two
+publishes.
 
 ** Provenance
 

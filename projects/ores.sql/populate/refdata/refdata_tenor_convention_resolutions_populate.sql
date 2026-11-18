@@ -21,6 +21,11 @@
 /**
  * Tenor Convention Resolutions Population Script
  *
+ * Runs after the bring-up publish, because a row that names a tenor schedule
+ * is refused unless that schedule exists, and the schedules arrive from the
+ * world dataset. The row is the platform's: the vocabulary of which tenors a
+ * convention carries, and how each one resolves.
+ *
  * Seeds which tenors belong to which convention's set, and the per-tenor
  * anchor/offset overrides SPECIAL tenors need (see doc/knowledge/domain/
  * tenor.org's "Tenor conventions by curve type" section).

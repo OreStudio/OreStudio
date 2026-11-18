@@ -22,12 +22,10 @@
  * Calendars Seed Population Script
  *
  * Registers the refdata.calendars dataset and seeds its DQ artefact table
- * with the same calendar set, the QuantLib calendars and US.FOMC, already
- * loaded straight into ores_refdata_calendars_tbl by
- * refdata_calendars_populate.sql (kept in
- * lockstep by hand -- the two exist for different purposes: that one is
- * the system tenant's own live rows, this one is the Librarian-publishable
- * dataset a party bundle-Applies to get its own copy).
+ * with the calendar set the platform adopts: the QuantLib calendars and
+ * US.FOMC. The dataset is the one writer of ores_refdata_calendars_tbl:
+ * the bring-up publishes this dataset into the system tenant, and no
+ * populate script inserts the rows.
  *
  * Execution order: depends on refdata.calendar_types being registered
  * first (soft dependency only -- calendar_type/country_code are free-text

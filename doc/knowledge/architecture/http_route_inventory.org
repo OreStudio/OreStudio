@@ -80,7 +80,7 @@ an API publishes no area, so it is counted under =(none)=.
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
-| workflow | inbox, server, timeline, workflow | 23 | composed view 6, resource 17 |
+| workflow | inbox, server, timeline, workflow | 27 | composed view 6, resource 21 |
 | (none) | books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 429 | not an API 407, transport capability 22 |
 
 * The composed views
@@ -158,9 +158,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
-| workflow | 18 | 5 | 13 |
+| workflow | 18 | 9 | 9 |
 | (none) | 35 | 28 | 7 |
-| total | 328 | 273 | 55 |
+| total | 328 | 277 | 51 |
 
 * The pairing
 
@@ -285,10 +285,10 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/me/contact-information= | GET /api/me/contact-information |
 | PUT =/api/me/contact-information= | PUT /api/me/contact-information |
 | POST =/api/me/default-party= | POST /api/me/default-party |
-| GET =/api/me/notifications= | none |
-| POST =/api/me/notifications/clear= | none |
-| POST =/api/me/notifications/read= | none |
-| GET =/api/me/notifications/unread-count= | none |
+| GET =/api/me/notifications= | GET /api/me/notifications |
+| POST =/api/me/notifications/clear= | POST /api/me/notifications/clear |
+| POST =/api/me/notifications/read= | POST /api/me/notifications/read |
+| GET =/api/me/notifications/unread-count= | GET /api/me/notifications/unread-count |
 | GET =/api/me/parties= | GET /api/me/parties |
 | GET =/api/me/permissions= | GET /api/me/permissions |
 | PUT =/api/me/profile= | PUT /api/me/profile |
@@ -497,7 +497,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1367 routes: 328 answered by the BFF and 1039 by ores.http.
+1371 routes: 328 answered by the BFF and 1043 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -877,9 +877,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | post | =/api/me/default-party= | bff | projects/ores.web/packages/bff/src/server.ts:1258 | Sets or clears the party quick sign-in uses on the signed-in account. |
 | resource | access | post | =/api/me/default-party= | ores.http | projects/ores.http/iam/src/routes/iam/account_screen_routes.cpp:239 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | workflow | get | =/api/me/notifications= | bff | projects/ores.web/packages/bff/src/inbox.ts:775 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | get | =/api/me/notifications= | ores.http | projects/ores.http/workflow/src/routes/workflow/notification_routes.cpp:161 | The signed-in person's notices at the addresses and in the shapes the BFF answered: a page of them, or only the unread ones; how many are unread, for the bell; and the two writes that mark them read or clear them, an empty list naming every one they apply to. |
 | resource | workflow | post | =/api/me/notifications/clear= | bff | projects/ores.web/packages/bff/src/inbox.ts:817 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | post | =/api/me/notifications/clear= | ores.http | projects/ores.http/workflow/src/routes/workflow/notification_routes.cpp:213 | The signed-in person's notices at the addresses and in the shapes the BFF answered: a page of them, or only the unread ones; how many are unread, for the bell; and the two writes that mark them read or clear them, an empty list naming every one they apply to. |
 | resource | workflow | post | =/api/me/notifications/read= | bff | projects/ores.web/packages/bff/src/inbox.ts:800 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | post | =/api/me/notifications/read= | ores.http | projects/ores.http/workflow/src/routes/workflow/notification_routes.cpp:199 | The signed-in person's notices at the addresses and in the shapes the BFF answered: a page of them, or only the unread ones; how many are unread, for the bell; and the two writes that mark them read or clear them, an empty list naming every one they apply to. |
 | resource | workflow | get | =/api/me/notifications/unread-count= | bff | projects/ores.web/packages/bff/src/inbox.ts:789 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | get | =/api/me/notifications/unread-count= | ores.http | projects/ores.http/workflow/src/routes/workflow/notification_routes.cpp:187 | The signed-in person's notices at the addresses and in the shapes the BFF answered: a page of them, or only the unread ones; how many are unread, for the bell; and the two writes that mark them read or clear them, an empty list naming every one they apply to. |
 | resource | tenancy | get | =/api/me/parties= | bff | projects/ores.web/packages/bff/src/server.ts:1249 | The parties the signed-in person works in, each named by the server because the association read carries an identifier alone. |
 | resource | access | get | =/api/me/parties= | ores.http | projects/ores.http/iam/src/routes/iam/account_screen_routes.cpp:228 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | get | =/api/me/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1316 | The roles the signed-in person holds with who gave each and why, or one page of what those roles let them do, the documented alias for the principal. |

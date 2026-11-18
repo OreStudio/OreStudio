@@ -926,6 +926,14 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "The signed-in person's own requests, raised, read and taken back, the withdrawal"
          " carrying the version the person saw."),
+    Rule("the principal's notifications' route",
+         ("regex", r"^(GET|POST) /api/me/notifications"
+                   r"(/(unread-count|read|clear))?$"),
+         CPP, RESOURCE, "workflow",
+         "The signed-in person's notices at the addresses and in the shapes the BFF answered: a"
+         " page of them, or only the unread ones; how many are unread, for the bell; and the two"
+         " writes that mark them read or clear them, an empty list naming every one they apply"
+         " to."),
     Rule("the principal's notifications",
          ("regex", r"^(GET|POST) /api/me/notifications"),
          BFF, RESOURCE, "workflow",

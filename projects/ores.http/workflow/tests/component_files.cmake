@@ -21,5 +21,6 @@
 # To modify, update the template and regenerate.
 set(files
     "main.cpp"
+    "notification_routes_tests.cpp"
     "request_routes_tests.cpp"
 )

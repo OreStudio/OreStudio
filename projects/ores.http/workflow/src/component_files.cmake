@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "routes/workflow/notification_routes.cpp"
     "routes/workflow/request_routes.cpp"
     "routes/workflow/workflow_routes.cpp"
 )
@@ -27,6 +28,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.workflow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/workflow/notification_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/workflow/request_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/workflow/workflow_routes.hpp"
 )

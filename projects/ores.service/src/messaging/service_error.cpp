@@ -24,13 +24,7 @@
 
 namespace ores::service::messaging {
 
-/*
- * Defined here rather than in the header, so the shared library owns the vtable
- * and exports the members its consumers import. A class that is exported and
- * whose members are all inline is emitted only in a translation unit that
- * includes its header; without this one the DLL exported nothing and every
- * Windows link failed on service_error.
- */
+/* Out of line, so the shared library owns the vtable and exports the members. */
 service_error::service_error(std::string error_code, std::string_view subject)
     : std::runtime_error("Request to " + std::string(subject) +
                          " rejected by server: " + error_code)

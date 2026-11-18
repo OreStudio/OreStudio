@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: one week of merges on which compass-ng and the Python gates agree, from the switch-over on 2026-11-18
+#+blocked_since: 2026-11-18
 #+created: 2026-11-17
 #+updated: 2026-11-17
 #+environment: solid_dirac
@@ -26,10 +26,10 @@ One tool, not two, owns each build-free gate and each generated artefact.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | One week of merges on which compass-ng and the Python gates agree, from the switch-over on 2026-11-18. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-17                               |
 

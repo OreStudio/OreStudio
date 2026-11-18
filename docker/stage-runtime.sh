@@ -72,6 +72,18 @@ fi
 # `ldd` fails on anything in bin/ that is not an ELF binary, and this script
 # runs under `set -euo pipefail`, so a single failing ldd aborts the staging
 # in silence and ships an image carrying no libraries at all.
+# A library the binary needs and the build did not produce is left out of the
+# image by the filter below and only shows up when the container starts, so the
+# staging stops here instead.
+missing_libs=$(for b in "$stage"/bin/*; do
+    ldd "$b" 2>/dev/null | awk '$2 == "=>" && $3 == "not" && $4 == "found" {print $1}'
+done | sort -u)
+if [[ -n "$missing_libs" ]]; then
+    echo "Error: a staged binary needs a library the build did not produce:" >&2
+    printf '  %s\n' $missing_libs >&2
+    exit 1
+fi
+
 needed_libs=$(for b in "$stage"/bin/*; do
     ldd "$b" 2>/dev/null | awk -v p="$publish/" 'index($3, p) == 1 {print $1}' || true
 done | sort -u)

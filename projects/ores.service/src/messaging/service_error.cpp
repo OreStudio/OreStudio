@@ -32,8 +32,8 @@ namespace ores::service::messaging {
  * Windows link failed on service_error.
  */
 service_error::service_error(std::string error_code, std::string_view subject)
-    : std::runtime_error("Request to " + std::string(subject) + " rejected by server: " +
-                         error_code)
+    : std::runtime_error("Request to " + std::string(subject) +
+                         " rejected by server: " + error_code)
     , error_code_(std::move(error_code)) {}
 
 service_error::~service_error() = default;

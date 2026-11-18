@@ -8,7 +8,7 @@
 #+filetags: :share_the_service_libraries_and_publish_the_images:sprint_30:v0:
 #+owner: marco
 #+branch: feature/implement-share-the-service-libraries-and-publish-the-images
-#+pr:
+#+pr: 4849
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-16
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4849][#4849]] | [docker,compass,ci,web] Share the service libraries and publish the images |
 
 * Review
 

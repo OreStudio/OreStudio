@@ -167,6 +167,11 @@ TEST_CASE("a_series_the_shape_refuses_is_counted_and_left_unprojected",
     // A fixing URI with a series subclass a fixing never carries: the identity kind
     // refuses it before a family is looked up, so the backfill must count it and leave
     // the series without an identity rather than write a row it cannot state.
+    // A first call settles whatever earlier cases left, so the counts below are the
+    // difference this series makes rather than a total in a shared tenant. It is the
+    // only fixture in the suite that the shape refuses, so the difference is one.
+    const auto before = market_series_identity_projector::project_missing(h.context());
+
     const auto refused =
         insert_without_identity(h.context(),
                                 party,
@@ -175,7 +180,9 @@ TEST_CASE("a_series_the_shape_refuses_is_counted_and_left_unprojected",
 
     const auto done = market_series_identity_projector::project_missing(h.context());
 
-    CHECK(done.refused >= 1);
+    CHECK(done.refused == before.refused + 1);
+    // A refused series is not projected, so it is not counted as unguarded as well.
+    CHECK(done.unstated == before.unstated);
     CHECK(identity_rows(h, refused) == 0);
 }
 
@@ -189,6 +196,8 @@ TEST_CASE("a_series_in_a_family_no_shape_states_is_projected_and_counted",
     // lets the catalogue grow: the row is projected and the count says it was unguarded.
     // The quote is not the USD one the import test counts by URI, so the two fixtures
     // stay apart in a tenant they share.
+    const auto before = market_series_identity_projector::project_missing(h.context());
+
     const auto unguarded =
         insert_without_identity(h.context(),
                                 party,
@@ -197,7 +206,8 @@ TEST_CASE("a_series_in_a_family_no_shape_states_is_projected_and_counted",
 
     const auto done = market_series_identity_projector::project_missing(h.context());
 
-    CHECK(done.unstated >= 1);
+    CHECK(done.unstated == before.unstated + 1);
+    CHECK(done.refused == before.refused);
     CHECK(identity_rows(h, unguarded) == 1);
 }
 

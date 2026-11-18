@@ -8,7 +8,7 @@
 #+filetags: :marketdata:ticks:routing:analysis:docs:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
 #+branch: feature/see-the-market-as-vendor-quotes
-#+pr:
+#+pr: 4858
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -158,7 +158,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4858][#4858]] | [marketdata] State the target of the live path: one publish per tick |
 
 * Review
 

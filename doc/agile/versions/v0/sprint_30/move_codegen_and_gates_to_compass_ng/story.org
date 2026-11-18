@@ -56,6 +56,7 @@ compass-ng generates the code and runs the build-free gates for every environmen
 | [[id:C333376D-5D88-4D73-BB2F-AACED7605D17][Run compass check in CI]] | BACKLOG | | | Install the pinned compass-ng release in CI and replace the single-gate workflows it covers with one compass check --ratchet job. |
 | [[id:A463E42D-7A73-44DC-BB9B-FEFF1D1413E2][Install compass-ng for external developers]] | BACKLOG | | | Document and script how a developer outside the fleet installs compass-ng, and keep the project usable when they do not. |
 | [[id:67AF2BC8-0FD7-4382-A4B3-C2407C408708][Retire the Python gates and generators compass replaces]] | BACKLOG | | | Delete the Python gates, generator scripts and baseline files compass replaces, once the two tools have agreed for an agreed period. |
+| [[id:F2F96980-5CF8-4FE5-B827-8405D15F6F6B][Fix the two codegen tests that fail on main]] | DONE | | 2026-11-18 | Every local gate reported two codegen test failures that came from main, not from the change it checked. |
 
 * Decisions
 

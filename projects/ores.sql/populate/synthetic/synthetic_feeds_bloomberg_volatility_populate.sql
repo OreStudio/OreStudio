@@ -38,9 +38,13 @@
  * dataset; there is one blueprint per pair, so a pair's expiries are its one
  * blueprint's pillars. The dynamics are the models' documented defaults.
  *
- * One contributor quotes the surfaces for now, as the provider the dataset
- * stands for; the vendors the curves are quoted by, and a clean contributor no
- * tenant subscribes to, come with the task that quotes through them.
+ * Four contributors observe each surface. Bloomberg, ICE and Tradeweb are the
+ * vendors the curves are quoted by, each with noise of its own, so a party's
+ * adapters receive three views of one market. The clean contributor is demo:
+ * it has no noise, and the demo notation writes no id for a volatility point,
+ * so no adapter is offered its points and no tenant subscribes to it. It
+ * records the latent surface itself, as market ticks, for the tests to
+ * compare against.
  *
  * Ids are derived from names, so the publish writes new versions of the same
  * rows on a second run. This runs after the refdata layer, which stages the
@@ -51,7 +55,6 @@ do $$
 declare
     v_dataset_id uuid;
     v_tenant_id uuid := ores_utility_system_tenant_id_fn();
-    v_contributor_id uuid := md5('synthetic.feeds.bloomberg|fx_vol_contributor|bloomberg')::uuid;
 begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
@@ -93,14 +96,38 @@ begin
         raise exception 'No blueprint pair has a Bloomberg spot feed: the blueprints must be staged first.';
     end if;
 
+    create temporary table t_vol_contributors (
+        provider_code text, contributor_id uuid, noise double precision,
+        wing_widening double precision, expiry_widening double precision,
+        quote_step double precision, missing_probability double precision,
+        stale_probability double precision, outlier_probability double precision,
+        outlier_size double precision, bias double precision
+    ) on commit drop;
+
+    insert into t_vol_contributors
+    select c.provider_code,
+           md5('synthetic.feeds.bloomberg|fx_vol_contributor|' || c.provider_code)::uuid,
+           c.noise, c.wing_widening, c.expiry_widening, c.quote_step,
+           c.missing_probability, c.stale_probability, c.outlier_probability,
+           c.outlier_size, c.bias
+    from (values
+        ('bloomberg', 0.002,  1.0, 0.5, 0.0005, 0.02, 0.05, 0.001, 0.01,  0.0),
+        ('ice',       0.0025, 1.2, 0.6, 0.0005, 0.03, 0.06, 0.001, 0.01,  0.0005),
+        ('tradeweb',  0.003,  1.1, 0.4, 0.001,  0.03, 0.04, 0.002, 0.01, -0.0005),
+        ('demo',      0.0,    0.0, 0.0, 0.0,    0.0,  0.0,  0.0,   0.0,   0.0)
+    ) as c(provider_code, noise, wing_widening, expiry_widening, quote_step,
+           missing_probability, stale_probability, outlier_probability, outlier_size, bias);
+
     insert into ores_dq_fx_vol_contributors_artefact_tbl (
         dataset_id, tenant_id, id, version, provider_code, noise, wing_widening,
         expiry_widening, quote_step, missing_probability, stale_probability,
         outlier_probability, outlier_size, bias
-    ) values (
-        v_dataset_id, v_tenant_id, v_contributor_id, 0, 'bloomberg',
-        0.002, 1.0, 0.5, 0.0005, 0.02, 0.05, 0.001, 0.01, 0.0
-    );
+    )
+    select v_dataset_id, v_tenant_id, c.contributor_id, 0, c.provider_code,
+           c.noise, c.wing_widening, c.expiry_widening, c.quote_step,
+           c.missing_probability, c.stale_probability, c.outlier_probability,
+           c.outlier_size, c.bias
+    from t_vol_contributors c;
 
     insert into ores_dq_fx_vol_surface_feeds_artefact_tbl (
         dataset_id, tenant_id, id, version, base_currency_code, quote_currency_code,
@@ -135,7 +162,8 @@ begin
     )
     select v_dataset_id, v_tenant_id,
            md5('synthetic.feeds.bloomberg|fx_vol_surface_feed_contributor|' || p.base || p.quote
-               || '|bloomberg')::uuid,
-           0, p.feed_id, v_contributor_id
-    from t_vol_pairs p;
+               || '|' || c.provider_code)::uuid,
+           0, p.feed_id, c.contributor_id
+    from t_vol_pairs p
+    cross join t_vol_contributors c;
 end $$;

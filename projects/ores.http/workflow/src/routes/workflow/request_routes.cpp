@@ -22,6 +22,7 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/workflow/request_joins.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/role_grant_request_protocol.hpp"
 #include "ores.iam.api/messaging/role_request_operations_protocol.hpp"
@@ -57,6 +58,7 @@ namespace inbox_messaging = ores::inbox::messaging;
 namespace iam_domain = ores::iam::domain;
 namespace iam_messaging = ores::iam::messaging;
 namespace trading_messaging = ores::trading::messaging;
+namespace joins = ores::http::routes::workflow::joins;
 
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
@@ -74,12 +76,6 @@ constexpr std::uint32_t page_max = 100;
 
 /// The page a read answers with when the caller states none.
 constexpr std::uint32_t page_default = 50;
-
-/// The most rows one join asks for; the services refuse a longer filter.
-constexpr std::uint32_t join_page = 1000;
-
-/// The most trades one request may name, as the screen draws them.
-constexpr std::size_t trades_of_request = 10;
 
 /// The sentence a page states when it is not one.
 constexpr std::string_view page_refused = "A page names an offset and a limit of 1 to 100.";
@@ -212,260 +208,6 @@ std::string request_id_of(const http_request& req) {
     return raw;
 }
 
-/**
- * @brief The roles one request asks for, or none when the caller may not read them.
- *
- * The store serves no batched read of a request's roles, so a page costs one
- * read per row; a refusal costs that row's roles and not the page.
- */
-std::vector<iam_messaging::requested_role>
-roles_of(const http_request& req, nats_client& session, const std::string& request_id) {
-    try {
-        iam_messaging::get_request_roles_request msg;
-        msg.request_id = request_id;
-        const auto reply = forwarding::forward(req, session, msg);
-        if (reply.result.outcome != ores::utility::domain::outcome::ok)
-            return {};
-        return reply.roles;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
-            << "The roles of request " << request_id << " were not read: " << e.what();
-        return {};
-    }
-}
-
-/// The account that raised each request, by the request's id.
-std::map<std::string, std::string>
-requesters_of(const http_request& req,
-              nats_client& session,
-              const std::vector<boost::uuids::uuid>& request_ids) {
-    std::map<std::string, std::string> requesters;
-    if (request_ids.empty())
-        return requesters;
-    try {
-        iam_messaging::list_role_grant_requests_request msg;
-        msg.limit = join_page;
-        msg.filter.emplace();
-        msg.filter->request_id_one_of = request_ids;
-        const auto reply = forwarding::forward(req, session, msg);
-        rr::require_ok(reply.result);
-        for (const auto& grant : reply.role_grant_requests)
-            requesters.emplace(rr::as_text(grant.request_id), rr::as_text(grant.account_id));
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
-            << "The accounts of the requests were not read: " << e.what();
-        return requesters;
-    }
-    return requesters;
-}
-
-/// The username of each account named, for the accounts this caller may read.
-std::map<std::string, std::string> usernames_of(const http_request& req,
-                                                nats_client& session,
-                                                const std::set<std::string>& account_ids) {
-    std::map<std::string, std::string> usernames;
-    if (account_ids.empty())
-        return usernames;
-
-    std::vector<boost::uuids::uuid> wanted;
-    wanted.reserve(account_ids.size());
-    for (const auto& id : account_ids) {
-        if (rr::is_uuid(id))
-            wanted.push_back(boost::uuids::string_generator()(id));
-    }
-    if (wanted.empty())
-        return usernames;
-
-    try {
-        iam_messaging::list_accounts_request msg;
-        msg.limit = join_page;
-        msg.filter.emplace();
-        msg.filter->id_one_of = std::move(wanted);
-        const auto reply = forwarding::forward(req, session, msg);
-        rr::require_ok(reply.result);
-        for (const auto& account : reply.accounts)
-            usernames.emplace(rr::as_text(account.id), account.username);
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
-            << "The usernames of the accounts were not read: " << e.what();
-        return usernames;
-    }
-    return usernames;
-}
-
-/// The latest decision on each request, by the request's id.
-std::map<std::string, inbox_domain::approval_decision>
-decisions_of(const http_request& req,
-             nats_client& session,
-             const std::vector<boost::uuids::uuid>& request_ids) {
-    std::map<std::string, inbox_domain::approval_decision> decisions;
-    if (request_ids.empty())
-        return decisions;
-    try {
-        inbox_messaging::list_approval_decisions_request msg;
-        msg.limit = join_page;
-        msg.filter.emplace();
-        msg.filter->request_id_one_of = request_ids;
-        const auto reply = forwarding::forward(req, session, msg);
-        rr::require_ok(reply.result);
-        for (const auto& decision : reply.decisions) {
-            const auto key = rr::as_text(decision.request_id);
-            const auto found = decisions.find(key);
-            if (found != decisions.end() && found->second.decided_at >= decision.decided_at)
-                continue;
-            decisions.insert_or_assign(key, decision);
-        }
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
-            << "The decisions on the requests were not read: " << e.what();
-        return decisions;
-    }
-    return decisions;
-}
-
-/// One role a request asks for, as the screen draws it.
-std::string role_json(const iam_domain::role& role) {
-    return "{\"roleId\":" + json::write(rr::as_text(role.id)) +
-           ",\"name\":" + json::write(role.name) +
-           ",\"description\":" + json::write(role.description) + "}";
-}
-
-/// What was decided about a request, with the decider named where they can be.
-std::string decision_json(const inbox_domain::approval_decision& decision,
-                          const std::map<std::string, std::string>& usernames) {
-    const auto decider = rr::as_text(decision.decided_by);
-    const auto named = usernames.find(decider);
-    return "{\"decisionCode\":" + json::write(decision.decision_code) +
-           ",\"decidedBy\":" + json::write(named == usernames.end() ? decider : named->second) +
-           ",\"decidedAt\":" + json::write(decision.decided_at) +
-           ",\"comment\":" + json::write(decision.comment) + "}";
-}
-
-/// Where each part of one request stands, or none when it names no parts.
-std::vector<inbox_messaging::approval_part_progress>
-parts_of(const http_request& req, nats_client& session, const std::string& request_id) {
-    try {
-        inbox_messaging::get_approval_parts_request msg;
-        msg.request_id = request_id;
-        const auto reply = forwarding::forward(req, session, msg);
-        if (reply.result.outcome != ores::utility::domain::outcome::ok)
-            return {};
-        return reply.parts;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
-            << "The parts of request " << request_id << " were not read: " << e.what();
-        return {};
-    }
-}
-
-/// One thing a request is about, as a screen links it.
-struct subject final {
-    std::string trade_id;
-    int trade_version = 0;
-    std::string label;
-};
-
-/// The label of one trade: its first identifier, or the identifier itself.
-std::string label_of(const http_request& req, nats_client& session, const std::string& trade_id) {
-    if (!rr::is_uuid(trade_id))
-        return trade_id;
-    try {
-        trading_messaging::list_trade_identifiers_request msg;
-        msg.limit = join_page;
-        msg.filter.emplace();
-        msg.filter->trade_id_one_of = std::vector{boost::uuids::string_generator()(trade_id)};
-        const auto reply = forwarding::forward(req, session, msg);
-        rr::require_ok(reply.result);
-        for (const auto& identifier : reply.identifiers)
-            if (!identifier.id_value.empty())
-                return identifier.id_value;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(request_lg(), ores::logging::debug)
-            << "The label of trade " << trade_id << " was not read: " << e.what();
-    }
-    return trade_id;
-}
-
-/// The trades a request is about, by the link the trading component keeps.
-std::vector<subject>
-subjects_of(const http_request& req, nats_client& session, const std::string& request_id) {
-    if (!rr::is_uuid(request_id))
-        return {};
-    std::vector<subject> subjects;
-    try {
-        trading_messaging::list_trade_authorisation_requests_request msg;
-        msg.limit = join_page;
-        msg.filter.emplace();
-        msg.filter->request_id_one_of = std::vector{boost::uuids::string_generator()(request_id)};
-        const auto reply = forwarding::forward(req, session, msg);
-        rr::require_ok(reply.result);
-        for (const auto& link : reply.trade_authorisation_requests) {
-            if (subjects.size() == trades_of_request)
-                break;
-            const auto trade_id = rr::as_text(link.trade_id);
-            subjects.push_back({trade_id, link.trade_version, label_of(req, session, trade_id)});
-        }
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
-            << "The trades of request " << request_id << " were not read: " << e.what();
-        return subjects;
-    }
-    return subjects;
-}
-
-/// Where one part of a request stands, as the screen draws it.
-std::string part_json(const inbox_messaging::approval_part_progress& part,
-                      const std::map<std::string, std::string>& usernames) {
-    const auto named = usernames.find(part.decided_by);
-    return "{\"code\":" + json::write(part.code) + ",\"name\":" + json::write(part.name) +
-           ",\"answerOrder\":" + json::write(part.answer_order) +
-           ",\"stateCode\":" + json::write(part.state) + ",\"decidedBy\":" +
-           json::write(named == usernames.end() ? part.decided_by : named->second) +
-           ",\"decidedAt\":" + json::write(part.decided_at) +
-           ",\"comment\":" + json::write(part.comment) + "}";
-}
-
-/// One thing a request is about, as the screen links it.
-std::string subject_json(const subject& link) {
-    return "{\"tradeId\":" + json::write(link.trade_id) +
-           ",\"tradeVersion\":" + json::write(link.trade_version) +
-           ",\"label\":" + json::write(link.label) + "}";
-}
-
-/// One request as the screen reads it.
-std::string request_json(const inbox_domain::approval_request& request,
-                         const std::vector<iam_messaging::requested_role>& roles,
-                         const std::map<std::string, std::string>& requesters,
-                         const std::map<std::string, std::string>& usernames,
-                         const std::map<std::string, inbox_domain::approval_decision>& decisions,
-                         const std::string& parts,
-                         const std::string& subjects) {
-    const auto id = rr::as_text(request.id);
-    const auto raised_by = rr::as_text(request.requested_by);
-    const auto account = requesters.find(id);
-    const auto requester = account == requesters.end() ? raised_by : account->second;
-    const auto named = usernames.find(requester);
-
-    std::vector<std::string> written;
-    written.reserve(roles.size());
-    for (const auto& held : roles)
-        written.push_back(role_json(held.role));
-
-    const auto decided = decisions.find(id);
-    const auto decision = decided == decisions.end() ? std::string("null") :
-                                                       decision_json(decided->second, usernames);
-
-    return "{\"id\":" + json::write(id) + ",\"version\":" + json::write(request.version) +
-           ",\"kindCode\":" + json::write(request.kind_code) +
-           ",\"stateCode\":" + json::write(request.state_code) +
-           ",\"autoApprovalCode\":" + json::write(request.auto_approval_code) +
-           ",\"requestedBy\":" + json::write(named == usernames.end() ? requester : named->second) +
-           ",\"requestedAt\":" + json::write(request.requested_at) +
-           ",\"reason\":" + json::write(request.reason) +
-           ",\"expiresAt\":" + json::write(request.expires_at) +
-           ",\"roles\":" + rr::array_of(written) + ",\"decision\":" + decision +
-           ",\"parts\":" + parts + ",\"subjects\":" + subjects + "}";
-}
 
 }
 
@@ -502,7 +244,7 @@ void request_routes::register_routes(
                     for (const auto& request : reply.requests)
                         ids.push_back(request.id);
 
-                    const auto requesters = requesters_of(req, session, ids);
+                    const auto requesters = joins::requesters_of(req, session, ids);
                     std::set<std::string> accounts;
                     for (const auto& request : reply.requests) {
                         const auto found = requesters.find(rr::as_text(request.id));
@@ -510,22 +252,22 @@ void request_routes::register_routes(
                                             rr::as_text(request.requested_by) :
                                             found->second);
                     }
-                    const auto decisions = decisions_of(req, session, ids);
+                    const auto decisions = joins::decisions_of(req, session, ids);
                     for (const auto& [request_id, decision] : decisions)
                         accounts.insert(rr::as_text(decision.decided_by));
-                    const auto usernames = usernames_of(req, session, accounts);
+                    const auto usernames = joins::usernames_of(req, session, accounts);
 
                     std::vector<std::string> written;
                     written.reserve(reply.requests.size());
                     for (const auto& request : reply.requests)
-                        written.push_back(
-                            request_json(request,
-                                         roles_of(req, session, rr::as_text(request.id)),
-                                         requesters,
-                                         usernames,
-                                         decisions,
-                                         "[]",
-                                         "[]"));
+                        written.push_back(joins::request_json(
+                            request,
+                            joins::roles_of(req, session, rr::as_text(request.id)),
+                            requesters,
+                            usernames,
+                            decisions,
+                            "[]",
+                            "[]"));
                     return http_response::json("{\"items\":" + rr::array_of(written) +
                                                ",\"total\":" + std::to_string(reply.total) + "}");
                 });
@@ -556,9 +298,9 @@ void request_routes::register_routes(
 
                     const auto request = *reply.request;
                     const std::vector<boost::uuids::uuid> ids{request.id};
-                    const auto requesters = requesters_of(req, session, ids);
-                    const auto decisions = decisions_of(req, session, ids);
-                    const auto parts = parts_of(req, session, id);
+                    const auto requesters = joins::requesters_of(req, session, ids);
+                    const auto decisions = joins::decisions_of(req, session, ids);
+                    const auto parts = joins::parts_of(req, session, id);
 
                     std::set<std::string> accounts{rr::as_text(request.requested_by)};
                     for (const auto& [request_id, decision] : decisions)
@@ -566,26 +308,27 @@ void request_routes::register_routes(
                     for (const auto& part : parts)
                         if (!part.decided_by.empty())
                             accounts.insert(part.decided_by);
-                    const auto usernames = usernames_of(req, session, accounts);
+                    const auto usernames = joins::usernames_of(req, session, accounts);
 
                     std::vector<std::string> written_parts;
                     written_parts.reserve(parts.size());
                     for (const auto& part : parts)
-                        written_parts.push_back(part_json(part, usernames));
+                        written_parts.push_back(joins::part_json(part, usernames));
 
-                    const auto links = subjects_of(req, session, id);
+                    const auto links = joins::subjects_of(req, session, id);
                     std::vector<std::string> written_subjects;
                     written_subjects.reserve(links.size());
                     for (const auto& link : links)
-                        written_subjects.push_back(subject_json(link));
+                        written_subjects.push_back(joins::subject_json(link));
 
-                    return http_response::json(request_json(request,
-                                                            roles_of(req, session, id),
-                                                            requesters,
-                                                            usernames,
-                                                            decisions,
-                                                            rr::array_of(written_parts),
-                                                            rr::array_of(written_subjects)));
+                    return http_response::json(
+                        joins::request_json(request,
+                                            joins::roles_of(req, session, id),
+                                            requesters,
+                                            usernames,
+                                            decisions,
+                                            rr::array_of(written_parts),
+                                            rr::array_of(written_subjects)));
                 });
             }));
 

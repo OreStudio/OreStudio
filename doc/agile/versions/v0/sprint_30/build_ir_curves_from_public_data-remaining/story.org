@@ -25,8 +25,8 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | The curves are built, the IBOR projections publish beside their funding curves, and the identity shape of a fixing is stated, enforced and shared. Five tasks are open: the shape guard's reporting and coverage, the two screens, and the two hygiene items the shape work left behind. |
 | Waiting on    | Nothing. |
-| Next          | [[id:15A60BBE-102B-40BA-8F6A-83E2FB92E96B][Report what the shape guard refuses]]: the pgTAP scan reads the shapes through a tenant join the shared catalogue no longer has, and the backfill drops the counts it makes. Then the screens. |
-| Last touched  | 2026-11-17 |
+| Next          | [[id:ABFE5452-57B4-4621-86A4-011CF2B03E6A][Write a series and its identity in one act]]: take the identity projection before the series is stored, so a series the shape refuses leaves nothing behind. Then the screens. |
+| Last touched  | 2026-11-18 |
 
 * Acceptance
 
@@ -53,7 +53,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | [[id:DA257967-5C16-4743-B507-167872D3765E][Show the identity shapes on a screen]] | BACKLOG | | | A person can read, change and see the history of the identity shapes in the web client, and the oresmd editor marks the fields a family requires or forbids. |
 | [[id:D37ED209-460F-458B-B84B-2D728C6E28AE][Bootstrap every IBOR curve]] | DONE | 2026-11-13 | 2026-11-14 | Every IBOR feed gets a bootstrap config, its quote series and its bootstrapped output series, with the currency's overnight curve as its discount curve, so an IBOR curve builds from IBOR quotes and publishes like an overnight curve. |
 | [[id:AECE7F12-9EFB-4F3E-AFEF-0D61BEB8E811][Check every family in use has a shape]] | BACKLOG | | | A check finds each family the stored identities use that no shape row states, so a family the taxonomy gains cannot go unguarded without anyone seeing it. |
-| [[id:15A60BBE-102B-40BA-8F6A-83E2FB92E96B][Report what the shape guard refuses]] | STARTED | 2026-11-17 | | The shape guard refuses a row and reports nothing: the backfill drops the counts it makes, and the pgTAP scan reads the shapes through a tenant join the shared catalogue no longer has. |
+| [[id:15A60BBE-102B-40BA-8F6A-83E2FB92E96B][Report what the shape guard refuses]] | DONE | 2026-11-17 | 2026-11-18 | The shape guard refuses a row and reports nothing: the backfill drops the counts it makes, and the pgTAP scan reads the shapes through a tenant join the shared catalogue no longer has. |
 
 * Decisions
 

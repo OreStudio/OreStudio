@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-18
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The shape guard is observable and honest: every refusal and every family no shap
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Both counts are on the wire: the backfill response carries the rows the shape refused and the series in a family no shape states, the refusal is logged by name, and the projector's tests assert each. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review the branch and raise the PR. |
-| Last touched | 2026-11-17                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-18                               |
 
 * Acceptance
 
@@ -101,6 +101,9 @@ family and the field.
 | Market data core suite, rebased on 4834e28b1c | 28,727 assertions in 452 cases, pass | `publish/bin/ores.marketdata.core.tests` | 77e1249ab2 |
 | Shape suite | 9 tests, pass | `projects/ores.sql/test/run_tests.sh marketdata_series_identity_shape_test.sql` | 77e1249ab2 |
 | Build of the rebased tree | succeeded, 1:10:43 | `compass build` | 77e1249ab2 |
+| Market data core suite after review round 1, rebased on 6756a03acb | 44,427 assertions in 453 cases, pass | `compass build test_ores.marketdata.core.tests` | f56a5b66e8 |
+| Component documentation | all 40 components pass | `projects/ores.codegen/validate_docs.sh` | 6be40ce8ec |
+| Local gate, compass-ng part | pass | `compass check --only lint --only backlog-indexes` | a66cb4ac43 |
 
 * Notes
 
@@ -147,3 +150,21 @@ via its "Verifies task" field.
 | 5 | PR #4834 review 1: =component-drift= is red on marketdata files the branch did not touch | PR | Accept as a capture | [[id:AAA470A4-D202-4E6B-B56B-490E5EE54174][The service config options ignore the default a model states]] |
 
 * Result
+
+The shape guard now reports what it does. The backfill response carries =refused_count=
+and =unstated_count=, the handler says both in its message, and the projector logs each
+refusal by name. =unstated= counts only the series that the call projected without a shape,
+so a refused series is not counted twice. Two backfill cases assert the exact difference
+that their fixture makes. The pgTAP suite joins the shapes the way the writer reads them,
+and it states the scope that row-level security gives it.
+
+All four acceptance points are met. The fourth is met by composition: the suite proves that
+a tenant reads the shared shapes, and the guard's unit test proves that the guard enforces
+the shapes it reads.
+
+The task changes no component's shape: it adds no file, part or facet, and
+=validate_docs.sh= passes for all 40 components. The local gate passes, except for three
+checks that fail in code this branch does not touch. Two of them are filed as captures:
+[[id:4712BE7F-25E7-477E-90AE-524C91569671][The ingest loop tests fail when the machine is loaded]]
+and [[id:CCCEC773-0198-4190-B004-E4816FC6F343][Two iam pgTAP suites cannot call the account exists function]].
+The third, =ticks-smoke=, timed out while the host was under heavy IO load.

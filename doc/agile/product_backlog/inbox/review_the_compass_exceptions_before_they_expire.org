@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A56830C9-FD5F-4B5B-801A-902C29EA9947
+:END:
+#+title: Review the compass exceptions before they expire
+#+description: All 201 compass exceptions from the gate baselines expire on 2027-05-18 with approver marco, so they would all fail on one day. Before then, fix the entries that can be fixed, renew the rest with real reasons and staggered dates, and replace the generic reasons (predates the check, accepted until the edge is removed).
+#+type: capture
+#+level: cross
+#+filetags: :compass:gates:exceptions:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -2590,6 +2590,24 @@ def cmd_check(argv):
     return subprocess.run([sys.executable, str(script), *argv]).returncode
 
 
+COMPASS_NG_VERBS = ("generate", "gen", "diff", "hook", "gc", "config")
+
+
+def cmd_compass_ng(argv):
+    """compass generate|diff|hook|gc|config — run the verb in compass-ng.
+
+    compass-ng is the C++ compass, installed once per machine as
+    ~/.local/bin/compass-ng. These verbs are its own, so they forward to it
+    over this checkout rather than living in two tools.
+    """
+    exe = shutil.which("compass-ng")
+    if exe is None:
+        print("❌  compass-ng is not on the PATH. Install it from the compass "
+              "repository with build/scripts/install_compass.sh.", file=sys.stderr)
+        return 2
+    return subprocess.run([exe, "-C", str(PROJECT_ROOT), *argv]).returncode
+
+
 def cmd_lint(argv):
     """compass lint — validate filetags across all .org files."""
     ap = argparse.ArgumentParser(
@@ -8200,6 +8218,8 @@ def main():
         sys.exit(cmd_lint(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "check":
         sys.exit(cmd_check(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] in COMPASS_NG_VERBS:
+        sys.exit(cmd_compass_ng(sys.argv[1:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "codegen":
         sys.exit(cmd_codegen(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
@@ -8248,6 +8268,7 @@ def main():
         "  Test:      test\n"
         "  Build:     build\n"
         "  Codegen:   codegen generate | codegen regenerate | codegen entity\n"
+        "  compass-ng: generate | diff | hook | gc | config\n"
         "  Site:      site\n"
         "  Operate:   services, claude, open-as\n"
         "  Shell:     shell\n"

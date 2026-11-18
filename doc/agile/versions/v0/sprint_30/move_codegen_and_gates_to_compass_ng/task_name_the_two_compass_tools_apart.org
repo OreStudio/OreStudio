@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/name-the-two-compass-tools-apart
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ An agent that types a compass verb from the project docs reaches the tool that h
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -85,3 +85,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- compass-ng installs as ~/.local/bin/compass-ng (compass PR #55, installed at
+  9021d31), so nothing named compass shadows the Python tool's verbs.
+- ./compass.sh generate, gen, diff, hook, gc and config run in compass-ng over
+  this checkout; a missing binary exits 2 with the install command. check stays
+  the Python runner until the switch-over task.
+- projects/ores.compass/tests/test_compass_ng_verbs.py proves the forwarding
+  and the refusal with a fake compass-ng on the PATH.
+

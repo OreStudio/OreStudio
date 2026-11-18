@@ -8,7 +8,7 @@
 #+filetags: :fold_a_long_warning_on_the_run_rail:sprint_30:v0:
 #+owner: marco
 #+branch: feature/fold-a-long-warning-on-the-run-rail
-#+pr:
+#+pr: 4862
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4862][#4862]] | [web] Fold the long warning on the run's rail |
 
 * Review
 

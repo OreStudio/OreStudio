@@ -22,8 +22,8 @@
 
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.iam.api/domain/role.hpp"
-#include "ores.inbox.api/domain/approval_decision.hpp"
 #include "ores.iam.api/messaging/role_request_operations_protocol.hpp"
+#include "ores.inbox.api/domain/approval_decision.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_request_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"

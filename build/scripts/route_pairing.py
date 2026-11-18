@@ -379,6 +379,7 @@ PAIRS = {
     ("POST", "/api/me/notifications/read"): ("POST", "/api/me/notifications/read"),
     ("POST", "/api/me/notifications/clear"): ("POST", "/api/me/notifications/clear"),
     ("GET", "/api/workflow/:instanceId"): ("GET", "/api/workflow/{instanceId}"),
+    ("GET", "/api/requests"): ("GET", "/api/requests"),
     ("POST", "/api/workflow/:instanceId/retry"): (
         "POST",
         "/api/workflow/{instanceId}/retry"),

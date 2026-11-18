@@ -22,6 +22,7 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/workflow/page_query.hpp"
 #include "ores.http/routes/workflow/request_joins.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/role_grant_request_protocol.hpp"
@@ -89,12 +90,6 @@ constexpr std::string_view withdraw_refused =
 
 /// The sentence a route states when its address names no identifier.
 constexpr std::string_view id_refused = "A request is named by its identifier.";
-
-/// A page of a list: how many rows to skip and how many to answer with.
-struct page final {
-    std::uint32_t offset = 0;
-    std::uint32_t limit = page_default;
-};
 
 /// An ask as the screen states it: the roles wanted and why.
 struct ask_body final {
@@ -174,32 +169,6 @@ decide_body decision_of(const http_request& req) {
     return body;
 }
 
-/// The whole number a page parameter states, or nothing when it states none.
-std::optional<std::uint32_t> whole_of(const std::string& raw) {
-    if (raw.empty())
-        return std::nullopt;
-    std::uint32_t value = 0;
-    const auto* first = raw.data();
-    const auto* last = raw.data() + raw.size();
-    const auto parsed = std::from_chars(first, last, value);
-    if (parsed.ec != std::errc() || parsed.ptr != last)
-        rr::invalid(std::string(page_refused));
-    return value;
-}
-
-page page_of(const http_request& req) {
-    rr::refuse_unknown_params(req, {"offset", "limit"});
-    page out;
-    if (const auto stated = whole_of(req.get_query_param("offset")))
-        out.offset = *stated;
-    if (const auto stated = whole_of(req.get_query_param("limit"))) {
-        if (*stated < 1 || *stated > page_max)
-            rr::invalid(std::string(page_refused));
-        out.limit = *stated;
-    }
-    return out;
-}
-
 /// The identifier a request is named by.
 std::string request_id_of(const http_request& req) {
     const auto raw = req.get_path_param("id");
@@ -232,7 +201,7 @@ void request_routes::register_routes(
             .query_param("limit", "integer", "int32", false, "How many requests to return")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<inbox_messaging::list_my_approval_requests_request>([&] {
-                    const auto asked = page_of(req);
+                    const auto asked = page_of(req, page_default, page_max, page_refused);
                     inbox_messaging::list_my_approval_requests_request msg;
                     msg.offset = static_cast<int>(asked.offset);
                     msg.limit = static_cast<int>(asked.limit);

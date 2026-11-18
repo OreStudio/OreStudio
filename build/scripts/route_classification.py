@@ -427,6 +427,13 @@ RULES = (
          " now, weaving the request with the record as it stands."),
     Rule("the approval inbox",
          ("exact", "GET /api/requests"),
+         CPP, COMPOSED, "workflow",
+         "The requests this person may decide answered by ores.http at the address and in the"
+         " shape the BFF answered: the queue read the inbox service picks, each row with the"
+         " roles it asks for, the latest thing said about it and the trades it is about, and the"
+         " answered tail beside the open queue."),
+    Rule("the approval inbox",
+         ("exact", "GET /api/requests"),
          BFF, COMPOSED, "workflow",
          "The requests this person may decide, gathered from every kind into one queue with"
          " each kind's subject, which is the approval inbox the design names."),

@@ -61,6 +61,8 @@ task and name that file in the Command column.
 
 * Notes
 
+- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: two web servers carry the tick routes, the TypeScript BFF and =ores.http=. Build on the one the screen is served from when the task starts.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

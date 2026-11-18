@@ -61,6 +61,8 @@ task and name that file in the Command column.
 
 * Notes
 
+- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: the tap is published by =fx_spot_feed.cpp= and =ir_curve_feed.cpp=, and read by =feed-ticks.ts= in the BFF and =feed_tick_buffers.cpp= in =ores.http=. Both serve a feed's Ticks tab and the arrivals raster (=/api/synthetic/feed-raster=), so both move.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

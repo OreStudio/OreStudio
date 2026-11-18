@@ -51,7 +51,9 @@ The order follows dependency: each page needs the one before it.
 8. [[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Delivery threads enqueue and a bounded pool runs the handlers]] — who runs the handlers, and why their number equals the
    connections' of page 2. It follows page 7 only because it closes the control plane.
 9. [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] — the data plane begins: what the store holds, and why a party's
-   entitlement moves to the read.
+   entitlement moves to the read. Its live half is
+   [[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]], the target state of the
+   live path: one publish for each tick, and the entitlement checked where a watch starts.
 10. [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] — how the points get there, given that they hold no tenant.
 11. [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]] — how much of them is kept, given that they carry no row-level
     security and so compress.

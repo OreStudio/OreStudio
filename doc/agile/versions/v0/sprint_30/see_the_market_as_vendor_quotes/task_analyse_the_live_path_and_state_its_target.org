@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:ticks:routing:analysis:docs:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/see-the-market-as-vendor-quotes
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ The market data docs state where the live path is going and why, and the change 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The inventory, the target page and the doc changes are written. |
+| Waiting on   | The product owner: the review of the target, and the display right question. |
+| Next         | Close the task and raise its PR. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -42,25 +42,107 @@ The market data docs state where the live path is going and why, and the change 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. List every publisher and reader of the party live subjects and of the
+   simulator's display tap, from the code and not from the docs.
+2. Read the docs that describe the live path, the routes, the subscriptions,
+   the entitlement and the metering, and compare each statement with the code.
+3. Decide the subject, the place of the entitlement check and the metering, and
+   write them as one target-state page beside the stored-once page.
+4. Point every doc that states the per-party copy at the target, and state what
+   the pipeline doc designs and the code does not have.
+5. Revise the later tasks with what each one needs.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+Measured at =0a63e9a679=, the main this branch starts from; the branch changes no
+code.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Places that build a party live subject to publish | 1 (=tick_plan.cpp:51=, =make_targets=) | =grep -rn "market_tick_subject(" projects --include=*.cpp= | 0a63e9a679 |
+| Readers of the party live subjects | 1 component, 2 call sites (=marketdata_commands.cpp:447,455=, the shell's stream watch) | =grep -rn "market_tick_subject_all\|market_tick_subject(" projects --include=*.cpp= | 0a63e9a679 |
+| Publishers of the display tap | 2 (=fx_spot_feed.cpp:465=, =ir_curve_feed.cpp:110=) | =grep -rn "feed_display_subject_for" projects --include=*.cpp= | 0a63e9a679 |
+| Readers of the display tap | 2 servers, 2 routes each: the TypeScript BFF (=feed-ticks.ts=, read by =synthetic.ts= and =market-regime.ts=) and =ores.http= (=feed_tick_buffers.cpp=, =feed_tick_routes.cpp=: =/api/synthetic/feeds/{id}/ticks= and =/api/synthetic/feed-raster=) | =grep -rln "feed_tick\|FeedTickBuffers" projects= | 0a63e9a679 |
+| Broker subject permissions | none; mTLS only | =build/config/nats-bright_faraday.conf=, =tls.verify: true=, no =authorization= or =accounts= block | 0a63e9a679 |
 
 * Notes
+
+** The inventory
+
+| Thing | Uses | What it does today | What it needs |
+|-------+------+--------------------+---------------|
+| Ingest (=feed_ingest_loop.cpp=, =tick_plan.cpp=) | publishes the party subjects | One publish for each routed party for each accepted tick; counts each publish in the delivery meter; feeds the CRM bridge once for each target | Publish once on the feed subject; keep the meter's counts for each route; feed the CRM bridge once for each tenant |
+| Shell stream watch (=marketdata_commands.cpp=) | reads the party subjects | Watches one datum, or the whole party subtree and filters a series | Ask which feeds the party may watch, and watch the feed subjects; a series becomes one wildcard |
+| TypeScript BFF (=feed-ticks.ts=) | reads the display tap | Buffers the last 500 ticks of each running synthetic feed for its Ticks tab and the arrivals raster | Read the feed subjects through the entitlement, or retire with the tap |
+| =ores.http= (=feed_tick_buffers.cpp=) | reads the display tap | The same two routes as the BFF, on the server that is taking over the screens | The same as the BFF |
+| FX spot and IR curve feeds | publish the display tap | Publish each tick a second time for screens | Stop the second publish |
+| The vol surface feed | publishes neither | Its ticks reach the ingest; no screen sees them | Nothing: the feed subject carries them |
+| History read (=series_tick_reader.cpp=) | reads the store | Needs a party; checks =may_read_ticks= on the provider; the store only | A system tenant rule; nothing else |
+
+No other service and no screen reads the party live subjects. The change to
+the consumers is small. The new work is the entitlement answer that a watcher
+asks for.
+
+** What the docs said that the code does not do
+
+- The pipeline doc designs lanes, conflation, a recent window and a subject with
+  separate series and coordinate tokens. The ingest has none of them: it stores
+  and publishes each batch, its subject holds the whole datum URI as one token,
+  and the history read answers from the store only. The doc now has a /What is
+  built today/ section.
+- The pipeline doc named the tenant and the party in its designed subject, and
+  the stored-once page said the live path republishes to each party. Both now
+  point at the target page.
+
+** Decisions
+
+1. *The subject names the feed, not the party.*
+   =marketdata.v1.ops.market_tick.<provider>.<feed>.<instrument_type>.<series_token>.<coordinate_token>=.
+   A provider can have several feeds (real time, delayed, end of day), and a route
+   picks one of them, so the feed is part of the key. The split tokens let one
+   wildcard cover a series, such as a volatility surface, which the quotes view
+   needs.
+2. *The entitlement is checked where a watch starts.* The broker checks only the
+   client certificate, so it cannot refuse a subscription. A person never reaches
+   the broker: the browser goes through a web server, which the installation
+   trusts. The market data service answers which feeds a party may watch, by the
+   rule the history read uses, and the web servers and the shell watch only those.
+   Subject permissions on the broker are a separate change and are not needed.
+3. *One rule for history and live.* The route picks the feed, and the
+   subscription's right lets the party show its ticks. The system tenant watches
+   and reads every feed.
+4. *Metering is unchanged.* The ingest keeps counting, for each route, the ticks
+   it publishes on the route's feed, so a party's bill does not change when the
+   copy goes.
+5. *Add before remove.* The ingest publishes the feed subject beside the party
+   copies, the shell moves, and the copies are removed last, so the system works
+   after each task.
+
+** Open question for the product owner
+
+The rule today, =may_show=, lets a party show ticks when its subscription holds
+the display or the non-display right. In a vendor's terms, the non-display right
+is for machines and does not allow a screen. The quotes view shows ticks to a
+person, so it could require the display right. This analysis keeps =may_show= and
+asks.
+
+** Changes to the later tasks
+
+- /Publish each vendor's ticks on its own live subject/: the subject builder with
+  split tokens, one publish for each tick, the meter and the CRM bridge kept for
+  each route.
+- /Reach the vendor subjects through the party's subscriptions/: a new market data
+  operation that answers which feeds a party may watch, with the system tenant
+  rule; the shell moves to it. No other consumer reads the party subjects.
+- /Stop copying live ticks per party/: remove the per-party subject and its
+  builder; keep the counts for each route.
+- /Read a vendor's recent ticks through the subscription/: smaller than planned.
+  The read exists (=get_series_ticks=). It needs the system tenant rule. There is
+  no recent window, so it reads the store.
+- /Build the quotes view/ and /Retire the synthetic display tap/: both web
+  servers, the TypeScript BFF and =ores.http=, carry the tick routes. The
+  retirement covers the arrivals raster of the run-the-market screen as well as
+  each feed's Ticks tab.
 
 * Test Scenarios
 

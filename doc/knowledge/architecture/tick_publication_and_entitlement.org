@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 4DB1ED0C-4BEA-4164-9129-5731AE559AE9
+:END:
+#+title: A source tick is published once and entitled when it is watched
+#+description: The target state of the live path: the ingest publishes each accepted tick once, on the subject of the feed that carries it, and a party reaches a feed through its route and its subscription, which are checked where a person or a service starts to watch.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:ticks:routing:entitlement:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+* Summary
+
+This page states the target state of the live path. It is the live half of
+[[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]. The ingest
+publishes each accepted tick once, on the subject of the feed that carries it.
+The subject names the provider and the feed, and no tenant and no party. A party
+reaches a feed through its route, which picks the feed, and its subscription,
+which grants the right. The check is made where a watch starts, because the
+broker does not check subjects. The system tenant watches every feed.
+
+Today the ingest publishes a copy of each tick for each routed party. The story
+[[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] moves the live path to this target.
+
+* Detail
+
+** Today
+
+The ingest turns each route into a consumer. For each accepted tick it publishes
+one copy for each consumer, on
+=marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=, where the token is the
+whole oresmd URI of the datum (=tick_plan.cpp=, =make_targets=). The copies cost
+one publish for each party, so the live path grows with the parties and not with
+the market. No subject carries the market as a vendor quotes it: a person can
+watch a vendor only through a copy made for one party. The token holds the whole
+URI, so no wildcard covers one series, and a watcher of a series takes the whole
+party subtree and filters it (=marketdata_commands.cpp=, =stream_subjects=).
+
+** The subject
+
+#+begin_src text
+marketdata.v1.ops.market_tick.<provider>.<feed>.<instrument_type>.<series_token>.<coordinate_token>
+#+end_src
+
+- =<provider>= is the feed's publisher code, and =<feed>= is the feed id. A
+  provider can have several feeds, such as real time, delayed and end of day, and
+  a party's route picks one of them, so the feed is part of the key.
+- The subject carries no tenant and no party. A feed belongs to the installation,
+  and its ticks are the same for every party that reaches it.
+- The series token and the coordinate token are apart, as
+  [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]] designs them. A watcher selects on the broker:
+  a feed with =<provider>.<feed>.>=, a class with
+  =...<instrument_type>.>=, one series, such as a volatility surface, with
+  =...<series_token>.>=, or one datum.
+
+** Publication
+
+The ingest publishes each accepted tick once, on its feed's subject, after the
+age gate that keeps a late tick off the live path. The number of publishes
+follows the number of ticks, whatever the number of parties.
+
+** Who may watch
+
+A party may watch a feed when two records agree:
+
+- its route for the provider picks that feed, and
+- its subscription to the provider holds a right to show the ticks.
+
+Two parties with the same routes and subscriptions see the same ticks. The
+system tenant watches every feed, because it runs the installation.
+
+The history read already applies the same rule through =may_read_ticks=
+(=tick_entitlement.cpp=). One rule decides both, so a party can watch live
+exactly what it can read in its history.
+
+** Where the check is made
+
+The broker authenticates each client by its certificate and checks no subject: it
+has no accounts and no subject permissions. Any client process can subscribe to
+any subject, so the broker cannot refuse a watch.
+
+A person never reaches the broker. The browser reaches the market through the
+web server, and the web server is a client the installation trusts. So the check
+is made where a watch starts:
+
+- The server that serves a person's session asks the market data service which
+  feeds the session's party may watch, and subscribes only to those.
+- A service that watches for a party asks the same question.
+- The market data service answers from the routes and the subscriptions, by the
+  rule above, with the system tenant's answer being every feed.
+
+Checking the subjects on the broker itself needs an account and permissions for
+each client. That is a separate change, and this target does not need it.
+
+** Metering
+
+Billing counts what a party is entitled to receive, as it does today. The ingest
+keeps a count for each route of the ticks it publishes on the route's feed, so a
+party's numbers do not change when the copy is removed
+([[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]]).
+
+** History
+
+The history read is unchanged. A stream is named by the provider and the series
+URI, and the read checks the subscription before it returns a point. The system
+tenant reads every provider.
+
+* See also
+
+- [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] — the stored half of the same rule.
+- [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — the pipeline that publishes the tick.
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] — the story that moves the live path to this target.

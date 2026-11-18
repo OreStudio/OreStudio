@@ -2,7 +2,7 @@
 :ID: 454D2B6D-9EC8-4801-A2AB-1C5C46338D97
 :END:
 #+title: Task: Read a vendor's recent ticks through the subscription
-#+description: Give the quotes view its history: the recent ticks of a vendor's series from the ingest window and the store, behind the party's subscription, with the system tenant reading every vendor.
+#+description: Give the quotes view its history: the recent ticks of a vendor's series from the store, behind the party's subscription, with the system tenant reading every vendor.
 #+type: task
 #+level: s1
 #+filetags: :marketdata:ticks:history:see_the_market_as_vendor_quotes:sprint_30:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A screen that opens on a vendor's quotes fills its recent history in one call, from the same window and store the live path feeds, and the subscription decides what it may read.
+A screen that opens on a vendor's quotes fills its recent history in one call, from the store the ingest writes, and the subscription decides what it may read.
 
 * Status
 
@@ -35,7 +35,7 @@ A screen that opens on a vendor's quotes fills its recent history in one call, f
 
 * Acceptance
 
-- One read returns a vendor's recent ticks for the series a view shows, from the window and the store.
+- One read returns a vendor's recent ticks for the series a view shows, from the store.
 - The read refuses a vendor the party does not subscribe to, and the system tenant reads every vendor.
 - The read and the live subject agree: the newest tick the read returns is the last one the subject carried.
 
@@ -60,6 +60,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: =get_series_ticks= already reads a series' ticks behind the subscription. There is no recent window; it reads the store. The work is the system tenant rule in =tick_entitlement.cpp=.
 
 * Test Scenarios
 

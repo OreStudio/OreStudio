@@ -61,6 +61,8 @@ task and name that file in the Command column.
 
 * Notes
 
+- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: remove =market_tick_subject= and =market_tick_subject_all= for the party, and the per-target publish in =feed_ingest_loop.cpp=. The counts for each route stay.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

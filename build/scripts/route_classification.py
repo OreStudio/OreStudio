@@ -415,6 +415,13 @@ RULES = (
          " controls use, so a client that wants one of them reads that collection instead."),
 
     Rule("the request story",
+         ("exact", "GET /api/requests/{id}/story"),
+         CPP, COMPOSED, "workflow",
+         "One request's whole story answered by ores.http at the address and in the shape the BFF"
+         " answered: its own versions, the answers given on it, the roles it asked for and what"
+         " became of them, and the notices the reader was given, ordered as one stream and each"
+         " source read under its owner's permission."),
+    Rule("the request story",
          ("exact", "GET /api/requests/{id}/changes"),
          CPP, COMPOSED, "workflow",
          "What one request proposes, answered by ores.http at the address and in the shape the BFF"

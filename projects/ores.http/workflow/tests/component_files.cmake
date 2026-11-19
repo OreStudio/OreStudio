@@ -28,5 +28,6 @@ set(files
     "progress_routes_tests.cpp"
     "request_proposal_routes_tests.cpp"
     "request_routes_tests.cpp"
+    "request_story_routes_tests.cpp"
     "retry_routes_tests.cpp"
 )

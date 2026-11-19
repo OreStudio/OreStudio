@@ -29,6 +29,7 @@ set(files
     "routes/workflow/request_joins.cpp"
     "routes/workflow/request_proposal_routes.cpp"
     "routes/workflow/request_routes.cpp"
+    "routes/workflow/request_story_routes.cpp"
     "routes/workflow/retry_routes.cpp"
     "routes/workflow/workflow_routes.cpp"
 )
@@ -45,6 +46,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/workflow/request_joins.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/workflow/request_proposal_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/workflow/request_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/workflow/request_story_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/workflow/retry_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/workflow/workflow_routes.hpp"
 )

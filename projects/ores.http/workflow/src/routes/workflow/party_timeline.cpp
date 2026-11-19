@@ -161,7 +161,7 @@ party_timeline(const http_request& req, nats_client& session, const std::string&
     const auto party_versions = versions_or_gap(
         answer.gaps,
         party_entity,
-        "The party's own versions need the party read, which this caller does not hold.",
+        "The party's own versions are not shown: the service did not answer the read.",
         req,
         session,
         party_entity,
@@ -222,7 +222,8 @@ party_timeline(const http_request& req, nats_client& session, const std::string&
     const auto counterparties =
         with_names(named_counterparties,
                    "Counterparty",
-                   counterparty_names(req, session, ids_in(named_counterparties, "Counterparty")));
+                   counterparty_names(
+                       req, session, ids_in(named_counterparties, "Counterparty"), answer.gaps));
 
     // A part that was removed is closed, and no read lists a closed row, so its
     // versions cannot be found from the party. The stream says so for every kind

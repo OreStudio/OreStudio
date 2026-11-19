@@ -66,9 +66,15 @@ struct version final {
  *
  * The service states three kinds of bad news in a reply it did send: it holds no
  * read for the entity type, the caller does not hold the permission the read
- * asks for, and the read failed. All three are =answered=false= with the
- * service's own words, and the caller decides what each means for its answer.
- * A reply that never came is a different thing, and it is thrown.
+ * asks for, and the read itself failed. It states all three as one flag and one
+ * sentence, so a caller that does not read the service's prose cannot tell "this
+ * chapter is missing" from "the deployment is broken", and this step does not
+ * read prose.
+ *
+ * A caller must therefore say only what it knows. An unanswered read is stated as
+ * the service not answering, which is true of all three, and never as a
+ * permission the person lacks. A refusal the transport carries is a different
+ * thing: it is thrown, and a caller that can act on it keeps its status.
  */
 struct answer final {
     bool answered = false;

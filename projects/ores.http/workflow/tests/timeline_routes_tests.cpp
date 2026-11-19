@@ -18,8 +18,10 @@
  *
  */
 #include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/net/record_routes.hpp"
 #include "ores.http/routes/workflow/story_events.hpp"
 #include "ores.http/routes/workflow/timeline.hpp"
+#include "ores.http/routes/workflow/timeline_sources.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "route_answer.hpp"
@@ -35,6 +37,8 @@
 using ores::http::domain::http_method;
 using ores::http::domain::http_request;
 using ores::http::domain::http_status;
+using ores::http::net::record_routes::refusal;
+using ores::http::routes::workflow::or_gap;
 using ores::http::routes::workflow::order_story;
 using ores::http::routes::workflow::story_event;
 using ores::http::routes::workflow::story_link_events;
@@ -230,4 +234,31 @@ TEST_CASE("a_link_states_its_opening_its_change_and_its_closing", "[workflow_tim
     CHECK(events[2].actor == "bob");
     for (const auto& field : events[0].fields)
         CHECK(field.first != "Closed At");
+}
+
+TEST_CASE("a_source_the_caller_may_not_read_is_a_gap", "[workflow_timeline]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the rule that separates a refusal from a fault";
+
+    std::vector<timeline_gap> gaps;
+    const auto missing = or_gap(gaps, "ores.iam.role", "The roles are not shown.", []() -> int {
+        ores::http::net::record_routes::refuse(http_status::forbidden, "forbidden", "No.");
+    });
+    CHECK(missing == 0);
+    REQUIRE(gaps.size() == 1);
+    CHECK(gaps[0].entity == "ores.iam.role");
+    CHECK(gaps[0].reason == "The roles are not shown.");
+
+    // A service that is down is not a permission the person lacks, so it is thrown
+    // and the route answers that the service did not answer.
+    std::vector<timeline_gap> no_gaps;
+    CHECK_THROWS_AS(or_gap(no_gaps,
+                           "ores.iam.role",
+                           "The roles are not shown.",
+                           []() -> int {
+                               ores::http::net::record_routes::refuse(
+                                   http_status::bad_gateway, "upstream-unavailable", "Down.");
+                           }),
+                    refusal);
+    CHECK(no_gaps.empty());
 }

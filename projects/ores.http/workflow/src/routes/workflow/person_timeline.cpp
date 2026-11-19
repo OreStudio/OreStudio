@@ -25,6 +25,7 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/auth_event_operations_protocol.hpp"
 #include "ores.iam.api/messaging/role_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <cstdint>
 #include <exception>
@@ -46,6 +47,12 @@ namespace iam_messaging = ores::iam::messaging;
 
 using ores::http::domain::http_request;
 using ores::nats::service::nats_client;
+
+/// The trail the person's stream leaves when a source cannot be read or named.
+auto& person_timeline_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.workflow.person_timeline");
+    return instance;
+}
 
 /// The tables a person's stream draws from, named as the models name them.
 constexpr std::string_view account_entity = "ores.iam.account";
@@ -115,8 +122,10 @@ roles_of(const http_request& req, nats_client& session, const std::set<std::stri
     for (const auto& id : ids) {
         try {
             wanted.push_back(boost::uuids::string_generator()(id));
-        } catch (const std::exception&) {
-            // An id that is not a uuid names no role of this catalogue.
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(person_timeline_lg(), ores::logging::warn)
+                << "A role this stream points at is not named by a uuid, so it keeps its id: "
+                << e.what();
         }
     }
     iam_messaging::list_roles_request msg;
@@ -196,7 +205,7 @@ person_timeline(const http_request& req, nats_client& session, const std::string
     const auto account_versions = versions_or_gap(
         answer.gaps,
         account_entity,
-        "The account's own versions need the account read, which this caller does not hold.",
+        "The account's own versions are not shown: the service did not answer the read.",
         req,
         session,
         account_entity,
@@ -205,7 +214,7 @@ person_timeline(const http_request& req, nats_client& session, const std::string
     const auto contact =
         or_gap(answer.gaps,
                account_contact_entity,
-               "This person has no contact record, so the stream carries no address change.",
+               "This person's contact record is not shown: the service did not answer the read.",
                [&]() -> std::optional<ores::iam::domain::account_contact_information> {
                    iam_messaging::list_by_account_id_account_contact_informations_request msg;
                    msg.account_id = account->id;
@@ -219,6 +228,9 @@ person_timeline(const http_request& req, nats_client& session, const std::string
                    return reply.account_contact_informations.front();
                });
 
+    // The contact record's history is keyed by the address its model declares, not by the
+    // row's id: reading it by the id answers with no versions, which reads on the stream
+    // as a record that was never written.
     std::vector<story_event> contact_events;
     if (contact && !contact->email.empty())
         contact_events = story_record_events(
@@ -227,8 +239,8 @@ person_timeline(const http_request& req, nats_client& session, const std::string
             versions_or_gap(
                 answer.gaps,
                 account_contact_entity,
-                "The contact record's versions need the contact history read, which this caller "
-                "does not hold.",
+                "The contact record's versions are not shown: the service did not answer the "
+                "read.",
                 req,
                 session,
                 account_contact_entity,
@@ -261,12 +273,12 @@ person_timeline(const http_request& req, nats_client& session, const std::string
         account_id);
     const auto links = story_link_events(account_party_entity, party_links);
     const auto named_links =
-        with_names(links, "Party", party_names(req, session, ids_in(links, "Party")));
+        with_names(links, "Party", party_names(req, session, ids_in(links, "Party"), answer.gaps));
 
     const auto sign_ins =
         or_gap(answer.gaps,
                auth_event_entity,
-               "The sign-in read refused this caller, so this person's sign-ins are not shown.",
+               "This person's sign-ins are not shown: the service did not answer the read.",
                [&]() { return sign_in_events(req, session, account_id); });
 
     // The read answers a window rather than everything, so the stream says which

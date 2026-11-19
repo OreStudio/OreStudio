@@ -39,6 +39,15 @@ namespace forwarding = ores::http::forwarding;
 using ores::http::domain::http_request;
 using ores::nats::service::nats_client;
 
+/// The entities a stream names by their own names, so a gap can say which.
+constexpr std::string_view named_party_entity = "ores.refdata.party";
+constexpr std::string_view named_counterparty_entity = "ores.refdata.counterparty";
+
+/// States a gap once, with the entity the read was for and why it is a gap.
+void note_gap(std::vector<timeline_gap>& gaps, std::string_view entity, std::string_view reason) {
+    gaps.push_back({std::string(entity), std::string(reason)});
+}
+
 /// The trail a source leaves when it cannot name the row an entry points at.
 auto& timeline_lg() {
     static auto instance = ores::logging::make_logger("ores.http.workflow.timeline_sources");
@@ -83,56 +92,83 @@ std::vector<ores::http::net::history::version> versions_or_gap(std::vector<timel
     });
 }
 
-std::map<std::string, std::string>
-party_names(const http_request& req, nats_client& session, const std::set<std::string>& ids) {
+std::map<std::string, std::string> party_names(const http_request& req,
+                                               nats_client& session,
+                                               const std::set<std::string>& ids,
+                                               std::vector<timeline_gap>& gaps) {
     std::map<std::string, std::string> names;
     if (ids.empty())
         return names;
     ores::refdata::messaging::list_parties_request msg;
     msg.limit = static_cast<std::uint32_t>(ids.size());
     msg.filter = ores::refdata::messaging::parties_filter{uuids_of(ids), std::nullopt};
+    const auto unanswered = [&] {
+        note_gap(gaps,
+                 named_party_entity,
+                 "The parties this stream points at could not be named, so each is named by its "
+                 "id.");
+    };
     try {
         const auto reply = forwarding::forward(req, session, msg);
         if (reply.result.outcome != ores::utility::domain::outcome::ok) {
             BOOST_LOG_SEV(timeline_lg(), ores::logging::info)
                 << "The parties a timeline points at could not be named: " << reply.result.message;
+            unanswered();
             return names;
         }
         for (const auto& party : reply.parties)
             names[rr::as_text(party.id)] =
                 party.full_name.empty() ? party.short_code : party.full_name;
+    } catch (const rr::refusal& refusal) {
+        BOOST_LOG_SEV(timeline_lg(), ores::logging::info)
+            << "The parties a timeline points at were refused: " << refusal.message;
+        unanswered();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(timeline_lg(), ores::logging::warn)
             << "The parties a timeline points at could not be read, so their ids stand: "
             << e.what();
+        unanswered();
     }
     return names;
 }
 
 std::map<std::string, std::string> counterparty_names(const http_request& req,
                                                       nats_client& session,
-                                                      const std::set<std::string>& ids) {
+                                                      const std::set<std::string>& ids,
+                                                      std::vector<timeline_gap>& gaps) {
     std::map<std::string, std::string> names;
     if (ids.empty())
         return names;
     ores::refdata::messaging::list_counterparties_request msg;
     msg.limit = static_cast<std::uint32_t>(ids.size());
     msg.filter = ores::refdata::messaging::counterparties_filter{uuids_of(ids)};
+    const auto unanswered = [&] {
+        note_gap(gaps,
+                 named_counterparty_entity,
+                 "The counterparties this stream points at could not be named, so each is named "
+                 "by its id.");
+    };
     try {
         const auto reply = forwarding::forward(req, session, msg);
         if (reply.result.outcome != ores::utility::domain::outcome::ok) {
             BOOST_LOG_SEV(timeline_lg(), ores::logging::info)
                 << "The counterparties a timeline points at could not be named: "
                 << reply.result.message;
+            unanswered();
             return names;
         }
         for (const auto& counterparty : reply.counterparties)
             names[rr::as_text(counterparty.id)] =
                 counterparty.full_name.empty() ? counterparty.short_code : counterparty.full_name;
+    } catch (const rr::refusal& refusal) {
+        BOOST_LOG_SEV(timeline_lg(), ores::logging::info)
+            << "The counterparties a timeline points at were refused: " << refusal.message;
+        unanswered();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(timeline_lg(), ores::logging::warn)
             << "The counterparties a timeline points at could not be read, so their ids stand: "
             << e.what();
+        unanswered();
     }
     return names;
 }

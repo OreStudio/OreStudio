@@ -35,11 +35,17 @@
 /**
  * @brief What every subject of the timeline reads its sources through.
  *
- * Two rules are shared by the subjects rather than stated by each. A read the
- * caller may not make is a gap on the answer; a read that fails is not, and the
- * route answers that the service did not answer. And a row that one entry names
- * by id is named by its own name where the stream can read it, and by its id
- * where it cannot.
+ * Two rules are shared by the subjects rather than stated by each.
+ *
+ * A refusal the transport carries is a gap when it says the caller may not make
+ * the read, and a fault otherwise: a service that is down is never reported as a
+ * permission the person lacks. A read the service declines in a reply it did send
+ * is a gap too, and the gap states that the service did not answer rather than
+ * why, because the reply carries one flag for three different pieces of news.
+ *
+ * And a row that one entry names by id is named by its own name where the stream
+ * can read it, and by its id where it cannot, with a gap stating that the entry
+ * shows an id.
  */
 namespace ores::http::routes::workflow {
 
@@ -79,18 +85,20 @@ versions_or_gap(std::vector<timeline_gap>& gaps,
                 std::string_view entity_type,
                 std::string_view entity_id);
 
-/// The parties a set of ids names. A party that cannot be read is left out, and
-/// its entry keeps the id.
+/// The parties a set of ids names. A read that does not answer leaves every
+/// entry with its id and states a gap, so a stream of ids is never silent.
 [[nodiscard]] std::map<std::string, std::string>
 party_names(const ores::http::domain::http_request& req,
             ores::nats::service::nats_client& session,
-            const std::set<std::string>& ids);
+            const std::set<std::string>& ids,
+            std::vector<timeline_gap>& gaps);
 
 /// The counterparties a set of ids names.
 [[nodiscard]] std::map<std::string, std::string>
 counterparty_names(const ores::http::domain::http_request& req,
                    ores::nats::service::nats_client& session,
-                   const std::set<std::string>& ids);
+                   const std::set<std::string>& ids,
+                   std::vector<timeline_gap>& gaps);
 
 /// The events one field names by id, with each id its name where the stream read
 /// one and the id where it did not.

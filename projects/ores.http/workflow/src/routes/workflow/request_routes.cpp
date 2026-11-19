@@ -214,6 +214,7 @@ void request_routes::register_routes(
                         ids.push_back(request.id);
 
                     const auto requesters = joins::requesters_of(req, session, ids);
+                    const auto subjects = joins::subjects_of_page(req, session, ids);
                     std::set<std::string> accounts;
                     for (const auto& request : reply.requests) {
                         const auto found = requesters.find(rr::as_text(request.id));

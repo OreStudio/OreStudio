@@ -20,8 +20,10 @@
 #include "ores.http/routes/workflow/page_query.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include <charconv>
+#include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::http::routes::workflow {
 

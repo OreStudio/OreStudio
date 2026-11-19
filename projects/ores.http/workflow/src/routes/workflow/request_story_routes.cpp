@@ -25,6 +25,7 @@
 #include "ores.inbox.api/messaging/approval_decision_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/text_form.hpp"
 #include <boost/asio/awaitable.hpp>
@@ -53,14 +54,17 @@ using ores::http::domain::http_request;
 using ores::http::domain::http_response;
 using ores::nats::service::nats_client;
 
+/// The trail the story leaves when a source is deliberately absent.
+auto& story_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.workflow.request_story_routes");
+    return instance;
+}
+
 /// The sentence the story states when its address names no request.
 constexpr std::string_view story_id_refused = "A request is named by its identifier.";
 
 /// How long a story stays fresh: a decision told about it arrives within the minute.
 constexpr std::chrono::seconds story_stale_after{15};
-
-/// The most rows one join asks for; the services refuse a longer filter.
-constexpr std::uint32_t story_join_page = 1000;
 
 /// The tables the story draws from, named as the models name them.
 constexpr std::string_view request_entity = "ores.inbox.approval_request";
@@ -215,16 +219,16 @@ role_events(const http_request& req, nats_client& session, const std::string& re
  */
 std::vector<story_event>
 decision_events(const http_request& req, nats_client& session, const std::string& request_id) {
-    using ores::inbox::domain::approval_decision;
-    std::vector<approval_decision> decisions;
     inbox_messaging::list_approval_decisions_request msg;
-    msg.limit = story_join_page;
+    msg.limit = joins::join_page;
     msg.filter.emplace();
     msg.filter->request_id = boost::uuids::string_generator()(request_id);
     const auto reply = forwarding::forward(req, session, msg);
-    if (reply.result.outcome != ores::utility::domain::outcome::ok)
+    if (reply.result.outcome == ores::utility::domain::outcome::missing ||
+        reply.result.outcome == ores::utility::domain::outcome::denied)
         return {};
-    decisions = reply.decisions;
+    rr::require_ok(reply.result);
+    const auto& decisions = reply.decisions;
 
     std::set<std::string> accounts;
     for (const auto& decision : decisions)
@@ -251,46 +255,65 @@ decision_events(const http_request& req, nats_client& session, const std::string
     return events;
 }
 
+/// One notice, added when it names the request.
+void add_notice(const ores::inbox::messaging::inbox_notification& notice,
+                const std::string& request_id,
+                std::vector<story_event>& events) {
+    if (notice.link_id != request_id)
+        return;
+    story_event event;
+    event.entity_type = std::string(notice_entity);
+    event.entity_id = notice.id;
+    event.kind = "told";
+    event.at = notice.raised_at;
+    event.actor = notice.raised_by;
+    event.version = 1;
+    event.fields.emplace_back("Message Key", notice.message_key);
+    for (const auto& argument : notice.arguments)
+        event.fields.emplace_back(argument.name, argument.value);
+    // The field states the instant in the wire's own text, which is what the JSON
+    // codec writes for every instant: one formatter, reached the same way.
+    if (notice.read_at)
+        event.fields.emplace_back(
+            "Read At",
+            ores::utility::codec::text_form<std::chrono::system_clock::time_point>::to_text(
+                *notice.read_at));
+    events.push_back(std::move(event));
+}
+
 /**
  * The notices this reader was given about one request.
  *
  * A notice is a person's own copy, so this reads the caller's own list and keeps
- * the ones that name the request: a story is a view of what happened to you and
- * of what you did, not of what was done to somebody else.
+ * the ones that name the request: a story is a view of what happened to you and of
+ * what you did, not of what was done to somebody else.
+ *
+ * The read answers a page of the caller's own notices and offers no filter by the
+ * thing a notice links to, so a story reads every page it needs. The bound is that
+ * page raised by the most pages a story will read: a person with more notices than
+ * that is told the story is short rather than shown a stream that looks complete.
  */
 std::vector<story_event>
 notice_events(const http_request& req, nats_client& session, const std::string& request_id) {
-    inbox_messaging::list_my_notifications_request msg;
-    msg.unread_only = false;
-    msg.offset = 0;
-    msg.limit = static_cast<int>(story_join_page);
-    const auto reply = forwarding::forward(req, session, msg);
-    if (reply.result.outcome != ores::utility::domain::outcome::ok)
-        return {};
-
     std::vector<story_event> events;
-    for (const auto& notice : reply.notifications) {
-        if (notice.link_id != request_id)
-            continue;
-        story_event event;
-        event.entity_type = std::string(notice_entity);
-        event.entity_id = notice.id;
-        event.kind = "told";
-        event.at = notice.raised_at;
-        event.actor = notice.raised_by;
-        event.version = 1;
-        event.fields.emplace_back("Message Key", notice.message_key);
-        for (const auto& argument : notice.arguments)
-            event.fields.emplace_back(argument.name, argument.value);
-        // The field states the instant in the wire's own text, which is what the
-        // JSON codec writes for every instant: one formatter, reached the same way.
-        if (notice.read_at)
-            event.fields.emplace_back(
-                "Read At",
-                ores::utility::codec::text_form<std::chrono::system_clock::time_point>::to_text(
-                    *notice.read_at));
-        events.push_back(std::move(event));
+    constexpr std::uint32_t notice_pages = 50;
+    const auto page = static_cast<std::size_t>(joins::join_page);
+    for (std::uint32_t read = 0; read < notice_pages; ++read) {
+        inbox_messaging::list_my_notifications_request msg;
+        msg.unread_only = false;
+        msg.offset = static_cast<int>(static_cast<std::size_t>(read) * page);
+        msg.limit = static_cast<int>(page);
+        const auto reply = forwarding::forward(req, session, msg);
+        if (reply.result.outcome != ores::utility::domain::outcome::ok)
+            return events;
+        for (const auto& notice : reply.notifications)
+            add_notice(notice, request_id, events);
+        if (reply.notifications.size() < page)
+            return events;
     }
+    BOOST_LOG_SEV(story_lg(), ores::logging::warn)
+        << "The notices about request " << request_id
+        << " were read to the page limit; older ones are not in the story.";
     return events;
 }
 
@@ -350,5 +373,4 @@ void request_story_routes::register_routes(
                 });
             }));
 }
-
 }

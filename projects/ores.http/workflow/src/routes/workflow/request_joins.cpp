@@ -33,7 +33,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <exception>
+#include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -60,9 +62,6 @@ auto& join_lg() {
     static auto instance = ores::logging::make_logger("ores.http.workflow.request_joins");
     return instance;
 }
-
-/// The most rows one join asks for; the services refuse a longer filter.
-constexpr std::uint32_t join_page = 1000;
 
 /// The most trades one request may name, as the screen draws them.
 constexpr std::size_t trades_of_request = 10;
@@ -199,6 +198,71 @@ decisions_of(const http_request& req,
         return decisions;
     }
     return decisions;
+}
+
+/// The trades each request of a page is about, by the request's id.
+std::map<std::string, std::vector<subject>>
+subjects_of_page(const http_request& req,
+                 nats_client& session,
+                 const std::vector<boost::uuids::uuid>& request_ids) {
+    std::map<std::string, std::vector<subject>> by_request;
+    if (request_ids.empty())
+        return by_request;
+
+    std::vector<std::pair<std::string, std::pair<std::string, int>>> links;
+    try {
+        trading_messaging::list_trade_authorisation_requests_request msg;
+        msg.limit = join_page;
+        msg.filter.emplace();
+        msg.filter->request_id_one_of = request_ids;
+        const auto reply = forwarding::forward(req, session, msg);
+        rr::require_ok(reply.result);
+        links.reserve(reply.trade_authorisation_requests.size());
+        for (const auto& link : reply.trade_authorisation_requests)
+            links.emplace_back(rr::as_text(link.request_id),
+                               std::pair{rr::as_text(link.trade_id), link.trade_version});
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(join_lg(), ores::logging::warn)
+            << "The trades of a page of requests were not read: " << e.what();
+        return by_request;
+    }
+
+    // The identifiers of every trade the page names, in one read: the label is
+    // the name a person recognises, and a refusal costs the label and not the row.
+    std::map<std::string, std::string> labels;
+    std::vector<boost::uuids::uuid> trade_ids;
+    std::set<std::string> seen;
+    for (const auto& [request_id, link] : links)
+        if (seen.insert(link.first).second && rr::is_uuid(link.first))
+            trade_ids.push_back(boost::uuids::string_generator()(link.first));
+    if (!trade_ids.empty()) {
+        try {
+            trading_messaging::list_trade_identifiers_request msg;
+            msg.limit = static_cast<std::uint32_t>(trade_ids.size());
+            msg.filter.emplace();
+            msg.filter->trade_id_one_of = trade_ids;
+            const auto reply = forwarding::forward(req, session, msg);
+            rr::require_ok(reply.result);
+            for (const auto& identifier : reply.identifiers) {
+                const auto trade_id = rr::as_text(identifier.trade_id);
+                if (!identifier.id_value.empty() && !labels.contains(trade_id))
+                    labels.emplace(trade_id, identifier.id_value);
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(join_lg(), ores::logging::warn)
+                << "The labels of a page of trades were not read: " << e.what();
+        }
+    }
+
+    for (const auto& [request_id, link] : links) {
+        auto& subjects = by_request[request_id];
+        if (subjects.size() == trades_of_request)
+            continue;
+        const auto label = labels.find(link.first);
+        subjects.push_back(
+            {link.first, link.second, label == labels.end() ? link.first : label->second});
+    }
+    return by_request;
 }
 
 /// One role a request asks for, as the screen draws it.

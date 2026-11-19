@@ -77,6 +77,7 @@ std::string page_json(const std::vector<ores::inbox::domain::approval_request>& 
         ids.push_back(row.id);
 
     const auto requesters = joins::requesters_of(req, session, ids);
+    const auto subjects = joins::subjects_of_page(req, session, ids);
     const auto decisions = joins::decisions_of(req, session, ids);
     std::set<std::string> accounts;
     for (const auto& row : rows) {
@@ -90,11 +91,13 @@ std::string page_json(const std::vector<ores::inbox::domain::approval_request>& 
     std::vector<std::string> written;
     written.reserve(rows.size());
     for (const auto& row : rows) {
-        const auto links = joins::subjects_of(req, session, rr::as_text(row.id));
+        const auto found = subjects.find(rr::as_text(row.id));
         std::vector<std::string> written_subjects;
-        written_subjects.reserve(links.size());
-        for (const auto& link : links)
-            written_subjects.push_back(joins::subject_json(link));
+        if (found != subjects.end()) {
+            written_subjects.reserve(found->second.size());
+            for (const auto& link : found->second)
+                written_subjects.push_back(joins::subject_json(link));
+        }
         written.push_back(joins::request_json(row,
                                               joins::roles_of(req, session, rr::as_text(row.id)),
                                               requesters,

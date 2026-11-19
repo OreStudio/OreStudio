@@ -82,6 +82,15 @@ void progress_routes::register_routes(
 
                     workflow_messaging::get_workflow_steps_request msg;
                     msg.workflow_instance_id = instance_id;
+                    /*
+                     * No outcome check, deliberately. A refusal arrives as a
+                     * transport refusal, which the forward raises before this
+                     * line, and everything the engine answers in band is the
+                     * page's own news: `success` and `message` are what the rail
+                     * renders when a run could not be read. The BFF passed the
+                     * reply through the same way, and turning the engine's words
+                     * into a 502 here would hide the state the screen is for.
+                     */
                     const auto reply = forwarding::forward(req, session, msg);
                     return progress_answer(
                         req,

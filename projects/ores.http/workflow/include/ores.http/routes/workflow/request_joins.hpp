@@ -28,6 +28,7 @@
 #include "ores.inbox.api/messaging/approval_request_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <string>
@@ -49,6 +50,9 @@ namespace ores::http::routes::workflow::joins {
  * decoration. The sentence each route states when the page itself is refused is
  * the route's, not the join's.
  */
+
+/// The most rows one join asks for; the services refuse a longer filter.
+inline constexpr std::uint32_t join_page = 1000;
 
 /// One thing a request is about: the trade, the version read and the name it is known by.
 struct subject final {
@@ -90,6 +94,19 @@ parts_of(const ores::http::domain::http_request& req,
 std::vector<subject> subjects_of(const ores::http::domain::http_request& req,
                                  ores::nats::service::nats_client& session,
                                  const std::string& request_id);
+
+/**
+ * The trades each request of a page is about, by the request's id.
+ *
+ * A page costs two reads and not one per row: the links of every request in one
+ * call, and the labels of every trade they name in another. This is the read a
+ * list of requests makes; the single-request read above is for the one a person
+ * opened.
+ */
+std::map<std::string, std::vector<subject>>
+subjects_of_page(const ores::http::domain::http_request& req,
+                 ores::nats::service::nats_client& session,
+                 const std::vector<boost::uuids::uuid>& request_ids);
 
 /// One role a request asks for, as the screen draws it.
 std::string role_json(const ores::iam::domain::role& role);

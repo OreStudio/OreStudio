@@ -88,6 +88,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A click on the bar's padding reloads the page | index.html | Accept | The handler returns unless a button was clicked. |
+| 2 | The Find value is not escaped | index.html | Accept | Escaped. |
+| 3 | An unknown variant or state falls through | index.html | Accept | Both fall back to the first value. |
+| 4 | Staleness is per datum, not per feed | watch-the-vendors-quotes.org | Accept | Stated under What is fake. |
+| 5 | Pause freezes the ages | index.html | Accept | Paused, the values hold and the ages keep counting. |
+| 6 | A full redraw on a class change loses the focus | index.html | Decline | Throwaway page; the Find input keeps its focus. |
+| 7 | Two statements on one line; a class name | index.html | Accept in part | The statements are split; the class name stays. |
 
 * Result

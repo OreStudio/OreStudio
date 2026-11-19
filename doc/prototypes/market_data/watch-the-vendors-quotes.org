@@ -57,7 +57,9 @@ Switch with the bar at the foot, or =?variant=.
 
 Every value, time and age is mock. The ticks are a random walk on a timer, and the
 hour behind a picked row is made up. The datums each vendor quotes, and which
-feeds a party may watch, are fixed in the page.
+feeds a party may watch, are fixed in the page. A datum keeps one time, shared by
+every vendor that quotes it, so in the silent state only the silent vendor's own
+view fades its rows; the server keeps the time of each feed's tick apart.
 
 ** Where the code lives
 

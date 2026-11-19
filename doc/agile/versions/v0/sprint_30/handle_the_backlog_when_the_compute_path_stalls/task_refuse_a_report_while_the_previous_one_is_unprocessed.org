@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :handle_the_backlog_when_the_compute_path_stalls:sprint_30:v0:
 #+owner: eager_maxwell
-#+branch:
+#+branch: feature/refuse-a-report-while-the-previous-one-is-unprocessed
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle-the-backlog-when-the-compute-path-stalls]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

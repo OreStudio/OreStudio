@@ -20,22 +20,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Know whether the trade entity's nineteen columns cause the MSVC C1202 that
+stops the Windows leg, and what a fix should touch.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep-main-green]] |
-| Now          | Not yet started.                       |
+| Now          | Analysis written and merged.           |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Decide which recommendation to take.   |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
 
--
+- The entity's column count is shown to cause the failure, or shown not to.
+- What a fix must touch is named.
 
 * Plan
 
@@ -83,3 +85,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The column count does not cause the failure. The widest entity in the build,
+=swap_leg= with seventy-three bindings, compiles in the same unity unit that
+fails on the trade entity's nineteen, and the compiler already runs with
+=/constexpr:depth100000 /constexpr:steps10000000=.
+
+The investigation records the evidence, the working hypothesis -- the
+accumulated instantiation context of a sixteen-source unity unit, compounded by
+=column_list= nesting a type per column -- and three recommendations: flatten
+the generated column list, take the widest entities out of the unity batch, and
+do not trim the entity.
+
+[[file:investigation_why_msvc_cannot_compile_the_trade_entity.org][Investigation: Why MSVC cannot compile the trade entity]]

@@ -8,7 +8,7 @@
 #+filetags: :handle_the_backlog_when_the_compute_path_stalls:sprint_30:v0:
 #+owner: eager_maxwell
 #+branch: feature/take-the-bridges-publishes-off-the-services-only-thread
-#+pr:
+#+pr: 4879
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-19
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4879][#4879]] | [nats] Bound the wait a JetStream publish may cost the caller |
 
 * Review
 

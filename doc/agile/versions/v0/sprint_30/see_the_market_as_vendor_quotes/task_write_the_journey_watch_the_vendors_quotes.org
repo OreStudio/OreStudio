@@ -26,11 +26,11 @@ The quotes view is designed from the person's goal: what someone watching the ma
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -92,3 +92,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- [[id:E01E9FB6-AB3D-44A4-B852-6A0CB23775F3][Watch the vendors' quotes]] is written in the market data group, with its
+  wireframe rendered beside it, and listed on the group page.
+- It states what a party sees (the feeds it may watch for display, the same for
+  any two parties with the same routes and subscriptions) and what the system
+  tenant sees (every feed), and how every asset class reads as rows of one table.
+- Every subject of its coverage table is in the generated protocol headers (X01);
+  the one missing piece is the stream from the web server to the browser.
+- The catalogue (J08) is the one journey the product owner set out on
+  2026-11-18; the existing /Watch the market and clear its exceptions/ stays and
+  links to it.

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :handle_the_backlog_when_the_compute_path_stalls:sprint_30:v0:
 #+owner: eager_maxwell
-#+branch:
-#+pr:
+#+branch: feature/refuse-a-report-while-the-previous-one-is-unprocessed
+#+pr: 4885
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-19
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle-the-backlog-when-the-compute-path-stalls]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4885][#4885]] | [reporting] Read an instance's state from the tenant that owns the machine |
 
 * Review
 
@@ -83,3 +83,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The gate the trigger handler already asked for never fired:
+=ores_reporting_in_flight_instance_fn= joined the instance's FSM state to the
+instance's own tenant, and every state row belongs to the system tenant, so
+the join matched nothing and the function always answered that no instance
+was in flight. The concurrency policy each definition states -- fail, queue
+or skip -- was therefore never applied, and every scheduler firing admitted
+another production run.
+
+The state is now joined by id and read as the system's, as the guard on the
+instance table already reads it. Applied to pauli: 0 of 161 live definitions
+reported an in-flight instance before, 39 after, which are the definitions
+whose instances sit pending or running.
+
+PR #4885. =compass check --exclude-heavy=: 23/23 passed. No automated test
+covers it: the SQL suite cannot create a tenant and the function is granted
+only to the reporting service, so the evidence is the live comparison above.
+
+Still to do, outside this task: the 247 pending and 44 running instances the
+bug accumulated now block their definitions, and need a clear-down.

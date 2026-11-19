@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 8AD9ABB7-76B1-44AB-AA51-2D5700919CB2
 :END:
-#+title: The trade entity's column list exceeds MSVC's template depth
-#+description: windows-msvc-release-ninja fails C1202 at trade_entity.hpp:95, but not because the trade entity is wide: it fails in ores.trading.core unity unit 55, where it is reached after 56 other entity headers and 1,179 bindings, and compiles in unit 54, reached after 91. The cost is what the unity unit has accumulated, and binding counts alone do not predict it.
+#+title: Column-list chains exhaust MSVC's template budget in a unity unit
+#+description: windows-msvc-release-ninja fails C1202 at trade_entity.hpp:95 in ores.trading.core unity unit 55. MSVC probes fit the cause: a unit spends a budget of about 1024 column-list operator| calls across every entity's columns() chain, and the first chain of 18 to 20 bindings after that fails. The rule predicts 9 to 12 failing units, so the fix is in the generated columns(), not in the trade entity.
 #+type: capture
 #+level: cross
-#+filetags: :ci:windows:msvc:trading:unity:
+#+filetags: :ci:windows:msvc:trading:unity:codegen:
 #+created: 2026-11-19
 #+updated: 2026-11-19
 
@@ -16,44 +16,49 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 The nightly of 2026-11-19 (run 44485188155, head =e866b76f3e=) failed in
 =windows-msvc-release-ninja= with =fatal error C1202: recursive type or
 function dependency context too complex= at =trade_entity.hpp:95=, the
-entity's =columns()= chain.
+trade entity's =columns()= chain, in =ores.trading.core= unity unit 55.
+That unit reaches =trade_entity.hpp= after 56 other entity headers and
+1,179 bindings. Unit 54 reaches it after 91 bindings and compiles.
 
-The trade entity's width is not the cause. At 19 bindings it is not the
-widest entity, and MSVC printed only 2 levels of template context, so
-the instantiation in hand was shallow. The failure is in
-=ores.trading.core= unity unit 55 (=trade_identifier_mapper.cpp= to
-=trade_repository.cpp=), which reaches =trade_entity.hpp= at position
-139 of 165 headers, after 56 other entity headers and 1,179 bindings.
-Unit 54 also includes it, after 91 bindings, and compiles. =swap_leg=
-is in units 52 and 53, not unit 55.
+The MSVC job built units 66 down to 55 and stopped at 55; it never
+reached the lower units. Only the clang job compiled them.
 
-A binding budget per unit does not explain it either: unit 53 holds
-1,299 bindings and unit 44 holds 1,271, more than unit 55's 1,199, and
-both compile. Mappers, repositories and other templates the sources
-instantiate are not counted, and only MSVC can say what it counts.
+compass's MSVC probes (MSVC 14.51, ORE's release flags) fit a rule that
+predicts all 298 probe outcomes, including ORE's own 62 entity headers
+compiled in units 53 and 55's include order:
 
-The fix waits on a measurement. compass's story Keep MSVC within its
-template limits runs MSVC probes that rebuild unit 55's shape from
-synthetic entities, to find whether the column lists alone reproduce
-it. If they do not, unit 55 itself is compiled with MSVC and its
-sources bisected. Options once the cost is known: break unit 55 with
-=cmake/unity_exclusions.cmake= or a smaller unity batch for
-=ores.trading.core=, or change how the column list nests.
+- A unit has a budget of about 1024 column-list =operator|= calls,
+  counted over every entity's =columns()= chain in include order.
+- Once the budget is spent, MSVC fails at the first chain of 18 to 20
+  bindings. compass is pinning the exact budget and length.
+- Shorter chains never fail, and field lists (=wire_fields=) never fail
+  at any count.
+
+At =e866b76f3e= the rule predicts 9 to 12 failing units in
+=ores.trading.core=: 55, and 53, 50, 48, 44, 43, 38, 36, 34 and more
+below it. Units 56 to 66 compile, which matches the CI log. Fixing the
+trade entity alone would only move the failure to the next unit down.
+
+The likely fix is in the generator: emit =columns()= as one variadic
+call, as =field_list= is built (for example
+=make_columns<e>(key(...), bind(...)...)=), instead of a chain of
+=operator|=. compass's probes are testing that form now. If it never
+fails, one generator change removes the whole class. Smaller unity
+batches would only move the failures.
 
 * Why
 
 The failure is on MSVC release alone; the Linux and Windows clang legs
 compile the same tree. No MSVC Windows artefact can be built while it
-stands. The earlier reading of this capture, that the trade entity is
-too wide, would have sent the fix to the wrong place.
+stands, and every entity a model adds spends more of each unit's budget.
 
 * References
 
-- compass =doc/agile/versions/v0/sprint_01/keep_msvc_within_its_template_limits/investigation_the_c1202_failures.org=:
-  the classification of every C1202 from 2026-09-19 to 2026-11-19, with
-  the unit tables in its =evidence/= folder.
+- compass =doc/agile/versions/v0/sprint_01/keep_msvc_within_its_template_limits/=:
+  the investigation of every C1202 from 2026-09-19 to 2026-11-19, and
+  the fitted rule.
+- compass =build/probes/msvc_c1202=: the probes.
 - =projects/ores.trading/core/include/ores.trading.core/repository/trade_entity.hpp=
-- =cmake/unity_exclusions.cmake=
 
 * See also
 

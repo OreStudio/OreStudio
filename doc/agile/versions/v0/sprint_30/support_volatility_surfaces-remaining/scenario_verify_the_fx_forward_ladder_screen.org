@@ -51,7 +51,7 @@ These are readiness conditions. The environment is already in this state.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open the FX forward ladder
 
@@ -66,7 +66,7 @@ These are readiness conditions. The environment is already in this state.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read what the set is built from
 
@@ -87,7 +87,7 @@ These are readiness conditions. The environment is already in this state.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read how the set was approved
 
@@ -104,7 +104,7 @@ These are readiness conditions. The environment is already in this state.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read the ladder rows
 
@@ -126,7 +126,7 @@ These are readiness conditions. The environment is already in this state.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Switch the chart between measures
 
@@ -140,7 +140,7 @@ These are readiness conditions. The environment is already in this state.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Change where the ladder starts
 
@@ -153,7 +153,7 @@ These are readiness conditions. The environment is already in this state.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Price a forward-forward
 

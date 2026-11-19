@@ -35,7 +35,7 @@ Done by the scenario's author before the tester opens it:
 | Parent story  | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]]   |
 | Target screen | Market data, then Quotes (=/market-data/quotes=), on the BFF at =http://localhost:20602= |
 | Clients       |                                          |
-| State         | PENDING |
+| State         | PASSED |
 
 * Steps
 
@@ -66,6 +66,7 @@ Done by the scenario's author before the tester opens it:
 | Field  | Value |
 |--------+-------|
 | Status | PASS |
+| Notes  | we should default page size to 15. also columns are not lined up. ; [[file:scenario_watch_the_vendors_quotes_step2_20261119_163437.png]] |
 
 ** Watch the quotes tick in place
 
@@ -92,6 +93,12 @@ Done by the scenario's author before the tester opens it:
 - Click *Next*: the pager reads =51–100 of N= and the rows change. Choose a page
   size of 100: the table shows up to 100 rows and returns to the first page.
 - Choose a source, a filter or a layout: the table returns to its first page.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Choose one source on the rail
 
@@ -137,6 +144,7 @@ Done by the scenario's author before the tester opens it:
 | Field  | Value |
 |--------+-------|
 | Status | PASS |
+| Notes  | ok the series UX does not make a lot of sense. we should click on a button and then go "inside" the series. also series and paging does not work well. when I select 15 for the page size, I no longer understand which series I am in. |
 
 ** Compare the vendors on one datum
 
@@ -183,7 +191,7 @@ Done by the scenario's author before the tester opens it:
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Check a party with no display right
 
@@ -197,7 +205,7 @@ Done by the scenario's author before the tester opens it:
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results=.
 
@@ -288,8 +296,8 @@ a =*** Result= child heading directly under it.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PENDING |
-| Completed at  |  |
+| Status        | PASSED |
+| Completed at  | 2026-11-19T22:33:25Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

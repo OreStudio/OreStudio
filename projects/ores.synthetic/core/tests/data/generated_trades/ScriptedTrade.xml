@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="39397c03-db4e-560d-b715-5ca261ddc1d9">
+  <Trade id="2e254b3f-292c-50dc-8f5a-b6e5fdc08b45">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
       <ScriptName>VanillaBasketOption</ScriptName>
@@ -50,7 +50,7 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
-  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727786d">
+  <Trade id="f6f46030-b208-5be0-ac43-b5cc2183ab65">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
       <ScriptName>MaxRainbowOption</ScriptName>
@@ -100,7 +100,7 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
-  <Trade id="c1d59ae5-996a-5563-bbca-8ef8c71a0bc2">
+  <Trade id="93dd798d-511f-5f08-a1cc-05a02a27d6cf">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
       <ScriptName>VanillaBasketOption</ScriptName>
@@ -150,7 +150,7 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
-  <Trade id="85a4cda1-faea-5845-bc9c-b97dc2488479">
+  <Trade id="958efa1f-f7e7-5b4e-b937-97850a343e84">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
       <ScriptName>MaxRainbowOption</ScriptName>
@@ -200,7 +200,7 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
-  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e328b">
+  <Trade id="acc98e99-328b-5709-bfc8-ba65e5969bd8">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
       <ScriptName>VanillaBasketOption</ScriptName>
@@ -250,7 +250,7 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
-  <Trade id="63c35dde-b955-55b1-9998-d8fcc5413034">
+  <Trade id="ec910cbe-13c8-5575-9bc2-0a77dc972ecf">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
       <ScriptName>MaxRainbowOption</ScriptName>
@@ -300,7 +300,7 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
-  <Trade id="990d919c-ae5f-50bd-8f28-05e61f3f3e26">
+  <Trade id="a784841f-ed1e-502d-843a-67c6409e2825">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
       <ScriptName>VanillaBasketOption</ScriptName>
@@ -350,7 +350,7 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
-  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd1999c">
+  <Trade id="4dbd4573-0295-55ab-9587-b19d8b356b51">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
       <ScriptName>MaxRainbowOption</ScriptName>

@@ -23,6 +23,9 @@
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "script_twin_recipes.hpp"
+#include <boost/uuid/name_generator_sha1.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <format>
 #include <type_traits>
@@ -33,6 +36,11 @@ namespace ores::synthetic::service {
 namespace {
 
 namespace tb = ores::trading::builders;
+
+/// The namespace the twins' name-based ids are drawn in.
+boost::uuids::uuid native_namespace() {
+    return boost::uuids::string_generator()("6f1e2c0a-4b8d-4e2a-9a31-5c7d8e9f0a1b");
+}
 using ores::trading::domain::instrument_batch;
 
 template <typename T>
@@ -48,6 +56,9 @@ std::optional<std::string> text_of(const T& value) {
             return std::nullopt;
         return text_of(*value);
     } else if constexpr (std::is_same_v<T, std::string>) {
+        // An empty text states no value, so a fallback source applies.
+        if (value.empty())
+            return std::nullopt;
         return value;
     } else if constexpr (std::is_same_v<T, bool>) {
         return std::string(value ? "true" : "false");
@@ -120,27 +131,29 @@ std::vector<std::string> rows_column(const instrument_batch& batch,
     return out;
 }
 
-/// The column of the native product row: the row whose trade type is the native one.
+/**
+ * @brief The column of the native product row: the first row, across the
+ * batch's arrays, whose trade type is the native one. A native batch holds one
+ * product row; the search stops at the first match.
+ */
 std::vector<std::string> product_column(const instrument_batch& batch,
                                         std::string_view trade_type_code,
                                         std::string_view column) {
     std::vector<std::string> out;
+    bool found = false;
     ores::utility::codec::apply_fields(
         [&](const auto&... field) {
             (
                 [&] {
-                    if (!out.empty())
-                        return;
-                    for (const auto& row : batch.*(field.member)) {
-                        using Row = std::decay_t<decltype(row)>;
-                        if constexpr (requires { row.identity.trade_type_code; }) {
-                            if (row.identity.trade_type_code != trade_type_code)
+                    using Row = typename std::decay_t<decltype(batch.*(field.member))>::value_type;
+                    // Only a product row states a trade type; the shared rows do not.
+                    if constexpr (requires(const Row& r) { r.identity.trade_type_code; }) {
+                        for (const auto& row : batch.*(field.member)) {
+                            if (found || row.identity.trade_type_code != trade_type_code)
                                 continue;
+                            found = true;
                             if (auto value = column_of(row, column))
                                 out.push_back(std::move(*value));
-                            return;
-                        } else {
-                            (void)sizeof(Row);
                         }
                     }
                 }(),
@@ -171,6 +184,8 @@ std::vector<std::string> one_source(const instrument_batch& batch,
 }
 
 std::string transformed(std::string value, std::string_view transform) {
+    if (transform.empty())
+        return value;
     if (transform == "sign") {
         if (value == "Long" || value == "Call" || value == "true")
             return "1";
@@ -181,14 +196,18 @@ std::string transformed(std::string value, std::string_view transform) {
             return "1";
         if (value == "false")
             return "0";
+    } else {
+        throw trade_population_error("The twin recipe names the unknown transform '" +
+                                     std::string(transform) + "'.");
     }
-    return value;
+    throw trade_population_error("The " + std::string(transform) + " transform reads no value '" +
+                                 value + "'.");
 }
 
+/// The twin's id: a name-based id over the native trade's, so no other trade draws it.
 boost::uuids::uuid twin_id_for(const boost::uuids::uuid& native) {
-    auto id = native;
-    id.data[14] = static_cast<unsigned char>(id.data[14] ^ 0xA5);
-    return id;
+    static const boost::uuids::name_generator_sha1 generate(native_namespace());
+    return generate(boost::uuids::to_string(native) + "/scripted");
 }
 
 }
@@ -196,6 +215,9 @@ boost::uuids::uuid twin_id_for(const boost::uuids::uuid& native) {
 std::vector<std::string> twin_source_values(const instrument_batch& batch,
                                             std::string_view trade_type_code,
                                             std::string_view source) {
+    // A quoted literal is read whole, so a literal may hold " or ".
+    if (source.size() >= 2 && source.front() == '\'' && source.back() == '\'')
+        return one_source(batch, trade_type_code, source);
     std::string_view rest = source;
     while (true) {
         const auto split = rest.find(" or ");

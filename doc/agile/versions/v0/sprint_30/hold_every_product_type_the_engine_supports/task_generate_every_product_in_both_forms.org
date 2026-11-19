@@ -103,7 +103,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 4898.1 | A twin id may collide | scripted_twins.cpp | Accepted | Twin ids are name-based over the native id; a test asserts the plan's ids are unique. |
+| 4898.2 | A transform passes unknown values | scripted_twins.cpp | Accepted | An unknown transform or value throws; the generator refuses an unknown transform. |
+| 4898.3 | An empty text does not fall back | scripted_twins.cpp | Accepted | An empty text reads as no value. |
+| 4898.4 | A literal holding " or " is split | scripted_twins.cpp | Accepted | A quoted literal is read whole; the generator refuses an unclosed one. |
+| 4898.5 | product_column is confusing | scripted_twins.cpp | Accepted | Rewritten to match on product rows only and stop at the first. |
+| 4898.6 | Per-call field scans | scripted_twins.cpp | Declined | Fine at this scale, as the review notes. |
+| 4898.7 | Twin state reset | tests | Accepted | A test states the twin shares the book and counterparty. |
+| 4898.8 | Generator robustness and --check | generate_script_twins.py | Accepted | Clear failures on no inputs or no clang-format; --check is a local check. |
+| 4898.9 | The seed does nothing on conflict | seed | Declined | The database is recreated from the seed, as the script library is. |
+| 4898.10 | Tests for every twin and the paths | tests | Accepted | A test covers all four products, and one the source paths, fallback and literal, and one a refused twin. |
 
 * Result
 

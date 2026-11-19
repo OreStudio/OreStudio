@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
+TRANSFORMS = {"sign", "flag"}
 CATALOGUE = ROOT / "projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org"
 LIBRARY_SEED = ROOT / "projects/ores.sql/populate/trading/trading_script_library_populate.sql"
 SEED = ROOT / "projects/ores.sql/populate/trading/trading_script_twin_inputs_populate.sql"
@@ -69,6 +70,8 @@ def script_inputs():
     inputs = {}
     for script, _, name, typ, array in pattern.findall(block):
         inputs.setdefault(script, []).append((name, typ, array == "true"))
+    if not inputs:
+        sys.exit(f"found no script input in {LIBRARY_SEED.relative_to(ROOT)}; its layout changed")
     return inputs
 
 
@@ -77,9 +80,15 @@ def recipes():
     forms = {code: script for code, script in org_table(text, "Scripted forms")}
     library = script_inputs()
     stated = {}
-    for code, name, source, transform in org_table(text, "Scripted twin recipes"):
-        stated.setdefault(code, {})[name] = (source, transform or None)
     errors, rows = [], []
+    for code, name, source, transform in org_table(text, "Scripted twin recipes"):
+        if transform and transform not in TRANSFORMS:
+            errors.append(f"{code}: {name} names the unknown transform {transform}")
+        if source.startswith("'") != source.endswith("'"):
+            errors.append(f"{code}: {name} states an unclosed literal {source}")
+        stated.setdefault(code, {})[name] = (source, transform or None)
+    # A type of the Scripted forms table with no recipe is not twinned yet: the
+    # recipes land a few products at a time.
     for code in sorted(stated):
         if code not in forms:
             errors.append(f"{code}: a recipe for a type the Scripted forms table does not name")
@@ -162,8 +171,11 @@ def header(rows):
     lines += ["};\n", "}\n", "#endif"]
     text = "\n".join(lines) + "\n"
     # The header is formatted as every other source is, so the format check passes it.
-    return subprocess.run(["clang-format", f"--assume-filename={HEADER}"], input=text,
-                          capture_output=True, text=True, check=True).stdout
+    try:
+        return subprocess.run(["clang-format", f"--assume-filename={HEADER}"], input=text,
+                              capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError) as error:
+        sys.exit(f"clang-format, which formats the generated header, failed: {error}")
 
 
 def main():

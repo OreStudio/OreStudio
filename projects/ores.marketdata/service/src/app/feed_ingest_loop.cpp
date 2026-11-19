@@ -42,6 +42,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <format>
 #include <optional>
 #include <set>

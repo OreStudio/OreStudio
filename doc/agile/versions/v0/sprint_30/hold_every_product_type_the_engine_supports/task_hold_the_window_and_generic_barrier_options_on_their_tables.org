@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/hold-the-window-and-generic-barrier-options-on-their-tables
-#+pr:
+#+pr: 4873
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -119,7 +119,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4873][#4873]] | [trading] Hold the window and generic barrier options on tables |
 
 * Review
 

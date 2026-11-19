@@ -8,7 +8,7 @@
 #+filetags: :marketdata:identity:web:ui:build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/show-the-identity-shapes-on-a-screen
-#+pr:
+#+pr: 4875
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4875][#4875]] | [web] Show the identity shapes on a screen |
 
 * Review
 

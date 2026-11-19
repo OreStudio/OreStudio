@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watch the vendors quotes prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lead{color:var(--ink-dim);font-size:.86rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:150px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.kv{display:flex;gap:18px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.kv b{color:var(--ink);font-weight:600}
+.kv .sep{color:var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.blank{text-align:right;color:var(--ink-faint)}
+tr.total td{border-top:1px solid var(--line);border-bottom:none;padding-top:9px}
+tr.pick td{background:var(--panel-2)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.chart{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.legend .sw{display:inline-block;width:12px;height:2px;background:var(--accent);vertical-align:3px;margin-right:6px}
+.up{color:var(--ok)}.down{color:var(--bad)}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+td.flash{animation:flash .9s ease-out}
+@keyframes flash{from{background:#1f3a5f}to{background:transparent}}
+tr.series td{cursor:pointer}tr.series:hover td{background:#1d1d22}
+tr.point td:first-child{padding-left:26px}
+tr.stale td{color:var(--ink-faint)}
+.vendors{display:flex;gap:8px;flex-wrap:wrap}
+.vendor{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:grid;gap:2px;cursor:pointer;min-width:150px}
+.vendor.on{border-color:var(--accent)}.vendor small{color:var(--ink-faint);font-size:.72rem}
+.vendor .age.bad{color:var(--warn)}
+.who{display:inline-flex;gap:6px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:var(--panel-2);border:none;padding:6px 12px;color:var(--ink-dim)}
+.seg button.on{background:var(--accent-dim);color:var(--ink)}
+td.spread{color:var(--ink-dim)}
+.health{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--ink-dim)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;vertical-align:1px}
+.dot.bad{background:var(--warn)}
+.multi{position:relative}.multi .menu{position:absolute;z-index:20;top:100%;left:0;margin-top:4px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px;min-width:220px;display:grid;gap:2px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.multi .menu label{display:flex;gap:8px;align-items:center;padding:4px 6px;border-radius:4px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:.86rem;color:var(--ink)}
+.multi .menu label:hover{background:var(--panel-2)}
+.multi .trigger{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:200px;text-align:left}
+.split{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:start}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:8px;display:grid;gap:2px}
+.rail a{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:6px;color:var(--ink);cursor:pointer}
+.rail a.on{background:var(--accent-dim)}.rail a:hover{background:var(--panel-2)}
+.rail small{color:var(--ink-faint);font-size:.72rem}
+.rail .head{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:4px 8px}
+tr.best td.num{color:var(--ok)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The person's "Watch the vendors' quotes" screen
+  (doc/knowledge/journeys/market_data/journey_watch-the-vendors-quotes.org):
+  the feeds the session may watch for display, the datums each vendor quotes,
+  updated in place as they tick, whatever the asset class.
+
+  The design question is how a person chooses the vendors and compares them.
+  ?variant=a|b|c, three idiomatic answers:
+  a  the vendor is a filter like any other: a multi-select in the filter bar, and
+     each row is one vendor's quote of one datum, with a vendor column. More
+     vendors means more rows, never more columns; the rows of one datum sit
+     together.
+  b  a quote monitor of one vendor, chosen in a plain drop-down, and an "all
+     quotes" panel for the picked row: every vendor's quote of that datum, its
+     spread to the mid and its age (the idiom of a terminal's all-quotes page).
+  c  a source rail: the vendors listed once on the left, with their health, and
+     "All vendors" at the top; one vendor is its monitor, all is variant a's
+     rows; the picked row opens variant b's all-quotes panel.
+  In every variant the feeds' health is a status line, not a control.
+  ?layout=datum|series groups the rows; ?pick=0 opens the first datum's quotes; ?state=party|system|none|silent switches
+  the session and the market.
+-->
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const pick = (v, allowed) => allowed.includes(v) ? v : allowed[0];
+const variant = pick(params.get('variant'), ['b','a','c']);
+const state = pick(params.get('state'), ['party','system','none','silent']);
+let layout = pick(params.get('layout'), ['datum','series']);
+
+/* the asset class codes table, in its display order, and the instrument types the asset class
+   catalogue maps onto each through the oresmd namespace (fx -> fx, ir -> interest_rates) */
+const ASSET_CLASSES = [
+  {code:'fx', name:'FX', types:['fx_spot','fx_option']},
+  {code:'interest_rates', name:'Interest Rate', types:['ir_swap','swaption']},
+  {code:'credit', name:'Credit', types:[]}, {code:'equity', name:'Equity', types:[]},
+  {code:'commodity', name:'Commodity', types:[]}, {code:'inflation', name:'Inflation', types:[]},
+  {code:'bond', name:'Bond', types:[]}, {code:'scripted', name:'Scripted', types:[]}
+];
+const classOf = type => ASSET_CLASSES.find(a => a.types.includes(type));
+
+/* the feeds of the catalogue, and whether Acme Corporation Plc may watch each for display */
+const FEEDS = [
+  {provider:'bloomberg', feed:'bloomberg-a', party:true}, {provider:'tradeweb', feed:'tradeweb-a', party:true},
+  {provider:'ice', feed:'ice-a', party:true}, {provider:'derived', feed:'ore-derived', party:true},
+  {provider:'lseg', feed:'lseg-a', party:false}, {provider:'demo', feed:'demo-a', party:false},
+  {provider:'composite', feed:'composite-derived', party:false}
+];
+const SESSION = state === 'system' ? 'System tenant' : state === 'none' ? 'Acme Corporation HK Ltd' : 'Acme Corporation Plc';
+const feeds = state === 'system' ? FEEDS : state === 'none' ? [] : FEEDS.filter(f => f.party);
+const watched = feeds.map(f => f.provider);
+const silent = state === 'silent' ? 'ice' : null;
+const now = () => Date.now();
+
+/* each datum and each vendor's quote of it: the value, the previous value, the time and the hour behind it */
+const D = [];
+function add(type, series, point, mid, dp, providers){
+  const q = {};
+  providers.forEach(p => { const v = mid * (1 + (Math.random() - .5) * 0.0006); q[p] = {value:v, prev:v, at:now() - Math.random()*4000, hist:[]}; });
+  D.push({type, series, point, dp, q});
+}
+[['GBP/USD',1.30815],['EUR/USD',1.08412],['USD/JPY',151.284],['USD/CHF',0.88131],['AUD/USD',0.65412]].forEach(([s,v]) =>
+  add('fx_spot', s, '', v, s.includes('JPY') ? 3 : 5, ['bloomberg','tradeweb','lseg','demo']));
+['1Y','2Y','3Y','5Y','7Y','10Y','15Y','20Y','30Y'].forEach((t,i) => add('ir_swap', 'USD SOFR fwd 0D', t, 4.05 + i*0.034, 4, ['bloomberg','tradeweb','ice']));
+['1Y','2Y','5Y','10Y','30Y'].forEach((t,i) => add('ir_swap', 'GBP SONIA fwd 0D', t, 4.31 + i*0.021, 4, ['bloomberg','lseg']));
+['1M','3M','6M','1Y'].forEach(e => ['ATM','25D RR','25D BF','10D RR','10D BF'].forEach((k,j) =>
+  add('fx_option', 'EUR/USD vol', e + ' ' + k, j === 0 ? 0.072 + Math.random()*0.01 : (j % 2 ? -0.004 : 0.002) + Math.random()*0.002, 4, ['bloomberg','ice'])));
+['1Y','5Y','10Y'].forEach(e => ['1Y','5Y','10Y'].forEach(u => add('swaption', 'USD swaption normal vol', e + ' x ' + u, 0.0090 + Math.random()*0.002, 5, ['bloomberg','derived'])));
+add('fx_spot', 'EUR/GBP', '', 0.82871, 5, ['composite']);
+if (silent) D.forEach(d => { if (d.q[silent]) d.q[silent].at = now() - 14*60000; });
+
+/* the vendors shown: one in b and in c's monitor, a set in a and in c's "all" */
+const ALL = '*';
+let chosen = new Set(watched.slice(0, variant === 'a' ? watched.length : 1));
+if (variant === 'c' && params.get('vendor') === ALL) chosen = new Set(watched);
+let cls = 'all', type = 'all', find = '', paused = false, picked = null, open = new Set(), menu = false;
+const shown = () => watched.filter(p => chosen.has(p));
+const single = () => variant === 'b' || (variant === 'c' && chosen.size === 1);
+
+function age(ms){ const s = ms/1000; return s < 60 ? s.toFixed(1) + 's' : Math.round(s/60) + 'm'; }
+function time(t){ return new Date(t).toISOString().slice(11, 23); }
+function chg(q, dp){ const c = q.value - q.prev, s = c > 0 ? '+' : ''; return `<span class="${c > 0 ? 'up' : c < 0 ? 'down' : 'faint'}">${s}${c.toFixed(dp)}</span>`; }
+const esc = t => t.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const stale = q => now() - q.at > 60000;
+const flash = q => now() - q.at < 700 ? 'flash' : '';
+const lastTick = p => Math.max(...D.filter(d => d.q[p]).map(d => d.q[p].at));
+function matches(d){
+  if (cls !== 'all' && classOf(d.type).code !== cls) return false;
+  if (type !== 'all' && d.type !== type) return false;
+  return !find || (d.series + ' ' + d.point).toLowerCase().includes(find.toLowerCase());
+}
+/* the rows: one for each (datum, vendor) of the shown vendors, the rows of one datum together */
+function rowsOf(){
+  const out = [];
+  D.filter(matches).forEach(d => shown().forEach(p => { if (d.q[p]) out.push({d, p, q:d.q[p]}); }));
+  return out;
+}
+
+function health(){
+  return `<div class="health"><span class="faint">Feeds</span>${feeds.map(f => { const a = now() - lastTick(f.provider);
+    return `<span><span class="dot ${a > 60000 ? 'bad' : ''}"></span>${f.provider} <span class="faint">${f.feed} · ${age(a)}${f.party ? '' : ' · not routed to Acme'}</span></span>`; }).join('')}</div>`;
+}
+function vendorControl(){
+  if (variant === 'b') return `<div class="field"><label>Vendor</label><select id="vendor">${feeds.map(f =>
+    `<option value="${f.provider}" ${chosen.has(f.provider) ? 'selected' : ''}>${f.provider} · ${f.feed}</option>`).join('')}</select></div>`;
+  if (variant === 'a') {
+    const label = chosen.size === watched.length ? 'All vendors' : chosen.size ? shown().join(', ') : 'No vendor';
+    return `<div class="field multi"><label>Vendors</label><button class="trigger" id="trigger">${label} ▾</button>${menu ? `<div class="menu">
+      ${feeds.map(f => `<label><input type="checkbox" data-v="${f.provider}" ${chosen.has(f.provider) ? 'checked' : ''}> ${f.provider} <span class="faint">${f.feed}</span></label>`).join('')}
+      <label><input type="checkbox" data-v="*" ${chosen.size === watched.length ? 'checked' : ''}> <b>All vendors</b></label></div>` : ''}</div>`;
+  }
+  return '';
+}
+function filters(){
+  const types = cls === 'all' ? ASSET_CLASSES.flatMap(a => a.types) : ASSET_CLASSES.find(a => a.code === cls).types;
+  return `<div class="row">${vendorControl()}
+    <div class="field"><label>Asset class</label><select id="cls"><option value="all">all</option>${ASSET_CLASSES.map(a =>
+      `<option value="${a.code}" ${a.code === cls ? 'selected' : ''}>${a.name}</option>`).join('')}</select></div>
+    <div class="field"><label>Instrument type</label><select id="type"><option value="all">all</option>${types.map(t =>
+      `<option ${t === type ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+    <div class="field"><label>Find</label><input id="find" value="${esc(find)}" placeholder="part of a series"></div>
+    <div class="field"><label>Layout</label><div class="seg">${[['datum','Every datum'],['series','By series']].map(([l,t]) =>
+      `<button data-l="${l}" class="${l === layout ? 'on' : ''}">${t}</button>`).join('')}</div></div></div>`;
+}
+function header(){
+  return `
+  <div class="top"><h1>Quotes</h1><span class="lead">the market as the vendors quote it, as it ticks, for any asset class</span>
+    <a style="margin-left:auto" href="../../../knowledge/journeys/market_data/journey_watch-the-vendors-quotes.html">the journey &rarr;</a></div>
+  <div class="panel">
+    <div class="kv"><span>Session <b>${SESSION}</b></span><span class="sep">|</span>
+      <span>Feeds you may watch <b>${feeds.length}</b>${state === 'system' ? ' <span class="tag ok">every feed</span>' : ' <span class="tag">by subscription, for display</span>'}</span><span class="sep">|</span>
+      <span>${paused ? '<span class="tag warn">paused</span>' : '<span class="tag ok">live</span>'}</span>
+      <button class="btn" id="pause" style="margin-left:auto">${paused ? 'Resume' : 'Pause'}</button></div>
+    ${feeds.length ? (variant === 'c' ? '' : '<div id="health">' + health() + '</div>') + filters() : ''}
+  </div>`;
+}
+const lead = d => `<td>${classOf(d.type).name}</td><td>${d.type}</td>`;
+const pointCell = d => d.point || '<span class="faint">—</span>';
+function row(r, cssClass){
+  const vend = single() ? '' : `<td>${r.p}</td>`;
+  return `<tr class="${cssClass} ${stale(r.q) ? 'stale' : ''} ${picked === r.d ? 'pick' : ''}" data-i="${D.indexOf(r.d)}">${lead(r.d)}<td>${r.d.series}</td><td>${pointCell(r.d)}</td>${vend}
+    <td class="num ${flash(r.q)}">${r.q.value.toFixed(r.d.dp)}</td><td class="num">${chg(r.q, r.d.dp)}</td><td class="mono">${time(r.q.at)}</td><td class="num">${age(now() - r.q.at)}</td></tr>`;
+}
+function body(){
+  const rs = rowsOf(), cols = single() ? 8 : 9;
+  if (!rs.length) return `<tr><td colspan="${cols}" class="faint">No quote matches.</td></tr>`;
+  if (layout === 'datum') return rs.map(r => row(r, 'series')).join('');
+  const by = new Map();
+  rs.forEach(r => { if (!by.has(r.d.series)) by.set(r.d.series, []); by.get(r.d.series).push(r); });
+  return [...by].map(([s, list]) => {
+    const points = new Set(list.map(r => r.d)).size;
+    if (points === 1) return list.map(r => row(r, 'series')).join('');
+    const latest = list.reduce((a, b) => a.q.at > b.q.at ? a : b);
+    const head = `<tr class="series" data-s="${s}">${lead(list[0].d)}<td>${open.has(s) ? '▾' : '▸'} ${s}</td><td class="faint">${points} points</td>${single() ? '' : `<td class="faint">${new Set(list.map(r => r.p)).size} vendors</td>`}
+      <td class="num faint">${latest.d.point}: ${latest.q.value.toFixed(latest.d.dp)}</td><td class="num">${chg(latest.q, latest.d.dp)}</td><td class="mono">${time(latest.q.at)}</td><td class="num">${age(now() - latest.q.at)}</td></tr>`;
+    return head + (open.has(s) ? list.map(r => row(r, 'point')).join('') : '');
+  }).join('');
+}
+function table(){
+  const title = single() ? shown()[0] : chosen.size === watched.length ? 'All vendors' : shown().join(', ');
+  return `<div class="panel"><h2>${layout === 'datum' ? 'Every datum' : 'By series'} · ${title}</h2>
+    <table><thead><tr><th>Asset class</th><th>Type</th><th>Series</th><th>Point</th>${single() ? '' : '<th>Vendor</th>'}
+    <th style="text-align:right">Value</th><th style="text-align:right">Change</th><th>Time</th><th style="text-align:right">Age</th></tr></thead>
+    <tbody id="rows">${body()}</tbody></table></div>`;
+}
+const COLOURS = ['#58a6ff','#3fb950','#d29922','#f85149','#bc8cff','#39c5cf','#ff7b72'];
+function allQuotes(){
+  if (!picked) return '<div class="panel"><h2>All quotes</h2><p class="faint">Pick a row to see every vendor\'s quote of it.</p></div>';
+  const ps = watched.filter(p => picked.q[p]), qs = ps.map(p => picked.q[p].value);
+  const mid = qs.reduce((a, b) => a + b, 0) / qs.length;
+  const W = 1000, H = 130, all = ps.flatMap(p => picked.q[p].hist), lo = Math.min(...all), hi = Math.max(...all), span = hi - lo || 1;
+  const n = Math.max(...ps.map(p => picked.q[p].hist.length));
+  const line = (p, k) => `<polyline points="${picked.q[p].hist.map((v, i) => (i*W/(n-1)).toFixed(1) + ',' + (H - 8 - (v-lo)/span*(H-16)).toFixed(1)).join(' ')}" fill="none" stroke="${COLOURS[k % COLOURS.length]}" stroke-width="1.5"/>`;
+  return `<div class="panel"><h2>All quotes · ${picked.series}${picked.point ? ' · ' + picked.point : ''}</h2>
+    <table><thead><tr><th>Vendor</th><th>Feed</th><th style="text-align:right">Value</th><th style="text-align:right">To the mid</th><th style="text-align:right">Change</th><th>Time</th><th style="text-align:right">Age</th></tr></thead>
+    <tbody id="allq">${ps.map((p, k) => { const q = picked.q[p], d = q.value - mid;
+      return `<tr class="${stale(q) ? 'stale' : ''}"><td><span class="sw" style="display:inline-block;width:10px;height:2px;background:${COLOURS[k % COLOURS.length]};vertical-align:3px;margin-right:6px"></span>${p}</td><td class="faint">${feeds.find(f => f.provider === p).feed}</td>
+        <td class="num ${flash(q)}">${q.value.toFixed(picked.dp)}</td><td class="num">${(d >= 0 ? '+' : '') + d.toFixed(picked.dp)}</td><td class="num">${chg(q, picked.dp)}</td><td class="mono">${time(q.at)}</td><td class="num">${age(now() - q.at)}</td></tr>`; }).join('')}
+      <tr class="total"><td colspan="2">Mid of ${ps.length}</td><td class="num">${mid.toFixed(picked.dp)}</td><td class="num">spread ${(Math.max(...qs) - Math.min(...qs)).toFixed(picked.dp)}</td><td colspan="3"></td></tr></tbody></table>
+    <div class="chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${ps.map(line).join('')}</svg></div>
+    <div class="legend"><span>the last hour of each vendor: one history read each (get_provider_ticks), then the live ticks</span></div></div>`;
+}
+function rail(){
+  const all = chosen.size === watched.length && watched.length > 1;
+  return `<div class="rail"><div class="head">Sources</div>
+    <a data-r="*" class="${all ? 'on' : ''}"><span>All vendors</span><small>${watched.length}</small></a>
+    ${feeds.map(f => { const a = now() - lastTick(f.provider);
+      return `<a data-r="${f.provider}" class="${!all && chosen.has(f.provider) ? 'on' : ''}"><span><span class="dot ${a > 60000 ? 'bad' : ''}"></span>${f.provider}</span><small>${age(a)}</small></a>`; }).join('')}</div>`;
+}
+function render(){
+  const none = `<div class="panel"><h2>No feed to watch</h2><div class="notice">Your party subscribes to no provider with the display
+    right, so there is no vendor to show. Vendor streams are paid for: a party sees the vendors it subscribes to, through the feed its
+    route picks. <a href="#">Manage market data subscriptions &rarr;</a></div></div>`;
+  const main = feeds.length ? table() + allQuotes() : none;
+  document.getElementById('app').innerHTML = header() + (variant === 'c' && feeds.length ? `<div class="split">${rail()}<div style="display:grid;gap:14px">${main}</div></div>` : main);
+}
+function redraw(){
+  const b = document.getElementById('rows'); if (b) b.innerHTML = body();
+  const h = document.getElementById('health'); if (h) h.innerHTML = health();
+  const r = document.querySelector('.rail'); if (r) r.outerHTML = rail();
+  if (picked) { const c = document.getElementById('allq'); if (c) c.closest('.panel').outerHTML = allQuotes(); }
+}
+function tick(){
+  if (!feeds.length) return;
+  /* paused: the values hold, and the ages keep counting */
+  if (!paused) for (let k = 0; k < 8; k++) {
+    const d = D[Math.floor(Math.random()*D.length)];
+    const ps = Object.keys(d.q).filter(p => watched.includes(p) && p !== silent);
+    const p = ps[Math.floor(Math.random()*ps.length)]; if (!p) continue;
+    const q = d.q[p]; q.prev = q.value; q.value = q.value * (1 + (Math.random() - .5) * 0.0004); q.at = now();
+    if (picked === d) q.hist.push(q.value);
+  }
+  redraw();
+}
+document.getElementById('app').addEventListener('click', e => {
+  const tr = e.target.closest('tr'), r = e.target.closest('.rail a');
+  if (e.target.id === 'pause') { paused = !paused; render(); return; }
+  if (e.target.id === 'trigger') { menu = !menu; render(); return; }
+  if (e.target.dataset.l) { layout = e.target.dataset.l; render(); return; }
+  if (r) { chosen = r.dataset.r === ALL ? new Set(watched) : new Set([r.dataset.r]); render(); return; }
+  if (tr && tr.dataset.s) { open.has(tr.dataset.s) ? open.delete(tr.dataset.s) : open.add(tr.dataset.s); render(); return; }
+  if (tr && tr.dataset.i) {
+    choose(D[+tr.dataset.i]);
+    render();
+  }
+});
+document.getElementById('app').addEventListener('change', e => {
+  if (e.target.id === 'cls') { cls = e.target.value; type = 'all'; render(); }
+  if (e.target.id === 'type') { type = e.target.value; render(); }
+  if (e.target.id === 'vendor') { chosen = new Set([e.target.value]); render(); }
+  if (e.target.dataset.v) {
+    if (e.target.dataset.v === ALL) chosen = e.target.checked ? new Set(watched) : new Set();
+    else e.target.checked ? chosen.add(e.target.dataset.v) : chosen.delete(e.target.dataset.v);
+    render();
+  }
+});
+document.getElementById('app').addEventListener('input', e => {
+  if (e.target.id === 'find') { find = e.target.value; const b = document.getElementById('rows'); if (b) b.innerHTML = body(); }
+});
+
+function choose(d){
+  picked = d;
+  Object.values(picked.q).forEach(q => { q.hist = Array.from({length:120}, (_, i) => q.value * (1 + Math.sin(i/9)*0.0006 + (Math.random()-.5)*0.0003)); q.hist.push(q.value); });
+}
+if (params.get('pick') && D[+params.get('pick')]) choose(D[+params.get('pick')]);
+document.getElementById('note').textContent = 'PROTOTYPE · throwaway · mock data, no server · variant ' + variant + ' · state ' + state;
+render();
+setInterval(tick, 700);
+document.getElementById('bar').innerHTML = '<span class="label">Variant</span>' +
+  [['a','A · vendor filter'],['b','B · monitor + all quotes'],['c','C · source rail']].map(([v,t]) =>
+    `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${t}</button>`).join('') +
+  '<span class="sep">·</span><span class="label">State</span>' +
+  [['party','a party'],['system','system tenant'],['none','no subscription'],['silent','a silent vendor']].map(([s,t]) =>
+    `<button data-s="${s}" class="${s === state ? 'on' : ''}">${t}</button>`).join('');
+document.getElementById('bar').addEventListener('click', e => {
+  const v = e.target.dataset.v, s = e.target.dataset.s;
+  if (!v && !s) return;
+  const next = new URLSearchParams(location.search);
+  if (v) next.set('variant', v);
+  if (s) next.set('state', s);
+  next.set('layout', layout);
+  location.search = next.toString();
+});
+</script>
+</body>
+</html>

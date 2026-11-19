@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: E351A753-69AD-4D45-9C7C-77208CB434CA
+:END:
+#+title: Watch the vendors' quotes prototype
+#+description: The quotes each vendor sends as they tick, any asset class, on the feeds the session may watch for display, every datum or by series, and three idiomatic ways to choose and compare the vendors.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+| Item          | Where                                            |
+|---------------+--------------------------------------------------|
+| Prototype     | [[file:watch-the-vendors-quotes/][the prototype]]         |
+| Journey       | [[id:E01E9FB6-AB3D-44A4-B852-6A0CB23775F3][Watch the vendors' quotes]] |
+| Gemini review | none                                             |
+| Group         | [[file:index.org][Market data prototypes]]            |
+
+* Summary
+
+The quotes view is the market as the vendors send it: one row for each datum a
+vendor quotes, updated in place as it ticks, whatever the asset class. FX spot,
+IR pillars, FX option vols and swaption vols are rows of one table. The session
+watches the feeds it may watch for display; the system tenant watches every feed
+of the catalogue, routed or not. A picked row draws its last hour: one history
+read, then each live tick.
+
+* Detail
+
+** The question
+
+How does a person choose the vendors, and compare them? The first rounds put the
+vendors on cards that were also their health and a toggle that changed the
+columns; the product owner found that confusing (2026-11-19). Both layouts stay:
+every datum and by series. The variants are three idiomatic ways to choose and
+compare vendors, and in each the feeds' health is a status line, not a control.
+
+** The variants
+
+Switch with the bar at the foot, or =?variant=.
+
+| Variant | Name                    | The idiom |
+|---------+-------------------------+-----------|
+| =a=     | A vendor filter         | The vendor is a filter like any other: a multi-select in the filter bar. Each row is one vendor's quote of one datum, with a vendor column, so more vendors means more rows, never more columns, and the rows of one datum sit together. |
+| =b=     | Monitor and all quotes  | A quote monitor of one vendor, chosen in a plain drop-down. The picked row opens an /All quotes/ panel: every vendor's quote of that datum, its distance to the mid, the spread and the age, with each vendor's last hour drawn. The idiom of a terminal's all-quotes page. |
+| =c=     | A source rail           | The vendors listed once on the left, with their health, and /All vendors/ at the top. One vendor is its monitor; all vendors is variant a's rows. The picked row opens variant b's /All quotes/ panel. Signed off. |
+
+=?layout=datum|series= groups the rows in each variant; =?pick=0= opens the first
+datum's quotes.
+
+The asset class filter is the asset class codes table, the one market series and
+routes name (FX, Interest Rate, Credit, Equity, Commodity, Inflation, Bond,
+Scripted, in its display order), and the instrument type narrows it. The asset
+class catalogue maps each instrument type's oresmd namespace onto a code: =fx= to
+=fx=, =ir= to =interest_rates=.
+
+** The states
+
+- =?state=party= — Acme Corporation Plc, which may watch four feeds for display.
+- =?state=system= — the system tenant, which watches all seven feeds, including
+  three that no Acme party routes to.
+- =?state=none= — a party with no subscription that holds the display right. The
+  page says why the list is empty and where a subscription is granted.
+- =?state=silent= — the party's view with one vendor that stopped ticking: its
+  age grows in the vendor list and its quotes fade.
+
+** What is fake
+
+Every value, time and age is mock. The ticks are a random walk on a timer, and the
+hour behind a picked row is made up. The datums each vendor quotes, and which
+feeds a party may watch, are fixed in the page. Each
+vendor's quote of a datum has its own value and time, as the feed subjects
+keep them apart.
+
+** Where the code lives
+
+=doc/prototypes/market_data/watch-the-vendors-quotes/index.html=, self-contained.
+
+** The verdict
+
+Signed off by the product owner on 2026-11-19: variant C, the source rail. The
+vendors are listed once on the left with their health, and /All vendors/ at the
+top; one vendor is its monitor, all vendors is one row for each vendor's quote of
+a datum; the picked row opens the /All quotes/ panel. Every datum and by series
+stay as the two layouts, and the asset class filter is the asset class codes
+table.
+
+The rounds before it, recorded so the reasons stay:
+
+- Flat or grouped by series: both, as layouts of one screen.
+- A separate across-vendors layout: replaced, because the vendors are a choice,
+  not a layout.
+- Vendor cards that were both the health and a toggle that changed the columns:
+  replaced, because the two jobs confused each other; the health became a status,
+  and the choice became the rail.
+
+* See also
+
+- [[file:index.org][Market data prototypes]] — the group page.
+- [[id:E01E9FB6-AB3D-44A4-B852-6A0CB23775F3][Watch the vendors' quotes]] — the journey.

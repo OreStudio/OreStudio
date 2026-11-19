@@ -75,6 +75,8 @@ public:
         out_.schedules.push_back(std::move(row));
     }
 
+    // Each event's rows are keyed by its parameter's sequence as owner number,
+    // so several events of one trade share the role and sequence below.
     void dates(std::string name, const scripted_dates& listed) {
         const auto sequence = parameter(std::move(name), "Event", "schedule").sequence_number;
         domain::instrument_schedule row;

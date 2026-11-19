@@ -2100,3 +2100,53 @@ TEST_CASE("a_twin_that_finds_no_value_for_an_input_is_refused", "[trade_populati
     broken.instruments.instrument_options.clear();
     CHECK_THROWS_AS(ores::synthetic::service::scripted_twin_of(broken), trade_population_error);
 }
+
+TEST_CASE("a_twin_whose_schedule_it_cannot_carry_is_refused", "[trade_population]") {
+    namespace td = ores::trading::domain;
+    using ores::synthetic::service::scripted_twin_of;
+    auto scope = equity_scope();
+    scope.trades_per_book = 64;
+    const auto plan = plan_of(scope);
+    const auto native_of = [&](const char* code) {
+        const auto slot = std::ranges::find_if(
+            plan.slots, [&](const auto& s) { return s.trade_type_code == code; });
+        REQUIRE(slot != plan.slots.end());
+        return *slot;
+    };
+    const auto swap = native_of("EquityBasketVarianceSwap");
+    const auto entry = native_of("EquityBestEntryOption");
+    REQUIRE(scripted_twin_of(swap).has_value());
+    REQUIRE(scripted_twin_of(entry).has_value());
+    const auto valuation = [](td::instrument_batch& batch) -> td::instrument_schedule& {
+        const auto row = std::ranges::find(batch.instrument_schedules,
+                                           "valuation_schedule",
+                                           &td::instrument_schedule::schedule_role);
+        REQUIRE(row != batch.instrument_schedules.end());
+        return *row;
+    };
+
+    auto missing = swap;
+    std::erase_if(missing.instruments.instrument_schedules,
+                  [](const auto& s) { return s.schedule_role == "valuation_schedule"; });
+    CHECK_THROWS_AS(scripted_twin_of(missing), trade_population_error);
+
+    auto derived = swap;
+    valuation(derived.instruments).schedule_kind = "derived";
+    CHECK_THROWS_AS(scripted_twin_of(derived), trade_population_error);
+
+    auto twice = swap;
+    twice.instruments.instrument_schedules.push_back(valuation(twice.instruments));
+    CHECK_THROWS_AS(scripted_twin_of(twice), trade_population_error);
+
+    auto undated = entry;
+    std::erase_if(undated.instruments.instrument_schedule_dates,
+                  [](const auto& d) { return d.schedule_role == "strike_observation_schedule"; });
+    CHECK_THROWS_AS(scripted_twin_of(undated), trade_population_error);
+
+    td::instrument_batch batch;
+    CHECK_THROWS_AS(ores::synthetic::service::twin_source_values(
+                        batch,
+                        "EquityBasketVarianceSwap",
+                        "product.settlement_date or instrument_schedules[valuation_schedule]"),
+                    trade_population_error);
+}

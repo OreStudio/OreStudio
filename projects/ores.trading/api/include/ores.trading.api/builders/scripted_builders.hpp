@@ -41,15 +41,18 @@ namespace ores::trading::builders {
 
 using scripted_result = std::expected<domain::scripted_instrument_data, build_error>;
 
-/// An event stated as a schedule: one date a tenor from the start to the end.
+/**
+ * @brief An event stated as a schedule: one date a tenor from the start to the
+ * end. A rule term left empty is not written, so ORE applies its own default.
+ */
 struct scripted_schedule final {
     std::chrono::year_month_day start;
     std::chrono::year_month_day end;
     std::string tenor;
-    std::string calendar = "TARGET";
-    std::string convention = "F";
+    std::optional<std::string> calendar = "TARGET";
+    std::optional<std::string> convention = "F";
     std::optional<std::string> term_convention;
-    std::string rule = "Forward";
+    std::optional<std::string> rule = "Forward";
 };
 
 /// An event stated as a list of dates, which ORE reads as a schedule of those dates.

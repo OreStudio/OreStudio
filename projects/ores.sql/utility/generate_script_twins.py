@@ -113,13 +113,16 @@ def recipes():
                 errors.append(f"{code}: the recipe states no source for {script}'s {name}")
                 continue
             source, transform = stated[code][name]
-            for part in source_parts(source):
+            parts = source_parts(source)
+            for part in parts:
                 if part.startswith("'") or "." in part:
                     continue
                 if not schedule.fullmatch(part):
                     errors.append(f"{code}: {name} names no column in {part}")
                 elif typ != "Event":
                     errors.append(f"{code}: {name} reads a schedule but is not an Event")
+                elif len(parts) > 1:
+                    errors.append(f"{code}: {name} reads a whole schedule, which takes no fallback")
             rows.append((code, sequence, script, name, typ, array, source, transform))
     if errors:
         sys.exit("\n".join(errors))

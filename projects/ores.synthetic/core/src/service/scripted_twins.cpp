@@ -26,6 +26,7 @@
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <format>
 #include <type_traits>
@@ -172,35 +173,49 @@ std::optional<std::string_view> schedule_role_of(std::string_view source) {
     return source.substr(prefix.size(), source.size() - prefix.size() - 1);
 }
 
-/// The schedule under the role, as its rules or as its listed dates; nothing when no row states it.
+/**
+ * @brief The schedule under the role, as its rules or as its listed dates;
+ * nothing when no row states it. The twin carries one schedule block, so a role
+ * stated by several rows is refused, as is a block with no date to carry. Each
+ * rule term is carried as the native row states it, absent terms included.
+ */
 std::optional<std::variant<tb::scripted_schedule, tb::scripted_dates>>
 whole_schedule(const instrument_batch& batch, std::string_view role) {
-    for (const auto& row : batch.instrument_schedules) {
-        if (row.schedule_role != role)
-            continue;
-        if (row.schedule_kind == "dates") {
-            tb::scripted_dates out{.calendar = row.calendar, .convention = row.convention};
-            for (const auto& date : batch.instrument_schedule_dates)
-                if (date.schedule_role == role &&
-                    date.schedule_sequence_number == row.sequence_number)
-                    out.dates.push_back(date.schedule_date);
-            return out;
-        }
-        if (row.schedule_kind != "rules")
-            throw trade_population_error("The " + std::string(role) + " schedule is " +
-                                         row.schedule_kind + ", which a twin cannot read.");
-        if (!row.start_date || !row.end_date || !row.tenor)
-            throw trade_population_error("The " + std::string(role) +
-                                         " schedule states no start, end or tenor.");
-        return tb::scripted_schedule{.start = *row.start_date,
-                                     .end = *row.end_date,
-                                     .tenor = *row.tenor,
-                                     .calendar = row.calendar.value_or("TARGET"),
-                                     .convention = row.convention.value_or("F"),
-                                     .term_convention = row.term_convention,
-                                     .rule = row.rule.value_or("Forward")};
+    const auto refuse = [&](const std::string& why) {
+        return trade_population_error("The " + std::string(role) + " schedule " + why + ".");
+    };
+    const auto rows =
+        std::ranges::count(batch.instrument_schedules,
+                           role,
+                           &ores::trading::domain::instrument_schedule::schedule_role);
+    if (rows == 0)
+        return std::nullopt;
+    if (rows > 1)
+        throw refuse("is stated by " + std::to_string(rows) + " blocks, and a twin carries one");
+    const auto& row =
+        *std::ranges::find(batch.instrument_schedules,
+                           role,
+                           &ores::trading::domain::instrument_schedule::schedule_role);
+    if (row.schedule_kind == "dates") {
+        tb::scripted_dates out{.calendar = row.calendar, .convention = row.convention};
+        for (const auto& date : batch.instrument_schedule_dates)
+            if (date.schedule_role == role && date.schedule_sequence_number == row.sequence_number)
+                out.dates.push_back(date.schedule_date);
+        if (out.dates.empty())
+            throw refuse("lists no date");
+        return out;
     }
-    return std::nullopt;
+    if (row.schedule_kind != "rules")
+        throw refuse("is " + row.schedule_kind + ", which a twin cannot read");
+    if (!row.start_date || !row.end_date || !row.tenor)
+        throw refuse("states no start, end or tenor");
+    return tb::scripted_schedule{.start = *row.start_date,
+                                 .end = *row.end_date,
+                                 .tenor = *row.tenor,
+                                 .calendar = row.calendar,
+                                 .convention = row.convention,
+                                 .term_convention = row.term_convention,
+                                 .rule = row.rule};
 }
 
 std::vector<std::string> one_source(const instrument_batch& batch,
@@ -208,8 +223,9 @@ std::vector<std::string> one_source(const instrument_batch& batch,
                                     std::string_view source) {
     if (source.size() >= 2 && source.front() == '\'' && source.back() == '\'')
         return {std::string(source.substr(1, source.size() - 2))};
-    if (const auto role = schedule_role_of(source))
-        return rows_column(batch, "instrument_schedule_dates", *role, "schedule_date");
+    if (schedule_role_of(source))
+        throw trade_population_error("The twin recipe source '" + std::string(source) +
+                                     "' reads a whole schedule, which takes no fallback.");
     const auto dot = source.rfind('.');
     if (dot == std::string_view::npos)
         throw trade_population_error("The twin recipe source '" + std::string(source) +

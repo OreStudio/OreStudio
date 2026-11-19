@@ -79,13 +79,13 @@ export function registerSeriesIdentityShapeRoutes(
                 session,
                 shapeSubjects.list_series_identity_shapes_request,
                 'shapes',
-                { as_of: null },
+                { as_of: null, filter: null },
             ),
             readAll<ListSeriesIdentityShapeEntriesResponse>(
                 session,
                 entrySubjects.list_series_identity_shape_entries_request,
                 'entries',
-                { as_of: null },
+                { as_of: null, filter: null },
             ),
         ]);
         const families = new Map(shapes.map((shape) => [text(shape['code']), shape]));

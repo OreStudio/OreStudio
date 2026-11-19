@@ -24,6 +24,7 @@ import { quotes, type Quote, type QuoteFeed } from '../api/quotes.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
+import { Pager } from '../ui/Pager.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
 import {
     ALL_VENDORS,
@@ -289,6 +290,12 @@ export function QuotesPage(): ReactNode {
     const [layout, setLayout] = useState<'datum' | 'series'>('datum');
     const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
     const [pickedUri, setPickedUri] = useState('');
+    const [offset, setOffset] = useState(0);
+    const [pageSize, setPageSize] = useState(50);
+    // A new choice of what to show starts again at its first page.
+    useEffect(() => {
+        setOffset(0);
+    }, [source, assetClass, instrumentType, find, layout]);
     const now = useNow();
     const feedsQuery = useQuery({
         queryKey: ['quote-feeds'],
@@ -308,6 +315,8 @@ export function QuotesPage(): ReactNode {
     const nameOf = (code: string): string => classes.find((c) => c.code === code)?.name ?? code;
     const one = source !== ALL_VENDORS;
     const rows = shownQuotes(held, feeds, { source, assetClass, instrumentType, find });
+    const groups = layout === 'series' ? bySeries(rows) : [];
+    const total = layout === 'datum' ? rows.length : groups.length;
     const picked = [...held.values()].find((q) => q.uri === pickedUri);
 
     const quoteRow = (q: Quote, nested = false): ReactNode => (
@@ -343,8 +352,9 @@ export function QuotesPage(): ReactNode {
                     </td>
                 </tr>
             );
-        if (layout === 'datum') return rows.map((q) => quoteRow(q));
-        return bySeries(rows).map((group) => {
+        if (layout === 'datum')
+            return rows.slice(offset, offset + pageSize).map((q) => quoteRow(q));
+        return groups.slice(offset, offset + pageSize).map((group) => {
             const points = new Set(group.quotes.map((q) => q.uri)).size;
             if (points === 1) return group.quotes.map((q) => quoteRow(q));
             const isOpen = open.has(group.key);
@@ -468,6 +478,13 @@ export function QuotesPage(): ReactNode {
                                 </div>
                             </Field>
                         </section>
+                        {picked === undefined ? (
+                            <p className="text-sm text-ink-faint">
+                                {t('marketdata.quotes.pickRow')}
+                            </p>
+                        ) : (
+                            <AllQuotesPanel held={held} feeds={feeds} picked={picked} now={now} />
+                        )}
                         <section className="overflow-x-auto rounded-md border border-line p-2">
                             <table className="w-full text-sm">
                                 <thead>
@@ -501,14 +518,25 @@ export function QuotesPage(): ReactNode {
                                 </thead>
                                 <tbody>{body()}</tbody>
                             </table>
+                            {total > 0 && (
+                                <Pager
+                                    offset={offset}
+                                    shown={Math.min(pageSize, total - offset)}
+                                    total={total}
+                                    pageSize={pageSize}
+                                    showing={t('marketdata.quotes.showing', {
+                                        from: offset + 1,
+                                        to: Math.min(offset + pageSize, total),
+                                        total,
+                                    })}
+                                    onMove={setOffset}
+                                    onPageSize={(size) => {
+                                        setPageSize(size);
+                                        setOffset(0);
+                                    }}
+                                />
+                            )}
                         </section>
-                        {picked === undefined ? (
-                            <p className="text-sm text-ink-faint">
-                                {t('marketdata.quotes.pickRow')}
-                            </p>
-                        ) : (
-                            <AllQuotesPanel held={held} feeds={feeds} picked={picked} now={now} />
-                        )}
                     </div>
                 </div>
             )}

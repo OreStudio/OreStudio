@@ -5887,6 +5887,7 @@ const fr: SourceCatalogue = {
             series: 'Série',
             point: 'Point',
             pickRow: 'Choisissez une ligne pour voir la cotation de chaque fournisseur.',
+            showing: '{from}–{to} sur {total}',
         },
         fxMontage: {
             title: 'Montage FX',

@@ -92,6 +92,13 @@ task and name that file in the Command column.
 
 * Notes
 
+- After the sign-off, the product owner asked (2026-11-19) for paging, as the board
+  holds thousands of quotes, and for the /All quotes/ panel and its chart above the
+  table, where a picked datum is seen without scrolling. The table pages with the
+  shared =Pager=, 50 rows at first, by quote in /every datum/ and by series in /by
+  series/, and returns to its first page when the source, a filter or the layout
+  changes.
+
 - From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: two web servers carry the tick routes, the TypeScript BFF and =ores.http=. Build on the one the screen is served from when the task starts.
 
 * Test Scenarios

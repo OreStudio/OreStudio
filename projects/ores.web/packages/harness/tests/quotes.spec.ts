@@ -35,10 +35,16 @@ test("the quotes view shows the sources, the ticking quotes and a row's all quot
     await expect(rail.getByRole('button', { name: /bloomberg/ })).toBeVisible();
     const rows = page.locator('table').first().locator('tbody tr');
     await expect.poll(async () => rows.count(), { timeout: 30_000 }).toBeGreaterThan(5);
+    // The table pages: at most one page of rows, and the pager says which.
+    await expect(page.getByText(/^1–\d+ of \d+$/)).toBeVisible();
+    expect(await rows.count()).toBeLessThanOrEqual(50);
     await page.screenshot({ path: '../../.runtime/harness/quotes-all.png' });
     await rows.filter({ hasText: 'fx_spot' }).first().click();
     const allQuotes = page.getByRole('heading', { name: /All quotes/ });
     await expect(allQuotes).toBeVisible();
-    await allQuotes.scrollIntoViewIfNeeded();
+    // The panel draws each vendor's last hour once the history reads answer.
+    await expect(page.locator('section', { has: allQuotes }).locator('svg').first()).toBeVisible({
+        timeout: 15_000,
+    });
     await page.screenshot({ path: '../../.runtime/harness/quotes-picked.png' });
 });

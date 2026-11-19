@@ -35,7 +35,7 @@ Done by the scenario's author before the tester opens it:
 | Parent story  | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]]   |
 | Target screen | Market data, then Quotes (=/market-data/quotes=), on the BFF at =http://localhost:20602= |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PENDING |
 
 * Steps
 
@@ -46,6 +46,12 @@ Done by the scenario's author before the tester opens it:
 - Choose the party *Acme Corporation Plc*.
 - Passes when the home page shows Acme Corporation in the header.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open the quotes view
 
 - Open *Market data*, then the *Quotes* card (or =/market-data/quotes=).
@@ -54,6 +60,12 @@ Done by the scenario's author before the tester opens it:
   bloomberg, derived, ice and tradeweb, each with a dot and the age of its last
   tick. lseg, demo and composite are not listed: Acme Corporation Plc does not
   route to them.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Watch the quotes tick in place
 
@@ -66,12 +78,33 @@ Done by the scenario's author before the tester opens it:
 - Passes when fx_option rows (vol quotes) are among them, from at least one of
   bloomberg, ice or tradeweb.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Page through the quotes
+
+- With *All vendors* and *Every datum*, look below the table.
+- Passes when the table shows at most one page of rows (50 at first) and the pager
+  reads =1–50 of N=, where N is every quote that matches.
+- Click *Next*: the pager reads =51–100 of N= and the rows change. Choose a page
+  size of 100: the table shows up to 100 rows and returns to the first page.
+- Choose a source, a filter or a layout: the table returns to its first page.
+
 ** Choose one source on the rail
 
 - Click *bloomberg* on the rail.
 - Passes when the vendor column goes, every row is a Bloomberg quote, and the
   rail marks bloomberg as chosen.
 - Click *All vendors* again; the vendor column comes back.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Narrow by asset class and type
 
@@ -83,24 +116,43 @@ Done by the scenario's author before the tester opens it:
   that order, and each filter narrows the rows as stated. Clear the filters
   afterwards.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Switch to the by series layout
 
 - Click *By series* under *Layout*.
 - Passes when a series with several points (an IR curve such as USD 0D 3M, or an
-  FX vol surface) is one row showing its point count, its newest point and value;
+  FX vol surface) is one row showing its point count, its newest point and value,
+  and the pager counts series rather than quotes;
   clicking it opens its points beneath it, and clicking again closes them. A
   series of one point, such as an FX spot, stays a single row.
 - Click *Every datum* to go back.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Compare the vendors on one datum
 
 - With *All vendors* chosen, click an FX spot row quoted by more than one vendor
   (for example a USD cross quoted by bloomberg and demo).
-- Passes when the *All quotes* panel opens below the table, titled with the series
-  and point; it lists each vendor that quotes the datum with its value, its
+- Passes when the *All quotes* panel opens above the table, under the filters,
+  titled with the series and point; it lists each vendor that quotes the datum with its value, its
   distance to the mid, its change and its age, then *Mid of N* and the spread; and
   the chart below draws one line per vendor for the last hour, coloured as the
   marks beside the vendors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Pause and resume the view
 
@@ -108,6 +160,12 @@ Done by the scenario's author before the tester opens it:
 - Passes when the tag reads *paused*, the values stop changing, and the ages keep
   growing.
 - Click *Resume*; the tag reads *live* and the values move again.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Log in as the super administrator
 
@@ -121,6 +179,12 @@ Done by the scenario's author before the tester opens it:
   others, and the *All quotes* panel of an FX spot row lists every vendor that
   quotes it, lseg and demo included.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Check a party with no display right
 
 - Sign in as the Acme tenant administrator again and choose the party *ACME
@@ -128,6 +192,12 @@ Done by the scenario's author before the tester opens it:
 - Passes when the rail shows only the vendors that party routes to (bloomberg in
   the demonstration); if a party has no subscription with the display right, the
   page says so instead of showing a table.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 * Results=.
 
@@ -218,8 +288,8 @@ a =*** Result= child heading directly under it.
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PENDING |
+| Completed at  |  |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

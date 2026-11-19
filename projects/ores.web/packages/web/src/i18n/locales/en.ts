@@ -5805,6 +5805,7 @@ export const en: SourceCatalogue = {
             series: 'Series',
             point: 'Point',
             pickRow: "Pick a row to see every vendor's quote of it.",
+            showing: '{from}–{to} of {total}',
         },
         fxMontage: {
             title: 'FX montage',

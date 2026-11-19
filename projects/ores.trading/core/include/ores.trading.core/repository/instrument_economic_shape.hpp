@@ -47,12 +47,14 @@
 #include "ores.trading.core/repository/equity_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_forward_volatility_agreement_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_generic_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_pairwise_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_position_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_strike_resettable_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_window_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fra_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_accumulator_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_asian_forward_instrument_repository.hpp"
@@ -68,6 +70,7 @@
 #include "ores.trading.core/repository/fx_strike_resettable_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_window_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
@@ -149,6 +152,10 @@ void read_instrument_components(const ores::database::context& ctx,
             append(equity_forward_volatility_agreement_instrument_repository{}.read_latest(
                 ctx, trade_id));
             break;
+        case domain::instrument_table::equity_generic_barrier_option_instrument:
+            append(
+                equity_generic_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
         case domain::instrument_table::equity_option_instrument:
             append(equity_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
@@ -168,6 +175,9 @@ void read_instrument_components(const ores::database::context& ctx,
             break;
         case domain::instrument_table::equity_variance_swap_instrument:
             append(equity_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_window_barrier_option_instrument:
+            append(equity_window_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::fx_accumulator_instrument:
             append(fx_accumulator_instrument_repository{}.read_latest(ctx, trade_id));
@@ -211,6 +221,9 @@ void read_instrument_components(const ores::database::context& ctx,
             break;
         case domain::instrument_table::fx_variance_swap_instrument:
             append(fx_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_window_barrier_option_instrument:
+            append(fx_window_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::rate_instrument:
             append(rate_instrument_repository{}.read_latest(ctx, trade_id));

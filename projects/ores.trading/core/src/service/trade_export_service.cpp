@@ -64,12 +64,14 @@
 #include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_forward_instrument_service.hpp"
 #include "ores.trading.core/service/equity_forward_volatility_agreement_instrument_service.hpp"
+#include "ores.trading.core/service/equity_generic_barrier_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_pairwise_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/equity_position_instrument_service.hpp"
 #include "ores.trading.core/service/equity_strike_resettable_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_swap_instrument_service.hpp"
 #include "ores.trading.core/service/equity_variance_swap_instrument_service.hpp"
+#include "ores.trading.core/service/equity_window_barrier_option_instrument_service.hpp"
 #include "ores.trading.core/service/flexi_swap_instrument_service.hpp"
 #include "ores.trading.core/service/fra_instrument_service.hpp"
 #include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
@@ -86,6 +88,7 @@
 #include "ores.trading.core/service/fx_strike_resettable_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_vanilla_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
+#include "ores.trading.core/service/fx_window_barrier_option_instrument_service.hpp"
 #include "ores.trading.core/service/index_credit_default_swap_instrument_service.hpp"
 #include "ores.trading.core/service/index_credit_default_swap_option_instrument_service.hpp"
 #include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
@@ -149,7 +152,8 @@ void populate_instruments_for_trades(const Ctx& ctx,
         rate_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids,
         eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids,
         eq_acc_ids, eq_pos_ids, eq_cash_ids, eq_pvs_ids, fxaso_ids, fxpvs_ids, eq_bo_ids, fxbo_ids,
-        eq_bvs_ids, eq_fva_ids, fxbvs_ids, fxfva_ids, eq_beo_ids, eq_sro_ids, fxbeo_ids, fxsro_ids;
+        eq_bvs_ids, eq_fva_ids, fxbvs_ids, fxfva_ids, eq_beo_ids, eq_sro_ids, fxbeo_ids, fxsro_ids,
+        eq_wbo_ids, eq_gbo_ids, fxwbo_ids;
     std::vector<std::string> all_ids;
 
     for (const auto& item : items) {
@@ -268,6 +272,15 @@ void populate_instruments_for_trades(const Ctx& ctx,
                 break;
             case instrument_table::fx_strike_resettable_option_instrument:
                 fxsro_ids.push_back(id);
+                break;
+            case instrument_table::equity_window_barrier_option_instrument:
+                eq_wbo_ids.push_back(id);
+                break;
+            case instrument_table::equity_generic_barrier_option_instrument:
+                eq_gbo_ids.push_back(id);
+                break;
+            case instrument_table::fx_window_barrier_option_instrument:
+                fxwbo_ids.push_back(id);
                 break;
             case instrument_table::rate_instrument:
                 rate_ids.push_back(id);
@@ -641,6 +654,21 @@ void populate_instruments_for_trades(const Ctx& ctx,
         service::fx_strike_resettable_option_instrument_service svc(ctx);
         auto rows = svc.get_fx_strike_resettable_option_instruments(fxsro_ids);
         take(rows, batch.fx_strike_resettable_option_instruments);
+    }
+    if (!eq_wbo_ids.empty()) {
+        service::equity_window_barrier_option_instrument_service svc(ctx);
+        auto rows = svc.get_equity_window_barrier_option_instruments(eq_wbo_ids);
+        take(rows, batch.equity_window_barrier_option_instruments);
+    }
+    if (!eq_gbo_ids.empty()) {
+        service::equity_generic_barrier_option_instrument_service svc(ctx);
+        auto rows = svc.get_equity_generic_barrier_option_instruments(eq_gbo_ids);
+        take(rows, batch.equity_generic_barrier_option_instruments);
+    }
+    if (!fxwbo_ids.empty()) {
+        service::fx_window_barrier_option_instrument_service svc(ctx);
+        auto rows = svc.get_fx_window_barrier_option_instruments(fxwbo_ids);
+        take(rows, batch.fx_window_barrier_option_instruments);
     }
 
     // The equity family.

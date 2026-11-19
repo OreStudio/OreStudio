@@ -83,7 +83,7 @@ absent: it is a placeholder, not a product.
 | FxBarrierOption | FX Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
 | FxDoubleBarrierOption | FX Double Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
 | FxEuropeanBarrierOption | FX European Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
-| FxWindowBarrierOption | FX Window Barrier Option | option | scripted | fx! | true | false | scripted_instrument |
+| FxWindowBarrierOption | FX Window Barrier Option | option | scripted | fx! | true | false | fx_window_barrier_option_instrument |
 | FxGenericBarrierOption | FX Generic Barrier Option | option | scripted | fx! | true | false | fx_barrier_option_instrument |
 | FxKIKOBarrierOption | FX Knock-In Knock-Out Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
 | FxTouchOption | FX Touch Option | option | native | fx! | true | false | fx_digital_option_instrument |
@@ -125,8 +125,8 @@ absent: it is a placeholder, not a product.
 | EquityBarrierOption | Equity Barrier Option | option | native | equity! | true | false | equity_barrier_option_instrument |
 | EquityDoubleBarrierOption | Equity Double Barrier Option | option | native | equity! | true | false | equity_barrier_option_instrument |
 | EquityEuropeanBarrierOption | Equity European Barrier Option | option | native | equity! | true | false | equity_barrier_option_instrument |
-| EquityWindowBarrierOption | Equity Window Barrier Option | option | scripted | equity! | true | false | scripted_instrument |
-| EquityGenericBarrierOption | Equity Generic Barrier Option | option | scripted | equity! | true | false | scripted_instrument |
+| EquityWindowBarrierOption | Equity Window Barrier Option | option | scripted | equity! | true | false | equity_window_barrier_option_instrument |
+| EquityGenericBarrierOption | Equity Generic Barrier Option | option | scripted | equity! | true | false | equity_generic_barrier_option_instrument |
 | EquityTouchOption | Equity Touch Option | option | native | equity! | true | false | equity_digital_option_instrument |
 | EquityDoubleTouchOption | Equity Double Touch Option | option | native | equity! | true | false | equity_digital_option_instrument |
 | EquityDigitalOption | Equity Digital Option | option | native | equity! | true | false | equity_digital_option_instrument |
@@ -209,14 +209,18 @@ library script in ORE, and is held in its own form only.
 | EquityBasketVarianceSwap         | BasketVarianceSwap         |
 | EquityBestEntryOption            | BestEntryOption            |
 | EquityForwardVolatilityAgreement | ForwardVolatilityAgreement |
+| EquityGenericBarrierOption       | GenericBarrierOption       |
 | EquityPairwiseVarianceSwap       | PairwiseVarianceSwap       |
 | EquityRainbowOption              | MaxRainbowOption           |
+| EquityWindowBarrierOption        | WindowBarrierOption        |
 | FxBasketOption                   | VanillaBasketOption        |
 | FxBasketVarianceSwap             | BasketVarianceSwap         |
 | FxBestEntryOption                | BestEntryOption            |
 | FxForwardVolatilityAgreement     | ForwardVolatilityAgreement |
+| FxGenericBarrierOption           | GenericBarrierOption       |
 | FxPairwiseVarianceSwap           | PairwiseVarianceSwap       |
 | FxRainbowOption                  | MaxRainbowOption           |
+| FxWindowBarrierOption            | WindowBarrierOption        |
 
 * Classes
 
@@ -540,6 +544,8 @@ hold no row for the trade and read as empty.
 | equity_forward_volatility_agreement_instrument | equity_forward_volatility_agreement_instrument |
 | equity_best_entry_option_instrument | equity_best_entry_option_instrument |
 | equity_strike_resettable_option_instrument | equity_strike_resettable_option_instrument |
+| equity_window_barrier_option_instrument | equity_window_barrier_option_instrument |
+| equity_generic_barrier_option_instrument | equity_generic_barrier_option_instrument |
 | equity_digital_option_instrument | equity_digital_option_instrument   |
 | equity_forward_instrument        | equity_forward_instrument          |
 | equity_option_instrument         | equity_option_instrument           |
@@ -556,6 +562,7 @@ hold no row for the trade and read as empty.
 | fx_forward_volatility_agreement_instrument | fx_forward_volatility_agreement_instrument |
 | fx_best_entry_option_instrument | fx_best_entry_option_instrument |
 | fx_strike_resettable_option_instrument | fx_strike_resettable_option_instrument |
+| fx_window_barrier_option_instrument | fx_window_barrier_option_instrument |
 | fx_digital_option_instrument     | fx_digital_option_instrument       |
 | fx_forward_instrument            | fx_forward_instrument              |
 | fx_vanilla_option_instrument     | fx_vanilla_option_instrument       |

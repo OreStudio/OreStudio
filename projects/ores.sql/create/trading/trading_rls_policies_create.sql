@@ -659,6 +659,84 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
+-- Equity Window Barrier Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_window_barrier_options_tbl enable row level security;
+
+drop policy if exists equity_window_barrier_options_tenant_isolation_policy
+    on ores_trading_equity_window_barrier_options_tbl;
+
+create policy equity_window_barrier_options_tenant_isolation_policy on ores_trading_equity_window_barrier_options_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists equity_window_barrier_options_party_isolation_policy
+    on ores_trading_equity_window_barrier_options_tbl;
+
+create policy equity_window_barrier_options_party_isolation_policy
+on ores_trading_equity_window_barrier_options_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Window Barrier Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_window_barrier_option_instruments_tbl enable row level security;
+
+drop policy if exists fx_window_barrier_option_instruments_tenant_isolation_policy
+    on ores_trading_fx_window_barrier_option_instruments_tbl;
+
+create policy fx_window_barrier_option_instruments_tenant_isolation_policy on ores_trading_fx_window_barrier_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists fx_window_barrier_option_instruments_party_isolation_policy
+    on ores_trading_fx_window_barrier_option_instruments_tbl;
+
+create policy fx_window_barrier_option_instruments_party_isolation_policy
+on ores_trading_fx_window_barrier_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Generic Barrier Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_generic_barrier_options_tbl enable row level security;
+
+drop policy if exists equity_generic_barrier_options_tenant_isolation_policy
+    on ores_trading_equity_generic_barrier_options_tbl;
+
+create policy equity_generic_barrier_options_tenant_isolation_policy on ores_trading_equity_generic_barrier_options_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists equity_generic_barrier_options_party_isolation_policy
+    on ores_trading_equity_generic_barrier_options_tbl;
+
+create policy equity_generic_barrier_options_party_isolation_policy
+on ores_trading_equity_generic_barrier_options_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
 -- FX Pairwise Variance Swap Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fx_pairwise_variance_swap_instruments_tbl enable row level security;

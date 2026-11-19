@@ -72,6 +72,7 @@
 #include "ores.trading.service/messaging/equity_digital_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_forward_volatility_agreement_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_generic_barrier_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_pairwise_variance_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_position_instrument_event_registrar.hpp"
@@ -79,6 +80,7 @@
 #include "ores.trading.service/messaging/equity_strike_resettable_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_window_barrier_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/flexi_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/flexi_swap_lower_notional_event_registrar.hpp"
 #include "ores.trading.service/messaging/fpml_event_type_event_registrar.hpp"
@@ -97,6 +99,7 @@
 #include "ores.trading.service/messaging/fx_strike_resettable_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_variance_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/fx_window_barrier_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/index_credit_default_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/index_credit_default_swap_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/inflation_swap_instrument_event_registrar.hpp"
@@ -247,6 +250,14 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto fx_strike_resettable_option_instrument_sub = ores::trading::service::messaging::
         register_fx_strike_resettable_option_instrument_event_mapping(
             event_source, event_bus, nats);
+    auto equity_window_barrier_option_instrument_sub = ores::trading::service::messaging::
+        register_equity_window_barrier_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto equity_generic_barrier_option_instrument_sub = ores::trading::service::messaging::
+        register_equity_generic_barrier_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto fx_window_barrier_option_instrument_sub = ores::trading::service::messaging::
+        register_fx_window_barrier_option_instrument_event_mapping(event_source, event_bus, nats);
     auto equity_forward_instrument_sub =
         ores::trading::service::messaging::register_equity_forward_instrument_event_mapping(
             event_source, event_bus, nats);

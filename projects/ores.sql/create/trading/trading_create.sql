@@ -427,6 +427,12 @@
 \ir ./trading_equity_strike_resettable_option_instruments_notify_trigger_create.sql
 \ir ./trading_fx_strike_resettable_option_instruments_create.sql
 \ir ./trading_fx_strike_resettable_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_window_barrier_option_instruments_create.sql
+\ir ./trading_equity_window_barrier_option_instruments_notify_trigger_create.sql
+\ir ./trading_fx_window_barrier_option_instruments_create.sql
+\ir ./trading_fx_window_barrier_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_generic_barrier_option_instruments_create.sql
+\ir ./trading_equity_generic_barrier_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_variance_swap_instruments_create.sql
 \ir ./trading_equity_variance_swap_instruments_notify_trigger_create.sql
 \ir ./trading_equity_swap_instruments_create.sql

@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/projection/ore_projection.hpp"
+#include "ores.trading.api/builders/barrier_product_builders.hpp"
 #include "ores.trading.api/builders/basket_option_builders.hpp"
 #include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/commodity_builders.hpp"
@@ -2021,8 +2022,8 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
     if (type == "FxWindowBarrierOption") {
         // The barrier is watched from the start to halfway to the expiry, a tenth away.
         const bool call = kind == tb::option_kind::call;
-        return scripted_batch_of(
-            tb::window_barrier_option_builder<tb::scripted_family::fx>(
+        return built(
+            tb::fx_window_barrier_option_builder(
                 {.underlying = index,
                  .currency = pair.quote,
                  .fixing_amount = money(notional),
@@ -2035,8 +2036,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                      year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2},
                  .barrier = tb::scripted_barrier{.type = call ? "DownAndOut" : "UpAndOut",
                                                  .level = level(rate * (call ? 0.9 : 1.1))}})
-                .build(),
-            type);
+                .build());
     }
     if (type == "FxBestEntryOption")
         return built(tb::fx_best_entry_option_builder(
@@ -3177,36 +3177,33 @@ build_equity_trade(const domain::trade_generation_scope& scope,
         const tb::scripted_barrier knock_out{.type = call ? "DownAndOut" : "UpAndOut",
                                              .level = money(level * (call ? 0.9 : 1.1))};
         if (type == "EquityWindowBarrierOption")
-            return scripted_batch_of(
-                tb::window_barrier_option_builder<tb::scripted_family::equity>(
-                    {.underlying = address,
-                     .currency = currency,
-                     .fixing_amount = money(notional / level),
-                     .strike = money(level),
-                     .kind = kind,
-                     .position = position,
-                     .expiry = end,
-                     .window_start = start,
-                     .window_end =
-                         year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2},
-                     .barrier = knock_out})
-                    .build(),
-                type);
-        return scripted_batch_of(tb::equity_generic_barrier_option_builder(
-                                     {.underlying = address,
-                                      .pay_currency = currency,
-                                      .quantity = money(notional / level),
-                                      .strike = money(level),
-                                      .kind = kind,
-                                      .position = position,
-                                      .expiry = end,
-                                      // ORE rolls an expiry on a holiday forward.
-                                      .settlement = year_month_day{sys_days{end} + days{5}},
-                                      .monitoring_start = start,
-                                      .barriers = std::vector<tb::scripted_barrier>{knock_out},
-                                      .kiko_type = std::nullopt})
-                                     .build(),
-                                 type);
+            return built(tb::equity_window_barrier_option_builder(
+                             {.underlying = address,
+                              .currency = currency,
+                              .fixing_amount = money(notional / level),
+                              .strike = money(level),
+                              .kind = kind,
+                              .position = position,
+                              .expiry = end,
+                              .window_start = start,
+                              .window_end = year_month_day{sys_days{start} +
+                                                           (sys_days{end} - sys_days{start}) / 2},
+                              .barrier = knock_out})
+                             .build());
+        return built(tb::equity_generic_barrier_option_builder(
+                         {.underlying = address,
+                          .pay_currency = currency,
+                          .quantity = money(notional / level),
+                          .strike = money(level),
+                          .kind = kind,
+                          .position = position,
+                          .expiry = end,
+                          // ORE rolls an expiry on a holiday forward.
+                          .settlement = year_month_day{sys_days{end} + days{5}},
+                          .monitoring_start = start,
+                          .barriers = std::vector<tb::scripted_barrier>{knock_out},
+                          .kiko_type = std::nullopt})
+                         .build());
     }
     if (type == "EquityBestEntryOption")
         return built(tb::equity_best_entry_option_builder(

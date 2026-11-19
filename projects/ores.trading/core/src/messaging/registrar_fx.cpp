@@ -31,6 +31,7 @@
 #include "ores.trading.core/messaging/fx_strike_resettable_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_vanilla_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_variance_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/fx_window_barrier_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/range_bound_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 
@@ -131,6 +132,12 @@ register_fx_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(fx_strike_resettable_option_instrument_subs.begin()),
                 std::make_move_iterator(fx_strike_resettable_option_instrument_subs.end()));
+
+    auto fx_window_barrier_option_instrument_subs =
+        register_fx_window_barrier_option_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(fx_window_barrier_option_instrument_subs.begin()),
+                std::make_move_iterator(fx_window_barrier_option_instrument_subs.end()));
 
     return subs;
 }

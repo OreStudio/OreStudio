@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 #define ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 
+#include "ores.trading.api/builders/barrier_product_builders.hpp"
 #include "ores.trading.api/builders/basket_option_builders.hpp"
 #include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/commodity_builders.hpp"
@@ -70,8 +71,8 @@ using all_builders =
                fx_best_entry_option_builder,
                equity_strike_resettable_option_builder,
                fx_strike_resettable_option_builder,
-               window_barrier_option_builder<scripted_family::equity>,
-               window_barrier_option_builder<scripted_family::fx>,
+               equity_window_barrier_option_builder,
+               fx_window_barrier_option_builder,
                equity_generic_barrier_option_builder,
                equity_basket_variance_swap_builder,
                fx_basket_variance_swap_builder,

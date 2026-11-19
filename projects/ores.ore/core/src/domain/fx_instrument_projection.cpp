@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
+#include "ores.ore.core/domain/barrier_product_projection.hpp"
 #include "ores.ore.core/domain/basket_option_projection.hpp"
 #include "ores.ore.core/domain/entry_reset_option_projection.hpp"
 #include "ores.ore.core/domain/index_reference.hpp"
@@ -58,6 +59,7 @@ using trading::domain::fx_basket_variance_swap_instrument;
 using trading::domain::fx_forward_volatility_agreement_instrument;
 using trading::domain::fx_best_entry_option_instrument;
 using trading::domain::fx_strike_resettable_option_instrument;
+using trading::domain::fx_window_barrier_option_instrument;
 using trading::domain::fx_pairwise_variance_swap_instrument;
 using trading::domain::range_bound;
 
@@ -85,7 +87,8 @@ constexpr bool is_fx_trade_type(std::string_view type) {
            type == "FxAsianOption" || type == "FxPairwiseVarianceSwap" ||
            type == "FxBasketOption" || type == "FxRainbowOption" ||
            type == "FxBasketVarianceSwap" || type == "FxForwardVolatilityAgreement" ||
-           type == "FxBestEntryOption" || type == "FxStrikeResettableOption";
+           type == "FxBestEntryOption" || type == "FxStrikeResettableOption" ||
+           type == "FxWindowBarrierOption";
 }
 
 template <typename Row>
@@ -559,6 +562,15 @@ auto read_fx_strike_resettable_option(const record_reader& trade)
     return r;
 }
 
+auto read_fx_window_barrier_option(const record_reader& trade)
+    -> fx_window_barrier_option_instrument {
+    auto r = fx_instrument_projection_make_row<fx_window_barrier_option_instrument>(
+        "FxWindowBarrierOption");
+    if (const auto data = trade.child("FxWindowBarrierOptionData"))
+        barrier_product::read_window_barrier(*data, r);
+    return r;
+}
+
 auto read_fx_pairwise_variance_swap(const record_reader& trade)
     -> fx_pairwise_variance_swap_instrument {
     auto r = fx_instrument_projection_make_row<fx_pairwise_variance_swap_instrument>(
@@ -944,6 +956,15 @@ void write_fx_strike_resettable_option(record_writer& trade,
     option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
 }
 
+void write_fx_window_barrier_option(record_writer& trade,
+                                    const fx_window_barrier_option_instrument& v,
+                                    const fx_instrument_data& carrier) {
+    auto data = trade.child("FxWindowBarrierOptionData");
+    barrier_product::write_window_barrier(data, v);
+    underlying_block::write_underlyings(data, "Underlying", carrier, "underlying");
+    barrier_block::write_kept_barriers(data, "", carrier, "barrier");
+}
+
 void write_fx_pairwise_variance_swap(record_writer& trade,
                                      const fx_pairwise_variance_swap_instrument& v,
                                      const fx_instrument_data& carrier) {
@@ -1052,6 +1073,7 @@ constexpr underlying_block::underlying_holder fx_underlying_holders[] = {
     {"FxForwardVolatilityAgreement", "", "Underlying", "underlying"},
     {"FxBestEntryOption", "", "Underlying", "underlying"},
     {"FxStrikeResettableOption", "", "Underlying", "underlying"},
+    {"FxWindowBarrierOption", "", "Underlying", "underlying"},
 };
 
 /// The single-valued terms each FX product row keeps, by its element.
@@ -1093,6 +1115,7 @@ constexpr barrier_block::barrier_holder fx_barrier_holders[] = {
     {"FxGenericBarrierOption", "TransatlanticBarrier", "transatlantic"},
     {"FxAccumulator", "Barriers", "barrier"},
     {"FxTaRF", "Barriers", "barrier"},
+    {"FxWindowBarrierOption", "", "barrier"},
 };
 
 /// The schedules an FX product states on its own element.
@@ -1126,6 +1149,7 @@ std::optional<std::string> fx_option_data_element(std::string_view trade_type) {
         "FxAsianOption",
         "FxBasketOption",
         "FxRainbowOption",
+        "FxWindowBarrierOption",
     };
     for (const auto type : with_option_data)
         if (type == trade_type)
@@ -1172,6 +1196,8 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
         data.best_entry_options.push_back(read_fx_best_entry_option(trade));
     } else if (trade_type == "FxStrikeResettableOption") {
         data.strike_resettable_options.push_back(read_fx_strike_resettable_option(trade));
+    } else if (trade_type == "FxWindowBarrierOption") {
+        data.window_barrier_options.push_back(read_fx_window_barrier_option(trade));
     } else if (trade_type == "FxAccumulator") {
         // The range bounds are the product's child, so they land beside the
         // fact row rather than inside it.
@@ -1315,6 +1341,9 @@ auto write_fx_instrument(xml::record_writer& trade,
             } else if constexpr (std::is_same_v<Row, fx_strike_resettable_option_instrument>) {
                 write_fx_strike_resettable_option(trade, row, *v);
                 matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_window_barrier_option_instrument>) {
+                write_fx_window_barrier_option(trade, row, *v);
+                matched = true;
             }
         },
         *v);
@@ -1324,7 +1353,8 @@ auto write_fx_instrument(xml::record_writer& trade,
             if (auto product = trade.chosen_child(*element)) {
                 auto option = product->child("OptionData");
                 option_block::write_option_block(option, *v);
-                if (basket_option::is_basket_product(trade_type))
+                if (basket_option::is_basket_product(trade_type) ||
+                    barrier_product::keeps_exercise_dates(trade_type))
                     basket_option::write_exercise_dates(option, *v);
             }
         }

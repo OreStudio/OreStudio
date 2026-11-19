@@ -78,9 +78,6 @@ constexpr class_read_product class_read_products[] = {
     {"DoubleDigitalOption", "DoubleDigitalOptionData"},
     {"PerformanceOption_01", "PerformanceOption01Data"},
     {"Autocallable_01", "Autocallable01Data"},
-    {"EquityWindowBarrierOption", "EquityWindowBarrierOptionData"},
-    {"FxWindowBarrierOption", "FxWindowBarrierOptionData"},
-    {"EquityGenericBarrierOption", "EquityGenericBarrierOptionData"},
     {"EuropeanOptionBarrier", "EuropeanOptionBarrierData"},
     {"FxWorstOfBasketSwap", "FxWorstOfBasketSwapData"},
 };

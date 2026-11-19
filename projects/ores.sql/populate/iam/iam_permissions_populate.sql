@@ -1617,6 +1617,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_strike_resettable_option_instruments:write', 'Create and modify FX strike resettable option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_strike_resettable_option_instruments:delete', 'Delete equity strike resettable option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_strike_resettable_option_instruments:delete', 'Delete FX strike resettable option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_window_barrier_option_instruments:read', 'View equity window barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_window_barrier_option_instruments:read', 'View FX window barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_window_barrier_option_instruments:write', 'Create and modify equity window barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_window_barrier_option_instruments:write', 'Create and modify FX window barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_window_barrier_option_instruments:delete', 'Delete equity window barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_window_barrier_option_instruments:delete', 'Delete FX window barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_generic_barrier_option_instruments:read', 'View equity generic barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_generic_barrier_option_instruments:write', 'Create and modify equity generic barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_generic_barrier_option_instruments:delete', 'Delete equity generic barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:read',         'View fx barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:write',        'Create and modify fx barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:delete',       'Delete fx barrier option instruments');

@@ -1605,6 +1605,18 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_forward_volatility_agreement_instruments:delete', 'Delete equity forward volatility agreement instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_basket_variance_swap_instruments:delete', 'Delete FX basket variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_forward_volatility_agreement_instruments:delete', 'Delete FX forward volatility agreement instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_best_entry_option_instruments:read', 'View equity best entry option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_best_entry_option_instruments:read', 'View FX best entry option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_best_entry_option_instruments:write', 'Create and modify equity best entry option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_best_entry_option_instruments:write', 'Create and modify FX best entry option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_best_entry_option_instruments:delete', 'Delete equity best entry option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_best_entry_option_instruments:delete', 'Delete FX best entry option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_strike_resettable_option_instruments:read', 'View equity strike resettable option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_strike_resettable_option_instruments:read', 'View FX strike resettable option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_strike_resettable_option_instruments:write', 'Create and modify equity strike resettable option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_strike_resettable_option_instruments:write', 'Create and modify FX strike resettable option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_strike_resettable_option_instruments:delete', 'Delete equity strike resettable option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_strike_resettable_option_instruments:delete', 'Delete FX strike resettable option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:read',         'View fx barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:write',        'Create and modify fx barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:delete',       'Delete fx barrier option instruments');

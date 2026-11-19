@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-789 tables in 21 groups.
+793 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -609,6 +609,7 @@ entity "trading" as trading {
   ores_trading_equity_basket_constituents_tbl
   ores_trading_equity_basket_option_instruments_tbl
   ores_trading_equity_basket_var_swap_instruments_tbl
+  ores_trading_equity_best_entry_option_instruments_tbl
   ores_trading_equity_cliquet_option_instruments_tbl
   ores_trading_equity_digital_option_instruments_tbl
   ores_trading_equity_forward_instruments_tbl
@@ -619,6 +620,7 @@ entity "trading" as trading {
   ores_trading_equity_pairwise_var_swap_instruments_tbl
   ores_trading_equity_position_instruments_tbl
   ores_trading_equity_position_option_underlyings_tbl
+  ores_trading_equity_strike_reset_option_instruments_tbl
   ores_trading_equity_swap_instruments_tbl
   ores_trading_equity_tarf_instruments_tbl
   ores_trading_equity_variance_swap_instruments_tbl
@@ -633,10 +635,12 @@ entity "trading" as trading {
   ores_trading_fx_barrier_option_instruments_tbl
   ores_trading_fx_basket_option_instruments_tbl
   ores_trading_fx_basket_variance_swap_instruments_tbl
+  ores_trading_fx_best_entry_option_instruments_tbl
   ores_trading_fx_digital_option_instruments_tbl
   ores_trading_fx_forward_instruments_tbl
   ores_trading_fx_fva_instruments_tbl
   ores_trading_fx_pairwise_variance_swap_instruments_tbl
+  ores_trading_fx_strike_reset_option_instruments_tbl
   ores_trading_fx_vanilla_option_instruments_tbl
   ores_trading_fx_variance_swap_instruments_tbl
   ores_trading_index_cds_instruments_tbl
@@ -709,7 +713,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-148 tables — ores_schema.trading.puml
+152 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {

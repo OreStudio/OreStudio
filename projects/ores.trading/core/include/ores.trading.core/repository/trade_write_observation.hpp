@@ -37,12 +37,14 @@
 #include "ores.trading.core/repository/equity_barrier_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_basket_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_basket_variance_swap_instrument_entity.hpp"
+#include "ores.trading.core/repository/equity_best_entry_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_digital_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_forward_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_forward_volatility_agreement_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_pairwise_variance_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_position_instrument_entity.hpp"
+#include "ores.trading.core/repository/equity_strike_resettable_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_variance_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/fra_instrument_entity.hpp"
@@ -52,10 +54,12 @@
 #include "ores.trading.core/repository/fx_barrier_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_basket_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_basket_variance_swap_instrument_entity.hpp"
+#include "ores.trading.core/repository/fx_best_entry_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_digital_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_forward_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_forward_volatility_agreement_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_pairwise_variance_swap_instrument_entity.hpp"
+#include "ores.trading.core/repository/fx_strike_resettable_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_entity.hpp"
@@ -396,6 +400,57 @@ struct entity_write_observer<
         const context& ctx,
         const ores::trading::repository::fx_forward_volatility_agreement_instrument_entity& entity,
         ores::logging::logger_t& lg) {
+        ores::trading::service::refresh_trade_economic_digest(
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
+    }
+};
+
+template <>
+struct entity_write_observer<
+    ores::trading::repository::equity_best_entry_option_instrument_entity> {
+    static constexpr bool observes = true;
+    static void
+    observe(const context& ctx,
+            const ores::trading::repository::equity_best_entry_option_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
+        ores::trading::service::refresh_trade_economic_digest(
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
+    }
+};
+
+template <>
+struct entity_write_observer<
+    ores::trading::repository::equity_strike_resettable_option_instrument_entity> {
+    static constexpr bool observes = true;
+    static void observe(
+        const context& ctx,
+        const ores::trading::repository::equity_strike_resettable_option_instrument_entity& entity,
+        ores::logging::logger_t& lg) {
+        ores::trading::service::refresh_trade_economic_digest(
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
+    }
+};
+
+template <>
+struct entity_write_observer<ores::trading::repository::fx_best_entry_option_instrument_entity> {
+    static constexpr bool observes = true;
+    static void
+    observe(const context& ctx,
+            const ores::trading::repository::fx_best_entry_option_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
+        ores::trading::service::refresh_trade_economic_digest(
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
+    }
+};
+
+template <>
+struct entity_write_observer<
+    ores::trading::repository::fx_strike_resettable_option_instrument_entity> {
+    static constexpr bool observes = true;
+    static void
+    observe(const context& ctx,
+            const ores::trading::repository::fx_strike_resettable_option_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }

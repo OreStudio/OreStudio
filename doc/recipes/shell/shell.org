@@ -2224,3 +2224,19 @@ tangled into the runnable script library
 * Fx Forward Volatility Agreement Instruments
 
 - [[id:B18C02EB-595E-5975-9EB2-A9DA996A2D44][How do I run the fx_forward_volatility_agreement_instruments commands from the shell?]]
+
+* Equity Best Entry Option Instruments
+
+- [[id:1C45C5D4-601A-52FD-8B60-E1CB6ECC22D2][How do I run the equity_best_entry_option_instruments commands from the shell?]]
+
+* Equity Strike Resettable Option Instruments
+
+- [[id:6FCE1EC2-9150-5D8C-9388-8C71996179D3][How do I run the equity_strike_resettable_option_instruments commands from the shell?]]
+
+* Fx Best Entry Option Instruments
+
+- [[id:C9F361F4-4B6D-5762-8C8B-3CDABD840D66][How do I run the fx_best_entry_option_instruments commands from the shell?]]
+
+* Fx Strike Resettable Option Instruments
+
+- [[id:F4EE987B-5A08-5384-AE4A-7711CF459104][How do I run the fx_strike_resettable_option_instruments commands from the shell?]]

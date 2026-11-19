@@ -419,6 +419,14 @@
 \ir ./trading_fx_basket_variance_swap_instruments_notify_trigger_create.sql
 \ir ./trading_fx_forward_volatility_agreement_instruments_create.sql
 \ir ./trading_fx_forward_volatility_agreement_instruments_notify_trigger_create.sql
+\ir ./trading_equity_best_entry_option_instruments_create.sql
+\ir ./trading_equity_best_entry_option_instruments_notify_trigger_create.sql
+\ir ./trading_fx_best_entry_option_instruments_create.sql
+\ir ./trading_fx_best_entry_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_strike_resettable_option_instruments_create.sql
+\ir ./trading_equity_strike_resettable_option_instruments_notify_trigger_create.sql
+\ir ./trading_fx_strike_resettable_option_instruments_create.sql
+\ir ./trading_fx_strike_resettable_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_variance_swap_instruments_create.sql
 \ir ./trading_equity_variance_swap_instruments_notify_trigger_create.sql
 \ir ./trading_equity_swap_instruments_create.sql

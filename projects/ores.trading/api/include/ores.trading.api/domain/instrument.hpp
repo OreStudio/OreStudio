@@ -42,10 +42,12 @@
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_basket_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_basket_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_best_entry_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_volatility_agreement_instrument.hpp"
 #include "ores.trading.api/domain/fx_pairwise_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_strike_resettable_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
@@ -533,6 +535,16 @@ struct fx_instrument_data {
     std::vector<fx_forward_volatility_agreement_instrument> forward_volatility_agreements;
 
     /**
+     * @brief The fx_best_entry_option_instrument rows: FxBestEntryOption.
+     */
+    std::vector<fx_best_entry_option_instrument> best_entry_options;
+
+    /**
+     * @brief The fx_strike_resettable_option_instrument rows: FxStrikeResettableOption.
+     */
+    std::vector<fx_strike_resettable_option_instrument> strike_resettable_options;
+
+    /**
      * @brief The range_bound rows: the RangeBounds list an accumulator states.
      *
      * A child of the product rather than a product, so it states no type and
@@ -595,7 +607,9 @@ inline constexpr auto fx_instrument_arrays =
                &fx_instrument_data::pairwise_variance_swaps,
                &fx_instrument_data::basket_options,
                &fx_instrument_data::basket_variance_swaps,
-               &fx_instrument_data::forward_volatility_agreements};
+               &fx_instrument_data::forward_volatility_agreements,
+               &fx_instrument_data::best_entry_options,
+               &fx_instrument_data::strike_resettable_options};
 
 /**
  * @brief The family's child arrays: rows a product owns rather than rows a

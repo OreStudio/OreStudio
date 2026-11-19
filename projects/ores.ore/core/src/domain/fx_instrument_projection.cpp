@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
 #include "ores.ore.core/domain/basket_option_projection.hpp"
+#include "ores.ore.core/domain/entry_reset_option_projection.hpp"
 #include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/pairwise_variance_swap_projection.hpp"
@@ -55,6 +56,8 @@ using trading::domain::fx_asian_option_instrument;
 using trading::domain::fx_basket_option_instrument;
 using trading::domain::fx_basket_variance_swap_instrument;
 using trading::domain::fx_forward_volatility_agreement_instrument;
+using trading::domain::fx_best_entry_option_instrument;
+using trading::domain::fx_strike_resettable_option_instrument;
 using trading::domain::fx_pairwise_variance_swap_instrument;
 using trading::domain::range_bound;
 
@@ -81,7 +84,8 @@ constexpr bool is_fx_trade_type(std::string_view type) {
            type == "FxEuropeanBarrierOption" || type == "FxKIKOBarrierOption" ||
            type == "FxAsianOption" || type == "FxPairwiseVarianceSwap" ||
            type == "FxBasketOption" || type == "FxRainbowOption" ||
-           type == "FxBasketVarianceSwap" || type == "FxForwardVolatilityAgreement";
+           type == "FxBasketVarianceSwap" || type == "FxForwardVolatilityAgreement" ||
+           type == "FxBestEntryOption" || type == "FxStrikeResettableOption";
 }
 
 template <typename Row>
@@ -538,6 +542,23 @@ auto read_fx_forward_volatility_agreement(const record_reader& trade)
     return r;
 }
 
+auto read_fx_best_entry_option(const record_reader& trade) -> fx_best_entry_option_instrument {
+    auto r =
+        fx_instrument_projection_make_row<fx_best_entry_option_instrument>("FxBestEntryOption");
+    if (const auto data = trade.child("FxBestEntryOptionData"))
+        entry_reset_option::read_best_entry(*data, r);
+    return r;
+}
+
+auto read_fx_strike_resettable_option(const record_reader& trade)
+    -> fx_strike_resettable_option_instrument {
+    auto r = fx_instrument_projection_make_row<fx_strike_resettable_option_instrument>(
+        "FxStrikeResettableOption");
+    if (const auto data = trade.child("FxStrikeResettableOptionData"))
+        entry_reset_option::read_strike_resettable(*data, r);
+    return r;
+}
+
 auto read_fx_pairwise_variance_swap(const record_reader& trade)
     -> fx_pairwise_variance_swap_instrument {
     auto r = fx_instrument_projection_make_row<fx_pairwise_variance_swap_instrument>(
@@ -904,6 +925,25 @@ void write_fx_forward_volatility_agreement(record_writer& trade,
     underlying_block::write_underlyings(data, "Underlying", carrier, "underlying");
 }
 
+void write_fx_best_entry_option(record_writer& trade,
+                                const fx_best_entry_option_instrument& v,
+                                const fx_instrument_data& carrier) {
+    auto data = trade.child("FxBestEntryOptionData");
+    entry_reset_option::write_best_entry(data, v);
+    underlying_block::write_underlyings(data, "Underlying", carrier, "underlying");
+    option_block::write_product_schedule(
+        data, carrier, "StrikeObservationDates", "strike_observation_schedule");
+}
+
+void write_fx_strike_resettable_option(record_writer& trade,
+                                       const fx_strike_resettable_option_instrument& v,
+                                       const fx_instrument_data& carrier) {
+    auto data = trade.child("FxStrikeResettableOptionData");
+    entry_reset_option::write_strike_resettable(data, v);
+    underlying_block::write_underlyings(data, "Underlying", carrier, "underlying");
+    option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
+}
+
 void write_fx_pairwise_variance_swap(record_writer& trade,
                                      const fx_pairwise_variance_swap_instrument& v,
                                      const fx_instrument_data& carrier) {
@@ -1010,6 +1050,8 @@ constexpr underlying_block::underlying_holder fx_underlying_holders[] = {
     {"FxRainbowOption", "Underlyings", "Underlying", "underlying"},
     {"FxBasketVarianceSwap", "Underlyings", "Underlying", "underlying"},
     {"FxForwardVolatilityAgreement", "", "Underlying", "underlying"},
+    {"FxBestEntryOption", "", "Underlying", "underlying"},
+    {"FxStrikeResettableOption", "", "Underlying", "underlying"},
 };
 
 /// The single-valued terms each FX product row keeps, by its element.
@@ -1061,6 +1103,8 @@ constexpr option_block::product_schedule fx_product_schedules[] = {
     {"FxAsianOption", "ObservationDates", "observation_schedule"},
     {"FxBasketOption", "ObservationDates", "observation_schedule"},
     {"FxBasketVarianceSwap", "ValuationSchedule", "valuation_schedule"},
+    {"FxBestEntryOption", "StrikeObservationDates", "strike_observation_schedule"},
+    {"FxStrikeResettableOption", "ObservationDates", "observation_schedule"},
     {"FxPairwiseVarianceSwap", "ValuationSchedule", "valuation_schedule"},
     {"FxPairwiseVarianceSwap", "LaggedValuationSchedule", "lagged_valuation_schedule"},
 };
@@ -1124,6 +1168,10 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
         data.basket_variance_swaps.push_back(read_fx_basket_variance_swap(trade));
     } else if (trade_type == "FxForwardVolatilityAgreement") {
         data.forward_volatility_agreements.push_back(read_fx_forward_volatility_agreement(trade));
+    } else if (trade_type == "FxBestEntryOption") {
+        data.best_entry_options.push_back(read_fx_best_entry_option(trade));
+    } else if (trade_type == "FxStrikeResettableOption") {
+        data.strike_resettable_options.push_back(read_fx_strike_resettable_option(trade));
     } else if (trade_type == "FxAccumulator") {
         // The range bounds are the product's child, so they land beside the
         // fact row rather than inside it.
@@ -1260,6 +1308,12 @@ auto write_fx_instrument(xml::record_writer& trade,
                 matched = true;
             } else if constexpr (std::is_same_v<Row, fx_forward_volatility_agreement_instrument>) {
                 write_fx_forward_volatility_agreement(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_best_entry_option_instrument>) {
+                write_fx_best_entry_option(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_strike_resettable_option_instrument>) {
+                write_fx_strike_resettable_option(trade, row, *v);
                 matched = true;
             }
         },

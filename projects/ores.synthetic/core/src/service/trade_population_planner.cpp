@@ -27,6 +27,7 @@
 #include "ores.trading.api/builders/commodity_builders.hpp"
 #include "ores.trading.api/builders/composite_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
+#include "ores.trading.api/builders/entry_reset_option_builders.hpp"
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
@@ -2038,24 +2039,23 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
             type);
     }
     if (type == "FxBestEntryOption")
-        return scripted_batch_of(tb::best_entry_option_builder<tb::scripted_family::fx>(
-                                     {.underlying = index,
-                                      .currency = pair.quote,
-                                      .notional = money(notional),
-                                      .multiplier = level(1.0),
-                                      .strike = level(1.0),
-                                      .cap = level(0.2),
-                                      .trigger_level = level(0.98),
-                                      .reset_minimum = level(0.95),
-                                      .premium = money(0.0),
-                                      .premium_date = start,
-                                      .strike_date = start,
-                                      .strike_observation_dates = quarterly_dates(start, end),
-                                      .expiry = end,
-                                      .settlement = end,
-                                      .position = position})
-                                     .build(),
-                                 type);
+        return built(tb::fx_best_entry_option_builder(
+                         {.underlying = index,
+                          .currency = pair.quote,
+                          .notional = money(notional),
+                          .multiplier = level(1.0),
+                          .strike = level(1.0),
+                          .cap = level(0.2),
+                          .trigger_level = level(0.98),
+                          .reset_minimum = level(0.95),
+                          .premium = money(0.0),
+                          .premium_date = start,
+                          .strike_date = start,
+                          .strike_observation_dates = quarterly_dates(start, end),
+                          .expiry = end,
+                          .settlement = end,
+                          .position = position})
+                         .build());
     if (type == "FxStrikeResettableOption") {
         /*
          * A call resets lower when the rate falls, a put higher when it rises. A
@@ -2064,24 +2064,22 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
          */
         const bool call = kind == tb::option_kind::call;
         const auto reset = level(rate * (call ? 0.98 : 1.02));
-        return scripted_batch_of(
-            tb::strike_resettable_option_builder<tb::scripted_family::fx>(
-                {.underlying = index,
-                 .currency = pair.quote,
-                 .kind = kind,
-                 .position = position,
-                 .quantity = money(notional),
-                 .strike = level(rate),
-                 .reset_strike = reset,
-                 .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
-                 .trigger_price = level(rate * (call ? 0.93 : 1.07)),
-                 .observation_dates = quarterly_dates(start, end),
-                 .expiry = end,
-                 .settlement = end,
-                 .premium = money(0.0),
-                 .premium_date = start})
-                .build(),
-            type);
+        return built(tb::fx_strike_resettable_option_builder(
+                         {.underlying = index,
+                          .currency = pair.quote,
+                          .kind = kind,
+                          .position = position,
+                          .quantity = money(notional),
+                          .strike = level(rate),
+                          .reset_strike = reset,
+                          .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
+                          .trigger_price = level(rate * (call ? 0.93 : 1.07)),
+                          .observation_dates = quarterly_dates(start, end),
+                          .expiry = end,
+                          .settlement = end,
+                          .premium = money(0.0),
+                          .premium_date = start})
+                         .build());
     }
     /*
      * A product on two pairs holds the slot's pair and another the tenant
@@ -3211,46 +3209,43 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                  type);
     }
     if (type == "EquityBestEntryOption")
-        return scripted_batch_of(tb::best_entry_option_builder<tb::scripted_family::equity>(
-                                     {.underlying = address,
-                                      .currency = currency,
-                                      .notional = money(notional),
-                                      .multiplier = money(1.0),
-                                      .strike = money(0.85),
-                                      .cap = money(0.06),
-                                      .trigger_level = money(0.95),
-                                      .reset_minimum = money(0.85),
-                                      .premium = money(0.0),
-                                      .premium_date = start,
-                                      .strike_date = start,
-                                      .strike_observation_dates = quarterly_dates(start, end),
-                                      .expiry = end,
-                                      .settlement = end,
-                                      .position = position})
-                                     .build(),
-                                 type);
+        return built(tb::equity_best_entry_option_builder(
+                         {.underlying = address,
+                          .currency = currency,
+                          .notional = money(notional),
+                          .multiplier = money(1.0),
+                          .strike = money(0.85),
+                          .cap = money(0.06),
+                          .trigger_level = money(0.95),
+                          .reset_minimum = money(0.85),
+                          .premium = money(0.0),
+                          .premium_date = start,
+                          .strike_date = start,
+                          .strike_observation_dates = quarterly_dates(start, end),
+                          .expiry = end,
+                          .settlement = end,
+                          .position = position})
+                         .build());
     if (type == "EquityStrikeResettableOption") {
         // A call resets lower when the price falls, a put higher when it rises.
         const bool call = kind == tb::option_kind::call;
         const auto reset = money(level * (call ? 0.9 : 1.1));
-        return scripted_batch_of(
-            tb::strike_resettable_option_builder<tb::scripted_family::equity>(
-                {.underlying = address,
-                 .currency = currency,
-                 .kind = kind,
-                 .position = position,
-                 .quantity = money(notional / level),
-                 .strike = money(level),
-                 .reset_strike = reset,
-                 .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
-                 .trigger_price = reset,
-                 .observation_dates = quarterly_dates(start, end),
-                 .expiry = end,
-                 .settlement = end,
-                 .premium = money(0.0),
-                 .premium_date = start})
-                .build(),
-            type);
+        return built(tb::equity_strike_resettable_option_builder(
+                         {.underlying = address,
+                          .currency = currency,
+                          .kind = kind,
+                          .position = position,
+                          .quantity = money(notional / level),
+                          .strike = money(level),
+                          .reset_strike = reset,
+                          .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
+                          .trigger_price = reset,
+                          .observation_dates = quarterly_dates(start, end),
+                          .expiry = end,
+                          .settlement = end,
+                          .premium = money(0.0),
+                          .premium_date = start})
+                         .build());
     }
     if (type == "EquityBasketVarianceSwap" || type == "EquityPairwiseVarianceSwap") {
         const auto [first, second] = same_currency_pair();

@@ -77,6 +77,7 @@ std::uint64_t after_of(const http_request& req) {
     return value;
 }
 
+/// The instant @p name holds. rr::invalid never returns, so no value follows the catch.
 std::chrono::system_clock::time_point instant_of(const http_request& req, const std::string& name) {
     const auto raw = req.get_query_param(name);
     try {

@@ -142,6 +142,10 @@ via its "Verifies task" field.
 | 10 | History time loses microseconds (BFF) | quotes.ts | Accept | The first instant is read to the microsecond. |
 | 11 | The labels cache has no bound of its own | quotes.ts | Decline | Bounded by the board's capacity; it holds no tenant's data. |
 | 12 | The schema shapes are kept for the process | quotes.ts | Accept | The comment states that the schema changes with a release, which restarts the BFF. |
+| 13 | Does a history reply whose arrays differ map to a 5xx, and is the status tested? | quote_routes.cpp | Accept | guarded answers it through unanswered as 502 Bad Gateway; a new test hands the route such a reply and checks 502. |
+| 14 | instant_of has no return after its catch | quote_routes.cpp | Accept | A comment states that rr::invalid never returns. |
+| 15 | The JSON rows are built by hand | quote_routes.cpp | Decline | json::write escapes every value, and the BFF answers the same shape; one serializer per route is a change for both servers, not this PR. |
+| 16 | Confirm the trading and feed ingest failures are not this branch's | ctest | Accept | The final gate's ctest passed 105 of 105, the trading suite among them; neither suite is touched here. |
 
 * Result
 

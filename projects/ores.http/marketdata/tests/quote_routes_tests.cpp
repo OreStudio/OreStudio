@@ -87,7 +87,8 @@ struct quotes_transport final {
 http_response quotes_answer(const std::string& path,
                             http_request req,
                             quotes_transport& transport,
-                            std::vector<watchable_feed> entitled) {
+                            std::vector<watchable_feed> entitled,
+                            ores::marketdata::messaging::get_series_ticks_response history = {}) {
     auto table = std::make_shared<ores::http::net::router>();
     auto board = std::make_shared<quote_board>(transport.subscriber());
     board->start();
@@ -100,8 +101,9 @@ http_response quotes_answer(const std::string& path,
         std::make_shared<ores::http::openapi::endpoint_registry>(),
         board,
         [entitled](const http_request&) { return entitled; },
-        [](const http_request&, const ores::marketdata::messaging::get_provider_ticks_request&) {
-            return ores::marketdata::messaging::get_series_ticks_response{};
+        [history](const http_request&,
+                  const ores::marketdata::messaging::get_provider_ticks_request&) {
+            return history;
         });
     const auto route = table->match(http_method::get, path, req.path_params);
     REQUIRE(route.has_value());
@@ -290,6 +292,27 @@ TEST_CASE("a_history_read_that_names_no_series_is_refused", "[quotes]") {
         {});
 
     CHECK(answer.status == http_status::bad_request);
+}
+
+TEST_CASE("a_history_reply_whose_arrays_differ_in_length_is_answered_as_a_bad_gateway",
+          "[quotes]") {
+    auto lg(make_logger(test_suite));
+    quotes_transport transport;
+    ores::marketdata::messaging::get_series_ticks_response broken;
+    broken.first_instant = std::chrono::system_clock::now();
+    broken.values = {1.30810, 1.30822};
+    broken.gaps_us = {0};
+    broken.coordinate_indexes = {0, 0};
+
+    const auto answer = quotes_answer("/api/marketdata/quotes/history",
+                                      quotes_query({{"provider", "bloomberg"},
+                                                    {"series", quotes_gbpusd},
+                                                    {"from", "2026-11-19T11:00:00.000Z"}}),
+                                      transport,
+                                      {},
+                                      broken);
+
+    CHECK(answer.status == http_status::bad_gateway);
 }
 
 TEST_CASE("a_read_over_the_ceiling_states_the_sequence_of_the_last_quote_it_sent", "[quotes]") {

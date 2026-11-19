@@ -30,7 +30,7 @@ Serve these composed views from ores.workflow and ores.inbox: one subject's stor
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Every view answers but one, and the two subjects a kind keeps are joined. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve one subject's story at GET /api/timeline, and the two kind-subject joins the inbox owes. |
+| Next         | One subject's story at GET /api/timeline, which wants its own branch: see the notes. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -127,7 +127,27 @@ set it authorises and a cut request carries the cut, each with the reason it
 carries none when the row cannot be read. A kind that keeps no subject carries
 neither member.
 
-What one subject's story owes, and why it is the last and the largest: the BFF
+The last view, and what is known about it, so the next branch does not begin from
+the BFF again. A request's timeline is the story this part already serves, wrapped
+with its subject and no gaps. A person's is the account's own versions, the roles
+it was given and the parties it works in read as link histories, its contact
+record, and its sign-ins, which are a rolling window and are stated as a gap for
+that reason. A party's is its own versions, the versions of each part it holds and
+the links it keeps, and every part that was removed is a gap because no read lists
+a closed row. The entity keys are =ores.iam.account=, =ores.iam.account_role=,
+=ores.iam.account_party=, =ores.iam.account_contact_information=,
+=ores.iam.auth_event= for a person, and =ores.refdata.party= with its parts and
+links for a party. The history read every one of them uses is the gateway's own,
+reached by =history_subject_for(entity_type)=.
+
+It is not served here, and that is a decision rather than an omission: the view is
+three compositions of six to eight reads each, and a person's timeline that
+silently left out the sign-ins, or a party's that left out the parts it holds,
+would look complete while being short — the failure this task's review named as
+the one worth refusing. It wants its own branch, its own suite, and the gaps
+mechanism proved source by source.
+
+What the approval inbox owes, for the next family: the BFF
 reads it for three subjects and each is its own composition. A request is the
 story this branch already serves, wrapped with the subject and an empty list of
 gaps. A person is the account, its contact record, the roles it was given and the

@@ -872,6 +872,19 @@ const irCurveCoverageRowSchema = z.object({
     published_state: z.string(),
     gap: z.string(),
     gap_reason: z.string(),
+    curves: z
+        .array(
+            z.object({
+                bootstrap_config_id: z.string(),
+                name: z.string(),
+                role: z.string(),
+                index_tenor: z.string(),
+                discount_curve_name: z.string(),
+                published_as_of: z.string(),
+                published_state: z.string(),
+            }),
+        )
+        .default([]),
 });
 
 export type IrCurveCoverageRow = z.infer<typeof irCurveCoverageRowSchema>;

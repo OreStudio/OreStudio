@@ -178,6 +178,24 @@ export interface IrCoverageBootstrapConfig {
     currency_code: string;
     name: string;
     output_series_id: string;
+    /** FUNDING for the curve that discounts, PROJECTION for a term curve that projects. */
+    curve_family_role?: string;
+    /** The tenor of the index a projection curve projects; empty for a funding curve. */
+    index_tenor?: string;
+    /** The funding curve a projection discounts off. */
+    discount_curve_config_id?: string | null;
+}
+
+/** One curve a currency's bootstrap configs build, with its latest publish. */
+export interface IrCurveOfCurrency {
+    bootstrap_config_id: string;
+    name: string;
+    role: string;
+    index_tenor: string;
+    /** The name of the funding curve a projection discounts off; empty for a funding curve. */
+    discount_curve_name: string;
+    published_as_of: string;
+    published_state: string;
 }
 
 /** The fields of a published set that say when it was published and where it stands. */
@@ -199,6 +217,8 @@ export interface IrCurveCoverageRow {
     published_state: string;
     gap: IrCurveGap;
     gap_reason: string;
+    /** Every curve of the currency: its funding curve first, then each projection by name. */
+    curves: IrCurveOfCurrency[];
 }
 
 /** The first fact a currency is missing, or empty when its curve is covered. */
@@ -227,7 +247,12 @@ const irCoverageBootstrapSchema = z.looseObject({
     currency_code: z.string(),
     name: z.string().default(''),
     output_series_id: z.string(),
+    curve_family_role: z.string().default(''),
+    index_tenor: z.string().default(''),
+    discount_curve_config_id: z.string().nullish(),
 });
+
+const FUNDING = 'FUNDING';
 
 const publishedSetSchema = z.looseObject({
     as_of: z.string(),
@@ -294,7 +319,13 @@ function coverageRow(
 ): IrCurveCoverageRow {
     const config = publicConfigOf(configs, feeds);
     const feed = config === undefined ? undefined : feeds.get(config.id);
-    const bootstrap = newestPublishedOf(bootstrapConfigs, input.publishedBySeries);
+    // The currency is covered when its funding curve is: a projection curve that
+    // publishes does not stand in for the curve that discounts.
+    const funding = bootstrapConfigs.filter((candidate) => isFunding(candidate));
+    const bootstrap = newestPublishedOf(
+        funding.length > 0 ? funding : bootstrapConfigs,
+        input.publishedBySeries,
+    );
     const published =
         bootstrap === undefined
             ? undefined
@@ -310,7 +341,40 @@ function coverageRow(
         published_as_of: published?.as_of ?? '',
         published_state: published?.state_code ?? '',
         ...gapOf(feed, bootstrap, published, input.now),
+        curves: curvesOf(bootstrapConfigs, input.publishedBySeries),
     };
+}
+
+/** A config with no role states the curve the currency discounts off, as the first configs did. */
+function isFunding(config: IrCoverageBootstrapConfig): boolean {
+    return (config.curve_family_role ?? '') === '' || config.curve_family_role === FUNDING;
+}
+
+/** Every curve of one currency, its funding curve first and each projection after, by name. */
+function curvesOf(
+    configs: readonly IrCoverageBootstrapConfig[],
+    publishedBySeries: ReadonlyMap<string, IrCoveragePublish | undefined>,
+): IrCurveOfCurrency[] {
+    const names = new Map(configs.map((config) => [config.id, config.name]));
+    return [...configs]
+        .sort(
+            (left, right) =>
+                Number(!isFunding(left)) - Number(!isFunding(right)) ||
+                left.name.localeCompare(right.name),
+        )
+        .map((config) => {
+            const published = publishedBySeries.get(config.output_series_id);
+            const discountsOff = config.discount_curve_config_id ?? '';
+            return {
+                bootstrap_config_id: config.id,
+                name: config.name,
+                role: isFunding(config) ? FUNDING : (config.curve_family_role ?? ''),
+                index_tenor: config.index_tenor ?? '',
+                discount_curve_name: discountsOff === '' ? '' : (names.get(discountsOff) ?? ''),
+                published_as_of: published?.as_of ?? '',
+                published_state: published?.state_code ?? '',
+            };
+        });
 }
 
 /** The feed config a currency reads through: the first, by source name, that takes a public rate. */

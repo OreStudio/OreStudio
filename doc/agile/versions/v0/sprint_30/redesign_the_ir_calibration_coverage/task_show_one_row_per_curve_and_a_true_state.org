@@ -8,7 +8,7 @@
 #+filetags: :redesign_the_ir_calibration_coverage:sprint_30:v0:
 #+owner: marco
 #+branch: feature/redesign-the-ir-calibration-coverage
-#+pr:
+#+pr: 4904
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-19
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4904][#4904]] | [web] Redesign the IR calibration coverage, and state each feed truly |
 
 * Review
 

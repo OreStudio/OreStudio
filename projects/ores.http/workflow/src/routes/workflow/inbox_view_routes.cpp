@@ -24,7 +24,11 @@
 #include "ores.http/routes/workflow/page_query.hpp"
 #include "ores.http/routes/workflow/request_joins.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/text_form.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -44,10 +48,18 @@ namespace json = ores::utility::codec::json;
 namespace rr = ores::http::net::record_routes;
 namespace forwarding = ores::http::forwarding;
 namespace inbox_messaging = ores::inbox::messaging;
+namespace marketdata_messaging = ores::marketdata::messaging;
+namespace reporting_messaging = ores::reporting::messaging;
 
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
 using ores::nats::service::nats_client;
+
+/// The trail the inbox leaves when a subject of a kind is deliberately absent.
+auto& inbox_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.workflow.inbox_view_routes");
+    return instance;
+}
 
 /// The most rows one page of the inbox may ask for. A page costs a join per row.
 constexpr std::uint32_t inbox_page_max = 100;
@@ -60,6 +72,145 @@ constexpr std::string_view inbox_page_refused = "A page names an offset and a li
 
 /// How long the inbox stays fresh: short, because a decision empties a row.
 constexpr std::chrono::seconds inbox_stale_after{15};
+
+/// The kinds whose subject the market data component keeps.
+constexpr std::string_view curve_publish_kind = "marketdata.curve_publish";
+
+/// The kinds whose subject a cut's detail row holds.
+constexpr std::string_view eod_cut_kind = "reporting.eod_cut_authorisation";
+constexpr std::string_view ipv_cut_kind = "reporting.ipv_cut_authorisation";
+
+/// Whether a kind keeps a subject in the market data component.
+bool is_publish_kind(const std::string& kind) {
+    return kind == curve_publish_kind;
+}
+
+/// Whether a kind keeps a subject in the reporting component.
+bool is_cut_kind(const std::string& kind) {
+    return kind == eod_cut_kind || kind == ipv_cut_kind;
+}
+
+/// The instant as the wire states it.
+std::string instant_text(const std::chrono::system_clock::time_point& at) {
+    return ores::utility::codec::text_form<std::chrono::system_clock::time_point>::to_text(at);
+}
+
+/// What a subject join found, and why one is absent.
+struct subject_join final {
+    std::map<std::string, std::string> by_request;
+    std::string absent_because = "missing";
+};
+
+/**
+ * The row with the subject its kind keeps, or the reason it carries none.
+ *
+ * The member is named on the row and not inside the header, because a subject
+ * belongs to the kind that keeps it: a role request and a book change carry
+ * neither member, so their rows are the rows they were before the join existed.
+ */
+std::string with_subject(const std::string& row,
+                         std::string_view member,
+                         std::string_view state_member,
+                         const subject_join& found,
+                         const std::string& request_id) {
+    const auto subject = found.by_request.find(request_id);
+    if (subject == found.by_request.end())
+        return rr::object_with_members(
+            row, {{std::string(state_member), json::write(found.absent_because)}});
+    return rr::object_with_members(row, {{std::string(member), subject->second}});
+}
+
+
+/**
+ * The curve publish each request of a page authorises.
+ *
+ * A publish request's subject is the market data component's own detail row,
+ * keyed by the request's id, and one read answers the whole page. A reader who
+ * may not read the curves keeps the page and loses the subject, and the reason
+ * travels with the absence: a refusal is a grant to ask for, and a set that is
+ * not there is a fact about the request.
+ */
+subject_join published_subjects_of(const http_request& req,
+                                   nats_client& session,
+                                   const std::vector<std::string>& request_ids) {
+    subject_join out;
+    if (request_ids.empty())
+        return out;
+    try {
+        marketdata_messaging::list_published_curves_request msg;
+        msg.include_candidates = true;
+        msg.include_ended = true;
+        msg.request_id_one_of = request_ids;
+        msg.limit = static_cast<std::uint32_t>(request_ids.size());
+        const auto reply = forwarding::forward(req, session, msg);
+        if (!reply.success)
+            return {std::map<std::string, std::string>{}, "refused"};
+        for (const auto& set : reply.sets) {
+            if (set.request_id.empty())
+                continue;
+            out.by_request.emplace(
+                set.request_id,
+                "{\"publish_id\":" + json::write(set.publish_id) + ",\"curve\":" +
+                    json::write(set.curve) + ",\"party\":" + json::write(set.party) +
+                    ",\"party_id\":" + json::write(set.party_id) +
+                    ",\"series_id\":" + json::write(set.series_id) +
+                    ",\"as_of\":" + json::write(instant_text(set.as_of)) +
+                    ",\"point_count\":" + std::to_string(set.point_count) +
+                    ",\"state_code\":" + json::write(set.state_code) + ",\"published_at\":" +
+                    (set.published_at ? json::write(instant_text(*set.published_at)) :
+                                        std::string("null")) +
+                    "}");
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(inbox_lg(), ores::logging::warn)
+            << "The curve publish subjects of a page were not read: " << e.what();
+        return {std::map<std::string, std::string>{}, "refused"};
+    }
+    return out;
+}
+
+/// The cut each request of a page authorises, and why one is absent.
+subject_join cut_subjects_of(const http_request& req,
+                             nats_client& session,
+                             const std::vector<std::string>& request_ids) {
+    subject_join out;
+    if (request_ids.empty())
+        return out;
+    try {
+        reporting_messaging::list_cut_authorisation_subjects_request msg;
+        msg.request_ids = request_ids;
+        const auto reply = forwarding::forward(req, session, msg);
+        if (reply.result.outcome != ores::utility::domain::outcome::ok)
+            return {std::map<std::string, std::string>{}, "refused"};
+        for (const auto& subject : reply.subjects) {
+            if (subject.request_id.empty())
+                continue;
+            out.by_request.emplace(
+                subject.request_id,
+                "{\"cut_id\":" + json::write(subject.cut_id) +
+                    ",\"label\":" + json::write(subject.label) +
+                    ",\"kind_code\":" + json::write(subject.kind_code) +
+                    ",\"kind_name\":" + json::write(subject.kind_name) +
+                    ",\"timepoint\":" + json::write(subject.timepoint) +
+                    ",\"timepoint_timezone\":" + json::write(subject.timepoint_timezone) +
+                    ",\"scope_code\":" + json::write(subject.scope_code) +
+                    ",\"business_centre_code\":" + json::write(subject.business_centre_code) +
+                    ",\"state\":" + json::write(subject.state) +
+                    ",\"deal_count\":" + std::to_string(subject.deal_count) +
+                    ",\"market_data_set_count\":" + std::to_string(subject.market_data_set_count) +
+                    ",\"gap_count\":" + std::to_string(subject.gap_count) +
+                    ",\"applied_by\":" + json::write(subject.applied_by) + ",\"applied_at\":" +
+                    (subject.applied_at.empty() ? std::string("null") :
+                                                  json::write(subject.applied_at)) +
+                    "}");
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(inbox_lg(), ores::logging::warn)
+            << "The cut subjects of a page were not read: " << e.what();
+        return {std::map<std::string, std::string>{}, "refused"};
+    }
+    return out;
+}
 
 /**
  * One page of requests, each drawn with its joins.
@@ -88,6 +239,17 @@ std::string page_json(const std::vector<ores::inbox::domain::approval_request>& 
         accounts.insert(rr::as_text(decision.decided_by));
     const auto usernames = joins::usernames_of(req, session, accounts);
 
+    std::vector<std::string> publish_ids;
+    std::vector<std::string> cut_ids;
+    for (const auto& row : rows) {
+        if (is_publish_kind(row.kind_code))
+            publish_ids.push_back(rr::as_text(row.id));
+        else if (is_cut_kind(row.kind_code))
+            cut_ids.push_back(rr::as_text(row.id));
+    }
+    const auto published = published_subjects_of(req, session, publish_ids);
+    const auto cuts = cut_subjects_of(req, session, cut_ids);
+
     std::vector<std::string> written;
     written.reserve(rows.size());
     for (const auto& row : rows) {
@@ -98,13 +260,23 @@ std::string page_json(const std::vector<ores::inbox::domain::approval_request>& 
             for (const auto& link : found->second)
                 written_subjects.push_back(joins::subject_json(link));
         }
-        written.push_back(joins::request_json(row,
-                                              joins::roles_of(req, session, rr::as_text(row.id)),
-                                              requesters,
-                                              usernames,
-                                              decisions,
-                                              "[]",
-                                              rr::array_of(written_subjects)));
+        auto drawn = joins::request_json(row,
+                                         joins::roles_of(req, session, rr::as_text(row.id)),
+                                         requesters,
+                                         usernames,
+                                         decisions,
+                                         "[]",
+                                         rr::array_of(written_subjects));
+
+        // The subject a kind keeps travels beside the header rather than in it: a
+        // kind with no such subject carries neither member, so its row is the row
+        // it was before the join existed.
+        const auto id = rr::as_text(row.id);
+        if (is_publish_kind(row.kind_code))
+            drawn = with_subject(drawn, "publishedSubject", "publishedSubjectState", published, id);
+        else if (is_cut_kind(row.kind_code))
+            drawn = with_subject(drawn, "cutSubject", "cutSubjectState", cuts, id);
+        written.push_back(std::move(drawn));
     }
     return rr::array_of(written);
 }

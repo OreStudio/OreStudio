@@ -125,68 +125,66 @@ void series_identity_shape_commands::register_commands(cli::Menu& root_menu, nat
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <asset_class> <series_subclass> <index_family> <field>");
+        "get <code>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <asset_class> <series_subclass> <index_family> <field>");
+        "get-many <code>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <asset_class> <series_subclass> <index_family> <field> <requirement> <description> "
-        "<reason> <commentary>");
+        "add <code> <asset_class> <series_subclass> <index_family> <description> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <asset_class> <series_subclass> <index_family> <field> <requirement> <description> "
-        "<reason> <commentary> [--version <n>]");
+        "set <code> <asset_class> <series_subclass> <index_family> <description> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <asset_class> <series_subclass> <index_family> <field> <requirement> "
-        "<description> <reason> <commentary>");
+        "put-many --count <n> <code> <asset_class> <series_subclass> <index_family> <description> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "delete",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <asset_class> <series_subclass> <index_family> <field> <reason> <commentary> "
-        "[--version <n>]");
+        "delete <code> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <asset_class> <series_subclass> <index_family> <field> <reason> <commentary>");
+        "delete-many <code> <reason> <commentary>");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <asset_class> <series_subclass> <index_family> <field> [--offset <n>] [--limit "
-        "<n>] [--order <field>] [--desc]");
+        "versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <asset_class> <series_subclass> <index_family> <field> --version <n>");
+        "version <code> --version <n>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -265,18 +263,12 @@ void series_identity_shape_commands::process_get(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4) {
-            fail(out) << "Expected 4 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
-        series_identity_shape_read_token(
-            req.key.asset_class, parsed->positionals[next++], "asset_class");
-        series_identity_shape_read_token(
-            req.key.series_subclass, parsed->positionals[next++], "series_subclass");
-        series_identity_shape_read_token(
-            req.key.index_family, parsed->positionals[next++], "index_family");
-        series_identity_shape_read_token(req.key.field, parsed->positionals[next++], "field");
+        series_identity_shape_read_token(req.key.code, parsed->positionals[next++], "code");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -316,20 +308,14 @@ void series_identity_shape_commands::process_get_many(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.empty() || parsed->positionals.size() % 4 != 0) {
-            fail(out) << "Expected a multiple of 4 arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.empty() || parsed->positionals.size() % 1 != 0) {
+            fail(out) << "Expected a multiple of 1 arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        for (std::size_t i = 0; i < parsed->positionals.size(); i += 4) {
+        for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::series_identity_shape_key key;
-            series_identity_shape_read_token(
-                key.asset_class, parsed->positionals[i + 0], "asset_class");
-            series_identity_shape_read_token(
-                key.series_subclass, parsed->positionals[i + 1], "series_subclass");
-            series_identity_shape_read_token(
-                key.index_family, parsed->positionals[i + 2], "index_family");
-            series_identity_shape_read_token(key.field, parsed->positionals[i + 3], "field");
+            series_identity_shape_read_token(key.code, parsed->positionals[i + 0], "code");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -371,21 +357,19 @@ void series_identity_shape_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
+        series_identity_shape_read_token(
+            req.change.write.code, parsed->positionals[next++], "code");
         series_identity_shape_read_token(
             req.change.write.asset_class, parsed->positionals[next++], "asset_class");
         series_identity_shape_read_token(
             req.change.write.series_subclass, parsed->positionals[next++], "series_subclass");
         series_identity_shape_read_token(
             req.change.write.index_family, parsed->positionals[next++], "index_family");
-        series_identity_shape_read_token(
-            req.change.write.field, parsed->positionals[next++], "field");
-        series_identity_shape_read_token(
-            req.change.write.requirement, parsed->positionals[next++], "requirement");
         series_identity_shape_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -432,21 +416,19 @@ void series_identity_shape_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
+        series_identity_shape_read_token(
+            req.change.write.code, parsed->positionals[next++], "code");
         series_identity_shape_read_token(
             req.change.write.asset_class, parsed->positionals[next++], "asset_class");
         series_identity_shape_read_token(
             req.change.write.series_subclass, parsed->positionals[next++], "series_subclass");
         series_identity_shape_read_token(
             req.change.write.index_family, parsed->positionals[next++], "index_family");
-        series_identity_shape_read_token(
-            req.change.write.field, parsed->positionals[next++], "field");
-        series_identity_shape_read_token(
-            req.change.write.requirement, parsed->positionals[next++], "requirement");
         series_identity_shape_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -505,23 +487,21 @@ void series_identity_shape_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 6 + 2) {
-            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 5 + 2) {
+            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::series_identity_shape_change change;
             series_identity_shape_read_token(
+                change.write.code, parsed->positionals[next++], "code");
+            series_identity_shape_read_token(
                 change.write.asset_class, parsed->positionals[next++], "asset_class");
             series_identity_shape_read_token(
                 change.write.series_subclass, parsed->positionals[next++], "series_subclass");
             series_identity_shape_read_token(
                 change.write.index_family, parsed->positionals[next++], "index_family");
-            series_identity_shape_read_token(
-                change.write.field, parsed->positionals[next++], "field");
-            series_identity_shape_read_token(
-                change.write.requirement, parsed->positionals[next++], "requirement");
             series_identity_shape_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -570,19 +550,12 @@ void series_identity_shape_commands::process_delete(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 1 + 2) {
+            fail(out) << "Expected " << (1 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        series_identity_shape_read_token(
-            req.removal.key.asset_class, parsed->positionals[next++], "asset_class");
-        series_identity_shape_read_token(
-            req.removal.key.series_subclass, parsed->positionals[next++], "series_subclass");
-        series_identity_shape_read_token(
-            req.removal.key.index_family, parsed->positionals[next++], "index_family");
-        series_identity_shape_read_token(
-            req.removal.key.field, parsed->positionals[next++], "field");
+        series_identity_shape_read_token(req.removal.key.code, parsed->positionals[next++], "code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -630,21 +603,15 @@ void series_identity_shape_commands::process_delete_many(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() < 4 + 2 || (parsed->positionals.size() - 2) % 4 != 0) {
+        if (parsed->positionals.size() < 1 + 2 || (parsed->positionals.size() - 2) % 1 != 0) {
             fail(out) << "Expected a whole number of key groups and an intent, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
-        const std::size_t key_groups = (parsed->positionals.size() - 2) / 4;
+        const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::series_identity_shape_key key;
-            series_identity_shape_read_token(
-                key.asset_class, parsed->positionals[i * 4 + 0], "asset_class");
-            series_identity_shape_read_token(
-                key.series_subclass, parsed->positionals[i * 4 + 1], "series_subclass");
-            series_identity_shape_read_token(
-                key.index_family, parsed->positionals[i * 4 + 2], "index_family");
-            series_identity_shape_read_token(key.field, parsed->positionals[i * 4 + 3], "field");
+            series_identity_shape_read_token(key.code, parsed->positionals[i * 1 + 0], "code");
             req.removals.push_back(messaging::series_identity_shape_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -693,18 +660,12 @@ void series_identity_shape_commands::process_versions(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4) {
-            fail(out) << "Expected 4 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
-        series_identity_shape_read_token(
-            req.key.asset_class, parsed->positionals[next++], "asset_class");
-        series_identity_shape_read_token(
-            req.key.series_subclass, parsed->positionals[next++], "series_subclass");
-        series_identity_shape_read_token(
-            req.key.index_family, parsed->positionals[next++], "index_family");
-        series_identity_shape_read_token(req.key.field, parsed->positionals[next++], "field");
+        series_identity_shape_read_token(req.key.code, parsed->positionals[next++], "code");
         series_identity_shape_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -747,21 +708,13 @@ void series_identity_shape_commands::process_version(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4) {
-            fail(out) << "Expected 4 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
         series_identity_shape_read_token(
-            req.key.series_identity_shape.asset_class, parsed->positionals[next++], "asset_class");
-        series_identity_shape_read_token(req.key.series_identity_shape.series_subclass,
-                                         parsed->positionals[next++],
-                                         "series_subclass");
-        series_identity_shape_read_token(req.key.series_identity_shape.index_family,
-                                         parsed->positionals[next++],
-                                         "index_family");
-        series_identity_shape_read_token(
-            req.key.series_identity_shape.field, parsed->positionals[next++], "field");
+            req.key.series_identity_shape.code, parsed->positionals[next++], "code");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

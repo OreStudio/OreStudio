@@ -27,6 +27,7 @@
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_check.hpp"
+#include "ores.marketdata.core/repository/series_identity_shape_entry_repository.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_repository.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -53,16 +54,17 @@ auto& projector_lg() {
 }
 
 /**
- * @brief What the shape table says about the families it states.
+ * @brief What the shapes and their entries say about the families they state.
  *
- * Read and grouped once per call, because a projection writes a batch and the table
- * is small. The statement and its enforcement live in =series_identity_shape_check=,
+ * Read and grouped once per call, because a projection writes a batch and the tables
+ * are small. The statement and its enforcement live in =series_identity_shape_check=,
  * which a test can call without a database.
  */
 class shape_book final {
 public:
     explicit shape_book(const ores::database::context& ctx)
-        : book_(repository::series_identity_shape_repository{}.read_latest(ctx)) {}
+        : book_(repository::series_identity_shape_repository{}.read_latest(ctx),
+                repository::series_identity_shape_entry_repository{}.read_latest(ctx)) {}
 
     void check(const domain::market_series& series,
                const domain::market_series_identity& row) const {

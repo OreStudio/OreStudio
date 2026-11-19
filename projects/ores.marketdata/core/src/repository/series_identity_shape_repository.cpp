@@ -30,6 +30,7 @@
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape_json_io.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.api/messaging/series_identity_shape_protocol.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_entity.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -41,7 +42,6 @@
 #include <iterator>
 #include <map>
 #include <optional>
-#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -61,7 +61,12 @@ std::string series_identity_shape_repository::sql() {
 }
 
 bool series_identity_shape_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "code",
+        "asset_class",
+        "series_subclass",
+        "index_family",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -78,15 +83,31 @@ series_identity_shape_list_order(const ores::utility::domain::order& order,
                                  bool default_descending) {
     if (order.field.empty())
         return query_builder::make_order(
-            default_columns,
-            default_descending != order.descending,
-            {"asset_class", "series_subclass", "index_family", "field"});
+            default_columns, default_descending != order.descending, {"code"});
     if (!series_identity_shape_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of series identity shapes cannot be ordered by " +
                                     order.field + ".");
-    return query_builder::make_order({order.field},
-                                     order.descending,
-                                     {"asset_class", "series_subclass", "index_family", "field"});
+    return query_builder::make_order({order.field}, order.descending, {"code"});
+}
+
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<query_builder::condition> series_identity_shape_filter_condition(
+    const std::optional<messaging::series_identity_shapes_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<query_builder::condition> r;
+    if (filter->code_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->code_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("code", std::move(values)));
+    }
+    if (filter->search && !filter->search->empty())
+        r.push_back(query_builder::contains_any({"code", "description"}, *filter->search));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -104,8 +125,7 @@ bool series_identity_shape_claim_reads_current(const ores::utility::domain::prec
 }
 
 using series_identity_shape_rows_by_key =
-    std::map<std::tuple<std::string, std::string, std::string, std::string>,
-             std::vector<domain::series_identity_shape>>;
+    std::map<std::tuple<std::string>, std::vector<domain::series_identity_shape>>;
 
 /**
  * @brief The rows a claim states: the caller's own, and none of the shared ones.
@@ -133,26 +153,14 @@ series_identity_shape_rows_by_key
 series_identity_shape_current_rows(series_identity_shape_repository& repo,
                                    const ores::database::context& ctx,
                                    const std::vector<domain::series_identity_shape>& of) {
-    std::vector<std::string> asset_classs;
-    asset_classs.reserve(of.size());
-    std::vector<std::string> series_subclasss;
-    series_subclasss.reserve(of.size());
-    std::vector<std::string> index_familys;
-    index_familys.reserve(of.size());
-    std::vector<std::string> fields;
-    fields.reserve(of.size());
+    std::vector<std::string> codes;
+    codes.reserve(of.size());
     for (const auto& row : of) {
-        asset_classs.push_back(row.asset_class);
-        series_subclasss.push_back(row.series_subclass);
-        index_familys.push_back(row.index_family);
-        fields.push_back(row.field);
+        codes.push_back(row.code);
     }
     series_identity_shape_rows_by_key current;
-    for (auto& item : series_identity_shape_claim_rows(
-             ctx, repo.read_latest(ctx, asset_classs, series_subclasss, index_familys, fields)))
-        current[std::make_tuple(
-                    item.asset_class, item.series_subclass, item.index_family, item.field)]
-            .push_back(std::move(item));
+    for (auto& item : series_identity_shape_claim_rows(ctx, repo.read_latest(ctx, codes)))
+        current[std::make_tuple(item.code)].push_back(std::move(item));
     return current;
 }
 
@@ -163,8 +171,7 @@ const std::vector<domain::series_identity_shape>&
 series_identity_shape_rows_of(const series_identity_shape_rows_by_key& current,
                               const domain::series_identity_shape& item) {
     static const std::vector<domain::series_identity_shape> none;
-    const auto found = current.find(
-        std::make_tuple(item.asset_class, item.series_subclass, item.index_family, item.field));
+    const auto found = current.find(std::make_tuple(item.code));
     return found == current.end() ? none : found->second;
 }
 
@@ -218,8 +225,8 @@ void series_identity_shape_repository::write(const context& ctx,
                                              const domain::series_identity_shape& v) {
     write(ctx,
           v,
-          series_identity_shape_replace_claim(series_identity_shape_claim_rows(
-              ctx, read_latest(ctx, v.asset_class, v.series_subclass, v.index_family, v.field))));
+          series_identity_shape_replace_claim(
+              series_identity_shape_claim_rows(ctx, read_latest(ctx, v.code))));
 }
 
 void series_identity_shape_repository::write(const context& ctx,
@@ -236,16 +243,12 @@ void series_identity_shape_repository::write(const context& ctx,
 void series_identity_shape_repository::write(const context& ctx,
                                              const domain::series_identity_shape& v,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing series identity shape. "
-                               << "asset_class: " << v.asset_class
-                               << " series_subclass: " << v.series_subclass
-                               << " index_family: " << v.index_family << " field: " << v.field;
+    BOOST_LOG_SEV(lg(), debug) << "Writing series identity shape. " << "code: " << v.code;
     const auto t = series_identity_shape_apply_claim(
         v,
         claim,
         series_identity_shape_claim_reads_current(claim) ?
-            series_identity_shape_claim_rows(
-                ctx, read_latest(ctx, v.asset_class, v.series_subclass, v.index_family, v.field)) :
+            series_identity_shape_claim_rows(ctx, read_latest(ctx, v.code)) :
             std::vector<domain::series_identity_shape>{});
     query_builder::execute_write_query(ctx,
                                        series_identity_shape_mapper::map(t),
@@ -283,11 +286,10 @@ series_identity_shape_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        query_builder::read<std::vector<series_identity_shape_entity>> |
-        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                             "valid_to"_c == max) |
-        query_builder::order_by("asset_class"_c, "series_subclass"_c, "index_family"_c, "field"_c);
+    const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
+                       query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<series_identity_shape_entity,
                                              domain::series_identity_shape>(
@@ -299,24 +301,14 @@ series_identity_shape_repository::read_latest(const context& ctx) {
 }
 
 std::vector<domain::series_identity_shape>
-series_identity_shape_repository::read_latest(const context& ctx,
-                                              const std::string& asset_class,
-                                              const std::string& series_subclass,
-                                              const std::string& index_family,
-                                              const std::string& field) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest series identity shape. "
-                               << "asset_class: " << asset_class
-                               << " series_subclass: " << series_subclass
-                               << " index_family: " << index_family << " field: " << field;
+series_identity_shape_repository::read_latest(const context& ctx, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest series identity shape. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
                        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                                            "asset_class"_c == asset_class &&
-                                            "series_subclass"_c == series_subclass &&
-                                            "index_family"_c == index_family &&
-                                            "field"_c == field && "valid_to"_c == max);
+                                            "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<series_identity_shape_entity,
                                              domain::series_identity_shape>(
@@ -324,28 +316,19 @@ series_identity_shape_repository::read_latest(const context& ctx,
         query,
         [](const auto& entities) { return series_identity_shape_mapper::map(entities); },
         lg(),
-        "Reading latest series identity shape by asset_class.");
+        "Reading latest series identity shape by code.");
 }
 
 
 std::vector<domain::series_identity_shape>
-series_identity_shape_repository::read_all(const context& ctx,
-                                           const std::string& asset_class,
-                                           const std::string& series_subclass,
-                                           const std::string& index_family,
-                                           const std::string& field) {
+series_identity_shape_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all series identity shape versions. "
-                               << "asset_class: " << asset_class
-                               << " series_subclass: " << series_subclass
-                               << " index_family: " << index_family << " field: " << field;
+                               << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<series_identity_shape_entity>> |
-        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                             "asset_class"_c == asset_class &&
-                             "series_subclass"_c == series_subclass &&
-                             "index_family"_c == index_family && "field"_c == field) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
         query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<series_identity_shape_entity,
@@ -354,29 +337,18 @@ series_identity_shape_repository::read_all(const context& ctx,
         query,
         [](const auto& entities) { return series_identity_shape_mapper::map(entities); },
         lg(),
-        "Reading all series identity shape versions by asset_class.");
+        "Reading all series identity shape versions by code.");
 }
 
-std::optional<domain::series_identity_shape>
-series_identity_shape_repository::read_at_version(const context& ctx,
-                                                  const std::string& asset_class,
-                                                  const std::string& series_subclass,
-                                                  const std::string& index_family,
-                                                  const std::string& field,
-                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading series identity shape at version. "
-                               << "asset_class: " << asset_class
-                               << " series_subclass: " << series_subclass
-                               << " index_family: " << index_family << " field: " << field
+std::optional<domain::series_identity_shape> series_identity_shape_repository::read_at_version(
+    const context& ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading series identity shape at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
                        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                                            "asset_class"_c == asset_class &&
-                                            "series_subclass"_c == series_subclass &&
-                                            "index_family"_c == index_family &&
-                                            "field"_c == field && "version"_c == version) |
+                                            "code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<series_identity_shape_entity,
@@ -392,18 +364,10 @@ series_identity_shape_repository::read_at_version(const context& ctx,
     return entities.front();
 }
 
-series_identity_shape_repository::remove_status
-series_identity_shape_repository::remove(const context& ctx,
-                                         const std::string& asset_class,
-                                         const std::string& series_subclass,
-                                         const std::string& index_family,
-                                         const std::string& field,
-                                         std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing series identity shape. "
-                               << "asset_class: " << asset_class
-                               << " series_subclass: " << series_subclass
-                               << " index_family: " << index_family << " field: " << field;
-    const auto current = read_latest(ctx, asset_class, series_subclass, index_family, field);
+series_identity_shape_repository::remove_status series_identity_shape_repository::remove(
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing series identity shape. " << "code: " << code;
+    const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -416,37 +380,31 @@ series_identity_shape_repository::remove(const context& ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::delete_from<series_identity_shape_entity> |
-        query_builder::where("tenant_id"_c == tid && "asset_class"_c == asset_class &&
-                             "series_subclass"_c == series_subclass &&
-                             "index_family"_c == index_family && "field"_c == field &&
-                             "valid_to"_c == max && "version"_c == expected);
+    const auto query = query_builder::delete_from<series_identity_shape_entity> |
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing series identity shape from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, asset_class, series_subclass, index_family, field).empty())
+    if (!read_latest(ctx, code).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
-void series_identity_shape_repository::remove(const context& ctx,
-                                              const std::string& asset_class,
-                                              const std::string& series_subclass,
-                                              const std::string& index_family,
-                                              const std::string& field) {
-    static_cast<void>(remove(ctx, asset_class, series_subclass, index_family, field, std::nullopt));
+void series_identity_shape_repository::remove(const context& ctx, const std::string& code) {
+    static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
-std::vector<domain::series_identity_shape>
-series_identity_shape_repository::read_latest(const context& ctx,
-                                              std::uint32_t offset,
-                                              std::uint32_t limit,
-                                              const ores::utility::domain::order& order,
-                                              const std::optional<std::string>& as_of) {
+std::vector<domain::series_identity_shape> series_identity_shape_repository::read_latest(
+    const context& ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::series_identity_shapes_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest series identity shapes with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
@@ -459,17 +417,18 @@ series_identity_shape_repository::read_latest(const context& ctx,
                                                      domain::series_identity_shape>(
         ctx,
         query,
-        series_identity_shape_list_order(
-            order, {"asset_class", "series_subclass", "index_family", "field"}, false),
-        query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
+        series_identity_shape_list_order(order, {"code"}, false),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                series_identity_shape_filter_condition(filter)),
         [](const auto& entities) { return series_identity_shape_mapper::map(entities); },
         lg(),
         "Reading latest series identity shapes with pagination.");
 }
 
-std::uint32_t
-series_identity_shape_repository::get_total_shape_count(const context& ctx,
-                                                        const std::optional<std::string>& as_of) {
+std::uint32_t series_identity_shape_repository::get_total_shape_count(
+    const context& ctx,
+    const std::optional<messaging::series_identity_shapes_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series identity shape count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -480,38 +439,26 @@ series_identity_shape_repository::get_total_shape_count(const context& ctx,
     return query_builder::execute_count_query<series_identity_shape_entity>(
         ctx,
         query,
-        query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                series_identity_shape_filter_condition(filter)),
         lg(),
         "Counting series identity shapes");
 }
 
 std::vector<domain::series_identity_shape>
 series_identity_shape_repository::read_latest(const context& ctx,
-                                              const std::vector<std::string>& asset_classs,
-                                              const std::vector<std::string>& series_subclasss,
-                                              const std::vector<std::string>& index_familys,
-                                              const std::vector<std::string>& fields) {
-    if (asset_classs.empty() || series_subclasss.empty() || index_familys.empty() || fields.empty())
+                                              const std::vector<std::string>& codes) {
+    if (codes.empty())
         return {};
-    if (series_subclasss.size() != asset_classs.size() ||
-        index_familys.size() != asset_classs.size() || fields.size() != asset_classs.size())
-        throw std::invalid_argument("series_identity_shape_repository::read_latest: key column "
-                                    "vectors must be the same length");
     // Every key is a bind and the store's bind count is finite, so a larger
     // key set is read one chunk at a time.
     constexpr std::size_t chunk_size = 1000;
-    if (asset_classs.size() > chunk_size) {
+    if (codes.size() > chunk_size) {
         std::vector<domain::series_identity_shape> all;
-        for (std::size_t begin = 0; begin < asset_classs.size(); begin += chunk_size) {
-            const auto end = std::min(begin + chunk_size, asset_classs.size());
+        for (std::size_t begin = 0; begin < codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, codes.size());
             auto part = read_latest(
-                ctx,
-                std::vector<std::string>(asset_classs.begin() + begin, asset_classs.begin() + end),
-                std::vector<std::string>(series_subclasss.begin() + begin,
-                                         series_subclasss.begin() + end),
-                std::vector<std::string>(index_familys.begin() + begin,
-                                         index_familys.begin() + end),
-                std::vector<std::string>(fields.begin() + begin, fields.begin() + end));
+                ctx, std::vector<std::string>(codes.begin() + begin, codes.begin() + end));
             all.insert(all.end(),
                        std::make_move_iterator(part.begin()),
                        std::make_move_iterator(part.end()));
@@ -523,10 +470,7 @@ series_identity_shape_repository::read_latest(const context& ctx,
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
                        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                                            "asset_class"_c.in(asset_classs) &&
-                                            "series_subclass"_c.in(series_subclasss) &&
-                                            "index_family"_c.in(index_familys) &&
-                                            "field"_c.in(fields) && "valid_to"_c == max);
+                                            "code"_c.in(codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<series_identity_shape_entity,
                                                     domain::series_identity_shape>(
         ctx,
@@ -534,36 +478,25 @@ series_identity_shape_repository::read_latest(const context& ctx,
         [](const auto& entities) { return series_identity_shape_mapper::map(entities); },
         lg(),
         "Reading latest series identity shapes by ids.");
-    // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (the query builder has no tuple IN), so filter down to the
-    // exact requested key-tuples here.
-    std::set<std::tuple<std::string, std::string, std::string, std::string>> requested;
-    for (std::size_t i = 0; i < asset_classs.size(); ++i)
-        requested.emplace(asset_classs[i], series_subclasss[i], index_familys[i], fields[i]);
-    std::vector<domain::series_identity_shape> filtered;
-    filtered.reserve(result.size());
-    for (auto& item : result) {
-        if (requested.contains(std::make_tuple(
-                item.asset_class, item.series_subclass, item.index_family, item.field)))
-            filtered.push_back(std::move(item));
-    }
-    return filtered;
+    return result;
 }
 
 void series_identity_shape_repository::remove(const context& ctx,
-                                              const std::vector<std::string>& asset_classs,
-                                              const std::vector<std::string>& series_subclasss,
-                                              const std::vector<std::string>& index_familys,
-                                              const std::vector<std::string>& fields) {
-    // Compound key: a per-column .in() DELETE would be a cross-product
-    // over-delete (rows outside the requested tuples), and a DELETE can't
-    // be filtered after the fact like a read -- remove one tuple at a time.
-    if (series_subclasss.size() != asset_classs.size() ||
-        index_familys.size() != asset_classs.size() || fields.size() != asset_classs.size())
-        throw std::invalid_argument(
-            "series_identity_shape_repository::remove: key column vectors must be the same length");
-    for (std::size_t i = 0; i < asset_classs.size(); ++i)
-        remove(ctx, asset_classs[i], series_subclasss[i], index_familys[i], fields[i]);
+                                              const std::vector<std::string>& codes) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (codes.empty())
+        return;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::delete_from<series_identity_shape_entity> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing series identity shapes.");
 }
 
 

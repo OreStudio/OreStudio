@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_identity.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape.hpp"
+#include "ores.marketdata.api/domain/series_identity_shape_entry.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <map>
 #include <optional>
@@ -46,19 +47,22 @@ text_of(const domain::market_series_identity& row, std::string_view column);
  * @brief Refuses a row its family's shape does not admit, naming the family and the field.
  *
  * A family is the asset class and the series subclass the taxonomy names, narrowed
- * by the index family for an index series. A missing required field is not an
- * identity of that family; a forbidden one states something untrue about it. A
- * family no row mentions is not enforced: the shape is a catalogue that grows, and
- * refusing every family nobody has stated yet would stop an ingest for a reason
- * that is the catalogue's.
+ * by the index family for an index series. A shape names the family, and its
+ * entries name the fields. A missing required field is not an identity of that
+ * family; a forbidden one states something untrue about it. A family no shape
+ * names is not enforced: the shapes are a catalogue that grows, and refusing every
+ * family nobody has stated yet would stop an ingest for a reason that is the
+ * catalogue's.
  *
  * @throws std::invalid_argument naming the series, the family and the field.
- * @throws std::logic_error when a stated row names a field no identity holds as
- * text. That is a fault of the catalogue, not of the series, so it is not an
- * @c std::invalid_argument and a caller that counts refused series does not count it.
+ * @throws std::logic_error when an entry names a field no identity holds as text,
+ * or names a shape that is not stated. That is a fault of the catalogue, not of the
+ * series, so it is not an @c std::invalid_argument and a caller that counts refused
+ * series does not count it.
  */
 ORES_MARKETDATA_CORE_EXPORT void
-check_identity_shape(const std::vector<domain::series_identity_shape>& stated,
+check_identity_shape(const std::vector<domain::series_identity_shape>& shapes,
+                     const std::vector<domain::series_identity_shape_entry>& entries,
                      const domain::market_series& series,
                      const domain::market_series_identity& row);
 
@@ -68,7 +72,9 @@ check_identity_shape(const std::vector<domain::series_identity_shape>& stated,
  */
 class ORES_MARKETDATA_CORE_EXPORT identity_shape_book final {
 public:
-    explicit identity_shape_book(const std::vector<domain::series_identity_shape>& stated);
+    /// @throws std::logic_error when an entry names a shape @p shapes does not hold.
+    identity_shape_book(const std::vector<domain::series_identity_shape>& shapes,
+                        const std::vector<domain::series_identity_shape_entry>& entries);
 
     /// As @c check_identity_shape, against the shapes this book holds.
     void check(const domain::market_series& series,
@@ -101,11 +107,12 @@ ORES_MARKETDATA_CORE_EXPORT void check_identity_kind(const domain::market_series
                                                      const domain::market_series_identity& row);
 
 /**
- * @brief Whether any stated row speaks for this series' family, so a caller can count
- * the series nobody has stated one for.
+ * @brief Whether a shape names this series' family, so a caller can count the series
+ * nobody has stated one for.
  */
 [[nodiscard]] ORES_MARKETDATA_CORE_EXPORT bool
-states_identity_shape(const std::vector<domain::series_identity_shape>& stated,
+states_identity_shape(const std::vector<domain::series_identity_shape>& shapes,
+                      const std::vector<domain::series_identity_shape_entry>& entries,
                       const domain::market_series& series,
                       const domain::market_series_identity& row);
 

@@ -2272,3 +2272,7 @@ tangled into the runnable script library
 * Performance Option Instruments
 
 - [[id:726AA31A-FF0A-5D43-BEB8-DFBF6AA7C7D1][How do I run the performance_option_instruments commands from the shell?]]
+
+* Series Identity Shape Entries
+
+- [[id:5811BEEE-5EEE-593C-AC1E-0377036D8DD5][How do I run the series_identity_shape_entries commands from the shell?]]

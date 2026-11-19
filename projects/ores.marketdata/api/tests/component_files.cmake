@@ -104,6 +104,8 @@ set(files
     "series_classification_rule_codec_roundtrip_tests.cpp"
     "series_classification_rule_protocol_codec_roundtrip_tests.cpp"
     "series_identity_shape_codec_roundtrip_tests.cpp"
+    "series_identity_shape_entry_codec_roundtrip_tests.cpp"
+    "series_identity_shape_entry_protocol_codec_roundtrip_tests.cpp"
     "series_identity_shape_protocol_codec_roundtrip_tests.cpp"
     "session_codec_roundtrip_tests.cpp"
     "session_protocol_codec_roundtrip_tests.cpp"

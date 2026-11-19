@@ -46,12 +46,12 @@ generate_synthetic_series_identity_shape(utility::generation::generation_context
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.asset_class = std::string("ir") + "-" + std::to_string(idx);
+    r.code = std::string("ir.index_fixing.ibor") + "-" + std::to_string(idx);
+    r.asset_class = std::string("ir");
     r.series_subclass = std::string("index_fixing");
     r.index_family = std::string("ibor");
-    r.field = std::string("ccy");
-    r.requirement = std::string("required");
-    r.description = std::string("The currency the rate is quoted in.");
+    r.description =
+        std::string("A fixing of an interbank offered rate, named by its currency and index.");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

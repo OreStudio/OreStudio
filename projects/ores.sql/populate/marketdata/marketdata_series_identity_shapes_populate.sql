@@ -21,30 +21,16 @@
 /**
  * Series Identity Shapes
  *
- * The identity fields each series family requires and forbids, so the writer that
- * projects an identity row from an oresmd URI can refuse a row that misses one or
- * carries one the family does not use.
+ * The identity shape of each series family the curve and fixing work creates: the
+ * IBOR and swap fixings, the IR rate series, and the FX fixing, spot, forward and
+ * volatility families. A shape is named by its code -- the asset class, the
+ * series subclass and the index family joined by dots -- and says what the family
+ * is for. Its entries, in marketdata_series_identity_shape_entries_populate.sql,
+ * state the fields it requires and forbids.
  *
- * A family is the asset class and the series subclass the taxonomy already names,
- * narrowed by the index family for an index series. The key is that triple plus
- * the field, because a family is not one shape: ir/index_fixing is an IBOR fixing
- * when the index is ibor -- a currency and an index name -- and a swap fixing when
- * the index is swap -- a currency and a tenor.
- *
- * required means a row of the family that leaves the field empty is not an
- * identity; forbidden means the field states something untrue about the family.
- * A field a family does not mention is one the family does not use, and the writer
- * leaves it as the URI parse left it.
- *
- * unit_ccy is forbidden on every rate family and required on every FX one. A rate
- * is a proportion, not a level of one currency in another, and the column says
- * nothing about a fixing, a swap rate or a curve.
- *
- * The rows here cover the families the curve and fixing work creates: the IBOR and
- * swap fixings, the IR rate series, and the FX spot, forward and volatility
- * families that share the mechanism. A family with no row is not stated yet, and
- * the writer warns for it rather than refusing: the warning is the backlog, and a
- * family an owner states is then refused when it is written wrong.
+ * A family is not one shape per subclass: ir.index_fixing is an IBOR fixing when
+ * the index is ibor and a swap fixing when the index is swap, so the index family
+ * is part of the code.
  *
  * This script is idempotent - uses INSERT ON CONFLICT.
  */
@@ -52,105 +38,32 @@
 \echo '--- Series Identity Shapes ---'
 
 insert into ores_marketdata_series_identity_shapes_tbl (
-    tenant_id, asset_class, series_subclass, index_family, field, requirement, description,
+    tenant_id, code, asset_class, series_subclass, index_family, description,
     version, modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    -- ─── IR: FIXINGS ─────────────────────────────────────────────────────────
-    (ores_utility_system_tenant_id_fn(), 'ir', 'index_fixing', 'ibor', 'ccy', 'required',
-     'A fixing is a rate of one currency, and the currency is part of what names it.',
+    (ores_utility_system_tenant_id_fn(), 'ir.index_fixing.ibor', 'ir', 'index_fixing', 'ibor',
+     'A fixing of an interbank offered rate or an overnight index, such as EURIBOR 3M or ESTR: one rate of one currency, published once a day and named by its index.',
      0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'index_fixing', 'ibor', 'index', 'required',
-     'The index family -- ibor, euribor -- is what the fixing is a fixing of.',
+    (ores_utility_system_tenant_id_fn(), 'ir.index_fixing.swap', 'ir', 'index_fixing', 'swap',
+     'A fixing of a swap rate, such as the EUR 10Y swap rate: one rate of one currency, named by its tenor because a swap index has no name of its own.',
      0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'index_fixing', 'ibor', 'index_name', 'required',
-     'An IBOR fixing is named by its index, and an overnight convention by its own name, so the name is part of its identity.',
+    (ores_utility_system_tenant_id_fn(), 'ir.yield', 'ir', 'yield', '',
+     'A quoted interest rate instrument that a curve is built from, such as a deposit, a swap or a basis swap of one currency at one tenor.',
      0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'index_fixing', 'ibor', 'unit_ccy', 'forbidden',
-     'A rate is a proportion, not a level of one currency in another.',
+    (ores_utility_system_tenant_id_fn(), 'fx.index_fixing.fx', 'fx', 'index_fixing', 'fx',
+     'An FX fixing that an authority publishes, such as the ECB reference rate: the price of one currency in another, as that authority fixes it.',
      0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'index_fixing', 'swap', 'ccy', 'required',
-     'A swap fixing is a rate of one currency.',
+    (ores_utility_system_tenant_id_fn(), 'fx.spot', 'fx', 'spot', '',
+     'The spot price of a currency pair: the price of the base currency in the unit currency, for delivery at spot.',
      0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'index_fixing', 'swap', 'index', 'required',
-     'The index family says the fixing is of a swap rather than of an IBOR.',
+    (ores_utility_system_tenant_id_fn(), 'fx.forward', 'fx', 'forward', '',
+     'A forward price or forward points of a currency pair at one tenor, which an FX forward curve is built from.',
      0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'index_fixing', 'swap', 'tenor', 'required',
-     'A swap fixing is named by its tenor: there is one fixing per tenor and no index name.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'index_fixing', 'swap', 'index_name', 'forbidden',
-     'A swap fixing has no index name; its tenor is what names it.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'index_fixing', 'swap', 'unit_ccy', 'forbidden',
-     'A rate is a proportion, not a level of one currency in another.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-
-    -- ─── IR: RATE SERIES ─────────────────────────────────────────────────────
-    (ores_utility_system_tenant_id_fn(), 'ir', 'yield', '', 'ccy', 'required',
-     'The curve a rate belongs to is a currency, and the rate is of that currency.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'yield', '', 'instrument_type', 'required',
-     'A deposit, a swap and a basis swap at the same tenor are different rates.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'yield', '', 'quote_type', 'required',
-     'The rate quoted and the spread quoted are two series of one instrument.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'ir', 'yield', '', 'unit_ccy', 'forbidden',
-     'A rate is a proportion, not a level of one currency in another; a cross-currency basis states its currencies in the fixed and float fields.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-
-    -- ─── FX: FIXINGS ─────────────────────────────────────────────────────────
-    (ores_utility_system_tenant_id_fn(), 'fx', 'index_fixing', 'fx', 'ccy', 'required',
-     'An FX fixing is the price of one currency in another, so both are part of its identity.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'index_fixing', 'fx', 'unit_ccy', 'required',
-     'An FX fixing is the price of one currency in another, so both are part of its identity.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'index_fixing', 'fx', 'index', 'required',
-     'The index family says the fixing is an FX one and not an interest rate one.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'index_fixing', 'fx', 'source', 'required',
-     'An FX fixing is the fixing of one authority; two authorities are two series.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-
-    -- ─── FX: SPOT, FORWARD AND VOLATILITY ────────────────────────────────────
-    (ores_utility_system_tenant_id_fn(), 'fx', 'spot', '', 'ccy', 'required',
-     'A pair is named by its base currency and its unit currency.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'spot', '', 'unit_ccy', 'required',
-     'A pair is named by its base currency and its unit currency.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'spot', '', 'instrument_type', 'required',
-     'A spot, a forward and an option of one pair are three instruments.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'spot', '', 'quote_type', 'required',
-     'The same pair quoted as a price and as points are two series.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'forward', '', 'ccy', 'required',
-     'A forward is named by the pair it is for.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'forward', '', 'unit_ccy', 'required',
-     'A forward is named by the pair it is for.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'forward', '', 'instrument_type', 'required',
-     'A forward and an option of one pair are two instruments.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'forward', '', 'quote_type', 'required',
-     'The same forward quoted as a price and as points are two series.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'volatility', '', 'ccy', 'required',
-     'A surface is named by the pair it is for and by its surface id.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'volatility', '', 'unit_ccy', 'required',
-     'A surface is named by the pair it is for.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'volatility', '', 'instrument_type', 'required',
-     'A surface and a forward of one pair are two instruments.',
-     0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes'),
-    (ores_utility_system_tenant_id_fn(), 'fx', 'volatility', '', 'quote_type', 'required',
-     'The same surface quoted as a volatility and as a price are two series.',
+    (ores_utility_system_tenant_id_fn(), 'fx.volatility', 'fx', 'volatility', '',
+     'A volatility quote of a currency pair, which an FX volatility surface is built from.',
      0, current_user, current_user, 'system.initial_load', 'Initial population of series identity shapes')
-on conflict (tenant_id, asset_class, series_subclass, index_family, field)
+on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 

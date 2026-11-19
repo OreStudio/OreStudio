@@ -56,6 +56,12 @@ TEST_CASE("ores::marketdata::messaging::series_identity_shape_lookup",
         ores::marketdata::messaging::series_identity_shape_lookup>();
 }
 
+TEST_CASE("ores::marketdata::messaging::series_identity_shapes_filter",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::marketdata::messaging::series_identity_shapes_filter>();
+}
+
 TEST_CASE("ores::marketdata::messaging::series_identity_shape_event",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::series_identity_shape_event>();

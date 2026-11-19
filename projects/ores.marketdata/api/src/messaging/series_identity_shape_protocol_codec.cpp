@@ -139,6 +139,28 @@ wire_traits<ores::marketdata::messaging::series_identity_shape_lookup>::read_msg
     return object::read_msgpack<ores::marketdata::messaging::series_identity_shape_lookup>(data);
 }
 
+std::string wire_traits<ores::marketdata::messaging::series_identity_shapes_filter>::write_json(
+    const ores::marketdata::messaging::series_identity_shapes_filter& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::series_identity_shapes_filter
+wire_traits<ores::marketdata::messaging::series_identity_shapes_filter>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::series_identity_shapes_filter>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::series_identity_shapes_filter>::write_msgpack(
+    const ores::marketdata::messaging::series_identity_shapes_filter& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::series_identity_shapes_filter
+wire_traits<ores::marketdata::messaging::series_identity_shapes_filter>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::series_identity_shapes_filter>(data);
+}
+
 std::string wire_traits<ores::marketdata::messaging::series_identity_shape_event>::write_json(
     const ores::marketdata::messaging::series_identity_shape_event& v) {
     return object::write_json(v);

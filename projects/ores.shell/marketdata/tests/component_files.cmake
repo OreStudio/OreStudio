@@ -50,6 +50,7 @@ set(files
     "route_commands_tests.cpp"
     "series_classification_rule_commands_tests.cpp"
     "series_identity_shape_commands_tests.cpp"
+    "series_identity_shape_entry_commands_tests.cpp"
     "subscription_commands_tests.cpp"
     "subscription_interval_commands_tests.cpp"
     "supplier_commands_tests.cpp"

@@ -127,31 +127,20 @@ public:
      * @param version The version to fetch.
      * @return The series identity shape at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::series_identity_shape>
-    get_shape_at_version(const std::string& asset_class,
-                         const std::string& series_subclass,
-                         const std::string& index_family,
-                         const std::string& field,
-                         std::uint32_t version);
+    std::optional<domain::series_identity_shape> get_shape_at_version(const std::string& code,
+                                                                      std::uint32_t version);
 
     /**
      * @brief Retrieves a single series identity shape by its primary key.
      *
      * @return The series identity shape if found, std::nullopt otherwise.
      */
-    std::optional<domain::series_identity_shape> get_shape(const std::string& asset_class,
-                                                           const std::string& series_subclass,
-                                                           const std::string& index_family,
-                                                           const std::string& field);
+    std::optional<domain::series_identity_shape> get_shape(const std::string& code);
 
     /**
      * @brief Retrieves a batch of series identity shapes by primary key.
      */
-    std::vector<domain::series_identity_shape>
-    get_shapes(const std::vector<std::string>& asset_classs,
-               const std::vector<std::string>& series_subclasss,
-               const std::vector<std::string>& index_familys,
-               const std::vector<std::string>& fields);
+    std::vector<domain::series_identity_shape> get_shapes(const std::vector<std::string>& codes);
 
     /**
      * @brief Saves a series identity shape (creates or updates).
@@ -174,28 +163,19 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_shape(const std::string& asset_class,
-                      const std::string& series_subclass,
-                      const std::string& index_family,
-                      const std::string& field);
+    void delete_shape(const std::string& code);
 
     /**
      * @brief Deletes series identity shapes by their primary keys.
      */
-    void delete_shapes(const std::vector<std::string>& asset_classs,
-                       const std::vector<std::string>& series_subclasss,
-                       const std::vector<std::string>& index_familys,
-                       const std::vector<std::string>& fields);
+    void delete_shapes(const std::vector<std::string>& codes);
 
     /**
      * @brief Retrieves all historical versions of a series identity shape.
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::series_identity_shape> get_shape_history(const std::string& asset_class,
-                                                                 const std::string& series_subclass,
-                                                                 const std::string& index_family,
-                                                                 const std::string& field);
+    std::vector<domain::series_identity_shape> get_shape_history(const std::string& code);
 
 private:
     context ctx_;

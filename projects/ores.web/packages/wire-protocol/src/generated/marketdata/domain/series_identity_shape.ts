@@ -33,11 +33,10 @@
 export interface SeriesIdentityShape {
     version: number;
     tenant_id: string;
+    code: string;
     asset_class: string;
     series_subclass: string;
     index_family: string;
-    field: string;
-    requirement: string;
     description: string;
     modified_by: string;
     performed_by: string;

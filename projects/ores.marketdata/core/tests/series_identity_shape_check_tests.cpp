@@ -38,6 +38,7 @@ namespace {
 using ores::marketdata::domain::market_series;
 using ores::marketdata::domain::market_series_identity;
 using ores::marketdata::domain::series_identity_shape;
+using ores::marketdata::domain::series_identity_shape_entry;
 using ores::marketdata::repository::check_identity_kind;
 using ores::marketdata::repository::check_identity_shape;
 using ores::marketdata::repository::identity_shape_book;
@@ -45,17 +46,25 @@ using ores::marketdata::repository::states_identity_shape;
 
 constexpr const char* shape_tags = "[series_identity][shape]";
 
-series_identity_shape stated(const std::string& subclass,
-                             const std::string& index_family,
-                             const std::string& field,
-                             const std::string& requirement) {
+constexpr const char* ibor_code = "ir.index_fixing.ibor";
+
+/// The one shape every case states: the IBOR fixing family.
+const std::vector<series_identity_shape> shapes = [] {
     series_identity_shape shape;
+    shape.code = ibor_code;
     shape.asset_class = "ir";
-    shape.series_subclass = subclass;
-    shape.index_family = index_family;
-    shape.field = field;
-    shape.requirement = requirement;
-    return shape;
+    shape.series_subclass = "index_fixing";
+    shape.index_family = "ibor";
+    shape.description = "A fixing of an interbank offered rate.";
+    return std::vector<series_identity_shape>{shape};
+}();
+
+series_identity_shape_entry stated(const std::string& field, const std::string& requirement) {
+    series_identity_shape_entry entry;
+    entry.shape_code = ibor_code;
+    entry.field = field;
+    entry.requirement = requirement;
+    return entry;
 }
 
 market_series series_of(const std::string& subclass, const std::string& uri) {
@@ -83,17 +92,16 @@ market_series_identity ibor_fixing(const std::string& ccy,
 TEST_CASE("an_ibor_fixing_states_its_currency_its_index_and_its_name", shape_tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<series_identity_shape> shape{
-        stated("index_fixing", "ibor", "ccy", "required"),
-        stated("index_fixing", "ibor", "index", "required"),
-        stated("index_fixing", "ibor", "index_name", "required"),
-        stated("index_fixing", "ibor", "unit_ccy", "forbidden")};
+    const std::vector<series_identity_shape_entry> entries{stated("ccy", "required"),
+                                                           stated("index", "required"),
+                                                           stated("index_name", "required"),
+                                                           stated("unit_ccy", "forbidden")};
     const auto series =
         series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
     const auto row = ibor_fixing("USD", "SOFR");
 
-    CHECK_NOTHROW(check_identity_shape(shape, series, row));
-    CHECK(states_identity_shape(shape, series, row));
+    CHECK_NOTHROW(check_identity_shape(shapes, entries, series, row));
+    CHECK(states_identity_shape(shapes, entries, series, row));
     CHECK(row.index_name == "SOFR");
     CHECK(row.unit_ccy.empty());
 }
@@ -101,65 +109,61 @@ TEST_CASE("an_ibor_fixing_states_its_currency_its_index_and_its_name", shape_tag
 TEST_CASE("an_ibor_fixing_that_misses_a_required_field_is_refused_by_name", shape_tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<series_identity_shape> shape{
-        stated("index_fixing", "ibor", "index_name", "required")};
+    const std::vector<series_identity_shape_entry> entries{stated("index_name", "required")};
     const auto series = series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor");
 
-    CHECK_THROWS_WITH(check_identity_shape(shape, series, ibor_fixing("USD", "")),
+    CHECK_THROWS_WITH(check_identity_shape(shapes, entries, series, ibor_fixing("USD", "")),
                       Catch::Matchers::ContainsSubstring("field 'index_name' is required"));
 }
 
 TEST_CASE("an_ibor_fixing_that_carries_a_unit_currency_is_refused_by_name", shape_tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<series_identity_shape> shape{
-        stated("index_fixing", "ibor", "unit_ccy", "forbidden")};
+    const std::vector<series_identity_shape_entry> entries{stated("unit_ccy", "forbidden")};
     const auto series =
         series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&unit_ccy=EUR");
 
-    CHECK_THROWS_WITH(check_identity_shape(shape, series, ibor_fixing("USD", "SOFR", "EUR")),
-                      Catch::Matchers::ContainsSubstring("field 'unit_ccy' is forbidden"));
+    CHECK_THROWS_WITH(
+        check_identity_shape(shapes, entries, series, ibor_fixing("USD", "SOFR", "EUR")),
+        Catch::Matchers::ContainsSubstring("field 'unit_ccy' is forbidden"));
 }
 
 TEST_CASE("a_family_no_shape_states_is_projected_unguarded_and_reported", shape_tags) {
     auto lg(make_logger(test_suite));
 
     // A stated family is another family's shape: the guard must not borrow it.
-    const std::vector<series_identity_shape> shape{
-        stated("index_fixing", "ibor", "ccy", "required")};
+    const std::vector<series_identity_shape_entry> entries{stated("ccy", "required")};
     const auto series = series_of("yield", "oresmd://ir/USD?type=series&instrument=swap");
     auto row = ibor_fixing("", "");
     row.asset_class = "ir";
     row.index.clear();
 
-    CHECK_NOTHROW(check_identity_shape(shape, series, row));
-    CHECK_FALSE(states_identity_shape(shape, series, row));
+    CHECK_NOTHROW(check_identity_shape(shapes, entries, series, row));
+    CHECK_FALSE(states_identity_shape(shapes, entries, series, row));
 }
 
 TEST_CASE("a_forbidden_field_is_refused_while_a_field_nobody_states_is_left_alone", shape_tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<series_identity_shape> shape{
-        stated("index_fixing", "ibor", "unit_ccy", "forbidden")};
+    const std::vector<series_identity_shape_entry> entries{stated("unit_ccy", "forbidden")};
     const auto series =
         series_of("index_fixing", "oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA");
     auto row = ibor_fixing("GBP", "SONIA");
     // tenor is not mentioned by the family, so the guard has no opinion on it.
     row.tenor = "3M";
 
-    CHECK_NOTHROW(check_identity_shape(shape, series, row));
+    CHECK_NOTHROW(check_identity_shape(shapes, entries, series, row));
 }
 
 TEST_CASE("a_shape_that_names_a_field_an_identity_does_not_hold_is_refused", shape_tags) {
     auto lg(make_logger(test_suite));
 
     // A misspelt forbidden field would otherwise pass every row of its family.
-    const std::vector<series_identity_shape> shape{
-        stated("index_fixing", "ibor", "unit_currency", "forbidden")};
+    const std::vector<series_identity_shape_entry> entries{stated("unit_currency", "forbidden")};
     const auto series =
         series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
 
-    CHECK_THROWS_WITH(check_identity_shape(shape, series, ibor_fixing("USD", "SOFR")),
+    CHECK_THROWS_WITH(check_identity_shape(shapes, entries, series, ibor_fixing("USD", "SOFR")),
                       Catch::Matchers::ContainsSubstring(
                           "shape names field 'unit_currency', which an identity does not hold"));
 
@@ -168,7 +172,7 @@ TEST_CASE("a_shape_that_names_a_field_an_identity_does_not_hold_is_refused", sha
     bool refused_as_a_series = false;
     bool faulted_the_catalogue = false;
     try {
-        check_identity_shape(shape, series, ibor_fixing("USD", "SOFR"));
+        check_identity_shape(shapes, entries, series, ibor_fixing("USD", "SOFR"));
     } catch (const std::invalid_argument&) {
         refused_as_a_series = true;
     } catch (const std::logic_error&) {
@@ -181,10 +185,9 @@ TEST_CASE("a_shape_that_names_a_field_an_identity_does_not_hold_is_refused", sha
 TEST_CASE("a_book_answers_as_the_stated_rows_do", shape_tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<series_identity_shape> shape{
-        stated("index_fixing", "ibor", "index_name", "required"),
-        stated("index_fixing", "ibor", "unit_ccy", "forbidden")};
-    const identity_shape_book book(shape);
+    const std::vector<series_identity_shape_entry> entries{stated("index_name", "required"),
+                                                           stated("unit_ccy", "forbidden")};
+    const identity_shape_book book(shapes, entries);
     const auto series =
         series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
 
@@ -218,4 +221,27 @@ TEST_CASE("a_series_that_is_not_an_index_is_left_to_its_own_writers", shape_tags
 
     CHECK_NOTHROW(check_identity_kind(
         series_of("yield", "oresmd://ir/USD?type=series&instrument=swap"), row));
+}
+
+TEST_CASE("a_shape_with_no_entries_states_its_family_and_refuses_nothing", shape_tags) {
+    auto lg(make_logger(test_suite));
+
+    const identity_shape_book book(shapes, {});
+    const auto series = series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor");
+
+    CHECK(book.states(series, ibor_fixing("USD", "")));
+    CHECK_NOTHROW(book.check(series, ibor_fixing("USD", "", "EUR")));
+}
+
+TEST_CASE("an_entry_whose_shape_is_not_stated_is_a_fault_of_the_catalogue", shape_tags) {
+    auto lg(make_logger(test_suite));
+
+    auto entry = stated("ccy", "required");
+    entry.shape_code = "ir.index_fixing.swap";
+
+    const std::vector<series_identity_shape_entry> entries{entry};
+    CHECK_THROWS_AS(identity_shape_book(shapes, entries), std::logic_error);
+    CHECK_THROWS_WITH(identity_shape_book(shapes, entries),
+                      Catch::Matchers::ContainsSubstring(
+                          "names shape 'ir.index_fixing.swap', which no stated shape has"));
 }

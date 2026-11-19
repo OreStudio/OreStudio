@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-806 tables in 21 groups.
+803 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -593,10 +593,7 @@ entity "trading" as trading {
   ores_trading_callable_swap_instruments_tbl
   ores_trading_cap_floor_instruments_tbl
   ores_trading_cash_position_instruments_tbl
-  ores_trading_cbo_basket_members_tbl
   ores_trading_cbo_instruments_tbl
-  ores_trading_cbo_structures_tbl
-  ores_trading_cbo_tranches_tbl
   ores_trading_cds_instruments_tbl
   ores_trading_commodity_basket_constituents_tbl
   ores_trading_commodity_instruments_tbl
@@ -691,7 +688,6 @@ entity "trading" as trading {
   ores_trading_script_coarsenings_tbl
   ores_trading_script_inputs_tbl
   ores_trading_script_results_tbl
-  ores_trading_script_twin_inputs_tbl
   ores_trading_script_variants_tbl
   ores_trading_scripted_instruments_tbl
   ores_trading_scripted_parameter_values_tbl
@@ -726,7 +722,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-165 tables — ores_schema.trading.puml
+161 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {
@@ -879,6 +875,7 @@ entity "marketdata" as marketdata {
   ores_marketdata_series_axes_tbl
   ores_marketdata_series_axis_values_tbl
   ores_marketdata_series_classification_rules_tbl
+  ores_marketdata_series_identity_shape_entries_tbl
   ores_marketdata_series_identity_shapes_tbl
   ores_marketdata_sessions_tbl
   ores_marketdata_subscription_intervals_tbl
@@ -889,7 +886,7 @@ entity "marketdata" as marketdata {
 }
 note bottom of marketdata
 Market Data (Quotes, Fixings, Series)
-37 tables — ores_schema.marketdata.puml
+38 tables — ores_schema.marketdata.puml
 end note
 
 entity "analytics" as analytics {

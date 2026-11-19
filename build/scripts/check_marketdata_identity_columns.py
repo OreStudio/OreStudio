@@ -184,24 +184,23 @@ def views() -> dict[str, tuple[list[str], set[str]]]:
     return found
 
 
-SHAPES_SQL = (
+ENTRIES_SQL = (
     REPO_ROOT
-    / "projects/ores.sql/populate/marketdata/marketdata_series_identity_shapes_populate.sql"
+    / "projects/ores.sql/populate/marketdata/marketdata_series_identity_shape_entries_populate.sql"
 )
 
-SHAPE_ROW = re.compile(
-    r"\(ores_utility_system_tenant_id_fn\(\),\s*'(\w+)',\s*'(\w+)',\s*'(\w*)',\s*"
-    r"'(\w+)',\s*'(\w+)',"
+ENTRY_ROW = re.compile(
+    r"\(ores_utility_system_tenant_id_fn\(\),\s*gen_random_uuid\(\),\s*'([\w.]+)',\s*'(\w+)',\s*'(\w+)',"
 )
 
 
-def stated_shapes() -> list[tuple[str, str, str, str, str]]:
-    """Every shape row the seed states: asset class, subclass, index family, field, requirement."""
-    text = SHAPES_SQL.read_text()
-    rows = SHAPE_ROW.findall(text)
+def stated_entries() -> list[tuple[str, str, str]]:
+    """Every shape entry the seed states: shape code, field, requirement."""
+    text = ENTRIES_SQL.read_text()
+    rows = ENTRY_ROW.findall(text)
     if not rows:
         raise SystemExit(
-            f"FAIL: parsed no shape rows from {SHAPES_SQL.relative_to(REPO_ROOT)}; "
+            f"FAIL: parsed no shape entries from {ENTRIES_SQL.relative_to(REPO_ROOT)}; "
             "the check needs fixing."
         )
     return rows
@@ -307,18 +306,18 @@ def main() -> int:
             "nor an identity field, nor an index field."
         )
 
-    # 1b. Every field a shape row states is a column of the projection, and every
-    #     requirement the row states is one the table admits. A shape that names a
+    # 1b. Every field a shape entry states is a column of the projection, and every
+    #     requirement the entry states is one the table admits. A shape that names a
     #     column nobody has is a rule no writer can keep.
-    for asset_class, subclass, index_family, field, requirement in stated_shapes():
+    for shape_code, field, requirement in stated_entries():
         if field not in columns:
             problems.append(
-                f"a shape row states field '{field}' for {asset_class}/{subclass}/"
-                f"{index_family}, which is no column of {CREATE_TABLE}."
+                f"a shape entry states field '{field}' for {shape_code}, "
+                f"which is no column of {CREATE_TABLE}."
             )
         if requirement not in ("required", "forbidden"):
             problems.append(
-                f"a shape row states requirement '{requirement}' for field '{field}', "
+                f"a shape entry states requirement '{requirement}' for field '{field}', "
                 "which is neither required nor forbidden."
             )
 

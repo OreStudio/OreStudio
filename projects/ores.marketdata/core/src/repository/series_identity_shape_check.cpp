@@ -36,6 +36,7 @@ namespace {
 using domain::market_series;
 using domain::market_series_identity;
 using domain::series_identity_shape;
+using domain::series_identity_shape_entry;
 
 /// A family, as the shape table keys it: the asset class, the subclass, the index family.
 using family_key = std::tuple<std::string, std::string, std::string>;
@@ -82,13 +83,22 @@ void check_identity_kind(const market_series& series, const market_series_identi
                                 series.series_subclass + "'");
 }
 
-identity_shape_book::identity_shape_book(const std::vector<series_identity_shape>& stated) {
-    for (const auto& row : stated) {
-        auto& shape = families_[family_key{row.asset_class, row.series_subclass, row.index_family}];
-        if (row.requirement == required_says)
-            shape.required.push_back(row.field);
-        else if (row.requirement == forbidden_says)
-            shape.forbidden.push_back(row.field);
+identity_shape_book::identity_shape_book(const std::vector<series_identity_shape>& shapes,
+                                         const std::vector<series_identity_shape_entry>& entries) {
+    std::map<std::string, family_shape*, std::less<>> by_code;
+    for (const auto& shape : shapes) {
+        by_code[shape.code] =
+            &families_[family_key{shape.asset_class, shape.series_subclass, shape.index_family}];
+    }
+    for (const auto& entry : entries) {
+        const auto shape = by_code.find(entry.shape_code);
+        if (shape == by_code.end())
+            throw std::logic_error("an entry for field '" + entry.field + "' names shape '" +
+                                   entry.shape_code + "', which no stated shape has");
+        if (entry.requirement == required_says)
+            shape->second->required.push_back(entry.field);
+        else if (entry.requirement == forbidden_says)
+            shape->second->forbidden.push_back(entry.field);
     }
 }
 
@@ -126,16 +136,18 @@ bool identity_shape_book::states(const market_series& series,
     return families_.contains(family_key_of(row, series));
 }
 
-void check_identity_shape(const std::vector<series_identity_shape>& stated,
+void check_identity_shape(const std::vector<series_identity_shape>& shapes,
+                          const std::vector<series_identity_shape_entry>& entries,
                           const market_series& series,
                           const market_series_identity& row) {
-    identity_shape_book(stated).check(series, row);
+    identity_shape_book(shapes, entries).check(series, row);
 }
 
-bool states_identity_shape(const std::vector<series_identity_shape>& stated,
+bool states_identity_shape(const std::vector<series_identity_shape>& shapes,
+                           const std::vector<series_identity_shape_entry>& entries,
                            const market_series& series,
                            const market_series_identity& row) {
-    return identity_shape_book(stated).states(series, row);
+    return identity_shape_book(shapes, entries).states(series, row);
 }
 
 }

@@ -1623,6 +1623,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_window_barrier_option_instruments:write', 'Create and modify FX window barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_window_barrier_option_instruments:delete', 'Delete equity window barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_window_barrier_option_instruments:delete', 'Delete FX window barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_worst_of_basket_swap_instruments:read', 'View FX worst-of basket swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_worst_of_basket_swap_instruments:write', 'Create and modify FX worst-of basket swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_worst_of_basket_swap_instruments:delete', 'Delete FX worst-of basket swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_generic_barrier_option_instruments:read', 'View equity generic barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_generic_barrier_option_instruments:write', 'Create and modify equity generic barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_generic_barrier_option_instruments:delete', 'Delete equity generic barrier option instruments');
@@ -1653,6 +1656,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barrier_levels:read',                         'View instrument barrier levels');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barrier_levels:write',                        'Create and modify instrument barrier levels');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barrier_levels:delete',                       'Delete instrument barrier levels');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_values:read',                         'View instrument values');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_values:write',                        'Create and modify instrument values');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_values:delete',                       'Delete instrument values');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_underlyings:read',                         'View instrument underlyings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_underlyings:write',                        'Create and modify instrument underlyings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_underlyings:delete',                       'Delete instrument underlyings');

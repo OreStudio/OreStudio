@@ -65,6 +65,7 @@
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_window_barrier_option_instrument_entity.hpp"
+#include "ores.trading.core/repository/fx_worst_of_basket_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/rate_instrument_entity.hpp"
@@ -492,6 +493,18 @@ struct entity_write_observer<
     static void
     observe(const context& ctx,
             const ores::trading::repository::fx_window_barrier_option_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
+        ores::trading::service::refresh_trade_economic_digest(
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
+    }
+};
+
+template <>
+struct entity_write_observer<ores::trading::repository::fx_worst_of_basket_swap_instrument_entity> {
+    static constexpr bool observes = true;
+    static void
+    observe(const context& ctx,
+            const ores::trading::repository::fx_worst_of_basket_swap_instrument_entity& entity,
             ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);

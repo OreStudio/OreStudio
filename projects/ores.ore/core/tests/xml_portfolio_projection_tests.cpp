@@ -3783,16 +3783,6 @@ TEST_CASE("a_european_option_barrier_and_an_fx_worst_of_hold_their_terms_as_rows
                 return p.value.value_or("");
         return "<absent>";
     };
-    const auto count_of = [](const ores::trading::domain::scripted_instrument_data& data,
-                             std::string_view name) {
-        std::size_t n = 0;
-        for (const auto& p : data.parameters)
-            if (p.name == name)
-                for (const auto& v : data.parameter_values)
-                    if (v.parameter_sequence_number == p.sequence_number)
-                        ++n;
-        return n;
-    };
     const auto check_barrier = [&](const ores::ore::xml::trade_import_item& item) {
         const auto* data = scripted_data_of(item.instrument);
         REQUIRE(data != nullptr);
@@ -3802,20 +3792,46 @@ TEST_CASE("a_european_option_barrier_and_an_fx_worst_of_hold_their_terms_as_rows
         CHECK(data->instrument_underlyings[0].underlying_role == "optionunderlying");
         CHECK(data->instrument_underlyings[1].underlying_role == "barrierunderlying");
     };
-    const auto check_worst_of = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+    const auto check_worst_of = [](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = std::get_if<ores::trading::domain::fx_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        CHECK(count_of(*data, "InitialPrices") == 2u);
-        CHECK(count_of(*data, "KnockOutLevels") == 2u);
-        CHECK(value_of(*data, "FloatingIndex") == "EUR-EURIBOR-3M");
-        CHECK(value_of(*data, "BermudanKnockIn") == "false");
+        REQUIRE(data->worst_of_basket_swaps.size() == 1);
+        const auto& row = data->worst_of_basket_swaps[0];
+        CHECK(row.long_short == "Long");
+        CHECK(row.currency == "EUR");
+        CHECK(row.quantity == 1000000.0);
+        CHECK(row.initial_fixed_rate == std::optional(decimal_of("0.02")));
+        CHECK(row.fixed_rate == decimal_of("0.05"));
+        CHECK(row.floating_index == "EUR-EURIBOR-3M");
+        CHECK(row.floating_spread == std::optional(decimal_of("0.0")));
+        CHECK(row.floating_day_count_fraction == "Actual/360");
+        CHECK(row.bermudan_knock_in == std::optional(false));
+        CHECK(row.knock_in_level == std::optional(decimal_of("0.75")));
+        CHECK(row.accumulating_fixed_coupons == std::optional(false));
+        CHECK(row.strike == std::optional(decimal_of("1.0")));
+        CHECK_FALSE(row.floating_lookback.has_value());
+        const auto values_of = [&](std::string_view role) {
+            std::vector<ores::utility::decimal::decimal> out;
+            for (const auto& v : data->values)
+                if (v.value_role == role)
+                    out.push_back(v.value);
+            return out;
+        };
+        CHECK(values_of("initial_price") == std::vector{decimal_of("1.115"), decimal_of("0.835")});
+        CHECK(values_of("knock_out_level") == std::vector{decimal_of("1.0"), decimal_of("1.0")});
+        CHECK(values_of("fixed_trigger_level") ==
+              std::vector{decimal_of("0.75"), decimal_of("0.75")});
         CHECK(data->instrument_underlyings.size() == 2u);
         const auto fixing = std::ranges::find_if(data->schedules, [](const auto& s) {
-            return s.schedule_role == "floatingfixingschedule";
+            return s.schedule_role == "floating_fixing_schedule";
         });
         REQUIRE(fixing != data->schedules.end());
         CHECK(fixing->shift == std::optional<std::string>("-2D"));
-        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "floatingpaydates"));
+        CHECK(fixing->base_schedule == std::optional<std::string>("FloatingPeriodSchedule"));
+        CHECK(
+            ores::ore::domain::option_block::has_product_schedule(*data, "floating_pay_schedule"));
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data,
+                                                                    "floating_period_schedule"));
     };
 
     const auto items = portfolio_projection::map(document);

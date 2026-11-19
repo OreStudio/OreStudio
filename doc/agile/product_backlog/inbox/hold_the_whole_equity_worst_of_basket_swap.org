@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 907E951B-F3E5-4D71-81C6-B78649006C30
+:END:
+#+title: Hold the whole equity worst-of basket swap
+#+description: EquityWorstOfBasketSwap is held on equity_swap_instrument, which keeps only part of the element: the initial fixed pay date, the knock-in pay date, the floating lookback, rate cutoff, averaging and spread flags, the strike and five of its eight schedules have no column or row, so a round trip drops them. FxWorstOfBasketSwap now holds every term on a table of its own, with its level lists as instrument_value rows; the equity type should be held the same way, which also retires its basket_swap_period rows.
+#+type: capture
+#+level: cross
+#+filetags: :trading:ore:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Hold EquityWorstOfBasketSwap on a table of its own with every term ORE's
+=worstOfBasketSwapData2= states as a column, its basket members as underlying
+rows, its eight schedules as schedule rows and its InitialPrices, KnockOutLevels
+and FixedTriggerLevels as =instrument_value= rows, as FxWorstOfBasketSwap is
+held. Retire its =equity_basket_constituent= and =basket_swap_period= rows.
+
+* Why
+
+The type is held on =equity_swap_instrument=, which keeps only part of the
+element. The initial fixed pay date, the knock-in pay date, the floating
+lookback and rate cutoff, the averaging and spread flags, the strike and five of
+the eight schedules have no column or row, so an imported trade loses them on
+the round trip. Two worst-of types also hold the same lists in two shapes.
+
+* References
+
+- PR #4887, which holds FxWorstOfBasketSwap whole and adds =instrument_value=.
+
+* See also
+
+-

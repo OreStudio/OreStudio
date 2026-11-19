@@ -100,6 +100,7 @@
 #include "ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_variance_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_window_barrier_option_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/fx_worst_of_basket_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/index_credit_default_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/index_credit_default_swap_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/inflation_swap_instrument_event_registrar.hpp"
@@ -258,6 +259,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto fx_window_barrier_option_instrument_sub = ores::trading::service::messaging::
         register_fx_window_barrier_option_instrument_event_mapping(event_source, event_bus, nats);
+    auto fx_worst_of_basket_swap_instrument_sub = ores::trading::service::messaging::
+        register_fx_worst_of_basket_swap_instrument_event_mapping(event_source, event_bus, nats);
     auto equity_forward_instrument_sub =
         ores::trading::service::messaging::register_equity_forward_instrument_event_mapping(
             event_source, event_bus, nats);

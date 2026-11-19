@@ -33,6 +33,7 @@
 #include "ores.trading.core/repository/instrument_barrier_level_repository.hpp"
 #include "ores.trading.core/repository/instrument_barrier_repository.hpp"
 #include "ores.trading.core/repository/instrument_underlying_repository.hpp"
+#include "ores.trading.core/repository/instrument_value_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/repository/range_bound_repository.hpp"
 #include "ores.trading.core/repository/scripted_parameter_repository.hpp"
@@ -89,6 +90,7 @@
 #include "ores.trading.core/service/fx_vanilla_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/fx_window_barrier_option_instrument_service.hpp"
+#include "ores.trading.core/service/fx_worst_of_basket_swap_instrument_service.hpp"
 #include "ores.trading.core/service/index_credit_default_swap_instrument_service.hpp"
 #include "ores.trading.core/service/index_credit_default_swap_option_instrument_service.hpp"
 #include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
@@ -153,7 +155,7 @@ void populate_instruments_for_trades(const Ctx& ctx,
         eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids,
         eq_acc_ids, eq_pos_ids, eq_cash_ids, eq_pvs_ids, fxaso_ids, fxpvs_ids, eq_bo_ids, fxbo_ids,
         eq_bvs_ids, eq_fva_ids, fxbvs_ids, fxfva_ids, eq_beo_ids, eq_sro_ids, fxbeo_ids, fxsro_ids,
-        eq_wbo_ids, eq_gbo_ids, fxwbo_ids;
+        eq_wbo_ids, eq_gbo_ids, fxwbo_ids, fxwob_ids;
     std::vector<std::string> all_ids;
 
     for (const auto& item : items) {
@@ -282,6 +284,9 @@ void populate_instruments_for_trades(const Ctx& ctx,
             case instrument_table::fx_window_barrier_option_instrument:
                 fxwbo_ids.push_back(id);
                 break;
+            case instrument_table::fx_worst_of_basket_swap_instrument:
+                fxwob_ids.push_back(id);
+                break;
             case instrument_table::rate_instrument:
                 rate_ids.push_back(id);
                 break;
@@ -349,6 +354,9 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::instrument_barrier_level_repository barrier_level_repo;
         auto levels = barrier_level_repo.read_by_instruments_batch(ctx, all_ids);
         take(levels, batch.instrument_barrier_levels);
+        repository::instrument_value_repository value_repo;
+        auto values = value_repo.read_by_instruments_batch(ctx, all_ids);
+        take(values, batch.instrument_values);
 
         repository::instrument_underlying_repository underlying_repo;
         auto underlyings = underlying_repo.read_by_instruments_batch(ctx, all_ids);
@@ -669,6 +677,11 @@ void populate_instruments_for_trades(const Ctx& ctx,
         service::fx_window_barrier_option_instrument_service svc(ctx);
         auto rows = svc.get_fx_window_barrier_option_instruments(fxwbo_ids);
         take(rows, batch.fx_window_barrier_option_instruments);
+    }
+    if (!fxwob_ids.empty()) {
+        service::fx_worst_of_basket_swap_instrument_service svc(ctx);
+        auto rows = svc.get_fx_worst_of_basket_swap_instruments(fxwob_ids);
+        take(rows, batch.fx_worst_of_basket_swap_instruments);
     }
 
     // The equity family.

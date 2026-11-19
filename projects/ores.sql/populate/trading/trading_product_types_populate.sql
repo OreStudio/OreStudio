@@ -222,7 +222,7 @@ insert into ores_trading_product_types_tbl (
     ('FxWorstOfBasketSwap', ores_utility_system_tenant_id_fn(), 0, 'FX Worst-Of Basket Swap', 'A swap whose coupon references the worst performing asset in a basket.',
      'ORE User Guide', 'worstofbasketswap.tex',
      'swap', 'scripted', 'non_flow',
-     false, false, 'scripted_instrument', 37,
+     false, false, 'fx_worst_of_basket_swap_instrument', 37,
      'ores_trading_service', 'system.initial_load', 'Seed product types'),
     ('FxBestEntryOption', ores_utility_system_tenant_id_fn(), 0, 'FX Best Entry Option', 'An option whose payoff uses the best observed entry level of the underlying.',
      'ORE User Guide', 'bestentryoption.tex',

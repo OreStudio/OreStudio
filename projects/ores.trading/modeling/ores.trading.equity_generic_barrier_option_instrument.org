@@ -194,6 +194,10 @@ The convention of the settlement lag, as =SettlementConvention= states it.
 The first date the barriers are watched, as the =StartDate= of =Barriers=
 states it.
 
+#+begin_src cpp :name generator
+std::optional<std::chrono::year_month_day>(std::chrono::year_month_day{std::chrono::year{2027}, std::chrono::month{1}, std::chrono::day{4}})
+#+end_src
+
 ** barrier_end_date
 :PROPERTIES:
 :type:     date
@@ -204,6 +208,10 @@ states it.
 
 The last date the barriers are watched, as the =EndDate= of =Barriers=
 states it.
+
+#+begin_src cpp :name generator
+std::optional<std::chrono::year_month_day>(std::chrono::year_month_day{std::chrono::year{2027}, std::chrono::month{6}, std::chrono::day{30}})
+#+end_src
 
 ** kiko_type
 :PROPERTIES:

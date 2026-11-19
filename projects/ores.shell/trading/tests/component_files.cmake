@@ -78,6 +78,7 @@ set(files
     "fx_vanilla_option_instrument_commands_tests.cpp"
     "fx_variance_swap_instrument_commands_tests.cpp"
     "fx_window_barrier_option_instrument_commands_tests.cpp"
+    "fx_worst_of_basket_swap_instrument_commands_tests.cpp"
     "index_credit_default_swap_instrument_commands_tests.cpp"
     "index_credit_default_swap_option_instrument_commands_tests.cpp"
     "inflation_swap_instrument_commands_tests.cpp"

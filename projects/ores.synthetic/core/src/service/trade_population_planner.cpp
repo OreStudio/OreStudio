@@ -34,6 +34,7 @@
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/builders/scripted_builders.hpp"
 #include "ores.trading.api/builders/volatility_product_builders.hpp"
+#include "ores.trading.api/builders/worst_of_basket_swap_builders.hpp"
 #include "ores.trading.api/domain/bond_product_batch.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
@@ -2173,7 +2174,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
         for (std::size_t i = 1; i < periods.size(); ++i)
             pays.emplace_back(sys_days{periods[i]} + days{2});
         const auto count = pays.size();
-        return scripted_batch_of(
+        return built(
             tb::fx_worst_of_basket_swap_builder(
                 {.members =
                      std::vector<tb::worst_of_member>{
@@ -2193,8 +2194,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                  .knock_in_level = level(0.75),
                  .strike = level(1.0),
                  .position = position})
-                .build(),
-            type);
+                .build());
     }
     if (type == "FxForwardVolatilityAgreement") {
         // The volatility fixes halfway to the expiry, which the straddle runs to.

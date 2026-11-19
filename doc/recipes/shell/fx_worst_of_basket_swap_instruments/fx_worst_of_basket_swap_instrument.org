@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 8C2CF700-CFA2-5795-933A-DDBFBA2F4753
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_worst_of_basket_swap_instruments commands from the shell?
+#+description: Every command the fx_worst_of_basket_swap_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_worst_of_basket_swap_instruments:
+
+This file documents the fx_worst_of_basket_swap_instruments resource at the shell, one section per command. Every command is a subcommand of =fx_worst_of_basket_swap_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E34E0AC0-5CF5-5F73-930E-EC25A89DE20E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_worst_of_basket_swap_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.fx_worst_of_basket_swap_instruments.list=.
+
+#+name: fx_worst_of_basket_swap_instruments-list
+#+begin_src ores-shell :tangle fx_worst_of_basket_swap_instruments-list.ores :exports none
+fx_worst_of_basket_swap_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E21C0544-F0CA-592B-A832-992C4E77F29A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_worst_of_basket_swap_instruments get <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.fx_worst_of_basket_swap_instruments.get=.
+
+#+name: fx_worst_of_basket_swap_instruments-get
+#+begin_src ores-shell :tangle fx_worst_of_basket_swap_instruments-get.ores :exports none
+fx_worst_of_basket_swap_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 64709EAC-A4B6-573F-B1AE-A61427384A81
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_worst_of_basket_swap_instruments get-many <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.fx_worst_of_basket_swap_instruments.get_many=.
+
+#+name: fx_worst_of_basket_swap_instruments-get-many
+#+begin_src ores-shell :tangle fx_worst_of_basket_swap_instruments-get-many.ores :exports none
+fx_worst_of_basket_swap_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: E72FCB1C-DF68-58A2-819D-DD99B220A9FB
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_worst_of_basket_swap_instruments add <trade_id> <trade_type_code> <trade_activity_id> <long_short> <currency> <quantity> <fixed_rate> <floating_index> <floating_day_count_fraction> <initial_fixed_rate> <initial_fixed_pay_date> <knock_in_pay_date> <bermudan_knock_in> <knock_in_level> <accumulating_fixed_coupons> <accruing_fixed_coupons> <floating_spread> <floating_lookback> <floating_rate_cutoff> <is_averaged> <include_spread> <strike> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_worst_of_basket_swap_instruments.put=.
+
+#+name: fx_worst_of_basket_swap_instruments-add
+#+begin_src ores-shell :tangle fx_worst_of_basket_swap_instruments-add.ores :exports none
+fx_worst_of_basket_swap_instruments add 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 1 __none__ __none__ - - - - - - - - - - - - - __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 191BD8A3-41B2-501A-A270-00122B84D117
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_worst_of_basket_swap_instruments set <trade_id> <trade_type_code> <trade_activity_id> <long_short> <currency> <quantity> <fixed_rate> <floating_index> <floating_day_count_fraction> <initial_fixed_rate> <initial_fixed_pay_date> <knock_in_pay_date> <bermudan_knock_in> <knock_in_level> <accumulating_fixed_coupons> <accruing_fixed_coupons> <floating_spread> <floating_lookback> <floating_rate_cutoff> <is_averaged> <include_spread> <strike> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.fx_worst_of_basket_swap_instruments.put=.
+
+#+name: fx_worst_of_basket_swap_instruments-set
+#+begin_src ores-shell :tangle fx_worst_of_basket_swap_instruments-set.ores :exports none
+fx_worst_of_basket_swap_instruments set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 1 __none__ __none__ - - - - - - - - - - - - - __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D8D211B7-E584-5334-BE9D-2F4151C15929
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_worst_of_basket_swap_instruments put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <long_short> <currency> <quantity> <fixed_rate> <floating_index> <floating_day_count_fraction> <initial_fixed_rate> <initial_fixed_pay_date> <knock_in_pay_date> <bermudan_knock_in> <knock_in_level> <accumulating_fixed_coupons> <accruing_fixed_coupons> <floating_spread> <floating_lookback> <floating_rate_cutoff> <is_averaged> <include_spread> <strike> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_worst_of_basket_swap_instruments.put_many=.
+
+#+name: fx_worst_of_basket_swap_instruments-put-many
+#+begin_src ores-shell :tangle fx_worst_of_basket_swap_instruments-put-many.ores :exports none
+fx_worst_of_basket_swap_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 1 __none__ __none__ - - - - - - - - - - - - - __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 04A91D44-0FA8-5EED-8D1D-4D5D09414068
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_worst_of_basket_swap_instruments delete <trade_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.fx_worst_of_basket_swap_instruments.delete=.
+
+#+name: fx_worst_of_basket_swap_instruments-delete
+#+begin_src ores-shell :tangle fx_worst_of_basket_swap_instruments-delete.ores :exports none
+fx_worst_of_basket_swap_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F627320F-AA38-5562-B9AE-135F74AEF8B3
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_worst_of_basket_swap_instruments delete-many <trade_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_worst_of_basket_swap_instruments.delete_many=.
+
+#+name: fx_worst_of_basket_swap_instruments-delete-many
+#+begin_src ores-shell :tangle fx_worst_of_basket_swap_instruments-delete-many.ores :exports none
+fx_worst_of_basket_swap_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 358F3D33-9640-5084-B5FB-30DC63EFDA86
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_worst_of_basket_swap_instruments versions <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.fx_worst_of_basket_swap_instruments_versions.list=.
+
+#+name: fx_worst_of_basket_swap_instruments-versions
+#+begin_src ores-shell :tangle fx_worst_of_basket_swap_instruments-versions.ores :exports none
+fx_worst_of_basket_swap_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 227D23D5-16B3-5962-997B-E5C05901252B
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_worst_of_basket_swap_instruments version <trade_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.fx_worst_of_basket_swap_instruments_versions.get=.
+
+#+name: fx_worst_of_basket_swap_instruments-version
+#+begin_src ores-shell :tangle fx_worst_of_basket_swap_instruments-version.ores :exports none
+fx_worst_of_basket_swap_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

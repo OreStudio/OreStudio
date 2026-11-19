@@ -85,6 +85,7 @@
 #include "ores.trading.core/messaging/instrument_schedule_date_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_schedule_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_strike_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_value_registrar.hpp"
 #include "ores.trading.core/messaging/lifecycle_event_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/lifecycle_event_registrar.hpp"
 #include "ores.trading.core/messaging/long_short_type_history_provider_registrar.hpp"
@@ -292,6 +293,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_equity_tarf_instrument_handlers(nats, ctx, verifier));
     append(register_instrument_barrier_handlers(nats, ctx, verifier));
     append(register_instrument_barrier_level_handlers(nats, ctx, verifier));
+    append(register_instrument_value_handlers(nats, ctx, verifier));
     append(register_origin_type_handlers(nats, ctx, verifier));
     append(register_scripted_parameter_handlers(nats, ctx, verifier));
     append(register_scripted_parameter_value_handlers(nats, ctx, verifier));

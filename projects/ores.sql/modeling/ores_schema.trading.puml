@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 155
+Tables: 157
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -3607,6 +3607,57 @@ package "trading" #E8F5E9 {
     underlying; an FX index is named FX- and the index.
     end note
 
+    entity ores_trading_fx_worst_of_basket_swap_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * long_short : text <<FK>>
+        * currency : text
+        * quantity : double
+        * fixed_rate : numeric(38, 12)
+        * floating_index : text
+        * floating_day_count_fraction : text
+          initial_fixed_rate : numeric(38, 12)
+          initial_fixed_pay_date : date
+          knock_in_pay_date : date
+          bermudan_knock_in : boolean
+          knock_in_level : numeric(38, 12)
+          accumulating_fixed_coupons : boolean
+          accruing_fixed_coupons : boolean
+          floating_spread : numeric(38, 12)
+          floating_lookback : text
+          floating_rate_cutoff : text
+          is_averaged : boolean
+          include_spread : boolean
+          strike : numeric(38, 12)
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_fx_worst_of_basket_swap_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Worst-Of Basket Swap Instrument Table
+    Represents FxWorstOfBasketSwap trades: a swap that pays a floating leg
+    against fixed coupons whose payment and knock-out depend on the worst
+    performing FX rate in a basket. ORE reads it through a class of its own.
+    The basket members are instrument underlying rows under the role
+    underlying; their initial prices and the per-date knock-out and fixed
+    trigger levels are instrument value rows under the roles initial_price,
+    knock_out_level and fixed_trigger_level; the eight schedules are
+    instrument schedule rows.
+    end note
+
     entity ores_trading_index_cds_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -4177,6 +4228,36 @@ package "trading" #E8F5E9 {
     or a position holds one per member.
     A product's fact row keeps the first underlying's name as its summary; the
     rows keep everything the document states.
+    end note
+
+    entity ores_trading_instrument_values_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * value_role : text <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * value : numeric(38, 12)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_instrument_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Instrument Value Table
+    One value of a list a product states, keyed to the list's role and the value's
+    ordinal.
+    A worst-of basket swap states an initial price per basket member and a
+    knock-out and a fixed trigger level per determination date. Each list is a
+    list of plain numbers in the document, so each value is a row of its own rather
+    than a column of the product, and the role names the list it belongs to.
     end note
 
     entity ores_trading_knock_out_swap_instruments_tbl <<temporal>> #C6F0D8 {
@@ -6213,6 +6294,9 @@ ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_variance_swap_instrumen
 ores_trading_moment_types_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_window_barrier_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_window_barrier_option_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_fx_worst_of_basket_swap_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_worst_of_basket_swap_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_worst_of_basket_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_index_cds_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_index_cds_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_index_cds_option_instruments_tbl : "has"
@@ -6248,6 +6332,8 @@ ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_strikes_tbl : "
 ores_trading_long_short_types_tbl ||--o{ ores_trading_instrument_strikes_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_instrument_underlyings_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_underlyings_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_instrument_values_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_values_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
 ores_trading_barrier_types_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"

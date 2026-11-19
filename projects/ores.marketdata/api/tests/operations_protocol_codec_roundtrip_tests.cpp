@@ -391,6 +391,11 @@ TEST_CASE("ores::marketdata::messaging::get_series_ticks_request", "[codec][roun
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_series_ticks_request>();
 }
 
+TEST_CASE("ores::marketdata::messaging::get_provider_ticks_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_provider_ticks_request>();
+}
+
 TEST_CASE("ores::marketdata::messaging::get_series_ticks_response",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_series_ticks_response>();

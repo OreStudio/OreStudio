@@ -122,9 +122,16 @@ did not change when the copies went
 
 ** History
 
-The history read is unchanged. A stream is named by the provider and the series
-URI, and the read checks the subscription before it returns a point. The system
-tenant reads every provider.
+A stream is named by the provider and the series URI, and a read checks the
+subscription before it returns a point. Two calls read it, and both return the
+same reply:
+
+- =get_series_ticks= names the party's series by its typed identity. A chart of a
+  party's series uses it.
+- =get_provider_ticks= names the provider and the series URI, as the live subject
+  does, so it needs no series of the party. A view of a vendor's quotes uses it,
+  and the system tenant reads every provider with it. A read for a screen needs
+  the display right, and a read for a service takes either right.
 
 * See also
 

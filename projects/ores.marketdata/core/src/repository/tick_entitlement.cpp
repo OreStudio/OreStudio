@@ -77,6 +77,14 @@ bool may_read_ticks(const ores::database::context& ctx, const std::string& provi
     return holds_right(ctx, provider_code, may_show);
 }
 
+bool may_read_ticks(const ores::database::context& ctx,
+                    const std::string& provider_code,
+                    bool for_display) {
+    if (ctx.tenant_id().is_system())
+        return true;
+    return holds_right(ctx, provider_code, for_display ? may_display : may_show);
+}
+
 std::set<std::string> computable_providers(const ores::database::context& ctx) {
     return providers_where(ctx, may_compute);
 }

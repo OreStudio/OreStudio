@@ -45,9 +45,24 @@ readable_providers(const ores::database::context& ctx);
 
 /**
  * @brief Whether the session's party may read the ticks of @p provider_code.
+ *
+ * The read of a party's own series uses it: display or non-display serves, and the system
+ * tenant gets no pass, because it has no series of a party to read. A read named by the provider
+ * uses the overload that takes the use.
  */
 ORES_MARKETDATA_CORE_EXPORT bool may_read_ticks(const ores::database::context& ctx,
                                                 const std::string& provider_code);
+
+/**
+ * @brief Whether the session may read the ticks of @p provider_code for the use it states.
+ *
+ * A read that a screen shows to a person needs the display right, when @p for_display; any other
+ * read needs display or non-display. The system tenant runs the installation and reads every
+ * provider. A session with no party in any other tenant reads none.
+ */
+ORES_MARKETDATA_CORE_EXPORT bool may_read_ticks(const ores::database::context& ctx,
+                                                const std::string& provider_code,
+                                                bool for_display);
 
 /**
  * @brief The providers whose ticks the session's party may compute from.

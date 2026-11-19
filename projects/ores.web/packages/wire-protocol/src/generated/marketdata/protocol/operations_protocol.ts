@@ -1468,6 +1468,22 @@ export interface GetSeriesTicksRequest {
 }
 
 /**
+ * @brief Asks for every tick of one provider's series in a span of time.
+ *
+ * The span is half open, as get_series_ticks_request's is, and a span over the ceiling is
+ * refused, never cut. The subscription is the door: a party must subscribe to the provider with
+ * the right the use needs, and the system tenant reads every provider.
+ */
+export interface GetProviderTicksRequest {
+    provider_code: string;
+    series_uri: string;
+    from_instant: string;
+    to_instant: string | null;
+    coordinates: string[];
+    for_display: boolean;
+}
+
+/**
  * @brief Every tick of a span of one series.
  *
  * The coordinates come first, once each. The times follow as the first instant and a gap in
@@ -1578,6 +1594,7 @@ export const subjects = {
     export_market_data_request: 'marketdata.v1.ops.export_market_data',
     market_tick: 'marketdata.v1.ops.market_tick',
     get_series_ticks_request: 'marketdata.v1.ops.get_series_ticks',
+    get_provider_ticks_request: 'marketdata.v1.ops.get_provider_ticks',
     list_watchable_feeds_request: 'marketdata.v1.ops.list_watchable_feeds',
     store_market_state_request: 'marketdata.v1.ops.store_market_state',
 } as const;
@@ -1614,6 +1631,7 @@ export const requiresSession = {
     export_market_data_request: true,
     market_tick: false,
     get_series_ticks_request: true,
+    get_provider_ticks_request: true,
     list_watchable_feeds_request: true,
     store_market_state_request: true,
 } as const;

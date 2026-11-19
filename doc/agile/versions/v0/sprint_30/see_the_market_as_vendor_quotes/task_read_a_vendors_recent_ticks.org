@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :marketdata:ticks:history:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-a-vendors-recent-ticks
+#+pr: 4882
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -26,11 +26,11 @@ A screen that opens on a vendor's quotes fills its recent history in one call, f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -41,9 +41,24 @@ A screen that opens on a vendor's quotes fills its recent history in one call, f
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *The call.* =get_provider_ticks= names the provider and the series URI, as
+   the live subject and the stream do, so a view of a vendor needs no series of
+   the party and the system tenant can read. It returns the history call's
+   reply. A point URI names its series.
+2. *The rule.* =may_read_ticks(ctx, provider, for_display)=: every provider for
+   the system tenant; for a party, the display right for a screen, display or
+   non-display for a service.
+3. *The reader.* =series_tick_reader= shares the span checks and the stream
+   read between the two calls.
+4. *The refusal.* A URI the codec cannot read is refused with a new outcome,
+   =uri_invalid=, and not answered with an empty reply.
+5. *Tests.* The read by series and by point URI; the display right for a screen
+   and the non-display right for a service; the system tenant; no party; a bad
+   URI.
+
+=get_series_ticks= keeps its rule (display or non-display), because its callers
+are charts of a party's own series and services; moving it to the use is a change
+of its own.
 
 * Measurements
 
@@ -78,12 +93,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4882][#4882]] | [marketdata] Read a provider's ticks by the series URI, for every tenant |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The two may_read_ticks overloads differ for the system tenant | tick_entitlement.hpp | Accept | The two-argument overload states why it gives the system tenant no pass. |
+| 2 | The system tenant reads without the display right | tick_entitlement.cpp | Decline | The product owner's decision: the system tenant sees every provider. |
+| 3 | The codec's text reaches the reply | series_tick_reader.cpp | Decline | The other refusals of a URI carry the codec's message too; it is what tells the caller what is wrong. |
+| 4 | The handler repeats get_ticks | series_ticks_handler.hpp | Decline | Two variants; a helper would cost more reading than it saves. |
+| 5 | System tenant and point URI tests | service_series_tick_reader_tests.cpp | No change | Both exist: the_system_tenant_reads_a_provider_no_party_of_it_subscribes_to and a_provider_read_by_a_point_uri_reads_the_points_series. |
 
 * Result
+
+- =marketdata.v1.ops.get_provider_ticks= reads a provider's series by the
+  provider code and the series URI, in one reply of the history call's shape. A
+  point URI names its series; a URI the codec cannot read is refused with the new
+  outcome =uri_invalid=.
+- The rule is =may_read_ticks(ctx, provider, for_display)=: every provider for the
+  system tenant; the display right for a screen and either right for a service.
+- Tests: the read by series and by point URI, the display right for a screen and
+  the non-display right for a service, the system tenant, no party, a bad URI;
+  and a loop test in which the newest tick of the read is the tick the feed
+  subject carried, at the same instant and value.
+- Full build clean. Suites: market data service 318 cases, core 467, API 1039 in
+  the codec tests, database 78, shell application 65, HTTP market data 34; BFF
+  1313; all pass.

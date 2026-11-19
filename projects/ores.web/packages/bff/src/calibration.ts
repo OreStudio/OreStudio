@@ -157,6 +157,7 @@ export function calibrationCoverage(feeds: readonly CalibratedFeed[]) {
 export interface IrCoverageFeed {
     config_id: string;
     refused: boolean;
+    window_days_override?: number | null | undefined;
     start: {
         from_fixing: boolean;
         provider_code: string;
@@ -196,7 +197,13 @@ export interface IrCurveOfCurrency {
     discount_curve_name: string;
     published_as_of: string;
     published_state: string;
+    /** The first fact that keeps this curve from being live, or empty when it is. */
+    gap: IrCurvePublishGap;
+    gap_reason: string;
 }
+
+/** What keeps one curve from being live: it never published, its set is not in use, or it is old. */
+export type IrCurvePublishGap = '' | 'no_publish' | 'not_live' | 'stale_publish';
 
 /** The fields of a published set that say when it was published and where it stands. */
 export interface IrCoveragePublish {
@@ -210,7 +217,8 @@ export interface IrCurveCoverageRow {
     config_id: string;
     source_name: string;
     provider_code: string;
-    window_days: number;
+    /** The feed's own window, when it overrides the policy's; null when the policy's applies. */
+    window_days_override: number | null;
     bootstrap_config_id: string;
     bootstrap_config_name: string;
     published_as_of: string;
@@ -230,7 +238,6 @@ export interface IrCurveCoverageInput {
     readonly generationConfigs: readonly IrCoverageConfig[];
     readonly bootstrapConfigs: readonly IrCoverageBootstrapConfig[];
     readonly publishedBySeries: ReadonlyMap<string, IrCoveragePublish | undefined>;
-    readonly windowDays: number;
     readonly now: Date;
 }
 
@@ -335,13 +342,13 @@ function coverageRow(
         config_id: config?.id ?? '',
         source_name: config?.source_name ?? '',
         provider_code: feed?.start.provider_code ?? '',
-        window_days: input.windowDays,
+        window_days_override: feed?.window_days_override ?? null,
         bootstrap_config_id: bootstrap?.id ?? '',
         bootstrap_config_name: bootstrap?.name ?? '',
         published_as_of: published?.as_of ?? '',
         published_state: published?.state_code ?? '',
         ...gapOf(feed, bootstrap, published, input.now),
-        curves: curvesOf(bootstrapConfigs, input.publishedBySeries),
+        curves: curvesOf(bootstrapConfigs, input.publishedBySeries, input.now),
     };
 }
 
@@ -354,6 +361,7 @@ function isFunding(config: IrCoverageBootstrapConfig): boolean {
 function curvesOf(
     configs: readonly IrCoverageBootstrapConfig[],
     publishedBySeries: ReadonlyMap<string, IrCoveragePublish | undefined>,
+    now: Date,
 ): IrCurveOfCurrency[] {
     const names = new Map(configs.map((config) => [config.id, config.name]));
     return [...configs]
@@ -373,6 +381,7 @@ function curvesOf(
                 discount_curve_name: discountsOff === '' ? '' : (names.get(discountsOff) ?? ''),
                 published_as_of: published?.as_of ?? '',
                 published_state: published?.state_code ?? '',
+                ...publishGapOf(published, now),
             };
         });
 }
@@ -420,6 +429,14 @@ function gapOf(
     if (bootstrap === undefined) {
         return { gap: 'no_curve_config', gap_reason: NO_CURVE_CONFIG_REASON };
     }
+    return publishGapOf(published, now);
+}
+
+/** The first fact that keeps one published curve from being live, or no gap. */
+function publishGapOf(
+    published: IrCoveragePublish | undefined,
+    now: Date,
+): { gap: IrCurvePublishGap; gap_reason: string } {
     if (published === undefined) {
         return { gap: 'no_publish', gap_reason: NO_PUBLISH_REASON };
     }
@@ -481,7 +498,6 @@ async function latestPublishedSets(
 async function interestRateCoverage(
     session: LiveSession,
     feeds: readonly CalibratedFeed[],
-    windowDays: number,
 ): Promise<IrCurveCoverageRow[]> {
     const [configRows, bootstrapRows] = await Promise.all([
         readAll<ListIrCurveGenerationConfigsResponse>(
@@ -504,7 +520,6 @@ async function interestRateCoverage(
         generationConfigs,
         bootstrapConfigs,
         publishedBySeries: await latestPublishedSets(session, bootstrapConfigs),
-        windowDays,
         now: new Date(),
     });
 }
@@ -716,7 +731,7 @@ export function registerCalibrationRoutes(
         }
         return {
             ...composed,
-            ir_curves: await interestRateCoverage(session, reply.feeds, reply.policy.window_days),
+            ir_curves: await interestRateCoverage(session, reply.feeds),
         };
     });
 

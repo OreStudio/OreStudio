@@ -864,7 +864,7 @@ const irCurveCoverageRowSchema = z.object({
     config_id: z.string(),
     source_name: z.string(),
     provider_code: z.string(),
-    window_days: z.int(),
+    window_days_override: z.int().nullable(),
     bootstrap_config_id: z.string(),
     bootstrap_config_name: z.string(),
     published_as_of: z.string(),
@@ -881,6 +881,8 @@ const irCurveCoverageRowSchema = z.object({
                 discount_curve_name: z.string(),
                 published_as_of: z.string(),
                 published_state: z.string(),
+                gap: z.string(),
+                gap_reason: z.string(),
             }),
         )
         .default([]),

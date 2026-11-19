@@ -25,17 +25,17 @@ export const CALIBRATED_CLASSES = ['fx', 'interest_rates'] as const;
 /** The class whose calibration is a coverage of published curves, not a list of feeds. */
 export const IR_CALIBRATED_CLASS = 'interest_rates';
 
-/** How one currency's IR curve stands: published, or the first gap that stops it being covered. */
+/** How a curve or a currency stands: live, or the first gap that stops it. */
 export interface IrCoverageState {
-    /** Green for a published curve, amber for a gap that needs attention. */
+    /** Green for a live curve, amber for a gap that needs attention. */
     readonly tone: 'up' | 'warn';
-    /** The word the state speaks: published, or the gap's code. */
+    /** The word the state speaks: live, or the gap's code. */
     readonly word: string;
 }
 
 /** A row is covered when its gap is empty; any stated gap is the word the row shows. */
 export function irCoverageState(row: Pick<IrCurveCoverageRow, 'gap'>): IrCoverageState {
-    return row.gap === '' ? { tone: 'up', word: 'published' } : { tone: 'warn', word: row.gap };
+    return row.gap === '' ? { tone: 'up', word: 'live' } : { tone: 'warn', word: row.gap };
 }
 
 /** How a feed resolved: from a fixing, on its fixed level, or refused by the policy. */

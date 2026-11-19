@@ -47,7 +47,7 @@ test('a projection curve opens beside its funding curve, with what the pair teac
         .filter({ has: page.getByText('Projection', { exact: true }) })
         .first();
     await expect(projection).toBeVisible();
-    await expect(projection).toContainText('discounts off');
+    await expect(projection.locator('[data-discounts-off]')).not.toBeEmpty();
     await projection.getByRole('link').click();
     await expect(page).toHaveURL(/\/market-data\/curve-analytics\?curve=/);
     const teaches = page.getByRole('region', { name: 'What the two curves teach' });

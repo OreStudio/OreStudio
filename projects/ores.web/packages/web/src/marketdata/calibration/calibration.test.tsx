@@ -126,7 +126,7 @@ const usdCurve: IrCurveCoverageRow = {
     config_id: '44444444-4444-4444-8444-444444444444',
     source_name: 'synthetic.rates.usd.sofr',
     provider_code: 'fred',
-    window_days: 90,
+    window_days_override: null,
     bootstrap_config_id: '55555555-5555-4555-8555-555555555555',
     bootstrap_config_name: 'USD SOFR curve',
     published_as_of: AS_OF,
@@ -142,6 +142,8 @@ const usdCurve: IrCurveCoverageRow = {
             discount_curve_name: '',
             published_as_of: AS_OF,
             published_state: 'published',
+            gap: '',
+            gap_reason: '',
         },
         {
             bootstrap_config_id: '77777777-7777-4777-8777-777777777777',
@@ -151,6 +153,8 @@ const usdCurve: IrCurveCoverageRow = {
             discount_curve_name: 'USD SOFR curve',
             published_as_of: '',
             published_state: '',
+            gap: 'no_publish',
+            gap_reason: 'The curve has never been published.',
         },
     ],
 };
@@ -160,7 +164,7 @@ const jpyCurve: IrCurveCoverageRow = {
     config_id: '',
     source_name: '',
     provider_code: '',
-    window_days: 90,
+    window_days_override: null,
     bootstrap_config_id: '66666666-6666-4666-8666-666666666666',
     bootstrap_config_name: 'JPY TONAR curve',
     published_as_of: '',
@@ -268,9 +272,10 @@ describe('how a feed resolved', () => {
 describe('the calibration list', () => {
     it('states automatic calibration and lists every feed with its start', () => {
         const html = render('/market-data/calibration/fx', calibration());
-        expect(html).toContain(
-            'Automatic: 90-day window, inverse allowed, every provider, by code',
-        );
+        expect(html).toContain('data-policy-card');
+        expect(html).toContain('Automatic policy');
+        expect(html).toContain('90 days');
+        expect(html).toContain('every provider, by code');
         expect(html).toContain('href="/market-data/calibration/fx/policy"');
         expect(html).toContain('EUR/USD');
         expect(html).toContain('1.0841');
@@ -299,7 +304,7 @@ describe('the calibration list', () => {
 });
 
 describe('the interest rates coverage', () => {
-    it('offers the class beside fx and draws one row per currency', () => {
+    it('offers the class beside fx and names each currency once', () => {
         const html = render('/market-data/calibration/interest_rates', irCalibration());
         expect(html).toContain('<option value="interest_rates" selected="">IR curves</option>');
         expect(html).toContain('<option value="fx">FX spot</option>');
@@ -309,15 +314,32 @@ describe('the interest rates coverage', () => {
         expect(html).toContain('data-ir-currency="JPY"');
     });
 
-    it('states a covered currency with its source, its config, its window and its as-of', () => {
+    it('states a covered currency with its source, its curve and its as-of, and no window of the policy', () => {
         const html = render('/market-data/calibration/interest_rates', irCalibration());
-        expect(html).toContain('Published');
+        expect(html).toContain('>Live</span>');
         expect(html).toContain('synthetic.rates.usd.sofr');
         expect(html).toContain('fred');
         expect(html).toContain('USD SOFR curve');
         expect(html).toContain('title="2026-11-01 10:00:00.000000Z"');
-        expect(html).toContain('<th class="py-2 text-right">Window (days)</th>');
-        expect(html).toContain('>90<');
+        expect(html).not.toContain('Window (days)');
+        expect(html).not.toContain('Own window');
+    });
+
+    it("states a feed's own window under its source", () => {
+        const html = render(
+            '/market-data/calibration/interest_rates',
+            irCalibration([{ ...usdCurve, window_days_override: 30 }]),
+        );
+        expect(html).toContain('Own window: 30 days');
+    });
+
+    it('states each curve by its own publish, a live funding curve beside an unpublished projection', () => {
+        const html = render('/market-data/calibration/interest_rates', irCalibration([usdCurve]));
+        const rows = html.split('data-ir-curve=').slice(1);
+        expect(rows).toHaveLength(2);
+        expect(rows[0]).toContain('>Live</span>');
+        expect(rows[1]).toContain('>No publish</span>');
+        expect(rows[1]).toContain('title="The curve has never been published."');
     });
 
     it('lists every curve of a currency with its role, and a projection with its tenor and discount curve', () => {
@@ -328,9 +350,11 @@ describe('the interest rates coverage', () => {
         );
         expect(html).toContain('>Funding</span>');
         expect(html).toContain('>Projection</span>');
-        expect(html).toContain('discounts off USD SOFR curve');
+        expect(html).toContain(
+            '<td class="py-2 pr-4 font-mono text-xs" data-discounts-off="true">USD SOFR curve</td>',
+        );
         expect(html).toContain('never published');
-        expect(html).toContain('<th class="py-2">Curves</th>');
+        expect(html).toContain('>Discounts off</th>');
     });
 
     it('states a gap with its word and the recorded reason', () => {

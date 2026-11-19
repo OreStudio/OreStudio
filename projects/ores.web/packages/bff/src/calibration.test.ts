@@ -72,7 +72,6 @@ function coverage(over: Partial<IrCurveCoverageInput> = {}): IrCurveCoverageRow[
         generationConfigs: [USD_CONFIG],
         bootstrapConfigs: [USD_BOOTSTRAP],
         publishedBySeries: new Map([[SERIES, publish('2026-11-13 11:30:00Z')]]),
-        windowDays: 90,
         now: NOW,
         ...over,
     });
@@ -86,7 +85,7 @@ describe('the IR curve coverage', () => {
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: 'bloomberg',
-                window_days: 90,
+                window_days_override: null,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:30:00Z',
@@ -105,7 +104,7 @@ describe('the IR curve coverage', () => {
                 config_id: '',
                 source_name: '',
                 provider_code: '',
-                window_days: 90,
+                window_days_override: null,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:30:00Z',
@@ -127,7 +126,7 @@ describe('the IR curve coverage', () => {
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: '',
-                window_days: 90,
+                window_days_override: null,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:30:00Z',
@@ -152,7 +151,7 @@ describe('the IR curve coverage', () => {
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: '',
-                window_days: 90,
+                window_days_override: null,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:30:00Z',
@@ -171,7 +170,7 @@ describe('the IR curve coverage', () => {
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: 'bloomberg',
-                window_days: 90,
+                window_days_override: null,
                 bootstrap_config_id: '',
                 bootstrap_config_name: '',
                 published_as_of: '',
@@ -190,7 +189,7 @@ describe('the IR curve coverage', () => {
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: 'bloomberg',
-                window_days: 90,
+                window_days_override: null,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '',
@@ -225,7 +224,7 @@ describe('the IR curve coverage', () => {
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: 'bloomberg',
-                window_days: 90,
+                window_days_override: null,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:29:00Z',
@@ -321,6 +320,8 @@ describe('the IR curve coverage', () => {
                 discount_curve_name: '',
                 published_as_of: '2026-11-13 11:30:00Z',
                 published_state: 'published',
+                gap: '',
+                gap_reason: '',
             },
             {
                 bootstrap_config_id: LIBOR_3M.id,
@@ -330,8 +331,30 @@ describe('the IR curve coverage', () => {
                 discount_curve_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:45:00Z',
                 published_state: 'published',
+                gap: '',
+                gap_reason: '',
             },
         ]);
+    });
+
+    it('states each curve by its own publish, so a live funding curve shows beside a stale projection', () => {
+        const [row] = coverage({
+            bootstrapConfigs: [LIBOR_3M, SOFR],
+            publishedBySeries: new Map([[SERIES, publish('2026-11-13 11:45:00Z')]]),
+        });
+        expect(row?.curves.map((curve) => [curve.name, curve.gap])).toEqual([
+            ['USD-SOFR', ''],
+            ['USD-LIBOR-3M', 'no_publish'],
+        ]);
+        expect(row?.gap).toBe('');
+    });
+
+    it("carries a feed's own window, and no window when the policy's applies", () => {
+        expect(coverage()[0]?.window_days_override).toBeNull();
+        expect(
+            coverage({ feeds: [feedOf({}, { window_days_override: 30 })] })[0]
+                ?.window_days_override,
+        ).toBe(30);
     });
 
     it('covers a currency by its funding curve, not by a projection that published later', () => {

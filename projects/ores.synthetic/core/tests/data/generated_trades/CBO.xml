@@ -8,6 +8,73 @@
         <Notional>5817155.05</Notional>
         <StructureId>Pegasus</StructureId>
       </CBOInvestment>
+      <CBOStructure>
+        <DayCounter>A365</DayCounter>
+        <PaymentConvention>F</PaymentConvention>
+        <Currency>USD</Currency>
+        <SeniorFee>0.001</SeniorFee>
+        <FeeDayCounter>A365</FeeDayCounter>
+        <SubordinatedFee>0.005</SubordinatedFee>
+        <EquityKicker>0.01</EquityKicker>
+        <BondBasketData>
+          <SubTrade id="US15135BAW19">
+            <SubTradeType>Bond</SubTradeType>
+            <BondData>
+              <SecurityId>ISIN:US15135BAW19</SecurityId>
+              <BondNotional>1000000</BondNotional>
+            </BondData>
+          </SubTrade>
+          <SubTrade id="US16411QAK76">
+            <SubTradeType>Bond</SubTradeType>
+            <BondData>
+              <SecurityId>ISIN:US16411QAK76</SecurityId>
+              <BondNotional>1000000</BondNotional>
+            </BondData>
+          </SubTrade>
+          <SubTrade id="US16411QAL59">
+            <SubTradeType>Bond</SubTradeType>
+            <BondData>
+              <SecurityId>ISIN:US16411QAL59</SecurityId>
+              <BondNotional>1000000</BondNotional>
+            </BondData>
+          </SubTrade>
+        </BondBasketData>
+        <CBOTranches>
+          <Tranche>
+            <Name>SeniorNote</Name>
+            <ICRatio>1</ICRatio>
+            <OCRatio>1</OCRatio>
+            <Notional>16224751.8</Notional>
+            <FixedLegData>
+              <Rates>
+                <Rate>0.04</Rate>
+              </Rates>
+            </FixedLegData>
+          </Tranche>
+          <Tranche>
+            <Name>JuniorNote</Name>
+            <ICRatio>-1</ICRatio>
+            <OCRatio>-1</OCRatio>
+            <Notional>1802750.2</Notional>
+            <FixedLegData>
+              <Rates>
+                <Rate>0</Rate>
+              </Rates>
+            </FixedLegData>
+          </Tranche>
+        </CBOTranches>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2041-01-02</EndDate>
+            <Tenor>3M</Tenor>
+            <Calendar>US</Calendar>
+            <Convention>F</Convention>
+            <TermConvention>F</TermConvention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </CBOStructure>
     </CBOData>
   </Trade>
   <Trade id="9eaa86b0-25a2-5736-9243-94655f7fc82f">
@@ -18,6 +85,73 @@
         <Notional>8284783.79</Notional>
         <StructureId>Pegasus</StructureId>
       </CBOInvestment>
+      <CBOStructure>
+        <DayCounter>A365</DayCounter>
+        <PaymentConvention>F</PaymentConvention>
+        <Currency>USD</Currency>
+        <SeniorFee>0.001</SeniorFee>
+        <FeeDayCounter>A365</FeeDayCounter>
+        <SubordinatedFee>0.005</SubordinatedFee>
+        <EquityKicker>0.01</EquityKicker>
+        <BondBasketData>
+          <SubTrade id="US15135BAW19">
+            <SubTradeType>Bond</SubTradeType>
+            <BondData>
+              <SecurityId>ISIN:US15135BAW19</SecurityId>
+              <BondNotional>1000000</BondNotional>
+            </BondData>
+          </SubTrade>
+          <SubTrade id="US16411QAK76">
+            <SubTradeType>Bond</SubTradeType>
+            <BondData>
+              <SecurityId>ISIN:US16411QAK76</SecurityId>
+              <BondNotional>1000000</BondNotional>
+            </BondData>
+          </SubTrade>
+          <SubTrade id="US16411QAL59">
+            <SubTradeType>Bond</SubTradeType>
+            <BondData>
+              <SecurityId>ISIN:US16411QAL59</SecurityId>
+              <BondNotional>1000000</BondNotional>
+            </BondData>
+          </SubTrade>
+        </BondBasketData>
+        <CBOTranches>
+          <Tranche>
+            <Name>SeniorNote</Name>
+            <ICRatio>1</ICRatio>
+            <OCRatio>1</OCRatio>
+            <Notional>16224751.8</Notional>
+            <FixedLegData>
+              <Rates>
+                <Rate>0.04</Rate>
+              </Rates>
+            </FixedLegData>
+          </Tranche>
+          <Tranche>
+            <Name>JuniorNote</Name>
+            <ICRatio>-1</ICRatio>
+            <OCRatio>-1</OCRatio>
+            <Notional>1802750.2</Notional>
+            <FixedLegData>
+              <Rates>
+                <Rate>0</Rate>
+              </Rates>
+            </FixedLegData>
+          </Tranche>
+        </CBOTranches>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2041-01-02</EndDate>
+            <Tenor>3M</Tenor>
+            <Calendar>US</Calendar>
+            <Convention>F</Convention>
+            <TermConvention>F</TermConvention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </CBOStructure>
     </CBOData>
   </Trade>
 </Portfolio>

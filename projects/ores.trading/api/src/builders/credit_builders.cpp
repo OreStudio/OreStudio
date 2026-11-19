@@ -468,6 +468,106 @@ std::expected<domain::credit_instrument_data, build_error> synthetic_cdo_builder
 cbo_builder::cbo_builder(cbo_terms terms)
     : terms_(std::move(terms)) {}
 
+namespace {
+
+/// The rows of a CBO structure stated inline, or the term it refuses.
+std::optional<build_error> add_cbo_structure(domain::credit_instrument_data& out,
+                                             const cbo_structure_terms& terms,
+                                             const std::string& invested_tranche) {
+    using utility::decimal::decimal;
+    if (terms.currency.empty())
+        return build_error{"structure.currency", "must name a currency"};
+    if (terms.tranches.empty())
+        return build_error{"structure.tranches", "must state at least one tranche"};
+    for (std::size_t i = 0; i < terms.tranches.size(); ++i) {
+        if (terms.tranches[i].name.empty() || !(terms.tranches[i].notional > decimal{}))
+            return build_error{"structure.tranches",
+                               "each tranche must state a name and a notional"};
+        for (std::size_t j = 0; j < i; ++j)
+            if (terms.tranches[j].name == terms.tranches[i].name)
+                return build_error{"structure.tranches", "names a tranche twice"};
+    }
+    if (std::ranges::none_of(terms.tranches,
+                             [&](const auto& t) { return t.name == invested_tranche; }))
+        return build_error{"tranche_name", "must name one of the structure's tranches"};
+    if (terms.basket.empty())
+        return build_error{"structure.basket", "must hold at least one bond"};
+    for (std::size_t i = 0; i < terms.basket.size(); ++i) {
+        const auto& bond = terms.basket[i];
+        if (bond.security_id.empty() || !(bond.notional > decimal{}))
+            return build_error{"structure.basket", "each bond must name a security and a notional"};
+        for (std::size_t j = 0; j < i; ++j)
+            if (terms.basket[j].security_id == bond.security_id)
+                return build_error{"structure.basket", "names a bond twice"};
+    }
+    if (!(terms.start < terms.end))
+        return build_error{"structure.end", "must be after the start"};
+
+    domain::cbo_structure structure{};
+    structure.day_counter = terms.day_counter;
+    structure.payment_convention = terms.payment_convention;
+    structure.currency = terms.currency;
+    structure.senior_fee = terms.senior_fee;
+    structure.fee_day_counter = terms.fee_day_counter;
+    structure.subordinated_fee = terms.subordinated_fee;
+    structure.equity_kicker = terms.equity_kicker;
+    out.cbo_structures.push_back(std::move(structure));
+
+    int sequence = 0;
+    for (const auto& t : terms.tranches) {
+        ++sequence;
+        domain::cbo_tranche tranche{};
+        tranche.sequence_number = sequence;
+        tranche.name = t.name;
+        tranche.notional = t.notional;
+        tranche.ic_ratio = t.ic_ratio.to_double();
+        tranche.oc_ratio = t.oc_ratio.to_double();
+        out.cbo_tranches.push_back(std::move(tranche));
+        domain::swap_leg leg{};
+        leg.identity.leg_number = sequence;
+        leg.leg_type_code = "Fixed";
+        leg.currency = terms.currency;
+        leg.leg_group = "tranche";
+        out.legs.push_back(std::move(leg));
+        domain::swap_leg_rate rate{};
+        rate.leg_number = sequence;
+        rate.rate_role = "fixed";
+        rate.sequence_number = 1;
+        rate.value = t.fixed_rate;
+        out.leg_rates.push_back(std::move(rate));
+    }
+
+    sequence = 0;
+    for (const auto& bond : terms.basket) {
+        domain::cbo_basket_member member{};
+        member.sequence_number = ++sequence;
+        const auto colon = bond.security_id.find(':');
+        member.sub_trade_id =
+            colon == std::string::npos ? bond.security_id : bond.security_id.substr(colon + 1);
+        member.security_id = bond.security_id;
+        member.bond_notional = bond.notional;
+        out.cbo_basket_members.push_back(std::move(member));
+    }
+
+    domain::instrument_schedule schedule{};
+    schedule.owner_role = "option";
+    schedule.owner_number = 1;
+    schedule.schedule_role = "payment_schedule";
+    schedule.sequence_number = 1;
+    schedule.schedule_kind = "rules";
+    schedule.start_date = terms.start;
+    schedule.end_date = terms.end;
+    schedule.tenor = terms.tenor;
+    schedule.calendar = terms.calendar;
+    schedule.convention = "F";
+    schedule.term_convention = "F";
+    schedule.rule = "Forward";
+    out.schedules.push_back(std::move(schedule));
+    return std::nullopt;
+}
+
+}
+
 std::expected<domain::credit_instrument_data, build_error> cbo_builder::build() const {
     if (terms_.tranche_name.get().empty())
         return std::unexpected(build_error{"tranche_name", "must name a tranche"});
@@ -487,6 +587,10 @@ std::expected<domain::credit_instrument_data, build_error> cbo_builder::build() 
     fact.notional = terms_.notional.get();
     fact.structure_id = terms_.structure_id.get();
     out.cbo_instruments.push_back(std::move(fact));
+    if (terms_.structure) {
+        if (auto refusal = add_cbo_structure(out, *terms_.structure, terms_.tranche_name.get()))
+            return std::unexpected(std::move(*refusal));
+    }
     return out;
 }
 

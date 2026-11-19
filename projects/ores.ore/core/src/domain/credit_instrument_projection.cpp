@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/decimal_projection.hpp"
 #include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
@@ -72,7 +73,10 @@ using trading::domain::swap_leg;
 using trading::domain::swap_leg_amount;
 using trading::domain::swap_leg_rate;
 using trading::domain::synthetic_cdo_instrument;
+using trading::domain::cbo_basket_member;
 using trading::domain::cbo_instrument;
+using trading::domain::cbo_structure;
+using trading::domain::cbo_tranche;
 
 using xml::record_reader;
 using xml::record_writer;
@@ -150,15 +154,15 @@ auto credit_instrument_projection_to_ore_date(const std::optional<std::chrono::y
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto credit_instrument_projection_text_of(const record_reader& r,
-                                          std::string_view name) -> std::string {
+auto credit_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto credit_instrument_projection_spelling_of(const record_reader& r,
-                                              std::string_view name) -> std::string {
+auto credit_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -394,8 +398,8 @@ auto read_index_swap(const record_reader& d) -> index_credit_default_swap_instru
 }
 
 /// The CreditDefaultSwapData element, as the swap's fact row and its premium leg.
-auto read_cds_data(credit_instrument_data& result,
-                   const std::optional<record_reader>& d) -> credit_default_swap_instrument {
+auto read_cds_data(credit_instrument_data& result, const std::optional<record_reader>& d)
+    -> credit_default_swap_instrument {
     credit_default_swap_instrument fact;
     if (d) {
         if (const auto curve = d->text("CreditCurveId"))
@@ -595,17 +599,115 @@ auto read_synthetic_cdo(const record_reader& trade) -> credit_instrument_data {
     return result;
 }
 
-// The structure a CBO may state inline is held by a task of its own; until it
-// is, a document that states one is refused rather than read without it.
+/**
+ * @brief Reads a CBO structure stated inline into the structure, tranche and
+ * basket rows, the tranche legs and the payment schedule.
+ *
+ * A tranche states its coupon as a FixedLegData of its own, which is a swap leg
+ * under the tranche's ordinal. A basket bond names its issue by its security
+ * id; a bond stated in full is refused, as the issue it states is held by the
+ * bond family.
+ */
+void read_cbo_structure(credit_instrument_data& result, const record_reader& structure) {
+    const auto text = [&](const record_reader& r, std::string_view element) {
+        return scalar_terms::read_text(r, element).value_or("");
+    };
+    const auto amount = [&](const record_reader& r, std::string_view element) {
+        return decimal::from_string(text(r, element)).value_or(decimal{});
+    };
+    cbo_structure row;
+    row.day_counter = text(structure, "DayCounter");
+    row.payment_convention = text(structure, "PaymentConvention");
+    row.currency = text(structure, "Currency");
+    if (structure.has("ReinvestmentEndDate"))
+        row.reinvestment_end_date =
+            option_block::to_optional_domain_date(text(structure, "ReinvestmentEndDate"));
+    row.senior_fee = amount(structure, "SeniorFee");
+    row.fee_day_counter = text(structure, "FeeDayCounter");
+    row.subordinated_fee = amount(structure, "SubordinatedFee");
+    row.equity_kicker = amount(structure, "EquityKicker");
+    credit_instrument_projection_stamp_row(row);
+    result.cbo_structures.push_back(row);
+
+    if (const auto tranches = structure.child("CBOTranches")) {
+        int sequence = 0;
+        for (const auto& tranche : tranches->children("Tranche")) {
+            ++sequence;
+            if (!tranche.has("FixedLegData"))
+                throw std::invalid_argument(
+                    "A CBO tranche states a coupon other than FixedLegData, which is not held "
+                    "yet.");
+            const auto fixed = tranche.child("FixedLegData");
+            for (std::uint8_t i = 0; i < fixed->type().field_count; ++i) {
+                const auto name = fixed->type().fields[i].name;
+                if (name != "Rates" && fixed->has(name))
+                    throw std::invalid_argument(
+                        "A CBO tranche's FixedLegData states more than its Rates, which is not "
+                        "held yet.");
+            }
+            cbo_tranche t;
+            t.sequence_number = sequence;
+            t.name = text(tranche, "Name");
+            t.notional = amount(tranche, "Notional");
+            t.ic_ratio = amount(tranche, "ICRatio").to_double();
+            t.oc_ratio = amount(tranche, "OCRatio").to_double();
+            credit_instrument_projection_stamp_row(t);
+            result.cbo_tranches.push_back(std::move(t));
+
+            swap_leg leg;
+            leg.identity.leg_number = sequence;
+            leg.leg_type_code = "Fixed";
+            leg.currency = row.currency;
+            leg.leg_group = "tranche";
+            stamp(leg);
+            result.legs.push_back(std::move(leg));
+            for (auto& rate : read_leg_rates(tranche, sequence))
+                result.leg_rates.push_back(std::move(rate));
+        }
+    }
+    if (const auto schedule = structure.child("ScheduleData"))
+        option_block::read_schedule(result, *schedule, "option", 1, "payment_schedule");
+    if (const auto basket = structure.child("BondBasketData")) {
+        int sequence = 0;
+        for (const auto& sub_trade : basket->children("SubTrade")) {
+            const auto type = scalar_terms::read_text(sub_trade, "SubTradeType").value_or("");
+            const auto bond =
+                sub_trade.has("BondData") ? sub_trade.child("BondData") : std::nullopt;
+            if (type != "Bond" || !bond)
+                throw std::invalid_argument(
+                    "A CBO basket sub-trade that is not a Bond is not held yet.");
+            for (std::uint8_t i = 0; i < bond->type().field_count; ++i) {
+                const auto name = bond->type().fields[i].name;
+                if (name != "SecurityId" && name != "BondNotional" && bond->has(name))
+                    throw std::invalid_argument(
+                        "A CBO basket bond states its terms in full, which is not held yet; "
+                        "name the bond by its SecurityId instead.");
+            }
+            cbo_basket_member m;
+            m.sequence_number = ++sequence;
+            m.sub_trade_id = sub_trade.text("id").value_or("");
+            m.security_id = text(*bond, "SecurityId");
+            m.bond_notional = amount(*bond, "BondNotional");
+            if (const auto envelope = sub_trade.child("Envelope")) {
+                if (!text(*envelope, "NettingSetId").empty())
+                    throw std::invalid_argument(
+                        "A CBO basket bond states a netting set, which is not held yet.");
+                if (envelope->has("CounterParty"))
+                    m.counterparty = text(*envelope, "CounterParty");
+            }
+            credit_instrument_projection_stamp_row(m);
+            result.cbo_basket_members.push_back(std::move(m));
+        }
+    }
+}
+
+// A CBO names its structure by id or states it inline; an inline structure is
+// held in its own rows.
 auto read_cbo(const record_reader& trade) -> credit_instrument_data {
     credit_instrument_data result;
     result.instrument = make_header("CBO");
     cbo_instrument fact;
     if (const auto d = trade.child("CBOData")) {
-        if (d->has("CBOStructure"))
-            throw std::invalid_argument(
-                "A CBO that states its structure inline is not held yet; name the structure by "
-                "its StructureId instead.");
         if (const auto investment = d->child("CBOInvestment")) {
             const auto text = [&](std::string_view element) {
                 return scalar_terms::read_text(*investment, element).value_or("");
@@ -614,6 +716,8 @@ auto read_cbo(const record_reader& trade) -> credit_instrument_data {
             fact.notional = decimal::from_string(text("Notional")).value_or(decimal{});
             fact.structure_id = text("StructureId");
         }
+        if (d->has("CBOStructure"))
+            read_cbo_structure(result, *d->child("CBOStructure"));
     }
     credit_instrument_projection_stamp_row(fact);
     result.cbo_instruments.push_back(std::move(fact));
@@ -1118,11 +1222,57 @@ auto read_credit_instrument(xml::record_reader trade, std::string_view trade_typ
 void write_cbo(record_writer& trade, const credit_instrument_data& v) {
     if (v.cbo_instruments.empty())
         return;
-    auto investment = trade.child("CBOData").child("CBOInvestment");
+    auto cbo = trade.child("CBOData");
+    auto investment = cbo.child("CBOInvestment");
     const auto& fact = v.cbo_instruments.front();
     scalar_terms::write_text(investment, "TrancheName", fact.tranche_name);
     scalar_terms::write_text(investment, "Notional", fact.notional.to_string());
     scalar_terms::write_text(investment, "StructureId", fact.structure_id);
+    if (v.cbo_structures.empty())
+        return;
+
+    auto structure = cbo.child("CBOStructure");
+    const auto& row = v.cbo_structures.front();
+    scalar_terms::write_text(structure, "DayCounter", row.day_counter);
+    scalar_terms::write_text(structure, "PaymentConvention", row.payment_convention);
+    scalar_terms::write_text(structure, "Currency", row.currency);
+    if (row.reinvestment_end_date)
+        scalar_terms::write_text(structure,
+                                 "ReinvestmentEndDate",
+                                 option_block::to_ore_date(*row.reinvestment_end_date));
+    scalar_terms::write_text(structure, "SeniorFee", row.senior_fee.to_string());
+    scalar_terms::write_text(structure, "FeeDayCounter", row.fee_day_counter);
+    scalar_terms::write_text(structure, "SubordinatedFee", row.subordinated_fee.to_string());
+    scalar_terms::write_text(structure, "EquityKicker", row.equity_kicker.to_string());
+
+    auto basket = structure.child("BondBasketData");
+    for (const auto& member : v.cbo_basket_members) {
+        auto sub_trade = basket.append("SubTrade");
+        sub_trade.set_text("id", member.sub_trade_id);
+        scalar_terms::write_text(sub_trade, "SubTradeType", "Bond");
+        if (member.counterparty) {
+            auto envelope = sub_trade.child("Envelope");
+            scalar_terms::write_text(envelope, "CounterParty", *member.counterparty);
+            scalar_terms::write_text(envelope, "NettingSetId", "");
+        }
+        auto bond = sub_trade.child("BondData");
+        scalar_terms::write_text(bond, "SecurityId", member.security_id);
+        scalar_terms::write_text(bond, "BondNotional", member.bond_notional.to_string());
+    }
+
+    auto tranches = structure.child("CBOTranches");
+    for (const auto& tranche : v.cbo_tranches) {
+        auto t = tranches.append("Tranche");
+        scalar_terms::write_text(t, "Name", tranche.name);
+        set_decimal_from_double(t, "ICRatio", tranche.ic_ratio);
+        set_decimal_from_double(t, "OCRatio", tranche.oc_ratio);
+        scalar_terms::write_text(t, "Notional", tranche.notional.to_string());
+        auto rates = t.child("FixedLegData").child("Rates");
+        for (const auto& rate : v.leg_rates)
+            if (rate.leg_number == tranche.sequence_number && rate.rate_role == "fixed")
+                rates.append("Rate").set_own_text(rate.value.to_string());
+    }
+    option_block::write_product_schedule(structure, v, "ScheduleData", "payment_schedule");
 }
 
 auto write_credit_instrument(xml::record_writer& trade,

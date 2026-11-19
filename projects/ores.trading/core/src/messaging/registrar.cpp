@@ -56,6 +56,9 @@
 #include "ores.trading.core/messaging/bond_trs_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/booking_nature_type_registrar.hpp"
 #include "ores.trading.core/messaging/callable_swap_call_date_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/cbo_basket_member_registrar.hpp"
+#include "ores.trading.core/messaging/cbo_structure_registrar.hpp"
+#include "ores.trading.core/messaging/cbo_tranche_registrar.hpp"
 #include "ores.trading.core/messaging/commodity_basket_constituent_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/counterparty_scope_type_registrar.hpp"
 #include "ores.trading.core/messaging/credit_basket_constituent_history_provider_registrar.hpp"
@@ -298,6 +301,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_instrument_barrier_handlers(nats, ctx, verifier));
     append(register_instrument_barrier_level_handlers(nats, ctx, verifier));
     append(register_instrument_value_handlers(nats, ctx, verifier));
+    append(register_cbo_structure_handlers(nats, ctx, verifier));
+    append(register_cbo_tranche_handlers(nats, ctx, verifier));
+    append(register_cbo_basket_member_handlers(nats, ctx, verifier));
     append(register_autocallable_instrument_handlers(nats, ctx, verifier));
     append(register_double_digital_option_instrument_handlers(nats, ctx, verifier));
     append(register_european_option_barrier_instrument_handlers(nats, ctx, verifier));

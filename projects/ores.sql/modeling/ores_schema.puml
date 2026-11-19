@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-802 tables in 21 groups.
+805 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -593,7 +593,10 @@ entity "trading" as trading {
   ores_trading_callable_swap_instruments_tbl
   ores_trading_cap_floor_instruments_tbl
   ores_trading_cash_position_instruments_tbl
+  ores_trading_cbo_basket_members_tbl
   ores_trading_cbo_instruments_tbl
+  ores_trading_cbo_structures_tbl
+  ores_trading_cbo_tranches_tbl
   ores_trading_cds_instruments_tbl
   ores_trading_commodity_basket_constituents_tbl
   ores_trading_commodity_instruments_tbl
@@ -722,7 +725,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-161 tables — ores_schema.trading.puml
+164 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {

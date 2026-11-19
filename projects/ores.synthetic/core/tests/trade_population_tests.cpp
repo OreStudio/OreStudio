@@ -327,11 +327,15 @@ TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_popul
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
-        // A CBO holds its investment, and the structure it names is a task of
-        // its own, so the batch carries the credit header and the CBO fact.
+        // A CBO states its structure inline: its scalars, its two tranches with
+        // a leg each, and the bonds of its basket.
         if (slot.trade_type_code == "CBO") {
             CHECK(slot.instruments.credit_instruments.size() == 1u);
             CHECK(slot.instruments.cbo_instruments.size() == 1u);
+            CHECK(slot.instruments.cbo_structures.size() == 1u);
+            CHECK(slot.instruments.cbo_tranches.size() == 2u);
+            CHECK(slot.instruments.swap_legs.size() == 2u);
+            CHECK(slot.instruments.cbo_basket_members.size() == 3u);
             continue;
         }
         REQUIRE(slot.instruments.credit_instruments.size() == 1u);

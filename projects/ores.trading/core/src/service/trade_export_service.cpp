@@ -25,6 +25,9 @@
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
 #include "ores.trading.core/repository/basket_swap_period_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
+#include "ores.trading.core/repository/cbo_basket_member_repository.hpp"
+#include "ores.trading.core/repository/cbo_structure_repository.hpp"
+#include "ores.trading.core/repository/cbo_tranche_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/credit_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/equity_basket_constituent_repository.hpp"
@@ -374,6 +377,15 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::instrument_value_repository value_repo;
         auto values = value_repo.read_by_instruments_batch(ctx, all_ids);
         take(values, batch.instrument_values);
+        repository::cbo_structure_repository cbo_structure_repo;
+        auto cbo_structures = cbo_structure_repo.read_by_instruments_batch(ctx, all_ids);
+        take(cbo_structures, batch.cbo_structures);
+        repository::cbo_tranche_repository cbo_tranche_repo;
+        auto cbo_tranches = cbo_tranche_repo.read_by_instruments_batch(ctx, all_ids);
+        take(cbo_tranches, batch.cbo_tranches);
+        repository::cbo_basket_member_repository cbo_basket_member_repo;
+        auto cbo_basket_members = cbo_basket_member_repo.read_by_instruments_batch(ctx, all_ids);
+        take(cbo_basket_members, batch.cbo_basket_members);
 
         repository::instrument_underlying_repository underlying_repo;
         auto underlyings = underlying_repo.read_by_instruments_batch(ctx, all_ids);

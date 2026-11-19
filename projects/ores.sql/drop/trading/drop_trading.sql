@@ -103,6 +103,12 @@
 \ir ./trading_instrument_barrier_levels_drop.sql
 \ir ./trading_instrument_values_notify_trigger_drop.sql
 \ir ./trading_instrument_values_drop.sql
+\ir ./trading_cbo_structures_notify_trigger_drop.sql
+\ir ./trading_cbo_structures_drop.sql
+\ir ./trading_cbo_tranches_notify_trigger_drop.sql
+\ir ./trading_cbo_tranches_drop.sql
+\ir ./trading_cbo_basket_members_notify_trigger_drop.sql
+\ir ./trading_cbo_basket_members_drop.sql
 \ir ./trading_instrument_barriers_notify_trigger_drop.sql
 \ir ./trading_instrument_barriers_drop.sql
 \ir ./trading_swap_leg_indexings_notify_trigger_drop.sql

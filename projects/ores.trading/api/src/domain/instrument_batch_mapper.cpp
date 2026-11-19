@@ -109,6 +109,9 @@ credit_instrument_data as_credit(const instrument_batch& batch,
         .leg_amounts = find_all(batch.swap_leg_amounts, trade_id),
         .leg_rates = find_all(batch.swap_leg_rates, trade_id),
         .constituents = find_all(batch.credit_basket_constituents, trade_id),
+        .cbo_structures = find_all(batch.cbo_structures, trade_id),
+        .cbo_tranches = find_all(batch.cbo_tranches, trade_id),
+        .cbo_basket_members = find_all(batch.cbo_basket_members, trade_id),
         .strikes = find_all(batch.instrument_strikes, trade_id),
         .schedules = find_all(batch.instrument_schedules, trade_id),
         .schedule_dates = find_all(batch.instrument_schedule_dates, trade_id),
@@ -429,6 +432,13 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 batch.credit_basket_constituents.insert(batch.credit_basket_constituents.end(),
                                                         v.constituents.begin(),
                                                         v.constituents.end());
+                batch.cbo_structures.insert(
+                    batch.cbo_structures.end(), v.cbo_structures.begin(), v.cbo_structures.end());
+                batch.cbo_tranches.insert(
+                    batch.cbo_tranches.end(), v.cbo_tranches.begin(), v.cbo_tranches.end());
+                batch.cbo_basket_members.insert(batch.cbo_basket_members.end(),
+                                                v.cbo_basket_members.begin(),
+                                                v.cbo_basket_members.end());
                 append_credit_fact_arrays(
                     batch,
                     v,

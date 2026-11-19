@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 161
+Tables: 164
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1447,6 +1447,34 @@ package "trading" #E8F5E9 {
     Represents CashPosition trades: an amount of cash held in one currency.
     end note
 
+    entity ores_trading_cbo_basket_members_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * sub_trade_id : text <<FK>>
+        * security_id : text <<FK>>
+        * bond_notional : numeric(38, 12)
+          counterparty : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_cbo_basket_members_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CBO Basket Member Table
+    One bond of the basket a CBO structure stated inline holds, in the order the
+    basket states it. The bond names its issue by its security id.
+    end note
+
     entity ores_trading_cbo_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -1476,6 +1504,67 @@ package "trading" #E8F5E9 {
     ores.trading.credit_instruments, holds the trade type code, the party, the
     instrument's start and maturity dates and its description; this table holds
     only the product's own fields, and joins the header by trade_id.
+    end note
+
+    entity ores_trading_cbo_structures_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * day_counter : text
+        * payment_convention : text
+        * currency : text
+          reinvestment_end_date : date
+        * senior_fee : numeric(38, 12)
+        * fee_day_counter : text
+        * subordinated_fee : numeric(38, 12)
+        * equity_kicker : numeric(38, 12)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_cbo_structures_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CBO Structure Table
+    The structure a CBO states inline: the scalars of its CBOStructure.
+    A CBO names its structure by its StructureId, which ORE looks up in its
+    reference data, or states it inline. An inline structure's tranches, basket
+    and payment schedule are rows of their own; this row keeps the scalars.
+    end note
+
+    entity ores_trading_cbo_tranches_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * name : text
+        * notional : numeric(38, 12)
+        * ic_ratio : double
+        * oc_ratio : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_cbo_tranches_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CBO Tranche Table
+    One tranche of a CBO structure stated inline, in the order the structure
+    states it. Its coupon leg is swap leg rows under the tranche's ordinal.
     end note
 
     entity ores_trading_cds_instruments_tbl <<temporal>> #C6F0D8 {
@@ -6323,8 +6412,14 @@ ores_trading_trade_activities_tbl ||--o{ ores_trading_cap_floor_instruments_tbl 
 ores_trading_long_short_types_tbl ||--o{ ores_trading_cap_floor_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_cash_position_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_cash_position_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_cbo_basket_members_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_cbo_basket_members_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_cbo_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_cbo_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_cbo_structures_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_cbo_structures_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_cbo_tranches_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_cbo_tranches_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_commodity_basket_constituents_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_commodity_basket_constituents_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_commodity_instruments_tbl : "has"

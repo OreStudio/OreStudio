@@ -75,6 +75,13 @@ def script_inputs():
     return inputs
 
 
+def source_parts(source):
+    """The alternatives of an `a or b` source; a quoted literal is one part, whatever it holds."""
+    if len(source) >= 2 and source.startswith("'") and source.endswith("'"):
+        return [source]
+    return source.split(" or ")
+
+
 def recipes():
     text = CATALOGUE.read_text()
     forms = {code: script for code, script in org_table(text, "Scripted forms")}
@@ -84,9 +91,11 @@ def recipes():
     for code, name, source, transform in org_table(text, "Scripted twin recipes"):
         if transform and transform not in TRANSFORMS:
             errors.append(f"{code}: {name} names the unknown transform {transform}")
-        if source.startswith("'") != source.endswith("'"):
-            errors.append(f"{code}: {name} states an unclosed literal {source}")
+        for part in source_parts(source):
+            if part.startswith("'") != part.endswith("'"):
+                errors.append(f"{code}: {name} states an unclosed literal {part}")
         stated.setdefault(code, {})[name] = (source, transform or None)
+    schedule = re.compile(r"instrument_schedules\[\w+\]")
     # A type of the Scripted forms table with no recipe is not twinned yet: the
     # recipes land a few products at a time.
     for code in sorted(stated):
@@ -104,6 +113,16 @@ def recipes():
                 errors.append(f"{code}: the recipe states no source for {script}'s {name}")
                 continue
             source, transform = stated[code][name]
+            parts = source_parts(source)
+            for part in parts:
+                if part.startswith("'") or "." in part:
+                    continue
+                if not schedule.fullmatch(part):
+                    errors.append(f"{code}: {name} names no column in {part}")
+                elif typ != "Event":
+                    errors.append(f"{code}: {name} reads a schedule but is not an Event")
+                elif len(parts) > 1:
+                    errors.append(f"{code}: {name} reads a whole schedule, which takes no fallback")
             rows.append((code, sequence, script, name, typ, array, source, transform))
     if errors:
         sys.exit("\n".join(errors))

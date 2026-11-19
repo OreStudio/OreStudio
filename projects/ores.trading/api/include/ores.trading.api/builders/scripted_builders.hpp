@@ -41,21 +41,36 @@ namespace ores::trading::builders {
 
 using scripted_result = std::expected<domain::scripted_instrument_data, build_error>;
 
-/// An event stated as a schedule: one date a tenor from the start to the end.
+/**
+ * @brief An event stated as a schedule: one date a tenor from the start to the
+ * end. A rule term left empty is not written, so ORE applies its own default.
+ */
 struct scripted_schedule final {
     std::chrono::year_month_day start;
     std::chrono::year_month_day end;
     std::string tenor;
+    std::optional<std::string> calendar = "TARGET";
+    std::optional<std::string> convention = "F";
+    std::optional<std::string> term_convention;
+    std::optional<std::string> rule = "Forward";
+};
+
+/// An event stated as a list of dates, which ORE reads as a schedule of those dates.
+struct scripted_dates final {
+    std::vector<std::chrono::year_month_day> dates;
+    std::optional<std::string> calendar;
+    std::optional<std::string> convention;
 };
 
 /**
  * @brief One variable a generic scripted trade states: its name, the type ORE
- * reads it as, and one value, a list of values, or a schedule of dates.
+ * reads it as, and one value, a list of values, a schedule of dates by rules,
+ * or a schedule of listed dates.
  */
 struct scripted_variable final {
     std::string name;
     std::string type;
-    std::variant<std::string, std::vector<std::string>, scripted_schedule> value;
+    std::variant<std::string, std::vector<std::string>, scripted_schedule, scripted_dates> value;
 };
 
 /**

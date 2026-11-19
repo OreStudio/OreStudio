@@ -68,10 +68,37 @@ public:
         row.start_date = dates.start;
         row.end_date = dates.end;
         row.tenor = dates.tenor;
-        row.calendar = "TARGET";
-        row.convention = "F";
-        row.rule = "Forward";
+        row.calendar = dates.calendar;
+        row.convention = dates.convention;
+        row.term_convention = dates.term_convention;
+        row.rule = dates.rule;
         out_.schedules.push_back(std::move(row));
+    }
+
+    // Each event's rows are keyed by its parameter's sequence as owner number,
+    // so several events of one trade share the role and sequence below.
+    void dates(std::string name, const scripted_dates& listed) {
+        const auto sequence = parameter(std::move(name), "Event", "schedule").sequence_number;
+        domain::instrument_schedule row;
+        row.owner_role = "scripted";
+        row.owner_number = sequence;
+        row.schedule_role = "event";
+        row.sequence_number = 1;
+        row.schedule_kind = "dates";
+        row.calendar = listed.calendar;
+        row.convention = listed.convention;
+        out_.schedules.push_back(std::move(row));
+        int number = 0;
+        for (const auto& date : listed.dates) {
+            domain::instrument_schedule_date date_row;
+            date_row.owner_role = "scripted";
+            date_row.owner_number = sequence;
+            date_row.schedule_role = "event";
+            date_row.schedule_sequence_number = 1;
+            date_row.sequence_number = ++number;
+            date_row.schedule_date = date;
+            out_.schedule_dates.push_back(std::move(date_row));
+        }
     }
 
     domain::instrument_underlying& underlying(std::string role,
@@ -263,8 +290,10 @@ scripted_result scripted_trade_builder::build() const {
             out.value(variable.name, variable.type, *text);
         else if (const auto* values = std::get_if<std::vector<std::string>>(&variable.value))
             out.list(variable.name, variable.type, *values);
+        else if (const auto* schedule = std::get_if<scripted_schedule>(&variable.value))
+            out.schedule(variable.name, *schedule);
         else
-            out.schedule(variable.name, std::get<scripted_schedule>(variable.value));
+            out.dates(variable.name, std::get<scripted_dates>(variable.value));
     }
     return out.take();
 }

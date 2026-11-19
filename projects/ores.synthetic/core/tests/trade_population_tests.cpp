@@ -1942,13 +1942,21 @@ TEST_CASE("a_product_with_a_scripted_form_is_booked_again_as_its_scripted_twin",
     CHECK(stated == members);
 }
 
-TEST_CASE("every_basket_and_rainbow_option_has_a_twin_over_its_library_script",
-          "[trade_population]") {
+TEST_CASE("every_product_with_a_recipe_has_a_twin_over_its_library_script", "[trade_population]") {
     const std::map<std::string, std::string> script_of = {
         {"EquityBasketOption", "VanillaBasketOption"},
+        {"EquityBasketVarianceSwap", "BasketVarianceSwap"},
+        {"EquityBestEntryOption", "BestEntryOption"},
+        {"EquityForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
         {"EquityRainbowOption", "MaxRainbowOption"},
         {"FxBasketOption", "VanillaBasketOption"},
+        {"FxBasketVarianceSwap", "BasketVarianceSwap"},
+        {"FxBestEntryOption", "BestEntryOption"},
+        {"FxForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
         {"FxRainbowOption", "MaxRainbowOption"}};
+    std::set<std::string> twinned;
+    std::set<boost::uuids::uuid> twin_ids;
+    std::size_t twins = 0;
     for (auto scope : {equity_scope(), fx_scope()}) {
         scope.trades_per_book = 64;
         const auto plan = plan_of(scope);
@@ -1971,8 +1979,76 @@ TEST_CASE("every_basket_and_rainbow_option_has_a_twin_over_its_library_script",
             CHECK(twin->counterparty_id == native.counterparty_id);
             REQUIRE(twin->instruments.scripted_instruments.size() == 1u);
             CHECK(twin->instruments.scripted_instruments[0].script_name == script->second);
+            twinned.insert(native.trade_type_code);
+            twin_ids.insert(twin->trade_id);
+            ++twins;
         }
     }
+    CHECK(twinned.size() == script_of.size());
+    // The plans are drawn apart and may share native ids; their twins still differ.
+    CHECK(twin_ids.size() == twins);
+}
+
+TEST_CASE("a_twin_reads_a_rules_schedule_as_rules_and_a_dates_schedule_as_dates",
+          "[trade_population]") {
+    namespace td = ores::trading::domain;
+    auto scope = equity_scope();
+    scope.trades_per_book = 64;
+    const auto plan = plan_of(scope);
+    const auto twin_of = [&](const td::instrument_batch*& native, const char* code) {
+        const auto slot = std::ranges::find_if(
+            plan.slots, [&](const auto& s) { return s.trade_type_code == code; });
+        REQUIRE(slot != plan.slots.end());
+        native = &slot->instruments;
+        const auto twin = std::ranges::find_if(plan.slots, [&](const auto& s) {
+            return s.internal_identifier == slot->internal_identifier + "-scripted";
+        });
+        REQUIRE(twin != plan.slots.end());
+        return twin->instruments;
+    };
+    const auto sequence_of = [](const td::instrument_batch& twin, const char* name) {
+        const auto p = std::ranges::find_if(twin.scripted_parameters,
+                                            [&](const auto& p) { return p.name == name; });
+        REQUIRE(p != twin.scripted_parameters.end());
+        return p->sequence_number;
+    };
+
+    const td::instrument_batch* native = nullptr;
+    const auto swap = twin_of(native, "EquityBasketVarianceSwap");
+    const auto valuation = std::ranges::find_if(native->instrument_schedules, [](const auto& s) {
+        return s.schedule_role == "valuation_schedule";
+    });
+    REQUIRE(valuation != native->instrument_schedules.end());
+    REQUIRE(valuation->schedule_kind == "rules");
+    const auto event = std::ranges::find_if(swap.instrument_schedules, [&](const auto& s) {
+        return s.owner_number == sequence_of(swap, "ValuationSchedule");
+    });
+    REQUIRE(event != swap.instrument_schedules.end());
+    CHECK(event->schedule_kind == "rules");
+    CHECK(event->start_date == valuation->start_date);
+    CHECK(event->end_date == valuation->end_date);
+    CHECK(event->tenor == valuation->tenor);
+    CHECK(event->calendar == valuation->calendar);
+    CHECK(event->convention == valuation->convention);
+    CHECK(event->term_convention == valuation->term_convention);
+    CHECK(event->rule == valuation->rule);
+
+    const auto entry = twin_of(native, "EquityBestEntryOption");
+    std::vector<std::string> observed;
+    for (const auto& d : native->instrument_schedule_dates)
+        if (d.schedule_role == "strike_observation_schedule")
+            observed.push_back(std::format("{:%Y-%m-%d}", d.schedule_date));
+    REQUIRE_FALSE(observed.empty());
+    const auto observation = sequence_of(entry, "StrikeObservationDates");
+    const auto listed = std::ranges::find_if(
+        entry.instrument_schedules, [&](const auto& s) { return s.owner_number == observation; });
+    REQUIRE(listed != entry.instrument_schedules.end());
+    CHECK(listed->schedule_kind == "dates");
+    std::vector<std::string> stated;
+    for (const auto& d : entry.instrument_schedule_dates)
+        if (d.owner_number == observation)
+            stated.push_back(std::format("{:%Y-%m-%d}", d.schedule_date));
+    CHECK(stated == observed);
 }
 
 TEST_CASE("a_twin_source_reads_a_column_a_role_a_fallback_and_a_literal", "[trade_population]") {
@@ -2023,4 +2099,54 @@ TEST_CASE("a_twin_that_finds_no_value_for_an_input_is_refused", "[trade_populati
     // A basket with no option row states no direction, which the twin's LongShort reads.
     broken.instruments.instrument_options.clear();
     CHECK_THROWS_AS(ores::synthetic::service::scripted_twin_of(broken), trade_population_error);
+}
+
+TEST_CASE("a_twin_whose_schedule_it_cannot_carry_is_refused", "[trade_population]") {
+    namespace td = ores::trading::domain;
+    using ores::synthetic::service::scripted_twin_of;
+    auto scope = equity_scope();
+    scope.trades_per_book = 64;
+    const auto plan = plan_of(scope);
+    const auto native_of = [&](const char* code) {
+        const auto slot = std::ranges::find_if(
+            plan.slots, [&](const auto& s) { return s.trade_type_code == code; });
+        REQUIRE(slot != plan.slots.end());
+        return *slot;
+    };
+    const auto swap = native_of("EquityBasketVarianceSwap");
+    const auto entry = native_of("EquityBestEntryOption");
+    REQUIRE(scripted_twin_of(swap).has_value());
+    REQUIRE(scripted_twin_of(entry).has_value());
+    const auto valuation = [](td::instrument_batch& batch) -> td::instrument_schedule& {
+        const auto row = std::ranges::find(batch.instrument_schedules,
+                                           "valuation_schedule",
+                                           &td::instrument_schedule::schedule_role);
+        REQUIRE(row != batch.instrument_schedules.end());
+        return *row;
+    };
+
+    auto missing = swap;
+    std::erase_if(missing.instruments.instrument_schedules,
+                  [](const auto& s) { return s.schedule_role == "valuation_schedule"; });
+    CHECK_THROWS_AS(scripted_twin_of(missing), trade_population_error);
+
+    auto derived = swap;
+    valuation(derived.instruments).schedule_kind = "derived";
+    CHECK_THROWS_AS(scripted_twin_of(derived), trade_population_error);
+
+    auto twice = swap;
+    twice.instruments.instrument_schedules.push_back(valuation(twice.instruments));
+    CHECK_THROWS_AS(scripted_twin_of(twice), trade_population_error);
+
+    auto undated = entry;
+    std::erase_if(undated.instruments.instrument_schedule_dates,
+                  [](const auto& d) { return d.schedule_role == "strike_observation_schedule"; });
+    CHECK_THROWS_AS(scripted_twin_of(undated), trade_population_error);
+
+    td::instrument_batch batch;
+    CHECK_THROWS_AS(ores::synthetic::service::twin_source_values(
+                        batch,
+                        "EquityBasketVarianceSwap",
+                        "product.settlement_date or instrument_schedules[valuation_schedule]"),
+                    trade_population_error);
 }

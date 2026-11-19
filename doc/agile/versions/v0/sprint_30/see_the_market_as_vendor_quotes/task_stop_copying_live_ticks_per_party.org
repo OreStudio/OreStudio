@@ -26,11 +26,11 @@ The ingest publishes each live tick once, per vendor, and the per-party copy and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -42,9 +42,15 @@ The ingest publishes each live tick once, per vendor, and the per-party copy and
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Remove the per-party publish in =announce()=, and give each tick one feed
+   publish whose outcome every route of the tick reads: sent, failed or late.
+2. Count one delivery for each route of a tick whose feed publish was sent, as the
+   copy for that route was counted before.
+3. Remove =tick_target::subject=, =market_tick_subject()= and
+   =market_tick_subject_all()=, and their tests.
+4. Move the loop tests onto the feed subject, and show the meter's count for two
+   parties of one tick, and that nothing is published under the tenant's old
+   subtree.
 
 * Measurements
 
@@ -88,3 +94,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The ingest publishes each tick once, on its feed's subject, and no copy for any
+  party. =market_tick_subject()=, =market_tick_subject_all()= and the target's
+  subject are gone.
+- The meter counts one delivery for each route of a tick whose feed publish went
+  out. A loop test drains the meter after a tick of two routed parties and finds
+  one delivery for each, under the provider, feed and item, as the copies made it.
+  The same test sees one publish on the feed and none under the tenant's old
+  subtree.
+- Suites: market data API 1134 cases, market data service 317, shell application
+  65, HTTP market data 34; all pass. The ticks smoke test passes. On the live
+  broker, the Acme tenant's old subtree carried no tick in 20 seconds while the
+  Bloomberg feed subject carried ticks.
+- Hedgr used =market_tick_subject_all()= and the per-party subtree. It loses its
+  live ticks and does not build against these headers until it moves; the
+  product owner chose to remove the copies now. The move is noted on the Hedgr
+  task.

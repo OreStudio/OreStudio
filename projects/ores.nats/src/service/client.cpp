@@ -925,12 +925,6 @@ subscription client::queue_subscribe(std::string_view subject,
 
 void client::js_publish(std::string_view subject,
                         std::span<const std::byte> data,
-                        std::unordered_map<std::string, std::string> headers) {
-    js_publish(subject, data, std::move(headers), std::chrono::milliseconds(5000));
-}
-
-void client::js_publish(std::string_view subject,
-                        std::span<const std::byte> data,
                         std::unordered_map<std::string, std::string> headers,
                         std::chrono::milliseconds ack_wait) {
 

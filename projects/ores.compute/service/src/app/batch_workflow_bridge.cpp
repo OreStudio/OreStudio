@@ -118,15 +118,22 @@ void batch_workflow_bridge::poll_once() {
             // wait is bounded here and a failure ends the poll: every link is
             // retried by the next one, and a stalled store costs the service
             // one wait rather than one per pending link.
+            //
+            // A link the store never accepts therefore holds the ones behind
+            // it, and it shows up as the batch it names failing to advance
+            // rather than as a service that stops.
+            const auto completion = ores::nats::default_wire_codec().encode(evt);
             try {
                 nats_.js_publish(
                     std::string(ores::workflow::messaging::step_completed_event::nats_subject),
-                    ores::nats::default_wire_codec().encode(evt),
+                    completion,
                     ores::nats::headers::publish_identity_headers(link.workflow_step_id),
                     publish_ack_wait);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), error)
-                    << "Could not fire step_completed for batch " << batch_id << ": " << e.what()
+                    << "Could not fire step_completed for batch " << batch_id
+                    << " (step=" << link.workflow_step_id
+                    << " instance=" << link.workflow_instance_id << "): " << e.what()
                     << "; the remaining links wait for the next poll.";
                 return;
             }

@@ -19,22 +19,24 @@ reaches a feed through its route, which picks the feed, and its subscription,
 which grants the right. The check is made where a watch starts, because the
 broker does not check subjects. The system tenant watches every feed.
 
-Today the ingest publishes a copy of each tick for each routed party. The story
+Today the ingest publishes each tick once on its feed's subject and also a copy
+for each routed party, which every consumer still reads. The story
 [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] moves the live path to this target.
 
 * Detail
 
 ** Today
 
-The ingest turns each route into a consumer. For each accepted tick it publishes
-one copy for each consumer, on
+The ingest publishes each accepted tick once on its feed's subject
+(=feed_tick_subject()=), and no consumer reads it yet. It also turns each route
+into a consumer, and for each accepted tick it publishes one copy for each
+consumer, on
 =marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=, where the token is the
-whole oresmd URI of the datum (=tick_plan.cpp=, =make_targets=). The copies cost
+whole oresmd URI of the datum (=tick_plan.cpp=, =make_delivery=). The copies cost
 one publish for each party, so the live path grows with the parties and not with
-the market. No subject carries the market as a vendor quotes it: a person can
-watch a vendor only through a copy made for one party. The token holds the whole
-URI, so no wildcard covers one series, and a watcher of a series takes the whole
-party subtree and filters it (=marketdata_commands.cpp=, =stream_subjects=).
+the market. The copy's token holds the whole URI, so no wildcard covers one
+series, and a watcher of a series takes the whole party subtree and filters it
+(=marketdata_commands.cpp=, =stream_subjects=).
 
 ** The subject
 

@@ -1455,3 +1455,59 @@ TEST_CASE("the_ingest_writes_one_row_for_two_consumers_of_the_same_source",
     CHECK(stream == stream_text_of(second_series.front()));
     CHECK(tick_rows_of(stream) == "1");
 }
+
+TEST_CASE("a_tick_of_two_consumers_is_published_once_on_the_subject_of_its_feed",
+          "[app][feed_ingest_loop]") {
+    using namespace ores::marketdata;
+    app_feed_ingest_loop_fixture f;
+    const auto bound_source = bound_prefix + run_tag();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
+    const auto other_party = f.add_party();
+    f.route(bound_source);
+    f.route(bound_source, other_party);
+    f.connect();
+
+    const auto system_ctx =
+        ores::database::service::tenant_context::with_system_tenant(f.h.context());
+    const auto sources = repository::feed_repository{}.read_latest(system_ctx);
+    const auto source = std::ranges::find(sources, bound_source, &domain::feed::name);
+    REQUIRE(source != sources.end());
+    const auto feed = boost::uuids::to_string(source->id);
+
+    const auto tenant = f.h.tenant_id().to_string();
+    std::atomic<std::size_t> on_feed{0};
+    std::atomic<std::size_t> on_parties{0};
+    std::string feed_subject;
+    std::mutex mu;
+    const auto feed_sub =
+        f.nats.subscribe(std::string(messaging::market_tick::nats_subject) + ".ore." + feed + ".>",
+                         [&](ores::nats::message msg) {
+                             std::lock_guard lock(mu);
+                             feed_subject = msg.subject;
+                             ++on_feed;
+                         });
+    const auto first_sub = f.nats.subscribe(
+        domain::market_tick_subject_all(tenant, boost::uuids::to_string(f.party_id)),
+        [&](ores::nats::message) { ++on_parties; });
+    const auto second_sub = f.nats.subscribe(
+        domain::market_tick_subject_all(tenant, boost::uuids::to_string(other_party)),
+        [&](ores::nats::message) { ++on_parties; });
+
+    feed_ingest_loop loop(f.nats, f.h.context());
+    loop.refresh();
+    REQUIRE_FALSE(loop.handle_tick(tick_from(bound_source, quote_uri)).has_value());
+
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+    while ((on_feed < 1 || on_parties < 2) && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    // A second publish on the feed would arrive within the wait the first two copies took.
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+
+    CHECK(on_feed == 1);
+    CHECK(on_parties == 2);
+    std::lock_guard lock(mu);
+    const auto series_uri =
+        ores::marketdata::service::app::name_datum(quote_uri).value()->series_uri;
+    CHECK(feed_subject.ends_with(std::string(messaging::market_tick::nats_subject) + ".ore." +
+                                 feed + ".fx_spot." + domain::subject_token(series_uri) + "._"));
+}

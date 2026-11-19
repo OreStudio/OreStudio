@@ -64,6 +64,7 @@ task and name that file in the Command column.
 * Notes
 
 - From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: the only reader of the party subjects is the shell's stream watch (=marketdata_commands.cpp=). The new work is a market data operation that answers which feeds a party may watch, by the rule =may_read_ticks= uses, with every feed for the system tenant. The question names the use: a watch for a screen needs the display right, and a service with no screen needs the display or the non-display right. The broker checks only certificates, so the web servers and the shell check before they subscribe.
+- From [[id:D0F85D26-99A9-42E3-9FB3-DCDEFA7E225B][publishing on the feed subject]]: the ingest still drops a tick from a source that no route names, before it is stored or published. The system tenant watches every feed, but a feed that no party routes to has no ticks to show. Decide here whether the ingest keeps those ticks.
 
 * Test Scenarios
 

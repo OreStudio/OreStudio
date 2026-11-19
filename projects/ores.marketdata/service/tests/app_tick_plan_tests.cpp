@@ -28,7 +28,7 @@ namespace {
 
 using ores::marketdata::service::app::consumer;
 using ores::marketdata::messaging::market_tick;
-using ores::marketdata::service::app::make_targets;
+using ores::marketdata::service::app::make_delivery;
 using ores::marketdata::service::app::name_datum;
 using ores::marketdata::service::app::plan_tick;
 using ores::marketdata::service::app::tick_drop;
@@ -50,6 +50,8 @@ consumer app_tick_plan_make_owner(const std::string& tenant, const std::string& 
     c.tenant_id = ores::utility::uuid::tenant_id::from_string(tenant).value();
     c.party_id = uuid(party);
     c.source_name = "synthetic.eurusd";
+    c.provider_code = "bloomberg";
+    c.feed_id = uuid("55555555-5555-5555-5555-555555555555");
     return c;
 }
 
@@ -105,15 +107,16 @@ TEST_CASE("a_tick_from_a_source_with_several_consumers_has_one_target_each", "[a
 
     REQUIRE(plan.has_value());
     CHECK(plan->value == 1.0845);
-    REQUIRE(plan->targets->size() == 2);
-    CHECK((*plan->targets)[0].owner == consumers[0]);
-    CHECK((*plan->targets)[1].owner == consumers[1]);
+    const auto& targets = plan->delivery->targets;
+    REQUIRE(targets.size() == 2);
+    CHECK(targets[0].owner == consumers[0]);
+    CHECK(targets[1].owner == consumers[1]);
     const auto token = ores::marketdata::domain::subject_token(app_tick_plan_eur_usd_spot);
-    CHECK((*plan->targets)[0].subject ==
+    CHECK(targets[0].subject ==
           "marketdata.v1.ops.market_tick.11111111-1111-1111-1111-111111111111."
           "22222222-2222-2222-2222-222222222222." +
               token);
-    CHECK((*plan->targets)[1].subject ==
+    CHECK(targets[1].subject ==
           "marketdata.v1.ops.market_tick.33333333-3333-3333-3333-333333333333."
           "44444444-4444-4444-4444-444444444444." +
               token);
@@ -136,20 +139,20 @@ TEST_CASE("a_uri_that_names_no_datum_is_not_named", "[app][tick_plan]") {
     CHECK(named.error() == tick_drop::unnameable_datum);
 }
 
-TEST_CASE("a_plan_uses_the_named_datum_and_the_targets_it_is_given", "[app][tick_plan]") {
+TEST_CASE("a_plan_uses_the_named_datum_and_the_delivery_it_is_given", "[app][tick_plan]") {
     const std::vector<consumer> consumers{app_tick_plan_make_owner(
         "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
     const auto named = name_datum(app_tick_plan_eur_usd_spot).value();
-    const auto targets = make_targets(consumers, *named);
+    const auto delivery = make_delivery(consumers, *named);
 
     const auto plan =
-        plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), consumers, named, targets);
+        plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), consumers, named, delivery);
 
     REQUIRE(plan.has_value());
     CHECK(plan->named == named);
-    CHECK(plan->targets == targets);
-    CHECK((*targets)[0].tenant_text == "11111111-1111-1111-1111-111111111111");
-    CHECK((*targets)[0].party_text == "22222222-2222-2222-2222-222222222222");
+    CHECK(plan->delivery == delivery);
+    CHECK(delivery->targets[0].tenant_text == "11111111-1111-1111-1111-111111111111");
+    CHECK(delivery->targets[0].party_text == "22222222-2222-2222-2222-222222222222");
 }
 
 TEST_CASE("a_plan_given_a_named_datum_still_refuses_a_value_that_is_no_number",
@@ -163,4 +166,22 @@ TEST_CASE("a_plan_given_a_named_datum_still_refuses_a_value_that_is_no_number",
 
     REQUIRE_FALSE(plan.has_value());
     CHECK(plan.error() == tick_drop::not_a_number);
+}
+
+TEST_CASE("a_tick_with_several_consumers_has_one_feed_subject_that_names_no_party",
+          "[app][tick_plan]") {
+    const std::vector<consumer> consumers{
+        app_tick_plan_make_owner("11111111-1111-1111-1111-111111111111",
+                                 "22222222-2222-2222-2222-222222222222"),
+        app_tick_plan_make_owner("33333333-3333-3333-3333-333333333333",
+                                 "44444444-4444-4444-4444-444444444444")};
+
+    const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), consumers);
+
+    REQUIRE(plan.has_value());
+    CHECK(plan->delivery->feed_subject ==
+          "marketdata.v1.ops.market_tick.bloomberg.55555555-5555-5555-5555-555555555555.fx_spot." +
+              ores::marketdata::domain::subject_token(
+                  "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD") +
+              "._");
 }

@@ -20,11 +20,16 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_TICK_SUBJECTS_HPP
 #define ORES_MARKETDATA_API_DOMAIN_TICK_SUBJECTS_HPP
 
+#include "ores.marketdata.api/datum/market_datum.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include <algorithm>
 #include <cstddef>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <variant>
 
 namespace ores::marketdata::domain {
 
@@ -145,6 +150,52 @@ inline std::string market_tick_subject(std::string_view tenant_id,
     for (const auto part : {tenant_id, party_id})
         subject.append(".").append(part);
     return subject.append(".").append(subject_token(oresmd_uri));
+}
+
+/// The coordinate token of a series, which has no coordinates.
+inline constexpr std::string_view no_coordinates_token = "_";
+
+/**
+ * @brief The coordinates of @p datum as one subject token: each coordinate field
+ * that holds a value, as "<name>=<value>" in the schema row's order, joined by
+ * "&" and encoded by @c subject_token(). A datum with none gets
+ * @c no_coordinates_token, which no encoded coordinate can equal because each
+ * holds an encoded "=".
+ */
+inline std::string coordinates_token(const datum::market_datum& datum) {
+    const auto& row = datum::schema_of(datum.type());
+    std::string text;
+    for (const auto& fv : datum.fields()) {
+        const auto spec = std::ranges::find(row.fields, fv.name, &datum::field_spec::name);
+        if (spec == row.fields.end() || spec->role != datum::field_role::coordinate ||
+            std::holds_alternative<datum::none_t>(fv.held))
+            continue;
+        if (!text.empty())
+            text.push_back('&');
+        text.append(datum::name_of(fv.name)).append("=").append(datum::text_of(fv.held));
+    }
+    return text.empty() ? std::string(no_coordinates_token) : subject_token(text);
+}
+
+/**
+ * @brief The subject a feed's ticks of one datum travel on:
+ * "marketdata.v1.ops.market_tick.<provider>.<feed>.<instrument_type>.<series_token>.<coordinate_token>".
+ *
+ * The subject names the feed and no tenant or party, so the ingest publishes a tick
+ * once, whatever the number of parties that may watch the feed. The series token is
+ * the encoded @p series_uri, so one wildcard covers a series, such as a volatility
+ * surface.
+ */
+inline std::string feed_tick_subject(std::string_view provider_code,
+                                     std::string_view feed_id,
+                                     const datum::market_datum& datum,
+                                     std::string_view series_uri) {
+    std::string subject(messaging::market_tick::nats_subject);
+    subject.append(".").append(subject_token(provider_code));
+    subject.append(".").append(feed_id);
+    subject.append(".").append(datum::oresmd_uri_codec::instrument_spelling(datum.type()));
+    subject.append(".").append(subject_token(series_uri));
+    return subject.append(".").append(coordinates_token(datum));
 }
 
 }

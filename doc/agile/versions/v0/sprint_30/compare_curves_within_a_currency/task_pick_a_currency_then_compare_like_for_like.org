@@ -94,7 +94,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4909 review 1: name the projection role as a constant, as the funding role is | =curveChoice.ts= | Accept | A PROJECTION constant beside FUNDING |
+| 2 | PR #4909 review 1: the undefined checks in differentialOf repeat comparesAcross | =curveChoice.ts= | Decline | They narrow the types the returned pair needs |
+| 3 | PR #4909 review 1: pin that a pair takes one panel at most | =curveChoice.test.ts= | Accept | A test states that neither pair matches the other's case |
+| 4 | PR #4909 review 1: the default curve beside is not checked against the allowed list | =CurveAnalyticsPage.tsx= | Accept | The default goes through the allowed list, as a named curve does |
+| 5 | PR #4909 review 1: a disabled checkbox is hard to discover | =CurveAnalyticsPage.tsx= | Decline | Its title says why it is disabled |
+| 6 | PR #4909 review 1: test the toggle and its unchecking | =curveAnalyticsScreen.test.tsx= | Decline | The screen tests render statically and cannot click; the drawn states with and without across are tested |
+| 7 | PR #4909 review 1: check the locale key sets match | locales | Decline | The French and Portuguese catalogues are typed against the English one, so a missing key fails the type check |
 
 * Result
 

@@ -29,6 +29,7 @@
  */
 
 const FUNDING = 'FUNDING';
+const PROJECTION = 'PROJECTION';
 
 /**
  * One curve configuration, as the pickers and the pair need it.
@@ -119,10 +120,10 @@ export function pairOf(
     beside: CurveOption | undefined,
 ): { readonly funding: CurveOption; readonly projection: CurveOption } | undefined {
     if (chosen === undefined || beside === undefined) return undefined;
-    if (chosen.role === FUNDING && beside.role === 'PROJECTION') {
+    if (chosen.role === FUNDING && beside.role === PROJECTION) {
         return { funding: chosen, projection: beside };
     }
-    if (chosen.role === 'PROJECTION' && beside.role === FUNDING) {
+    if (chosen.role === PROJECTION && beside.role === FUNDING) {
         return { funding: beside, projection: chosen };
     }
     return undefined;

@@ -152,10 +152,8 @@ export function CurveAnalyticsPage(): ReactNode {
         isFunding(chosen) && (search.get('across') === '1' || comparesAcross(chosen, named));
     const choices = besideChoices(options, chosen, across);
     const allowed = [...choices.same, ...choices.other];
-    const namedAgainst =
-        statedAgainst === null
-            ? fundingOf(chosen)
-            : allowed.find((option) => option.id === named?.id);
+    const wanted = statedAgainst === null ? fundingOf(chosen) : named;
+    const namedAgainst = allowed.find((option) => option.id === wanted?.id);
     /** A curve is not drawn beside itself. */
     const beside = namedAgainst === chosen ? undefined : namedAgainst;
 

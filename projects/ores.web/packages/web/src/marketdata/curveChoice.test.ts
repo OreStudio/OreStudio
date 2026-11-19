@@ -87,4 +87,9 @@ describe('the pairs the analytics explains', () => {
         expect(differentialOf(USD_SOFR, EUR_EURIBOR_6M)).toBeUndefined();
         expect(differentialOf(USD_SOFR, undefined)).toBeUndefined();
     });
+
+    it('explains a pair by one panel at most', () => {
+        expect(pairOf(USD_SOFR, EUR_ESTR)).toBeUndefined();
+        expect(differentialOf(USD_LIBOR_3M, USD_SOFR)).toBeUndefined();
+    });
 });

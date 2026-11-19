@@ -143,6 +143,45 @@ public:
     }
 
     /**
+     * @brief The rate this curve states for its own index at the current state, or nothing.
+     *
+     * The index's rate is the rate from spot to the index's own tenor, which is a pillar the
+     * tick loop prices like any other: the deposit at that tenor, or the forward rate
+     * agreement that ends on it when the tenor is past the last deposit. An overnight index
+     * whose curve starts past the overnight tenor states the short rate its process carries.
+     * A curve that states none of these has no index rate, and a history from another pillar
+     * would describe an index the curve does not name.
+     */
+    [[nodiscard]] std::optional<double> index_rate() const;
+
+    /**
+     * @brief The fixings of the curve's own index, as the run states them, or nothing.
+     *
+     * A curve states the fixings of its own index because no publisher fixes these indices,
+     * and a leg that has already reset needs them. The plan is what the curve knows and the
+     * service writes: the index's address, the rate the curve states for it, the day the
+     * history ends on, and the run's seed, which draws the days.
+     */
+    struct fixing_plan final {
+        std::string index_uri;
+        double level = 0.0;
+        std::chrono::year_month_day as_of;
+        std::uint64_t run_seed = 0;
+    };
+
+    /// Plans the stating of the index's fixings, which the service writes when it starts the
+    /// feed.
+    void plan_fixings(std::string index_uri,
+                      double level,
+                      std::chrono::year_month_day as_of,
+                      std::uint64_t run_seed);
+
+    /// The plan the feed carries, or nothing when its index states no fixings.
+    [[nodiscard]] const std::optional<fixing_plan>& fixings_plan() const {
+        return fixings_;
+    }
+
+    /**
      * @brief The subject this feed's ticks actually travel on.
      *
      * The adapter ingress of a pillar's vendor id when the pillars serve an adapter, and the
@@ -169,6 +208,9 @@ private:
     std::string source_name_;
     std::string nats_subject_;
     std::string currency_code_;
+    /// The tenor of the index the curve states: "1D" for an overnight index, the config's
+    /// own period for a term one.
+    std::string index_tenor_;
     std::string role_;
     std::vector<std::string> series_uris_;
     std::vector<std::string> datum_uris_;
@@ -190,6 +232,8 @@ private:
     /// The adapter id of each entry, in the same order, or nothing for an entry that publishes a
     /// market tick. Empty for every entry when the feed serves no adapter.
     std::vector<std::optional<ir_pillar_quote_target>> adapter_targets_;
+    /// The fixings of the curve's own index, which the service writes when it starts the feed.
+    std::optional<fixing_plan> fixings_;
     /// The last adapter tick of each pillar, by its external id, so a repeated tick is the one the
     /// pillar made before.
     std::map<std::string, ores::marketdata::messaging::adapter_tick> previous_ticks_;

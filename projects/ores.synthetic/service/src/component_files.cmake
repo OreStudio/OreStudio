@@ -26,6 +26,7 @@ set(files
     "config/parser.cpp"
     "derived_fx_vol_adapter.cpp"
     "feed_kind_registry.cpp"
+    "fixing_history_writer.cpp"
     "main.cpp"
     "messaging/calibration_fallback_event_registrar.cpp"
     "messaging/calibration_policy_event_registrar.cpp"

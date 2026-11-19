@@ -107,9 +107,20 @@ private:
 public:
     using offers_fn = std::function<std::vector<generator_offer>()>;
 
-    explicit generator_runner(offers_fn offers, running_set* names = nullptr)
+    /**
+     * @brief What a generator is told once, when a run starts it.
+     *
+     * A feed states things only the market can keep, such as the fixings of the index it
+     * serves, and the runner is where the feed becomes a run.
+     */
+    using started_hook = std::function<void(const ores::marketdata::domain::i_feed&)>;
+
+    explicit generator_runner(offers_fn offers,
+                              running_set* names = nullptr,
+                              started_hook started = {})
         : offers_(std::move(offers))
-        , names_(names) {}
+        , names_(names)
+        , started_(std::move(started)) {}
 
     ~generator_runner() {
         stop_all();
@@ -199,6 +210,8 @@ public:
                     release(source_name);
                     throw;
                 }
+                if (started_)
+                    started_(*started.feed);
                 running_.emplace(feed, std::move(started));
                 out.accepted.push_back(id);
                 ++out.started;
@@ -415,6 +428,8 @@ private:
 
     offers_fn offers_;
     running_set* names_;
+    /// What a started generator is told, when a run starts it.
+    started_hook started_;
     mutable std::mutex mu_;
     /// The running generator of each feed, by the feed's own name.
     std::map<std::string, running_generator> running_;

@@ -1211,6 +1211,10 @@ BEGIN
     -- The derived source keeps its quotes as the observations of a series of its own.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_series:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_observations:write');
+    -- A curve states the fixings of its own index over the run's season, because no publisher
+    -- fixes the term indices a generated population floats on. A day a publisher answered is
+    -- not replaced, so the write is the one the market data service permits to a fixing.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_fixings:write');
 
     -- ORE Import service: workflow management + delegated refdata/trading writes
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'ORE Import workflow domain service', false);

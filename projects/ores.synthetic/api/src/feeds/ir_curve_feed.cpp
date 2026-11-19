@@ -52,6 +52,7 @@ auto& ir_curve_feed_lg() {
     return instance;
 }
 
+
 } // namespace
 
 ir_curve_feed::ir_curve_feed(
@@ -73,6 +74,7 @@ ir_curve_feed::ir_curve_feed(
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
     , currency_code_(std::move(currency_code))
+    , index_tenor_(index_tenor)
     , role_(std::move(role))
     , process_(std::move(process))
     , step_seconds_(step_speed / (arrival.ticks_per_hour / 3600.0))
@@ -227,6 +229,27 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
             << " points=" << entries_.size() << " subject='" << published_subject() << "'";
     }
     return std::to_string(entries_.size());
+}
+
+std::optional<double> ir_curve_feed::index_rate() const {
+    if (!process_)
+        return std::nullopt;
+    if (const auto at = index_entry_of(entries_, index_tenor_); at)
+        return price_ir_curve_entry(*process_, entries_[*at]);
+    // A curve whose short end starts past the overnight tenor has no overnight deposit to
+    // price: its index's rate is the short rate its process carries, which is what the model
+    // states for the overnight tenor at that state.
+    if (index_tenor_ == "1D")
+        return process_->current();
+    return std::nullopt;
+}
+
+void ir_curve_feed::plan_fixings(std::string index_uri,
+                                 double level,
+                                 std::chrono::year_month_day as_of,
+                                 std::uint64_t run_seed) {
+    fixings_ = fixing_plan{
+        .index_uri = std::move(index_uri), .level = level, .as_of = as_of, .run_seed = run_seed};
 }
 
 const std::string& ir_curve_feed::published_subject() const {
@@ -453,6 +476,24 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                                 std::move(adapter_targets),
                                                 refctx.spot);
     feed->record_start_source(std::move(record));
+
+    // The curve also states the fixings of its own index, because a generated leg that has
+    // already reset needs them and no publisher fixes these indices.
+    // The meeting-dated variant of an overnight curve is a shape of one curve's short end, not
+    // an index of its own, so the index's fixings come from the standard curve alone.
+    if (cfg.tenor != "FOMC") {
+        if (const auto uri = index_fixing_uri(cfg.currency_code, cfg.index_family, cfg.tenor);
+            !uri) {
+            BOOST_LOG_SEV(ir_curve_feed_lg(), warn)
+                << "Curve " << cfg.source_name << " states no fixings: " << uri.error();
+        } else if (const auto level = feed->index_rate(); !level) {
+            BOOST_LOG_SEV(ir_curve_feed_lg(), info)
+                << "Curve " << cfg.source_name << " states no fixings of '" << *uri
+                << "': it has no deposit at the index tenor";
+        } else {
+            feed->plan_fixings(*uri, *level, refctx.spot, market.loop().run_seed());
+        }
+    }
     return feed;
 }
 

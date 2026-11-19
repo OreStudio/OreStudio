@@ -1721,9 +1721,24 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.series_identity_shape_entries.list': {
+        asOf: true,
+        filter: ['shape_code', 'id_one_of', 'shape_code_one_of'],
+        rows: ['entries'],
+    },
+    'marketdata.v1.series_identity_shape_entries.list_by_shape_code': {
+        asOf: false,
+        filter: ['shape_code', 'id_one_of', 'shape_code_one_of'],
+        rows: ['entries'],
+    },
+    'marketdata.v1.series_identity_shape_entries_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'marketdata.v1.series_identity_shapes.list': {
         asOf: true,
-        filter: [],
+        filter: ['code_one_of', 'search'],
         rows: ['shapes'],
     },
     'marketdata.v1.series_identity_shapes_versions.list': {

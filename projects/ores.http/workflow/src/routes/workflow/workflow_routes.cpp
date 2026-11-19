@@ -18,10 +18,14 @@
  *
  */
 #include "ores.http/routes/workflow/workflow_routes.hpp"
+#include "ores.http/routes/workflow/inbox_view_routes.hpp"
 #include "ores.http/routes/workflow/lookup_routes.hpp"
 #include "ores.http/routes/workflow/notification_routes.hpp"
 #include "ores.http/routes/workflow/operations_routes.hpp"
+#include "ores.http/routes/workflow/progress_routes.hpp"
+#include "ores.http/routes/workflow/request_proposal_routes.hpp"
 #include "ores.http/routes/workflow/request_routes.hpp"
+#include "ores.http/routes/workflow/request_story_routes.hpp"
 #include "ores.http/routes/workflow/retry_routes.hpp"
 
 namespace ores::http::routes::workflow {
@@ -35,6 +39,10 @@ void workflow_routes::register_routes(
     retry_routes::register_routes(router, registry, session);
     operations_routes::register_routes(router, registry, session);
     lookup_routes::register_routes(router, registry, session);
+    inbox_view_routes::register_routes(router, registry, session);
+    request_proposal_routes::register_routes(router, registry, session);
+    request_story_routes::register_routes(router, registry, session);
+    progress_routes::register_routes(router, registry, session);
 }
 
 }

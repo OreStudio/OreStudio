@@ -415,16 +415,43 @@ RULES = (
          " controls use, so a client that wants one of them reads that collection instead."),
 
     Rule("the request story",
+         ("exact", "GET /api/requests/{id}/story"),
+         CPP, COMPOSED, "workflow",
+         "One request's whole story answered by ores.http at the address and in the shape the BFF"
+         " answered: its own versions, the answers given on it, the roles it asked for and what"
+         " became of them, and the notices the reader was given, ordered as one stream and each"
+         " source read under its owner's permission."),
+    Rule("the request story",
+         ("exact", "GET /api/requests/{id}/changes"),
+         CPP, COMPOSED, "workflow",
+         "What one request proposes, answered by ores.http at the address and in the shape the BFF"
+         " answered: the request is read first because its kind decides where its lines are kept,"
+         " and then the component that owns the kind states them beside the value in force."),
+    Rule("the request story",
          ("regex", r"^GET /api/requests/:id/(story|changes)$"),
          BFF, COMPOSED, "workflow",
          "One request's whole story woven from every row any component wrote for it, the"
          " request's versions, the answers given on it, the roles it asked for and the"
          " notices, or the change lines of its kind beside the live record's values."),
     Rule("the request checks",
+         ("exact", "GET /api/requests/{id}/checks"),
+         CPP, COMPOSED, "workflow",
+         "What running a request's lines through the real write now says, answered by ores.http"
+         " at the address and in the shape the BFF answered: the kind's own component runs its"
+         " lines again without applying them, and the parts the policy names travel beside the"
+         " refusal of each line."),
+    Rule("the request checks",
          ("exact", "GET /api/requests/:id/checks"),
          BFF, COMPOSED, "workflow",
          "Runs a request's proposed lines through the real write and answers what it says"
          " now, weaving the request with the record as it stands."),
+    Rule("the approval inbox",
+         ("exact", "GET /api/requests"),
+         CPP, COMPOSED, "workflow",
+         "The requests this person may decide answered by ores.http at the address and in the"
+         " shape the BFF answered: the queue read the inbox service picks, each row with the"
+         " roles it asks for, the latest thing said about it and the trades it is about, and the"
+         " answered tail beside the open queue."),
     Rule("the approval inbox",
          ("exact", "GET /api/requests"),
          BFF, COMPOSED, "workflow",
@@ -462,6 +489,13 @@ RULES = (
          "A run's progress as a rail renders it: the run's status, the step executing and one"
          " summary per step, three reads, so a page follows the run rather than the engine's"
          " events."),
+    Rule("the run's progress",
+         ("exact", "GET /api/workflow/{instanceId}"),
+         CPP, COMPOSED, "workflow",
+         "A run's progress answered by ores.http at the address and in the shape the BFF"
+         " answered: the run's status, the step it is executing and one summary per step, from"
+         " the one read the engine already answers in that shape, kept for the interval a page"
+         " asks again."),
     Rule("the run's retry",
          ("prefix", "POST /api/workflow/"),
          BFF, RESOURCE, "workflow",

@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/text_form.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <algorithm>
@@ -95,7 +96,7 @@ std::optional<std::string> observed_since(const std::string& window) {
     else
         rr::invalid("A series window is hour, day, month, year or all.");
     const auto since = std::chrono::system_clock::now() - std::chrono::seconds{seconds};
-    return ores::platform::time::datetime::to_iso8601_utc(since);
+    return ores::utility::codec::text_form<std::chrono::system_clock::time_point>::to_text(since);
 }
 
 /// The count the read returns, which is the cap on the answer.

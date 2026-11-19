@@ -80,7 +80,7 @@ an API publishes no area, so it is counted under =(none)=.
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
-| workflow | inbox, server, timeline, workflow | 30 | composed view 6, resource 24 |
+| workflow | inbox, server, timeline, workflow | 35 | composed view 11, resource 24 |
 | (none) | books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 429 | not an API 407, transport capability 22 |
 
 * The composed views
@@ -127,9 +127,9 @@ change of its own, not part of the port.
 | the public publishers | GET /api/marketdata/public-rates | web/src/api/client.ts | ores.marketdata | the providers, feeds, scopes, sessions, suppliers and market series read together and joined onto each publisher | ETag on the whole view, stale after 5 min |
 | the public rates coverage | GET /api/marketdata/public-rates/coverage | web/src/api/client.ts | ores.marketdata | the public catalogue and its fixings, reduced to each series' first date, last date and count | ETag on the whole view, stale after 5 min |
 | the public rates file | GET /api/marketdata/public-rates/fixings.csv | web/src/api/client.ts | ores.marketdata | the public catalogue to find the publisher's series, then their fixings filtered to the range and item | no cache: a file is built per request |
-| the request checks | GET /api/requests/:id/checks | web/src/api/client.ts | ores.workflow | each proposed line run through the real write against the record as it stands | ETag on the whole view, stale after 30 s |
-| the request story | GET /api/requests/:id/changes, GET /api/requests/:id/story | web/src/api/client.ts | ores.workflow | the request's versions, the decisions taken on it, the roles it asked for and the notices, or the change lines of its kind beside the live record | ETag on the whole view, stale after 15 s |
-| the run's progress | GET /api/workflow/:instanceId | web/src/api/client.ts | ores.workflow | the run's status, the step executing and one summary per step | ETag on the whole view, stale after 5 s |
+| the request checks | GET /api/requests/:id/checks, GET /api/requests/{id}/checks | web/src/api/client.ts | ores.workflow | each proposed line run through the real write against the record as it stands | ETag on the whole view, stale after 30 s |
+| the request story | GET /api/requests/:id/changes, GET /api/requests/:id/story, GET /api/requests/{id}/changes, GET /api/requests/{id}/story | web/src/api/client.ts | ores.workflow | the request's versions, the decisions taken on it, the roles it asked for and the notices, or the change lines of its kind beside the live record | ETag on the whole view, stale after 15 s |
+| the run's progress | GET /api/workflow/:instanceId, GET /api/workflow/{instanceId} | web/src/api/client.ts | ores.workflow | the run's status, the step executing and one summary per step | ETag on the whole view, stale after 5 s |
 | the sprint board | GET /api/agile/board | web/src/api/agile.ts | no service, X1 decides | one sprint's work items and their states, read from the sprint file and the documents under it | ETag on the whole view, stale after 60 s |
 | the sprint charts | GET /api/agile/charts | web/src/api/agile.ts | no service, X1 decides | one sprint's scope and the work remaining per day, computed from the sprint file and the state changes under it | ETag on the whole view, stale after 60 s |
 | the synthetic folder tree | GET /api/synthetic/feed-folders | web/src/api/client.ts | ores.synthetic | the folders and the feeds under each, at any depth, with the count of each kind so no screen reads the feeds | ETag on the whole view, revalidated at each read, because folder writes change it |
@@ -158,9 +158,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
-| workflow | 18 | 12 | 6 |
+| workflow | 18 | 17 | 1 |
 | (none) | 35 | 28 | 7 |
-| total | 333 | 282 | 51 |
+| total | 333 | 287 | 46 |
 
 * The pairing
 
@@ -398,12 +398,12 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/reporting/runs/:id/files/:file= | GET /api/reporting/runs/{id}/files/{file} |
 | GET =/api/reporting/runs/:id/files/:file/info= | GET /api/reporting/runs/{id}/files/{file}/info |
 | GET =/api/reporting/runs/:id/results= | GET /api/reporting/runs/{id}/results |
-| GET =/api/requests= | none |
+| GET =/api/requests= | GET /api/requests |
 | GET =/api/requests/:id= | GET /api/requests/{id} |
-| GET =/api/requests/:id/changes= | none |
-| GET =/api/requests/:id/checks= | none |
+| GET =/api/requests/:id/changes= | GET /api/requests/{id}/changes |
+| GET =/api/requests/:id/checks= | GET /api/requests/{id}/checks |
 | POST =/api/requests/:id/decision= | POST /api/requests/{id}/decision |
-| GET =/api/requests/:id/story= | none |
+| GET =/api/requests/:id/story= | GET /api/requests/{id}/story |
 | GET =/api/roles= | GET /api/roles |
 | POST =/api/roles= | POST /api/roles |
 | DELETE =/api/roles/:name= | DELETE /api/roles/{name} |
@@ -497,12 +497,12 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/trades/:id/versions/:version= | GET /api/trades/{id}/versions/{version} |
 | GET =/api/trades/new= | GET /api/trades/new |
 | GET =/api/ungrouped-trades= | GET /api/ungrouped-trades |
-| GET =/api/workflow/:instanceId= | none |
+| GET =/api/workflow/:instanceId= | GET /api/workflow/{instanceId} |
 | POST =/api/workflow/:instanceId/retry= | POST /api/workflow/{instanceId}/retry |
 
 * The inventory
 
-1381 routes: 333 answered by the BFF and 1048 by ores.http.
+1386 routes: 333 answered by the BFF and 1053 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -903,11 +903,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | put | =/api/me/profile= | bff | projects/ores.web/packages/bff/src/server.ts:1648 | The signed-in person's own profile or contact record, whose account the session names so the body carries no id. |
 | resource | access | put | =/api/me/profile= | ores.http | projects/ores.http/iam/src/routes/iam/profile_routes.cpp:129 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | workflow | get | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:584 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
-| resource | workflow | get | =/api/me/requests= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:483 | The signed-in person's own requests at the addresses and in the shapes the BFF answered: the page they raised, newest first, each row with the roles it asks for and the latest thing said about it; the ask that raises one; and the withdrawal that carries the version the person saw. |
+| resource | workflow | get | =/api/me/requests= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:194 | The signed-in person's own requests at the addresses and in the shapes the BFF answered: the page they raised, newest first, each row with the roles it asks for and the latest thing said about it; the ask that raises one; and the withdrawal that carries the version the person saw. |
 | resource | workflow | post | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:591 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
-| resource | workflow | post | =/api/me/requests= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:592 | The signed-in person's own requests at the addresses and in the shapes the BFF answered: the page they raised, newest first, each row with the roles it asks for and the latest thing said about it; the ask that raises one; and the withdrawal that carries the version the person saw. |
+| resource | workflow | post | =/api/me/requests= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:305 | The signed-in person's own requests at the addresses and in the shapes the BFF answered: the page they raised, newest first, each row with the roles it asks for and the latest thing said about it; the ask that raises one; and the withdrawal that carries the version the person saw. |
 | resource | workflow | delete | =/api/me/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:607 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
-| resource | workflow | delete | =/api/me/requests/{id}= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:642 | The signed-in person's own requests at the addresses and in the shapes the BFF answered: the page they raised, newest first, each row with the roles it asks for and the latest thing said about it; the ask that raises one; and the withdrawal that carries the version the person saw. |
+| resource | workflow | delete | =/api/me/requests/{id}= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:355 | The signed-in person's own requests at the addresses and in the shapes the BFF answered: the page they raised, newest first, each row with the roles it asks for and the latest thing said about it; the ask that raises one; and the withdrawal that carries the version the person saw. |
 | resource | auth | get | =/api/me/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1851 | The signed-in person's own open sessions, a self read the server scopes to the caller. |
 | resource | access | get | =/api/me/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:221 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | composed view | access | get | =/api/me/ways-to-hold= | bff | projects/ores.web/packages/bff/src/server.ts:1225 | The roles the person could ask for that would give them a permission, weaving the role catalogue and what each role grants against the grants the person already has. |
@@ -1199,13 +1199,17 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | composed view | reporting | get | =/api/reporting/runs/{id}/files/{file}/info= | ores.http | projects/ores.http/reporting/src/routes/reporting/run_file_routes.cpp:714 | One run's files: the tree the run hangs in, what each input package holds, the output files each accepted result's manifest names, and the bytes of whichever one the reader opened, so the screen reads one answer and not a walk of three services. |
 | resource | reporting | get | =/api/reporting/runs/{id}/results= | ores.http | projects/ores.http/reporting/src/routes/reporting/result_routes.cpp:498 | One run's figures at the level the reader asks for: the result rows of the run, the bookings of its trades, and the counterparties, books and portfolios those ids name, rolled up to the trade, book or counterparty and stated against an earlier run when one is named. |
 | composed view | workflow | get | =/api/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:628 | The requests this person may decide, gathered from every kind into one queue with each kind's subject, which is the approval inbox the design names. |
+| composed view | workflow | get | =/api/requests= | ores.http | projects/ores.http/workflow/src/routes/workflow/inbox_view_routes.cpp:130 | The requests this person may decide answered by ores.http at the address and in the shape the BFF answered: the queue read the inbox service picks, each row with the roles it asks for, the latest thing said about it and the trades it is about, and the answered tail beside the open queue. |
 | resource | workflow | get | =/api/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:668 | One request an identifier names, when the person may open it, which a queue read cannot answer because a notice is read after the request stopped waiting. |
 | composed view | workflow | get | =/api/requests/:id/changes= | bff | projects/ores.web/packages/bff/src/inbox.ts:698 | One request's whole story woven from every row any component wrote for it, the request's versions, the answers given on it, the roles it asked for and the notices, or the change lines of its kind beside the live record's values. |
 | composed view | workflow | get | =/api/requests/:id/checks= | bff | projects/ores.web/packages/bff/src/inbox.ts:718 | Runs a request's proposed lines through the real write and answers what it says now, weaving the request with the record as it stands. |
 | resource | workflow | post | =/api/requests/:id/decision= | bff | projects/ores.web/packages/bff/src/inbox.ts:729 | Approves, refuses, holds or resumes one request against the version read. |
 | composed view | workflow | get | =/api/requests/:id/story= | bff | projects/ores.web/packages/bff/src/inbox.ts:685 | One request's whole story woven from every row any component wrote for it, the request's versions, the answers given on it, the roles it asked for and the notices, or the change lines of its kind beside the live record's values. |
-| resource | workflow | get | =/api/requests/{id}= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:534 | One request at the address and in the shape the BFF answered: what it asks for, what was decided about it, where each part it named stands, and the trades it is about with the identifier each is known by. |
-| resource | workflow | post | =/api/requests/{id}/decision= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:618 | One request decided at the address and in the shape the BFF answered: approved, refused, held or resumed against the version read, with the part the decider answers for and the reason a hold names. |
+| resource | workflow | get | =/api/requests/{id}= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:246 | One request at the address and in the shape the BFF answered: what it asks for, what was decided about it, where each part it named stands, and the trades it is about with the identifier each is known by. |
+| composed view | workflow | get | =/api/requests/{id}/changes= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_proposal_routes.cpp:305 | What one request proposes, answered by ores.http at the address and in the shape the BFF answered: the request is read first because its kind decides where its lines are kept, and then the component that owns the kind states them beside the value in force. |
+| composed view | workflow | get | =/api/requests/{id}/checks= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_proposal_routes.cpp:327 | What running a request's lines through the real write now says, answered by ores.http at the address and in the shape the BFF answered: the kind's own component runs its lines again without applying them, and the parts the policy names travel beside the refusal of each line. |
+| resource | workflow | post | =/api/requests/{id}/decision= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:331 | One request decided at the address and in the shape the BFF answered: approved, refused, held or resumed against the version read, with the part the decider answers for and the reason a hold names. |
+| composed view | workflow | get | =/api/requests/{id}/story= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_story_routes.cpp:338 | One request's whole story answered by ores.http at the address and in the shape the BFF answered: its own versions, the answers given on it, the roles it asked for and what became of them, and the notices the reader was given, ordered as one stream and each source read under its owner's permission. |
 | resource | access | get | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1459 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
 | resource | access | get | =/api/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_write_routes.cpp:345 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | post | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1488 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
@@ -1227,7 +1231,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | tenancy | get | =/api/seed-profiles= | bff | projects/ores.web/packages/bff/src/server.ts:2521 | The starting points a new tenant may be provisioned from, each with the step kinds it orders and the parameters its form declares. |
 | resource | tenancy | get | =/api/seed-profiles= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:202 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | market-data | get | =/api/series/:id/observations= | bff | projects/ores.web/packages/bff/src/series.ts:84 | One series' observations inside a window, oldest first, the count read as the cap on the answer. |
-| resource | market-data | get | =/api/series/{id}/observations= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_routes.cpp:139 | One series' observations inside a window, oldest first, the count read as the cap on the answer, at the address and in the shape the BFF answered. |
+| resource | market-data | get | =/api/series/{id}/observations= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_routes.cpp:140 | One series' observations inside a window, oldest first, the count read as the cap on the answer, at the address and in the shape the BFF answered. |
 | transport capability | auth | delete | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1027 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
 | resource | auth | delete | =/api/session= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:360 | The browser's session at the address and in the shape the BFF answered: sign in, read, sign out, choose the party a login waits on, and move to another party. |
 | transport capability | auth | get | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1019 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
@@ -1880,6 +1884,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | tenancy | get | =/api/v1/tenancy/tenants/{code}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/tenant_routes.cpp:508 | A generated tenancy collection: the list, one row by key, its versions and the bulk get, published under the area a tenant's own rows answer on. |
 | composed view | workflow | get | =/api/workflow/:instanceId= | bff | projects/ores.web/packages/bff/src/server.ts:2660 | A run's progress as a rail renders it: the run's status, the step executing and one summary per step, three reads, so a page follows the run rather than the engine's events. |
 | resource | workflow | post | =/api/workflow/:instanceId/retry= | bff | projects/ores.web/packages/bff/src/server.ts:2674 | A command on one run: retrying a run that stopped asks the engine to start it again, and answers the run rather than a collection the client reads. |
+| composed view | workflow | get | =/api/workflow/{instanceId}= | ores.http | projects/ores.http/workflow/src/routes/workflow/progress_routes.cpp:67 | A run's progress answered by ores.http at the address and in the shape the BFF answered: the run's status, the step it is executing and one summary per step, from the one read the engine already answers in that shape, kept for the interval a page asks again. |
 | resource | workflow | post | =/api/workflow/{instanceId}/retry= | ores.http | projects/ores.http/workflow/src/routes/workflow/retry_routes.cpp:93 | One run resumed at the address and in the shape the BFF answered: the step the page chose, or the step the run stopped at, and the engine's own answer saying which step it re-dispatched or why it refused. |
 | transport capability | (none) | get | =/{path}= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:102 | A file of the built bundle, or the application shell for a screen path, and an /api path is answered 404 so the shell never stands in for JSON. |
 | transport capability | (none) | get | ={bucket_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:294 | path composed from bucket_pattern (declared at 236). A page of the keys one bucket of the object store holds. |

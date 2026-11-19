@@ -143,23 +143,23 @@ auto equity_instrument_projection_to_ore_date(const std::chrono::year_month_day&
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto equity_instrument_projection_text_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto equity_instrument_projection_text_of(const record_reader& r,
+                                          std::string_view name) -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto equity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto equity_instrument_projection_spelling_of(const record_reader& r,
+                                              std::string_view name) -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
 /// A schema decimal element as the domain's exact decimal, zero when absent.
-auto equity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
-    -> decimal {
+auto equity_instrument_projection_decimal_of(const record_reader& r,
+                                             std::string_view name) -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
@@ -265,8 +265,8 @@ struct range_bound_text final {
 
 // An option on an equity future states the option's element under its own
 // name, with the future's expiry beside it.
-auto read_equity_option(const record_reader& trade, std::string_view trade_type)
-    -> equity_option_instrument {
+auto read_equity_option(const record_reader& trade,
+                        std::string_view trade_type) -> equity_option_instrument {
     auto r = equity_instrument_projection_make_row<equity_option_instrument>(trade_type);
     const auto data = trade.child(trade_type == "EquityFutureOption" ? "EquityFutureOptionData" :
                                                                        "EquityOptionData");
@@ -297,8 +297,8 @@ auto read_cash_position(const record_reader& trade) -> cash_position_instrument 
     return r;
 }
 
-auto read_equity_basket_option(const record_reader& trade, std::string_view trade_type)
-    -> equity_basket_option_instrument {
+auto read_equity_basket_option(const record_reader& trade,
+                               std::string_view trade_type) -> equity_basket_option_instrument {
     auto r = equity_instrument_projection_make_row<equity_basket_option_instrument>(
         std::string(trade_type));
     if (const auto data = trade.child(std::string(trade_type) + "Data"))
@@ -516,8 +516,8 @@ auto read_equity_digital_option(const record_reader& trade) -> equity_digital_op
 // A touch option is the digital row with a barrier instead of a strike, which
 // is the shape the old mapper gave it. A double touch states the same element
 // with two levels, which the barrier rows hold.
-auto read_equity_touch_option(const record_reader& trade, std::string_view trade_type)
-    -> equity_digital_option_instrument {
+auto read_equity_touch_option(const record_reader& trade,
+                              std::string_view trade_type) -> equity_digital_option_instrument {
     auto r = equity_instrument_projection_make_row<equity_digital_option_instrument>(trade_type);
     const auto data = trade.child(std::string(trade_type) + "Data");
     if (!data)
@@ -1616,8 +1616,8 @@ std::optional<std::string> equity_option_data_element(std::string_view trade_typ
     return std::nullopt;
 }
 
-auto read_equity_product(const xml::record_reader& trade, std::string_view trade_type)
-    -> trading::domain::trade_instrument {
+auto read_equity_product(const xml::record_reader& trade,
+                         std::string_view trade_type) -> trading::domain::trade_instrument {
     if (trade_type == "EquityPosition")
         return trading::domain::trade_instrument{read_equity_position(trade)};
     if (trade_type == "EquityOptionPosition")

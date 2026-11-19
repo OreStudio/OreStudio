@@ -34,7 +34,7 @@ rather than a failure, which is why the answer carries a list of gaps at all.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Served, and proved on a fresh database.|
+| Now          | Served, proved, and answering review.  |
 | Waiting on   | Nothing.                               |
 | Next         | Raise the PR and answer its review.    |
 | Last touched | 2026-11-19                               |
@@ -110,16 +110,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The workflow suite      | 57 cases, 589 assertions                  | =publish/bin/ores.http.workflow.tests= | d9e983dd95 |
-| The routes in the tree  | 1387: 1054 by =ores.http=, 333 by the BFF | =./compass.sh generate=, then the inventory's *The inventory* | d9e983dd95 |
-| The paired routes       | 288 of 333, so 45 are unpaired           | the inventory's pairing table: one =none= row per unpaired route | d9e983dd95 |
-| The workflow area       | no unpaired route remains                | the same table, searched for the area's addresses | d9e983dd95 |
-| The check gate          | 52 of 52                                 | =./compass.sh check --exclude-heavy= | d9e983dd95 |
-| The http suites         | =ores.http.nats.tests= and =ores.http.core.tests= pass | =./compass.sh test run -- -R 'ores\.http\.(nats|core)\.tests'= | d9e983dd95 |
-| The schema and the tree | in sync, fingerprint =cabc2ecdbf1f608e=  | =./compass.sh db recreate -y -k=, then =./compass.sh bearings= | d9e983dd95 |
-| The person's stream     | 16 events: 3 account, 10 account party, 2 account role, 1 sign-in, 1 gap | =evidence/timeline_live_run.txt= | d9e983dd95 |
-| The party's stream      | 492 events: 7 party, 453 counterparty, 26 currency, 1 business unit, 4 contact, 1 identifier, 3 gaps | =evidence/timeline_live_run.txt= | d9e983dd95 |
-| The request's stream    | 3 events: 2 request versions and 1 decision, no gaps | =evidence/timeline_live_run.txt= | d9e983dd95 |
+| The workflow suite      | 58 cases, 595 assertions                  | =publish/bin/ores.http.workflow.tests= | f6c6024bbd |
+| The routes in the tree  | 1387: 1054 by =ores.http=, 333 by the BFF | =./compass.sh generate=, then the inventory's *The inventory* | f6c6024bbd |
+| The paired routes       | 288 of 333, so 45 are unpaired           | the inventory's pairing table: one =none= row per unpaired route | f6c6024bbd |
+| The workflow area       | no unpaired route remains                | the same table, searched for the area's addresses | f6c6024bbd |
+| The check gate          | 52 of 52                                 | =./compass.sh check --exclude-heavy= | f6c6024bbd |
+| The http suites         | =ores.http.nats.tests= and =ores.http.core.tests= pass | =./compass.sh test run -- -R 'ores\.http\.(nats|core)\.tests'= | f6c6024bbd |
+| The schema and the tree | in sync, fingerprint =cabc2ecdbf1f608e=  | =./compass.sh db recreate -y -k=, then =./compass.sh bearings= | f6c6024bbd |
+| The person's stream     | 20 events: 3 account, 10 account party, 2 account role, 5 sign-in, 1 gap | =evidence/timeline_live_run.txt= | f6c6024bbd |
+| The party's stream      | 492 events: 7 party, 453 counterparty, 26 currency, 1 business unit, 4 contact, 1 identifier, 3 gaps | =evidence/timeline_live_run.txt= | f6c6024bbd |
+| The request's stream    | 3 events: 2 request versions and 1 decision, no gaps | =evidence/timeline_live_run.txt= | f6c6024bbd |
 
 * Notes
 
@@ -153,7 +153,7 @@ into a gap with the sentence the screen shows.
 The compositions are proved against a live deployment, not only by construction.
 The database was recreated from this checkout, the demo tenant was provisioned, and
 the gateway the systemd unit runs answered all three subjects over HTTP with the
-cookie a sign-in sets. The run is =evidence/timeline_live_run.txt=: 16 events for
+cookie a sign-in sets. The run is =evidence/timeline_live_run.txt=: 20 events for
 the person, 492 for the party, 3 for the request, and the address refusing what the
 BFF refused. The schema and the tree agree, at fingerprint =cabc2ecdbf1f608e=.
 
@@ -194,6 +194,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An unanswered history read was reported as a permission the person lacks | =timeline_sources.cpp= | Fixed | The gap now states that the service did not answer, which is true of all three pieces of news the reply carries in one flag, and the shared read says why it cannot say more. The refusal the transport carries still gaps on 403 and throws otherwise, and a test states that rule. |
+| 2 | The contact history key needs confirming | =person_timeline.cpp= | Fixed | The service reads the record by =email=, the key its model declares; the code says so now. |
+| 3 | Naming a linked row swallowed errors with no gap | =timeline_sources.cpp= | Fixed | Both helpers state a gap when the names cannot be read, and the refusal that read can make is caught there instead of escaping as a 403 on the whole view. |
+| 4 | =roles_of= logged nothing for a bad uuid | =person_timeline.cpp= | Fixed | It logs the case as the naming helpers do. |
+| 5 | The sign-in window gap is always appended | =person_timeline.cpp= | Kept | Deliberate and commented: the window is a fact about the read, not about the person. |
+| 6 | =roles_of= reads at most 1000 roles | =person_timeline.cpp= | Kept | The filter limits the answer to the ids asked for. |
 
 * Result

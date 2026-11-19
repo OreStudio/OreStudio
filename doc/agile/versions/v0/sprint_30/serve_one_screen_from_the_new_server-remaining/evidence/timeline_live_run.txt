@@ -1,8 +1,10 @@
 GET /api/timeline, proved against the environment the systemd unit runs.
 
-Commit under test : d9e983dd95 (feature/serve-the-subject-timeline, rebased on 02441243f1)
+Commit under test : f6c6024bbd (PR #4907 head, the review fixes included)
+Built from        : the gateway reports d9e983dd95, the commit its binary was linked at
 Database          : ores_dev_brave_hopper, recreated from this checkout 2026-11-19 21:50
-Schema            : in sync, fingerprint cabc2ecdbf1f608e (compass bearings)
+Schema            : in sync, fingerprint cabc2ecdbf1f608e (compass bearings); the
+                    review fixes touch no SQL, so the fingerprint is unchanged
 Gateway           : ores.http.server-brave_hopper, http://localhost:20401
 Tenant            : acme_corporation, provisioned by the acme_demo profile and active
 
@@ -41,15 +43,15 @@ events: 492  gaps: 3
 
 === person timeline: HTTP 200 ===
 subject: person  id: tenant_admin
-events: 18  gaps: 1
+events: 20  gaps: 1
   ores.iam.account                               3
   ores.iam.account_party                         10
   ores.iam.account_role                          2
-  ores.iam.auth_event                            3
+  ores.iam.auth_event                            5
+  signed_in   ores.iam.auth_event                    dab9f6b3-0e67-45b4-b745-17bd v1   2026-11-19 23:04:36.581730Z
+  signed_in   ores.iam.auth_event                    3a6a9a6a-dc9f-442f-8afc-7048 v1   2026-11-19 23:03:53.511792Z
   signed_in   ores.iam.auth_event                    e58f48f2-28bb-4060-bb5e-5610 v1   2026-11-19 22:12:11.319349Z
   signed_in   ores.iam.auth_event                    7f951390-efb1-4396-8bb3-499b v1   2026-11-19 22:12:01.964679Z
-  signed_in   ores.iam.auth_event                    33295e7e-3e41-4a30-9c18-95ec v1   2026-11-19 22:11:49.752748Z
-  changed     ores.iam.account                       01a1f5cc-6d50-7770-b7da-89e7 v3   2026-11-19 21:56:10.716609Z
   GAP ores.iam.auth_event -> The sign-in log keeps a rolling window rather than everything, so a sign-in older than the window is not shown
 
 === request timeline: HTTP 200 ===

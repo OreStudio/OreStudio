@@ -410,6 +410,27 @@ if(configure_result EQUAL 0 AND build_result EQUAL 0)
         ctest_memcheck(PARALLEL_LEVEL ${nproc} EXCLUDE_LABEL web RETURN_VALUE test_result)
     else()
         ctest_test(PARALLEL_LEVEL ${nproc} RETURN_VALUE test_result)
+        # CDash shows one entry per ctest test, and each suite is one test,
+        # so a failed suite names no case. The suites already write their
+        # Catch2 results, so the script turns each suite's entry in Test.xml
+        # into one entry per case before the submit. The suites still run as
+        # one process each. Without Python the suite entries are submitted.
+        find_program(ores_python NAMES python3 python)
+        file(STRINGS "${CTEST_BINARY_DIRECTORY}/Testing/TAG" testing_tag LIMIT_COUNT 1)
+        set(test_xml "${CTEST_BINARY_DIRECTORY}/Testing/${testing_tag}/Test.xml")
+        if(ores_python AND EXISTS "${test_xml}")
+            execute_process(
+                COMMAND ${ores_python}
+                    "${CTEST_SOURCE_DIRECTORY}/build/scripts/expand_catch2_cases.py"
+                    "${test_xml}"
+                RESULT_VARIABLE expand_result)
+            if(NOT expand_result EQUAL 0)
+                message(WARNING "Could not expand the Catch2 cases in ${test_xml} "
+                    "(exit code: ${expand_result}); CDash shows one entry per suite.")
+            endif()
+        else()
+            message(WARNING "No Python or no ${test_xml}; CDash shows one entry per suite.")
+        endif()
     endif()
     if(NOT test_result EQUAL 0)
         message(WARNING "Tests failed with error code: ${test_result}")

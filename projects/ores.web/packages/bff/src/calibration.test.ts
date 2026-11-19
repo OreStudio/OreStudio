@@ -24,7 +24,7 @@ import {
     irCurveCoverage,
     type IrCoverageBootstrapConfig,
     type IrCoverageConfig,
-    type IrCoverageFeed,
+    type IrCoverageRun,
     type IrCoveragePublish,
     type IrCurveCoverageInput,
     type IrCurveCoverageRow,
@@ -50,13 +50,12 @@ const USD_BOOTSTRAP: IrCoverageBootstrapConfig = {
     output_series_id: SERIES,
 };
 
-function feedOf(
-    start: Partial<IrCoverageFeed['start']> = {},
-    over: Partial<IrCoverageFeed> = {},
-): IrCoverageFeed {
+function runOf(
+    start: Partial<NonNullable<IrCoverageRun['start']>> = {},
+    over: Partial<IrCoverageRun> = {},
+): IrCoverageRun {
     return {
-        config_id: CONFIG,
-        refused: false,
+        source_name: 'synthetic.bloomberg.usdsofr',
         start: { from_fixing: true, provider_code: 'bloomberg', note: '', ...start },
         ...over,
     };
@@ -68,11 +67,10 @@ function publish(asOf: string): IrCoveragePublish {
 
 function coverage(over: Partial<IrCurveCoverageInput> = {}): IrCurveCoverageRow[] {
     return irCurveCoverage({
-        feeds: [feedOf()],
+        runs: [runOf()],
         generationConfigs: [USD_CONFIG],
         bootstrapConfigs: [USD_BOOTSTRAP],
         publishedBySeries: new Map([[SERIES, publish('2026-11-13 11:30:00Z')]]),
-        windowDays: 90,
         now: NOW,
         ...over,
     });
@@ -86,7 +84,6 @@ describe('the IR curve coverage', () => {
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: 'bloomberg',
-                window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:30:00Z',
@@ -99,13 +96,12 @@ describe('the IR curve coverage', () => {
     });
 
     it('states no_feed for a currency a bootstrap config holds but no feed does', () => {
-        expect(coverage({ feeds: [], generationConfigs: [] })).toEqual([
+        expect(coverage({ runs: [], generationConfigs: [] })).toEqual([
             {
                 currency_code: 'USD',
                 config_id: '',
                 source_name: '',
                 provider_code: '',
-                window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:30:00Z',
@@ -120,14 +116,13 @@ describe('the IR curve coverage', () => {
     it("states no_source for a feed that keeps a fixed level, in the system's own words", () => {
         const note = 'No series of the class policy publishes an overnight rate in USD.';
         expect(
-            coverage({ feeds: [feedOf({ from_fixing: false, provider_code: '', note })] }),
+            coverage({ runs: [runOf({ from_fixing: false, provider_code: '', note })] }),
         ).toEqual([
             {
                 currency_code: 'USD',
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: '',
-                window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:30:00Z',
@@ -139,29 +134,38 @@ describe('the IR curve coverage', () => {
         ]);
     });
 
-    it('states no_source for a refused feed that recorded no note', () => {
-        expect(
-            coverage({
-                feeds: [
-                    feedOf({ from_fixing: false, provider_code: '', note: '' }, { refused: true }),
-                ],
-            }),
-        ).toEqual([
-            {
-                currency_code: 'USD',
-                config_id: CONFIG,
-                source_name: 'synthetic.bloomberg.usdsofr',
-                provider_code: '',
-                window_days: 90,
-                bootstrap_config_id: BOOTSTRAP,
-                bootstrap_config_name: 'USD-SOFR',
-                published_as_of: '2026-11-13 11:30:00Z',
-                published_state: 'published',
+    it('states no_source for a run that kept its level and recorded no note', () => {
+        const [row] = coverage({ runs: [runOf({ from_fixing: false, provider_code: '' })] });
+        expect(row).toMatchObject({
+            provider_code: '',
+            gap: 'no_source',
+            gap_reason:
+                'The feed keeps a fixed level, because no public source publishes this currency.',
+        });
+    });
+
+    it('states no_source for a config that starts from its fixed level, running or not', () => {
+        const fixed = { ...USD_CONFIG, price_source: 'fixed' };
+        for (const runs of [[], [runOf()]]) {
+            expect(coverage({ runs, generationConfigs: [fixed] })[0]).toMatchObject({
                 gap: 'no_source',
-                gap_reason: 'The class policy refuses to start the feed without a fixing.',
-                curves: expect.any(Array),
-            },
-        ]);
+                gap_reason: 'The feed config starts from its fixed level, not from a fixing.',
+            });
+        }
+    });
+
+    it('states the config when it says fixed though the run started from a fixing', () => {
+        const fixed = { ...USD_CONFIG, price_source: 'fixed' };
+        expect(coverage({ runs: [runOf()], generationConfigs: [fixed] })[0]).toMatchObject({
+            provider_code: 'bloomberg',
+            gap: 'no_source',
+            gap_reason: 'The feed config starts from its fixed level, not from a fixing.',
+        });
+    });
+
+    it('covers a currency whose feed takes a fixing but does not run now, with no provider', () => {
+        const [row] = coverage({ runs: [] });
+        expect(row).toMatchObject({ provider_code: '', gap: '' });
     });
 
     it('states no_curve_config for a currency with a source but no bootstrap config', () => {
@@ -171,7 +175,6 @@ describe('the IR curve coverage', () => {
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: 'bloomberg',
-                window_days: 90,
                 bootstrap_config_id: '',
                 bootstrap_config_name: '',
                 published_as_of: '',
@@ -190,7 +193,6 @@ describe('the IR curve coverage', () => {
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: 'bloomberg',
-                window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '',
@@ -225,7 +227,6 @@ describe('the IR curve coverage', () => {
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: 'bloomberg',
-                window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:29:00Z',
@@ -249,14 +250,15 @@ describe('the IR curve coverage', () => {
             id: '88888888-8888-4888-8888-888888888888',
             currency_code: 'USD',
             source_name: 'synthetic.demo.usdsofr',
+            price_source: 'fixing',
         };
         const rows = coverage({
-            feeds: [
-                feedOf(
+            runs: [
+                runOf(
                     { from_fixing: false, note: 'The config starts from its fixed level.' },
-                    { config_id: fixed.id },
+                    { source_name: fixed.source_name },
                 ),
-                feedOf(),
+                runOf(),
             ],
             generationConfigs: [fixed, USD_CONFIG],
         });
@@ -281,7 +283,7 @@ describe('the IR curve coverage', () => {
             output_series_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
         };
         const rows = coverage({
-            feeds: [feedOf(), feedOf({}, { config_id: eurConfig.id })],
+            runs: [runOf(), runOf({}, { source_name: eurConfig.source_name })],
             generationConfigs: [USD_CONFIG, eurConfig],
             bootstrapConfigs: [USD_BOOTSTRAP, eurBootstrap],
             publishedBySeries: new Map([
@@ -321,6 +323,8 @@ describe('the IR curve coverage', () => {
                 discount_curve_name: '',
                 published_as_of: '2026-11-13 11:30:00Z',
                 published_state: 'published',
+                gap: '',
+                gap_reason: '',
             },
             {
                 bootstrap_config_id: LIBOR_3M.id,
@@ -330,8 +334,22 @@ describe('the IR curve coverage', () => {
                 discount_curve_name: 'USD-SOFR',
                 published_as_of: '2026-11-13 11:45:00Z',
                 published_state: 'published',
+                gap: '',
+                gap_reason: '',
             },
         ]);
+    });
+
+    it('states each curve by its own publish, so a live funding curve shows beside a stale projection', () => {
+        const [row] = coverage({
+            bootstrapConfigs: [LIBOR_3M, SOFR],
+            publishedBySeries: new Map([[SERIES, publish('2026-11-13 11:45:00Z')]]),
+        });
+        expect(row?.curves.map((curve) => [curve.name, curve.gap])).toEqual([
+            ['USD-SOFR', ''],
+            ['USD-LIBOR-3M', 'no_publish'],
+        ]);
+        expect(row?.gap).toBe('');
     });
 
     it('covers a currency by its funding curve, not by a projection that published later', () => {

@@ -118,37 +118,79 @@ function OutcomeTag({ outcome }: { readonly outcome: FeedOutcome }): ReactNode {
     return <Tag tone={OUTCOME_TONE[outcome]}>{t(`marketdata.calibration.outcome.${outcome}`)}</Tag>;
 }
 
-/** The policy in one line: automatic, or the class's own window, inverse rule, order and fallback. */
-function PolicyLine({ calibration }: { readonly calibration: Calibration }): ReactNode {
+/**
+ * The class policy as a small card: the window, the inverse rule and the fallback
+ * as three facts, and the order the sources are tried in as numbered chips that
+ * wrap, so a long order never runs on as one sentence.
+ */
+function PolicyCard({ calibration }: { readonly calibration: Calibration }): ReactNode {
     const { t } = useTranslation();
     const p = calibration.policy;
+    const fact = (label: string, value: string): ReactNode => (
+        <div>
+            <dt className="text-xs text-ink-faint">{label}</dt>
+            <dd>{value}</dd>
+        </div>
+    );
     return (
-        <p className="text-sm text-ink-muted">
-            {t(
-                p.from_policy_row
-                    ? 'marketdata.calibration.policyLine.custom'
-                    : 'marketdata.calibration.policyLine.automatic',
-                {
-                    window: String(p.window_days),
-                    inverse: t(
+        <section
+            className="space-y-3 rounded-md border border-line p-4 text-sm"
+            aria-label={t('marketdata.calibration.policyCard.label')}
+            data-policy-card
+        >
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="font-medium">
+                    {t(
+                        p.from_policy_row
+                            ? 'marketdata.calibration.policyCard.custom'
+                            : 'marketdata.calibration.policyCard.automatic',
+                    )}
+                </h2>
+                <Link
+                    className="text-accent hover:underline"
+                    to={calibrationPolicyPath(calibration.assetClass)}
+                >
+                    {t('marketdata.calibration.policyCard.open')}
+                </Link>
+            </div>
+            <dl className="flex flex-wrap gap-x-8 gap-y-2">
+                {fact(
+                    t('marketdata.calibration.policyCard.window'),
+                    t('marketdata.calibration.policyCard.days', { days: String(p.window_days) }),
+                )}
+                {fact(
+                    t('marketdata.calibration.policyCard.inverse'),
+                    t(
                         p.allow_inverse
-                            ? 'marketdata.calibration.inverse.allowed'
-                            : 'marketdata.calibration.inverse.refused',
+                            ? 'marketdata.calibration.policyCard.allowed'
+                            : 'marketdata.calibration.policyCard.refused',
                     ),
-                    order:
-                        p.provider_order.length === 0
-                            ? t('marketdata.calibration.order.everyProvider')
-                            : p.provider_order.join(' → '),
-                    fallback: t(`marketdata.calibration.fallback.${p.fallback_code}`),
-                },
-            )}{' '}
-            <Link
-                className="text-accent hover:underline"
-                to={calibrationPolicyPath(calibration.assetClass)}
-            >
-                {t('marketdata.calibration.policyLine.open')}
-            </Link>
-        </p>
+                )}
+                {fact(
+                    t('marketdata.calibration.policyCard.fallback'),
+                    t(`marketdata.calibration.fallback.${p.fallback_code}`),
+                )}
+            </dl>
+            <div>
+                <div className="text-xs text-ink-faint">
+                    {t('marketdata.calibration.policyCard.order')}
+                </div>
+                {p.provider_order.length === 0 ? (
+                    <p>{t('marketdata.calibration.order.everyProvider')}</p>
+                ) : (
+                    <ol className="mt-1 flex flex-wrap gap-1.5">
+                        {p.provider_order.map((provider, index) => (
+                            <li
+                                key={provider}
+                                className="rounded border border-line-subtle px-1.5 py-0.5 font-mono text-xs"
+                            >
+                                <span className="text-ink-faint">{index + 1}</span> {provider}
+                            </li>
+                        ))}
+                    </ol>
+                )}
+            </div>
+        </section>
     );
 }
 
@@ -213,142 +255,179 @@ function Loading({
     );
 }
 
-/**
- * Every curve of one currency, the funding curve first: each names its role and,
- * for a projection, its index tenor and the curve it discounts off, and opens in
- * the curve analytics, where a projection is drawn beside its funding curve.
- */
-function CurvesOfCurrency({
-    curves,
-}: {
-    readonly curves: IrCurveCoverageRow['curves'];
-}): ReactNode {
-    const { t, language } = useTranslation();
-    return (
-        <ul className="space-y-1">
-            {curves.map((curve) => (
-                <li key={curve.bootstrap_config_id} data-ir-curve={curve.name}>
-                    <Link
-                        className="text-accent-bright hover:underline"
-                        to={`${PATHS.curveAnalytics}?curve=${encodeURIComponent(curve.bootstrap_config_id)}`}
-                    >
-                        {curve.name}
-                    </Link>{' '}
-                    {curve.role !== '' && (
-                        <Tag small tone={curve.role === 'FUNDING' ? 'accent' : 'muted'}>
-                            {t(`marketdata.curveBlueprints.roles.${curve.role}`)}
-                        </Tag>
-                    )}
-                    {curve.index_tenor !== '' && (
-                        <span className="ml-1 text-ink-faint">{curve.index_tenor}</span>
-                    )}
-                    {curve.discount_curve_name !== '' && (
-                        <div className="text-ink-faint">
-                            {t('marketdata.calibration.ir.discountsOff', {
-                                curve: curve.discount_curve_name,
-                            })}
-                        </div>
-                    )}
-                    <div className="text-ink-faint" title={curve.published_as_of}>
-                        {curve.published_as_of === ''
-                            ? t('marketdata.calibration.ir.neverPublished')
-                            : formatDateTime(curve.published_as_of, language)}
-                    </div>
-                </li>
-            ))}
-        </ul>
-    );
+/** The words and tone of a gap, or Live when there is none. */
+function GapTag({ gap }: { readonly gap: string }): ReactNode {
+    const { t } = useTranslation();
+    const state = irCoverageState({ gap });
+    return <Tag tone={state.tone}>{t(`marketdata.calibration.ir.state.${state.word}`)}</Tag>;
 }
 
 /**
- * The class's IR curve coverage: one row per currency, with the source it reads, the bootstrap
- * config that builds its curve and the latest curve published, or the first gap that stops it
- * and the reason the system recorded for that gap.
+ * The gaps a currency's feed states. Every curve of the currency shares them, so
+ * they stand under the source; a currency with no curve states its gap as its state.
+ */
+const FEED_GAPS: ReadonlySet<string> = new Set(['no_feed', 'no_source']);
+
+/**
+ * The class's IR curve coverage: one row per curve, so each curve states its own
+ * role, tenor, discount curve, publish and state on one line. A currency's feed is
+ * named once, on its first row, with the gap its feed states; a currency with no
+ * curve has one row that states why.
  */
 function IrCoverage({ rows }: { readonly rows: readonly IrCurveCoverageRow[] }): ReactNode {
     const { t, language } = useTranslation();
+    const cell = 'py-2 pr-4';
     return (
         <section className="space-y-3" data-ir-coverage>
             <div>
                 <h2 className="font-medium">{t('marketdata.calibration.ir.title')}</h2>
                 <p className="text-sm text-ink-muted">{t('marketdata.calibration.ir.lead')}</p>
             </div>
-            <table className="w-full text-sm">
-                <thead className="text-left text-xs text-ink-faint">
-                    <tr>
-                        <th className="py-2">{t('marketdata.calibration.ir.currency')}</th>
-                        <th className="py-2">{t('marketdata.calibration.ir.source')}</th>
-                        <th className="py-2 text-right">{t('marketdata.calibration.ir.window')}</th>
-                        <th className="py-2">{t('marketdata.calibration.ir.curves')}</th>
-                        <th className="py-2">{t('marketdata.calibration.ir.published')}</th>
-                        <th className="py-2">{t('marketdata.calibration.ir.stateHeader')}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.length === 0 ? (
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                    <thead className="text-left text-xs text-ink-faint">
                         <tr>
-                            <td colSpan={6} className="py-3 text-ink-muted">
-                                {t('marketdata.calibration.ir.empty')}
-                            </td>
+                            <th className={cell}>{t('marketdata.calibration.ir.currency')}</th>
+                            <th className={cell}>{t('marketdata.calibration.ir.source')}</th>
+                            <th className={cell}>{t('marketdata.calibration.ir.curve')}</th>
+                            <th className={cell}>{t('marketdata.calibration.ir.role')}</th>
+                            <th className={cell}>{t('marketdata.calibration.ir.tenor')}</th>
+                            <th className={cell}>{t('marketdata.calibration.ir.discountsOff')}</th>
+                            <th className={cell}>{t('marketdata.calibration.ir.published')}</th>
+                            <th className="py-2">{t('marketdata.calibration.ir.stateHeader')}</th>
                         </tr>
+                    </thead>
+                    {rows.length === 0 ? (
+                        <tbody>
+                            <tr>
+                                <td colSpan={8} className="py-3 text-ink-muted">
+                                    {t('marketdata.calibration.ir.empty')}
+                                </td>
+                            </tr>
+                        </tbody>
                     ) : (
                         rows.map((row) => {
-                            const state = irCoverageState(row);
+                            const feedGap = FEED_GAPS.has(row.gap) && row.curves.length > 0;
+                            const lines = row.curves.length === 0 ? [undefined] : row.curves;
                             return (
-                                <tr
+                                <tbody
                                     key={row.currency_code}
-                                    data-ir-currency={row.currency_code}
-                                    className="border-t border-line-subtle align-top"
+                                    className="border-t border-line-subtle"
                                 >
-                                    <td className="py-2 font-mono tabular-nums">
-                                        {row.currency_code}
-                                    </td>
-                                    <td className="py-2">
-                                        {row.source_name === '' ? (
-                                            '—'
-                                        ) : (
-                                            <>
-                                                <div>{row.source_name}</div>
-                                                <div className="font-mono text-xs text-ink-faint">
-                                                    {row.provider_code}
-                                                </div>
-                                            </>
-                                        )}
-                                    </td>
-                                    <td className="py-2 text-right font-mono tabular-nums">
-                                        {row.window_days}
-                                    </td>
-                                    <td className="py-2 font-mono text-xs">
-                                        {row.curves.length === 0 ? (
-                                            '—'
-                                        ) : (
-                                            <CurvesOfCurrency curves={row.curves} />
-                                        )}
-                                    </td>
-                                    <td
-                                        className="whitespace-nowrap py-2 font-mono text-xs text-ink-muted"
-                                        title={row.published_as_of}
-                                    >
-                                        {row.published_as_of === ''
-                                            ? '—'
-                                            : formatDateTime(row.published_as_of, language)}
-                                    </td>
-                                    <td className="py-2">
-                                        <Tag tone={state.tone}>
-                                            {t(`marketdata.calibration.ir.state.${state.word}`)}
-                                        </Tag>
-                                        {row.gap_reason !== '' && (
-                                            <div className="text-xs text-ink-muted">
-                                                {row.gap_reason}
-                                            </div>
-                                        )}
-                                    </td>
-                                </tr>
+                                    {lines.map((curve, index) => (
+                                        <tr
+                                            key={curve?.bootstrap_config_id ?? 'none'}
+                                            className="align-top"
+                                            {...(index === 0
+                                                ? { 'data-ir-currency': row.currency_code }
+                                                : {})}
+                                            {...(curve === undefined
+                                                ? {}
+                                                : { 'data-ir-curve': curve.name })}
+                                        >
+                                            {index === 0 && (
+                                                <>
+                                                    <td
+                                                        className={`${cell} font-mono`}
+                                                        rowSpan={lines.length}
+                                                    >
+                                                        {row.currency_code}
+                                                    </td>
+                                                    <td className={cell} rowSpan={lines.length}>
+                                                        <div>
+                                                            {row.source_name === ''
+                                                                ? '—'
+                                                                : row.source_name}
+                                                        </div>
+                                                        {row.provider_code !== '' && (
+                                                            <div className="font-mono text-xs text-ink-faint">
+                                                                {row.provider_code}
+                                                            </div>
+                                                        )}
+                                                        {feedGap && (
+                                                            <div className="mt-1 space-y-0.5">
+                                                                <GapTag gap={row.gap} />
+                                                                <div className="text-xs text-ink-muted">
+                                                                    {row.gap_reason}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                </>
+                                            )}
+                                            {curve === undefined ? (
+                                                <>
+                                                    <td className={cell} colSpan={5}>
+                                                        —
+                                                    </td>
+                                                    <td className="py-2">
+                                                        <GapTag gap={row.gap} />
+                                                        <div className="text-xs text-ink-muted">
+                                                            {row.gap_reason}
+                                                        </div>
+                                                    </td>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <td className={`${cell} font-mono text-xs`}>
+                                                        <Link
+                                                            className="text-accent-bright hover:underline"
+                                                            to={`${PATHS.curveAnalytics}?curve=${encodeURIComponent(curve.bootstrap_config_id)}`}
+                                                        >
+                                                            {curve.name}
+                                                        </Link>
+                                                    </td>
+                                                    <td className={cell}>
+                                                        {curve.role !== '' && (
+                                                            <Tag
+                                                                small
+                                                                tone={
+                                                                    curve.role === 'FUNDING'
+                                                                        ? 'accent'
+                                                                        : 'muted'
+                                                                }
+                                                            >
+                                                                {t(
+                                                                    `marketdata.curveBlueprints.roles.${curve.role}`,
+                                                                )}
+                                                            </Tag>
+                                                        )}
+                                                    </td>
+                                                    <td className={`${cell} font-mono text-xs`}>
+                                                        {curve.index_tenor}
+                                                    </td>
+                                                    <td
+                                                        className={`${cell} font-mono text-xs`}
+                                                        data-discounts-off
+                                                    >
+                                                        {curve.discount_curve_name}
+                                                    </td>
+                                                    <td
+                                                        className={`${cell} whitespace-nowrap font-mono text-xs text-ink-muted`}
+                                                        title={curve.published_as_of}
+                                                    >
+                                                        {curve.published_as_of === ''
+                                                            ? t(
+                                                                  'marketdata.calibration.ir.neverPublished',
+                                                              )
+                                                            : formatDateTime(
+                                                                  curve.published_as_of,
+                                                                  language,
+                                                              )}
+                                                    </td>
+                                                    <td className="py-2" title={curve.gap_reason}>
+                                                        <GapTag gap={curve.gap} />
+                                                    </td>
+                                                </>
+                                            )}
+                                        </tr>
+                                    ))}
+                                </tbody>
                             );
                         })
                     )}
-                </tbody>
-            </table>
+                </table>
+            </div>
         </section>
     );
 }
@@ -443,7 +522,7 @@ export function CalibrationPage(): ReactNode {
                         </div>
                     }
                 />
-                <PolicyLine calibration={data} />
+                <PolicyCard calibration={data} />
             </div>
             {bar}
             {tab === 'run' &&
@@ -1405,7 +1484,7 @@ export function CalibrationFeedPage(): ReactNode {
                     </div>
                     <div className="space-y-4">
                         <Card title={t('marketdata.calibration.flow.inherits')}>
-                            <PolicyLine calibration={data} />
+                            <PolicyCard calibration={data} />
                         </Card>
                         <Card title={t('marketdata.calibration.flow.recent')}>
                             <RecentCalibrations configId={configId} />

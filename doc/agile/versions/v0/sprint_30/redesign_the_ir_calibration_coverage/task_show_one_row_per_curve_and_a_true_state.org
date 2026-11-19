@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 5DA437A0-8241-4215-BD5A-3BA6BF2BFEC1
+:END:
+#+title: Task: Show one row per curve, and a state that is true
+#+description: Lay the IR coverage out as one row per curve with the policy in a compact card, and make the IR feeds reach the calibration so the state each row shows is true.
+#+type: task
+#+level: s1
+#+filetags: :redesign_the_ir_calibration_coverage:sprint_30:v0:
+#+owner: marco
+#+branch: feature/redesign-the-ir-calibration-coverage
+#+pr: 4904
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E98B52CA-07FA-4FF3-962A-E8AD386B5BD7][Redesign the IR calibration coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reads the IR calibration coverage at a glance: one line per curve with its role, tenor, discount curve, publish time and state, and the class policy in one compact card; and the state each row shows is what the calibration found.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E98B52CA-07FA-4FF3-962A-E8AD386B5BD7][Redesign the IR calibration coverage]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+- The coverage table has one row per curve; the currency and its source show once per currency.
+- The window shows only for a feed that overrides the policy.
+- The class policy is a compact card: window, inverse rule, fallback, and the source order as numbered chips.
+- The IR feeds reach the calibration, so a currency with a feed and a published curve is not shown as having no feed.
+
+* Plan
+
+The screen stacked every curve of a currency in one cell, repeated each curve's
+publish time beside a column that held it again, repeated the policy's window on
+every row, and said no feed on every row.
+
+1. Find why every row said no feed. The coverage read each currency's feed from
+   the calibration of the class. The calibrate handler takes the FX spot kind
+   and reads each built input as an FX spot input, so it answers
+   =interest_rates= with no feed. The route test passed because it fed the
+   calibration an IR feed the service never returns. A first fix that set the
+   IR candidate's asset class was dropped: that path never reaches the
+   calibration.
+2. Read the IR feed facts where they live: the IR generation config says
+   whether the feed starts from a fixing, and the running feed's recorded start
+   says from which provider, or why it kept its level.
+3. Give each curve its own gap from its own publish.
+4. Lay the table out one row per curve, the currency and its feed spanning the
+   currency's rows; draw the policy as a card.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Live IR coverage before | 28 rows, 0 feeds from the calibration, every row no feed | probe of =GET /api/synthetic/calibration/interest_rates= as the system administrator | main at 02441243f1 |
+| Live IR coverage after | 28 rows: 10 covered, 16 no public source with the run's recorded reason, 2 no curve config; 35 curves live | the same probe | 0f9f5635ed |
+| BFF and web suites | 1,316 and 2,590 tests, pass | =npx vitest run= in each package | 809c57a6cd |
+| Harness against the running services | 1 case, pass | =npx playwright test tests/ibor-beside-overnight.spec.ts= | 0f9f5635ed |
+| compass-ng gates | 0 new diagnostics | =compass-ng check --ratchet origin/main= | 0f9f5635ed |
+
+* Notes
+
+- The branch changes no C++, so the gate runs the web and documentation checks.
+  The live check ran against the fleet built for PR #4902, whose services answer
+  these reads as main does, with this branch's BFF and web bundle.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4904][#4904]] | [web] Redesign the IR calibration coverage, and state each feed truly |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #4904 review 1: a failed read of the running feeds fails the whole coverage | =calibration.ts= | Decline | Intended, and now stated above the function: read on without the runs, a currency whose run kept a fixed level would say it is covered |
+| 2 | PR #4904 review 1: two configs could share a source name | =calibration.ts= | Accept | A comment states that a run is named by its source name alone, which is also its tick subject, so the service cannot tell them apart either |
+| 3 | PR #4904 review 1: test a config that says fixed while its run started from a fixing | =calibration.test.ts= | Accept | The config's word wins, and a test pins it |
+| 4 | PR #4904 review 1: check nothing is left of the old feed type | =calibration.ts= | Decline | Checked: no reader of the old feed type or its refused reason remains |
+| 5 | PR #4904 review 1: check every reader uses the new state word | locales, harness | Decline | Checked: no locale or spec names the old word |
+| 6 | PR #4904 review 1: the live probe ran on the fleet of PR #4902 | PR body | Decline | Stated in the PR's limitations; the change is in the BFF and the web only |
+
+* Result
+
+The IR calibration coverage is one row per curve: its role, its tenor, the curve
+it discounts off, its publish and its own state, with the currency and its feed
+named once beside the currency's curves. The class policy is a card with the
+window, the inverse rule and the fallback, and the source order as numbered
+chips.
+
+All four acceptance points are met, the second by removing the window outright:
+an IR config holds no window of its own, so there is no override to show. The
+states are true: before, every one of the 28 currencies said no feed; now 10 are
+covered, 16 state the reason their run recorded for keeping a fixed level, and 2
+have no curve config.

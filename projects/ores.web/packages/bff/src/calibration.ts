@@ -54,7 +54,12 @@ import {
 import { HttpFailure, notFound, notPermitted } from './errors.js';
 import { input, intentSchema, paramId, readAll, refusal, write } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
-import { feedStartSchema, operationReplySchema, upstreamFailure } from './synthetic.js';
+import {
+    feedStartSchema,
+    operationReplySchema,
+    readRunningFeeds,
+    upstreamFailure,
+} from './synthetic.js';
 
 /** A calibration read: every feed of the class, or the one feed it names. */
 const readQuerySchema = z.object({ configId: z.uuid().optional() });
@@ -153,15 +158,20 @@ export function calibrationCoverage(feeds: readonly CalibratedFeed[]) {
     };
 }
 
-/** The fields of a resolved feed that say where its currency's rate came from. */
-export interface IrCoverageFeed {
-    config_id: string;
-    refused: boolean;
-    start: {
-        from_fixing: boolean;
-        provider_code: string;
-        note: string;
-    };
+/**
+ * A feed the service runs now, and where its run started. The calibration of a
+ * class resolves FX spot feeds only, so an IR feed's start is read from its run.
+ */
+export interface IrCoverageRun {
+    source_name: string;
+    start?:
+        | {
+              from_fixing: boolean;
+              provider_code: string;
+              note: string;
+          }
+        | null
+        | undefined;
 }
 
 /** The fields of an IR generation config that name a currency's source. */
@@ -196,7 +206,13 @@ export interface IrCurveOfCurrency {
     discount_curve_name: string;
     published_as_of: string;
     published_state: string;
+    /** The first fact that keeps this curve from being live, or empty when it is. */
+    gap: IrCurvePublishGap;
+    gap_reason: string;
 }
+
+/** What keeps one curve from being live: it never published, its set is not in use, or it is old. */
+export type IrCurvePublishGap = '' | 'no_publish' | 'not_live' | 'stale_publish';
 
 /** The fields of a published set that say when it was published and where it stands. */
 export interface IrCoveragePublish {
@@ -210,7 +226,6 @@ export interface IrCurveCoverageRow {
     config_id: string;
     source_name: string;
     provider_code: string;
-    window_days: number;
     bootstrap_config_id: string;
     bootstrap_config_name: string;
     published_as_of: string;
@@ -226,11 +241,10 @@ export type IrCurveGap =
     '' | 'no_feed' | 'no_source' | 'no_curve_config' | 'no_publish' | 'not_live' | 'stale_publish';
 
 export interface IrCurveCoverageInput {
-    readonly feeds: readonly IrCoverageFeed[];
+    readonly runs: readonly IrCoverageRun[];
     readonly generationConfigs: readonly IrCoverageConfig[];
     readonly bootstrapConfigs: readonly IrCoverageBootstrapConfig[];
     readonly publishedBySeries: ReadonlyMap<string, IrCoveragePublish | undefined>;
-    readonly windowDays: number;
     readonly now: Date;
 }
 
@@ -254,6 +268,9 @@ const irCoverageBootstrapSchema = z.looseObject({
 
 const FUNDING = 'FUNDING';
 
+/** The price source of a config that starts from a public rate. */
+const FIXING = 'fixing';
+
 const publishedSetSchema = z.looseObject({
     as_of: z.string(),
     state_code: z.string().default(''),
@@ -265,7 +282,7 @@ const STALE_PUBLISH_MS = 30 * 60 * 1000;
 const NO_FEED_REASON = 'No synthetic feed holds this currency.';
 const NO_SOURCE_REASON =
     'The feed keeps a fixed level, because no public source publishes this currency.';
-const REFUSED_REASON = 'The class policy refuses to start the feed without a fixing.';
+const FIXED_CONFIG_REASON = 'The feed config starts from its fixed level, not from a fixing.';
 const NO_CURVE_CONFIG_REASON = 'No bootstrap config holds this currency.';
 const NO_PUBLISH_REASON = 'The curve has never been published.';
 const STALE_PUBLISH_REASON = 'The latest curve was published more than 30 minutes ago.';
@@ -277,7 +294,10 @@ const NOT_LIVE_REASON = 'The latest set is not the set in use.';
  * it. The currency universe is the union of the feed configs and the bootstrap configs.
  */
 export function irCurveCoverage(input: IrCurveCoverageInput): IrCurveCoverageRow[] {
-    const feeds = new Map(input.feeds.map((feed) => [feed.config_id, feed]));
+    // A run is named by its source name alone, which is also the subject its ticks go out on,
+    // so two configs that share a source name share one run, and the service cannot tell them
+    // apart either.
+    const runs = new Map(input.runs.map((run) => [run.source_name, run]));
     const configs = groupByCurrency(input.generationConfigs);
     const bootstraps = groupByCurrency(input.bootstrapConfigs);
     const currencies = [...new Set([...configs.keys(), ...bootstraps.keys()])].sort((a, b) =>
@@ -289,7 +309,7 @@ export function irCurveCoverage(input: IrCurveCoverageInput): IrCurveCoverageRow
             currency,
             configs.get(currency) ?? [],
             bootstraps.get(currency) ?? [],
-            feeds,
+            runs,
         ),
     );
 }
@@ -315,10 +335,10 @@ function coverageRow(
     currency: string,
     configs: readonly IrCoverageConfig[],
     bootstrapConfigs: readonly IrCoverageBootstrapConfig[],
-    feeds: ReadonlyMap<string, IrCoverageFeed>,
+    runs: ReadonlyMap<string, IrCoverageRun>,
 ): IrCurveCoverageRow {
-    const config = publicConfigOf(configs, feeds);
-    const feed = config === undefined ? undefined : feeds.get(config.id);
+    const config = publicConfigOf(configs, runs);
+    const run = config === undefined ? undefined : runs.get(config.source_name);
     // The currency is covered when its funding curve is: a projection curve that
     // publishes does not stand in for the curve that discounts.
     const funding = bootstrapConfigs.filter((candidate) => isFunding(candidate));
@@ -334,14 +354,13 @@ function coverageRow(
         currency_code: currency,
         config_id: config?.id ?? '',
         source_name: config?.source_name ?? '',
-        provider_code: feed?.start.provider_code ?? '',
-        window_days: input.windowDays,
+        provider_code: run?.start?.provider_code ?? '',
         bootstrap_config_id: bootstrap?.id ?? '',
         bootstrap_config_name: bootstrap?.name ?? '',
         published_as_of: published?.as_of ?? '',
         published_state: published?.state_code ?? '',
-        ...gapOf(feed, bootstrap, published, input.now),
-        curves: curvesOf(bootstrapConfigs, input.publishedBySeries),
+        ...gapOf(config, run, bootstrap, published, input.now),
+        curves: curvesOf(bootstrapConfigs, input.publishedBySeries, input.now),
     };
 }
 
@@ -354,6 +373,7 @@ function isFunding(config: IrCoverageBootstrapConfig): boolean {
 function curvesOf(
     configs: readonly IrCoverageBootstrapConfig[],
     publishedBySeries: ReadonlyMap<string, IrCoveragePublish | undefined>,
+    now: Date,
 ): IrCurveOfCurrency[] {
     const names = new Map(configs.map((config) => [config.id, config.name]));
     return [...configs]
@@ -373,17 +393,25 @@ function curvesOf(
                 discount_curve_name: discountsOff === '' ? '' : (names.get(discountsOff) ?? ''),
                 published_as_of: published?.as_of ?? '',
                 published_state: published?.state_code ?? '',
+                ...publishGapOf(published, now),
             };
         });
 }
 
-/** The feed config a currency reads through: the first, by source name, that takes a public rate. */
+/**
+ * The feed config a currency reads through: the first, by source name, whose run started
+ * from a public rate, else the first that is configured to, else the first.
+ */
 function publicConfigOf(
     configs: readonly IrCoverageConfig[],
-    feeds: ReadonlyMap<string, IrCoverageFeed>,
+    runs: ReadonlyMap<string, IrCoverageRun>,
 ): IrCoverageConfig | undefined {
     const ordered = [...configs].sort((a, b) => a.source_name.localeCompare(b.source_name));
-    return ordered.find((config) => feeds.get(config.id)?.start.from_fixing === true) ?? ordered[0];
+    return (
+        ordered.find((config) => runs.get(config.source_name)?.start?.from_fixing === true) ??
+        ordered.find((config) => config.price_source === FIXING) ??
+        ordered[0]
+    );
 }
 
 /** The curve config whose newest publish is the latest, else the first by name. */
@@ -406,20 +434,33 @@ function newestPublishedOf(
 
 /** The first gap, in the order a currency falls short of a published curve. */
 function gapOf(
-    feed: IrCoverageFeed | undefined,
+    config: IrCoverageConfig | undefined,
+    run: IrCoverageRun | undefined,
     bootstrap: IrCoverageBootstrapConfig | undefined,
     published: IrCoveragePublish | undefined,
     now: Date,
 ): { gap: IrCurveGap; gap_reason: string } {
-    if (feed === undefined) {
+    if (config === undefined) {
         return { gap: 'no_feed', gap_reason: NO_FEED_REASON };
     }
-    if (!feed.start.from_fixing) {
-        return { gap: 'no_source', gap_reason: fixedLevelReason(feed) };
+    if (config.price_source !== FIXING) {
+        return { gap: 'no_source', gap_reason: FIXED_CONFIG_REASON };
+    }
+    const start = run?.start;
+    if (start != null && !start.from_fixing) {
+        return { gap: 'no_source', gap_reason: start.note === '' ? NO_SOURCE_REASON : start.note };
     }
     if (bootstrap === undefined) {
         return { gap: 'no_curve_config', gap_reason: NO_CURVE_CONFIG_REASON };
     }
+    return publishGapOf(published, now);
+}
+
+/** The first fact that keeps one published curve from being live, or no gap. */
+function publishGapOf(
+    published: IrCoveragePublish | undefined,
+    now: Date,
+): { gap: IrCurvePublishGap; gap_reason: string } {
     if (published === undefined) {
         return { gap: 'no_publish', gap_reason: NO_PUBLISH_REASON };
     }
@@ -434,14 +475,6 @@ function gapOf(
         return { gap: 'stale_publish', gap_reason: STALE_PUBLISH_REASON };
     }
     return { gap: '', gap_reason: '' };
-}
-
-/** The reason the system recorded for a feed with no public rate, else a stated sentence. */
-function fixedLevelReason(feed: IrCoverageFeed): string {
-    if (feed.start.note !== '') {
-        return feed.start.note;
-    }
-    return feed.refused ? REFUSED_REASON : NO_SOURCE_REASON;
 }
 
 /** Each curve's latest published set, read by the output series its bootstrap config names. */
@@ -478,12 +511,12 @@ async function latestPublishedSets(
 }
 
 /** The IR coverage of the class: its generation configs, its bootstrap configs and their publishes. */
-async function interestRateCoverage(
-    session: LiveSession,
-    feeds: readonly CalibratedFeed[],
-    windowDays: number,
-): Promise<IrCurveCoverageRow[]> {
-    const [configRows, bootstrapRows] = await Promise.all([
+/**
+ * A failed read of the running feeds fails the coverage. Read on without the runs, every
+ * currency whose run kept a fixed level would state that it is covered.
+ */
+async function interestRateCoverage(session: LiveSession): Promise<IrCurveCoverageRow[]> {
+    const [configRows, bootstrapRows, runs] = await Promise.all([
         readAll<ListIrCurveGenerationConfigsResponse>(
             session,
             irConfigSubjects.list_ir_curve_generation_configs_request,
@@ -496,15 +529,15 @@ async function interestRateCoverage(
             'bootstrap_configs',
             { filter: null, as_of: null },
         ),
+        readRunningFeeds(session),
     ]);
     const generationConfigs = configRows.map((row) => irCoverageConfigSchema.parse(row));
     const bootstrapConfigs = bootstrapRows.map((row) => irCoverageBootstrapSchema.parse(row));
     return irCurveCoverage({
-        feeds,
+        runs,
         generationConfigs,
         bootstrapConfigs,
         publishedBySeries: await latestPublishedSets(session, bootstrapConfigs),
-        windowDays,
         now: new Date(),
     });
 }
@@ -716,7 +749,7 @@ export function registerCalibrationRoutes(
         }
         return {
             ...composed,
-            ir_curves: await interestRateCoverage(session, reply.feeds, reply.policy.window_days),
+            ir_curves: await interestRateCoverage(session),
         };
     });
 

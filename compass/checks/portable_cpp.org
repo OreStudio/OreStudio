@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: BDBA01F6-BF2F-4DA2-81F2-86A23DBB127F
+:END:
+#+title: Check: portable C++ facilities
+#+description: No code outside ores.platform uses a standard facility one of ORE Studio's three platforms lacks or rejects.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:cpp:portability:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+options: prop:t
+
+This page defines a =check= that compass runs over ORE Studio. Its =* Definition=
+is what compass runs; the rest says why.
+
+* Rule
+
+No C++ source outside =ores.platform= names a standard facility that one
+of the three platforms lacks, deprecates or rejects.
+
+* Why
+
+Each of these compiled on the platform the author built on and failed on
+another. Between 2026-09-19 and 2026-11-18 they failed 34 CI runs and cost
+9,533 CI minutes. Example: run 36325659481, head =1961f78f1a=, where
+=std::atomic<std::shared_ptr>= broke the macOS build. The stop types were
+a codec of their own, =portable_stop=, until this page replaced it.
+
+* Definition
+:PROPERTIES:
+:ENGINE: forbid
+:FILES: projects/**/*.{cpp,cc,cxx,hpp,h,hxx,ipp,inc}
+:OUTSIDE: projects/ores.platform/** projects/**/{node_modules,venv,.venv,build,external}/**
+:END:
+
+The settings every rule below inherits.
+
+** stop_types
+:PROPERTIES:
+:CPP_NAME: std::jthread std::stop_token std::stop_source std::stop_callback
+:CPP_INCLUDE: <stop_token>
+:MESSAGE: {match} is not portable: Apple's libc++ has no C++20 stop types
+:FIX: use the same name in ores::platform::concurrency from stoppable_thread.hpp
+:END:
+
+Apple's libc++ has no C++20 stop types.
+
+** posix_headers
+:PROPERTIES:
+:CPP_INCLUDE: <unistd.h> <sys/time.h> <dirent.h>
+:MESSAGE: {match} is a POSIX header, which MSVC lacks
+:FIX: use the facility ores.platform gives for it
+:END:
+
+MSVC has no POSIX headers.
+
+** deprecated_c_calls
+:PROPERTIES:
+:CPP_NAME: getenv std::getenv sscanf std::sscanf
+:MESSAGE: {match} is deprecated under MSVC
+:FIX: use ores::platform::environment for getenv, and std::from_chars for sscanf
+:END:
+
+MSVC deprecates these calls, and the build treats its warnings as errors.
+
+** atomic_shared_ptr
+:PROPERTIES:
+:CPP_TEXT: \batomic\s*<\s*(std\s*::\s*)?shared_ptr\b
+:MESSAGE: std::atomic<std::shared_ptr> is not portable: Apple's libc++ lacks it
+:FIX: guard the pointer with a mutex, or use std::atomic_load on a plain shared_ptr
+:END:
+
+Apple's libc++ has no std::atomic<std::shared_ptr>.
+
+* Examples
+
+#+begin_src cpp :compass fires=stop_types :path projects/ores.trading/core/src/worker.cpp
+std::jthread worker([](std::stop_token t) { run(t); });
+#+end_src
+
+#+begin_src cpp :compass quiet :path projects/ores.trading/core/src/worker.cpp
+ores::platform::concurrency::stoppable_thread worker(run);
+#+end_src
+
+#+begin_src cpp :compass quiet :path projects/ores.platform/src/concurrency/stoppable_thread.cpp
+#include <stop_token>
+#+end_src
+
+#+begin_src cpp :compass fires=deprecated_c_calls :path projects/ores.http/core/src/server.cpp
+const char* port = std::getenv("ORES_PORT");
+#+end_src
+
+#+begin_src cpp :compass fires=atomic_shared_ptr :path projects/ores.compute/core/src/cache.hpp
+std::atomic<std::shared_ptr<snapshot>> current_;
+#+end_src
+
+* Exceptions
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|
+| projects/ores.service/tests/systemd_notify_tests.cpp | 44 | posix_headers | 2027-05-18 | marco | the include sits under #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS), which MSVC never defines; the check treats only #if 0 code as dead |

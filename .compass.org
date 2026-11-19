@@ -37,7 +37,6 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | forward_declarable_includes | yes | |
 | handler_registrars | yes | |
 | history_registrars | yes | |
-| portable_stop | yes | |
 | route_auth | yes | |
 | shell_command_composition | yes | |
 | shell_command_units | yes | |

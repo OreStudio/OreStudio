@@ -5869,6 +5869,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.cbo_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['cbo_instruments'],
+    },
+    'trading.v1.cbo_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.commodity_basket_constituents.list': {
         asOf: true,
         filter: ['trade_id', 'trade_id_one_of'],
@@ -6015,6 +6025,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['equity_basket_constituents'],
     },
     'trading.v1.equity_basket_constituents_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.equity_basket_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['equity_basket_option_instruments'],
+    },
+    'trading.v1.equity_basket_option_instruments_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6235,6 +6255,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['fx_barrier_option_instruments'],
     },
     'trading.v1.fx_barrier_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.fx_basket_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['fx_basket_option_instruments'],
+    },
+    'trading.v1.fx_basket_option_instruments_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6595,6 +6625,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['range_bounds'],
     },
     'trading.v1.range_bounds_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.rate_digital_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['rate_digital_option_instruments'],
+    },
+    'trading.v1.rate_digital_option_instruments_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

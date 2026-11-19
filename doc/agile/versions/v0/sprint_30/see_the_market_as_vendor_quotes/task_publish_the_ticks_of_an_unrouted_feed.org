@@ -26,11 +26,11 @@ Every feed the installation has carries its ticks on its feed subject, whether o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
@@ -92,3 +92,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Every catalogue feed is a source of the ingest (=source_feed=). A tick of a
+  feed that no route names is published once on its feed subject, after the age
+  gate, and is not stored, metered or counted. Only a tick from a source the
+  catalogue does not name is dropped (=tick_drop::unknown_source=).
+- Tests: the plan of a tick of an unrouted feed has the feed subject and no
+  target; the loop publishes such a tick once on its feed, makes no series and
+  writes no row. The market data service suite passes (316 cases), and the ticks
+  smoke test passes.
+- On the demonstration fleet the only real unrouted feed, =composite-derived=,
+  produced no tick in the smoke run, so no live tick of an unrouted feed was
+  seen; the loop test covers the path.

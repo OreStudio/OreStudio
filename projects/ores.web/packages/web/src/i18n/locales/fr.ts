@@ -5895,12 +5895,13 @@ const fr: SourceCatalogue = {
             tenor: 'Maturité',
             pickQuote:
                 'Choisissez une ligne pour voir la cotation de chaque fournisseur et leur dernière heure.',
-            pickCurve:
-                'Choisissez une courbe pour comparer ses fournisseurs maturité par maturité.',
-            curvesHint:
-                "Les maturités de chaque courbe côte à côte. Choisissez le nom d'une courbe pour comparer ses fournisseurs.",
             show: 'Afficher',
-            byTenor: '{name} par maturité, par fournisseur',
+            currencies: 'Devises',
+            curvesOf: 'Courbes {name} par maturité · {show}',
+            familyAtm: 'ATM par maturité',
+            familyRr: 'Risk reversals par maturité',
+            familyBf: 'Butterflies par maturité',
+            plotColumn: 'Tracer',
             surfaces: 'Surfaces',
             compare: 'Comparer',
             compareA: 'A',
@@ -5911,6 +5912,8 @@ const fr: SourceCatalogue = {
             compareHint:
                 'Chaque cellule est A − B en {unit} : bleu où A est au-dessus de B, rouge en dessous. ⚠ marque un écart au-delà de la limite. Choisissez une cellule pour chacune de ses sources.',
             columnGap: 'Écart {column}, en moyenne',
+            nothingShared:
+                "{a} et {b} ne cotent aucun point commun de {name}, il n'y a donc rien à comparer. Choisissez d'autres sources.",
             widest: 'Le plus large',
             pastLimit: 'Au-delà de la limite',
             toSource: 'Écart à {source}',

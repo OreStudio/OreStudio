@@ -23,7 +23,7 @@ import { useRef, type ReactNode } from 'react';
 import { quotes } from '../api/quotes.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Select, cx } from '../ui/Primitives.js';
-import { LineChart } from './LineChart.js';
+import { LineChart, SERIES_COLOURS } from './LineChart.js';
 import {
     agreementOf,
     changeOf,
@@ -31,18 +31,18 @@ import {
     CONSENSUS,
     differenceOf,
     differenceText,
-    gridOf,
     instantOf,
     isOutlier,
     isStale,
     newestOf,
     onTimeAxis,
-    tenorsOf,
     valueText,
     type Agreement,
     type Kind,
     type Point,
     type Series,
+    type Cell,
+    type Grid,
     type Vendor,
 } from './quotesView.js';
 import { DATA_CELL } from './readScreen.js';
@@ -70,6 +70,9 @@ const LEFT_CELL = 'px-2 py-1 whitespace-nowrap';
 const ROW = 'border-t border-line/50';
 const PICKABLE = 'cursor-pointer hover:bg-panel-2';
 const SCROLL = 'max-h-[36rem] overflow-auto rounded-md border border-line';
+
+/** How often a picked point's history is read again, so its line moves with the market. */
+const HISTORY_MS = 5000;
 
 function age(at: string, now: number): string {
     const seconds = Math.max(0, (now - instantOf(at)) / 1000);
@@ -203,22 +206,20 @@ export function AllQuotes({
             queryFn: () =>
                 quotes.history(v.provider, series.key, point.uri, new Date(from).toISOString()),
             retry: false,
-            staleTime: Infinity,
+            refetchInterval: HISTORY_MS,
         })),
     });
-    const axis = onTimeAxis(
-        drawn.map((v, i) => {
-            const q = point.quotes.get(v.key)!;
-            const reference = agreement.reference ?? Number(q.value);
-            const past = (histories[i]?.data?.ticks ?? [])
-                .filter((tick) => !isOutlier(series.kind, tick.value, reference))
-                .map((tick) => ({ at: instantOf(tick.at), value: tick.value }));
-            return [...past, { at: instantOf(q.at), value: Number(q.value) }];
-        }),
-        from,
-        watch.now,
-        240,
-    );
+    const ticks = drawn.map((v, i) => {
+        const q = point.quotes.get(v.key)!;
+        const reference = agreement.reference ?? Number(q.value);
+        const past = (histories[i]?.data?.ticks ?? [])
+            .filter((tick) => !isOutlier(series.kind, tick.value, reference))
+            .map((tick) => ({ at: instantOf(tick.at), value: tick.value }));
+        return [...past, { at: instantOf(q.at), value: Number(q.value) }];
+    });
+    // The axis starts at the oldest tick held, so a short history fills the width.
+    const earliest = Math.min(watch.now, ...ticks.flatMap((one) => one.map((tick) => tick.at)));
+    const axis = onTimeAxis(ticks, Math.max(from, earliest), watch.now, 240);
     const notDrawn = quoted.filter((v) => watch.shown.has(v.key) && !drawn.includes(v));
     return (
         <div className="space-y-3">
@@ -436,81 +437,6 @@ export function QuoteBoard({
     );
 }
 
-/** One curve, tenor down and each vendor across, with its curves drawn by tenor. */
-function CurveStrip({
-    series,
-    watch,
-}: {
-    readonly series: Series;
-    readonly watch: Watch;
-}): ReactNode {
-    const { t } = useTranslation();
-    const unit = useUnit(series.kind);
-    const vendors = vendorsIn([series], watch);
-    const agreements = series.points.map((p) =>
-        agreementOf(series.kind, p, watch.vendors, watch.shown, watch.now),
-    );
-    return (
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            <div className={SCROLL}>
-                <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-surface-base">
-                        <tr>
-                            <th className={HEAD_LEFT}>{t('marketdata.quotes.tenor')}</th>
-                            <VendorHeads vendors={vendors} watch={watch} />
-                            <th className={HEAD_RIGHT}>{t('marketdata.quotes.mid')}</th>
-                            <th className={HEAD_RIGHT}>
-                                {withUnit(t('marketdata.quotes.spread'), unit)}
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {series.points.map((p, i) => (
-                            <tr key={p.uri} className={ROW}>
-                                <td className={cx(LEFT_CELL, 'font-mono')}>{p.label}</td>
-                                {vendors.map((v) => (
-                                    <ValueCell
-                                        key={v.key}
-                                        kind={series.kind}
-                                        point={p}
-                                        vendor={v}
-                                        agreement={agreements[i]!}
-                                        now={watch.now}
-                                    />
-                                ))}
-                                <td className={DATA_CELL}>
-                                    {valueText(series.kind, agreements[i]!.mid)}
-                                </td>
-                                <td className={cx(DATA_CELL, 'text-ink-muted')}>
-                                    {spreadText(series.kind, agreements[i]!)}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            <LineChart
-                categories={series.points.map((p) => p.label)}
-                series={vendors.map((v) => ({
-                    colour: watch.colourOf(v.key),
-                    dots: true,
-                    points: series.points.map((p, i) => {
-                        const q = p.quotes.get(v.key);
-                        const value = q === undefined ? NaN : Number(q.value);
-                        return Number.isFinite(value) &&
-                            !isOutlier(series.kind, value, agreements[i]!.reference)
-                            ? value
-                            : null;
-                    }),
-                }))}
-                format={(v) => valueText(series.kind, v)}
-                label={t('marketdata.quotes.byTenor', { name: series.name })}
-                price
-            />
-        </div>
-    );
-}
-
 /** A segmented choice, as every board draws its modes. */
 function Choice<T extends string>({
     label,
@@ -549,126 +475,8 @@ function Choice<T extends string>({
     );
 }
 
-/** The curves of a board side by side, tenor down, for the mid or one vendor; a picked curve opens below. */
-export function CurveBoard({
-    series,
-    watch,
-    picked,
-    onPick,
-    source,
-    onSource,
-}: {
-    readonly series: readonly Series[];
-    readonly watch: Watch;
-    readonly picked: string;
-    readonly onPick: (key: string) => void;
-    readonly source: string;
-    readonly onSource: (source: string) => void;
-}): ReactNode {
-    const { t } = useTranslation();
-    const vendors = vendorsIn(series, watch);
-    const options = [CONSENSUS, ...vendors.map((v) => v.key)];
-    const chosenSource = options.includes(source) ? source : CONSENSUS;
-    const tenors = tenorsOf(series);
-    const chosen = series.find((s) => s.key === picked);
-    const vendorName = (key: string): string =>
-        watch.vendors.find((v) => v.key === key)?.provider ?? key;
-    return (
-        <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <Choice
-                    label={t('marketdata.quotes.show')}
-                    options={options}
-                    value={chosenSource}
-                    titleOf={(o) => (o === CONSENSUS ? t('marketdata.quotes.mid') : vendorName(o))}
-                    onChoose={onSource}
-                />
-                <p className="text-xs text-ink-faint">{t('marketdata.quotes.curvesHint')}</p>
-            </div>
-            <div className={SCROLL}>
-                <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-surface-base">
-                        <tr>
-                            <th className={HEAD_LEFT}>{t('marketdata.quotes.tenor')}</th>
-                            {series.map((s) => (
-                                <th key={s.key} className={HEAD_RIGHT}>
-                                    <button
-                                        type="button"
-                                        onClick={() => onPick(s.key)}
-                                        className={cx(
-                                            'whitespace-nowrap hover:text-ink',
-                                            s.key === picked && 'text-accent',
-                                        )}
-                                    >
-                                        {s.name}
-                                    </button>
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {tenors.map((tenor) => (
-                            <tr key={tenor} className={ROW}>
-                                <td className={cx(LEFT_CELL, 'font-mono')}>{tenor}</td>
-                                {series.map((s) => {
-                                    const p = s.points.find((x) => x.coordinates[0] === tenor);
-                                    if (p === undefined)
-                                        return (
-                                            <td
-                                                key={s.key}
-                                                className={cx(DATA_CELL, 'text-ink-faint')}
-                                            >
-                                                ·
-                                            </td>
-                                        );
-                                    const agreement = agreementOf(
-                                        s.kind,
-                                        p,
-                                        watch.vendors,
-                                        watch.shown,
-                                        watch.now,
-                                    );
-                                    if (chosenSource === CONSENSUS)
-                                        return (
-                                            <td key={s.key} className={DATA_CELL}>
-                                                {valueText(s.kind, agreement.mid)}
-                                            </td>
-                                        );
-                                    const vendor = watch.vendors.find(
-                                        (v) => v.key === chosenSource,
-                                    )!;
-                                    return (
-                                        <ValueCell
-                                            key={s.key}
-                                            kind={s.kind}
-                                            point={p}
-                                            vendor={vendor}
-                                            agreement={agreement}
-                                            now={watch.now}
-                                        />
-                                    );
-                                })}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            <section className="space-y-3 rounded-md border border-line p-4">
-                {chosen === undefined ? (
-                    <p className="text-sm text-ink-faint">{t('marketdata.quotes.pickCurve')}</p>
-                ) : (
-                    <>
-                        <h2 className="text-sm font-semibold">{chosen.name}</h2>
-                        <CurveStrip series={chosen} watch={watch} />
-                    </>
-                )}
-            </section>
-        </div>
-    );
-}
-
-/** What a surface's grid shows: the mid, one vendor, the spread, or two sources compared. */
-export type SurfaceMode = string;
+/** What a grid shows: the mid, one vendor, the spread, or two sources compared. */
+export type GridMode = string;
 export const MID = 'mid';
 export const SPREAD = 'spread';
 export const COMPARE = 'compare';
@@ -691,26 +499,179 @@ function diverging(kind: Kind, difference: number | null, at: number): string | 
     return `color-mix(in srgb, var(--color-${difference > 0 ? 'accent' : 'down'}) ${share}%, transparent)`;
 }
 
-/** Two sources of a surface: their differences on the grid, a column by tenor, and a cell's every source. */
-function SurfaceCompare({
-    series,
+/**
+ * A line across the gaps of a series: the points it holds, joined straight, so a
+ * curve quoted at a few tenors reads as a curve. Its dots are drawn only where it
+ * holds a point, and nothing is drawn before its first or after its last.
+ */
+function bridged(points: readonly (number | null)[]): (number | null)[] {
+    const held = points.flatMap((v, i) => (v === null ? [] : [i]));
+    return points.map((v, i) => {
+        if (v !== null) return v;
+        const before = held.filter((j) => j < i).at(-1);
+        const after = held.find((j) => j > i);
+        if (before === undefined || after === undefined) return null;
+        const a = points[before]!;
+        const b = points[after]!;
+        return a + ((b - a) * (i - before)) / (after - before);
+    });
+}
+
+/** One line of a plot: its name, its colour, whether it is dashed, and a value for each row. */
+interface PlotLine {
+    readonly name: string;
+    readonly colour: string;
+    readonly dashed: boolean;
+    readonly points: readonly (number | null)[];
+}
+
+/** Lines by tenor: each joined across its gaps, with its dots where it holds a point, and a legend. */
+function TenorPlot({
+    rows,
+    lines,
+    kind,
+    label,
+}: {
+    readonly rows: readonly string[];
+    readonly lines: readonly PlotLine[];
+    readonly kind: Kind;
+    readonly label: string;
+}): ReactNode {
+    const drawn = lines.filter((line) => line.points.some((v) => v !== null));
+    if (drawn.length === 0) return null;
+    return (
+        <div className="min-w-0 space-y-2">
+            <h3 className="text-sm font-semibold">{label}</h3>
+            <LineChart
+                categories={rows}
+                series={drawn.flatMap((line) => [
+                    { colour: line.colour, points: bridged(line.points), dashed: line.dashed },
+                    { colour: line.colour, points: line.points, dots: true, width: 0 },
+                ])}
+                format={(v) => valueText(kind, v)}
+                label={label}
+                price
+            />
+            <p className="flex flex-wrap gap-4 text-xs text-ink-muted">
+                {drawn.map((line) => (
+                    <span key={line.name}>
+                        <Swatch colour={line.colour} />
+                        {line.name}
+                    </span>
+                ))}
+            </p>
+        </div>
+    );
+}
+
+/** The lines of some of a grid's columns, by tenor, as the grid shows them. */
+function columnLines(
+    grid: Grid,
+    columns: readonly string[],
+    valueAt: (cell: Cell) => number | null,
+): PlotLine[] {
+    return columns.map((column, i) => ({
+        name: column,
+        colour: SERIES_COLOURS[i % SERIES_COLOURS.length] ?? 'var(--color-accent)',
+        dashed: i >= SERIES_COLOURS.length,
+        points: grid.rows.map((row) => {
+            const cell = grid.at(row, column);
+            return cell === undefined ? null : valueAt(cell);
+        }),
+    }));
+}
+
+/**
+ * A quoted surface read a family at a time, each on its own scale: the ATM level,
+ * the risk reversals (the skew) and the butterflies (the wings), by tenor. A vol
+ * level and a skew are different quantities, so they are never drawn on one axis.
+ */
+function SurfacePlots({
+    grid,
+    valueAt,
+    show,
+}: {
+    readonly grid: Grid;
+    readonly valueAt: (cell: Cell) => number | null;
+    readonly show: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const families = [
+        {
+            label: t('marketdata.quotes.familyAtm'),
+            columns: grid.columns.filter((c) => !/RR$|BF$/.test(c)),
+        },
+        {
+            label: t('marketdata.quotes.familyRr'),
+            columns: grid.columns.filter((c) => c.endsWith('RR')),
+        },
+        {
+            label: t('marketdata.quotes.familyBf'),
+            columns: grid.columns.filter((c) => c.endsWith('BF')),
+        },
+    ].filter((f) => f.columns.length > 0);
+    return (
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+            {families.map((f) => (
+                <TenorPlot
+                    key={f.label}
+                    rows={grid.rows}
+                    lines={columnLines(grid, f.columns, valueAt)}
+                    kind={grid.kind}
+                    label={`${f.label} · ${show}`}
+                />
+            ))}
+        </div>
+    );
+}
+
+/** The newest quote of a point from the vendors shown, live or not, for a cell no live vendor holds. */
+function lastOf(point: Point, watch: Watch): number | null {
+    let newest: { at: number; value: number } | null = null;
+    for (const [vendor, q] of point.quotes) {
+        if (!watch.shown.has(vendor)) continue;
+        const at = instantOf(q.at);
+        if (newest === null || at > newest.at) newest = { at, value: Number(q.value) };
+    }
+    return newest?.value ?? null;
+}
+
+/** The vendor that quotes the most points another vendor also quotes, the useful first A of a comparison. */
+function mostShared(grid: Grid, vendors: readonly Vendor[]): string | undefined {
+    const points = grid.rows.flatMap((r) =>
+        grid.columns.flatMap((c) => grid.at(r, c)?.point ?? []),
+    );
+    let best: { key: string; shared: number } | undefined;
+    for (const v of vendors) {
+        const shared = points.filter(
+            (p) =>
+                p.quotes.has(v.key) && vendors.some((o) => o.key !== v.key && p.quotes.has(o.key)),
+        ).length;
+        if (best === undefined || shared > best.shared) best = { key: v.key, shared };
+    }
+    return best?.key;
+}
+
+/** Two sources of a grid: their differences cell by cell, a column by tenor, and a cell's every source. */
+function GridCompare({
+    grid,
     watch,
     comparison,
     onCompare,
 }: {
-    readonly series: Series;
+    readonly grid: Grid;
     readonly watch: Watch;
     readonly comparison: Comparison;
     readonly onCompare: (c: Comparison) => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const unit = useUnit(series.kind);
-    const grid = gridOf(series);
-    const vendors = vendorsIn([series], watch);
+    const kind = grid.kind;
+    const unit = useUnit(kind);
+    const vendors = vendorsIn(grid.series, watch);
     const sources = [CONSENSUS, ...vendors.map((v) => v.key)];
     const a = sources.includes(comparison.a)
         ? comparison.a
-        : (vendors[1]?.key ?? vendors[0]?.key ?? CONSENSUS);
+        : (mostShared(grid, vendors) ?? CONSENSUS);
     const b = sources.includes(comparison.b) && comparison.b !== a ? comparison.b : CONSENSUS;
     const column = grid.columns.includes(comparison.column)
         ? comparison.column
@@ -727,15 +688,14 @@ function SurfaceCompare({
         source === CONSENSUS ? 'var(--color-ink)' : watch.colourOf(source);
     const cells = grid.rows.flatMap((r) =>
         grid.columns.map((c) => {
-            const p = grid.at(r, c);
+            const cell = grid.at(r, c);
             return {
                 r,
                 c,
-                p,
                 compared:
-                    p === undefined
+                    cell === undefined
                         ? null
-                        : compare(series.kind, p, a, b, watch.vendors, watch.shown, watch.now),
+                        : compare(kind, cell.point, a, b, watch.vendors, watch.shown, watch.now),
             };
         }),
     );
@@ -747,18 +707,18 @@ function SurfaceCompare({
                 : w,
         null,
     );
-    const past = measured.filter((x) =>
-        isOutlier(series.kind, x.compared!.a!, x.compared!.b!),
-    ).length;
-    const firstColumn = measured.filter((x) => x.c === grid.columns[0]);
-    const firstGap =
-        firstColumn.length === 0
+    const past = measured.filter((x) => isOutlier(kind, x.compared!.a!, x.compared!.b!)).length;
+    const inColumn = measured.filter((x) => x.c === column);
+    const columnGap =
+        inColumn.length === 0
             ? null
-            : firstColumn.reduce((s, x) => s + x.compared!.difference!, 0) / firstColumn.length;
+            : inColumn.reduce((s, x) => s + x.compared!.difference!, 0) / inColumn.length;
     const gap = (d: number | null, at: number): string =>
-        d === null ? '—' : differenceText(differenceOf(series.kind, d, at));
-    const picked = row === '' ? undefined : grid.at(row, column);
-    const drawnSources = [CONSENSUS, ...vendors.map((v) => v.key)];
+        d === null ? '—' : differenceText(differenceOf(kind, d, at));
+    const picked = row === '' ? undefined : grid.at(row, column)?.point;
+    const drawn = [CONSENSUS, ...vendors.map((v) => v.key)];
+    const labelOf = (s: string): string =>
+        `${s === b ? nameOf(b, a) : nameOf(s, b)}${s === a ? ' (A)' : s === b ? ' (B)' : ''}`;
     return (
         <div className="space-y-3">
             <div className="flex flex-wrap items-end gap-3">
@@ -801,13 +761,22 @@ function SurfaceCompare({
                     {t('marketdata.quotes.compareHint', { unit })}
                 </p>
             </div>
+            {measured.length === 0 && (
+                <p className="rounded-md border border-line px-3 py-2 text-sm text-ink-muted">
+                    {t('marketdata.quotes.nothingShared', {
+                        a: nameOf(a, b),
+                        b: nameOf(b, a),
+                        name: grid.name,
+                    })}
+                </p>
+            )}
             <p className="flex flex-wrap gap-5 text-sm">
                 <span>
                     <span className="text-ink-faint">
-                        {t('marketdata.quotes.columnGap', { column: grid.columns[0] ?? '' })}{' '}
+                        {t('marketdata.quotes.columnGap', { column })}{' '}
                     </span>
                     <span className="font-mono">
-                        {gap(firstGap, firstColumn[0]?.compared?.b ?? 1)}
+                        {gap(columnGap, inColumn[0]?.compared?.b ?? 1)}
                     </span>
                 </span>
                 <span>
@@ -825,8 +794,8 @@ function SurfaceCompare({
                     >{`${String(past)} / ${String(measured.length)}`}</span>
                 </span>
             </p>
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
-                <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
+                <div className="min-w-0 space-y-3">
                     <div className={SCROLL}>
                         <table className="w-full text-sm">
                             <thead className="sticky top-0 bg-surface-base">
@@ -855,10 +824,10 @@ function SurfaceCompare({
                                         {grid.columns.map((c) => {
                                             const cell = cells.find((x) => x.r === r && x.c === c)!;
                                             const d = cell.compared?.difference ?? null;
-                                            const past =
+                                            const over =
                                                 d !== null &&
                                                 isOutlier(
-                                                    series.kind,
+                                                    kind,
                                                     cell.compared!.a!,
                                                     cell.compared!.b!,
                                                 );
@@ -870,21 +839,21 @@ function SurfaceCompare({
                                                     className={cx(
                                                         DATA_CELL,
                                                         PICKABLE,
-                                                        past && 'font-bold',
+                                                        over && 'font-bold',
                                                         on &&
                                                             'outline-2 -outline-offset-2 outline-accent',
                                                     )}
                                                     style={{
                                                         background: diverging(
-                                                            series.kind,
+                                                            kind,
                                                             d,
                                                             cell.compared?.b ?? 1,
                                                         ),
                                                     }}
-                                                    title={`${nameOf(a, b)} ${valueText(series.kind, cell.compared?.a ?? null)} · ${nameOf(b, a)} ${valueText(series.kind, cell.compared?.b ?? null)}`}
+                                                    title={`${nameOf(a, b)} ${valueText(kind, cell.compared?.a ?? null)} · ${nameOf(b, a)} ${valueText(kind, cell.compared?.b ?? null)}`}
                                                 >
                                                     {d === null ? '·' : gap(d, cell.compared!.b!)}
-                                                    {past && ' ⚠'}
+                                                    {over && ' ⚠'}
                                                 </td>
                                             );
                                         })}
@@ -901,15 +870,20 @@ function SurfaceCompare({
                                     <th className={HEAD_LEFT}>{t('marketdata.quotes.source')}</th>
                                     <th className={HEAD_RIGHT}>{t('marketdata.quotes.value')}</th>
                                     <th className={HEAD_RIGHT}>
-                                        {t('marketdata.quotes.toSource', { source: nameOf(b, a) })}
+                                        {withUnit(
+                                            t('marketdata.quotes.toSource', {
+                                                source: nameOf(b, a),
+                                            }),
+                                            unit,
+                                        )}
                                     </th>
                                     <th className={HEAD_RIGHT}>{t('marketdata.quotes.age')}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {drawnSources.map((s) => {
+                                {drawn.map((s) => {
                                     const c = compare(
-                                        series.kind,
+                                        kind,
                                         picked,
                                         s,
                                         b,
@@ -918,7 +892,6 @@ function SurfaceCompare({
                                         watch.now,
                                     );
                                     const q = s === CONSENSUS ? undefined : picked.quotes.get(s);
-                                    const label = s === b ? nameOf(b, a) : nameOf(s, b);
                                     return (
                                         <tr
                                             key={s}
@@ -931,12 +904,10 @@ function SurfaceCompare({
                                         >
                                             <td className={LEFT_CELL}>
                                                 <Swatch colour={colourOf(s)} />
-                                                {label}
-                                                {s === a && ' (A)'}
-                                                {s === b && ' (B)'}
+                                                {labelOf(s)}
                                             </td>
                                             <td className={DATA_CELL}>
-                                                {valueText(series.kind, s === b ? c.b : c.a)}
+                                                {valueText(kind, s === b ? c.b : c.a)}
                                             </td>
                                             <td className={DATA_CELL}>
                                                 {s === b ? '' : gap(c.difference, c.b ?? 1)}
@@ -951,44 +922,56 @@ function SurfaceCompare({
                         </table>
                     )}
                 </div>
-                <div className="space-y-2">
-                    <h3 className="text-sm font-semibold">
-                        {t('marketdata.quotes.termOf', { column })}
-                    </h3>
+                <div className="min-w-0 space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h3 className="text-sm font-semibold">
+                            {t('marketdata.quotes.termOf', { column })}
+                        </h3>
+                        <label className="flex items-center gap-2 text-xs text-ink-faint">
+                            {t('marketdata.quotes.plotColumn')}
+                            <Select
+                                value={column}
+                                onChange={(event) => set({ column: event.target.value })}
+                            >
+                                {grid.columns.map((c) => (
+                                    <option key={c} value={c}>
+                                        {c}
+                                    </option>
+                                ))}
+                            </Select>
+                        </label>
+                    </div>
                     <LineChart
                         categories={grid.rows}
-                        series={drawnSources.map((s) => ({
+                        series={drawn.map((s) => ({
                             colour: colourOf(s),
                             strong: s === a || s === b,
                             dots: s === a || s === b,
                             opacity: s === a || s === b ? 1 : 0.45,
                             ...(s === CONSENSUS ? { dashed: true } : {}),
                             points: grid.rows.map((r) => {
-                                const p = grid.at(r, column);
-                                if (p === undefined) return null;
-                                const c = compare(
-                                    series.kind,
-                                    p,
+                                const cell = grid.at(r, column);
+                                if (cell === undefined) return null;
+                                return compare(
+                                    kind,
+                                    cell.point,
                                     s,
                                     s === b ? a : b,
                                     watch.vendors,
                                     watch.shown,
                                     watch.now,
-                                );
-                                return c.a;
+                                ).a;
                             }),
                         }))}
-                        format={(v) => valueText(series.kind, v)}
-                        label={t('marketdata.quotes.termLabel', { name: series.name, column })}
+                        format={(v) => valueText(kind, v)}
+                        label={t('marketdata.quotes.termLabel', { name: grid.name, column })}
                         price
                     />
                     <p className="flex flex-wrap gap-4 text-xs text-ink-muted">
-                        {drawnSources.map((s) => (
+                        {drawn.map((s) => (
                             <span key={s} className={s === a || s === b ? 'text-ink' : ''}>
                                 <Swatch colour={colourOf(s)} />
-                                {s === b ? nameOf(b, a) : nameOf(s, b)}
-                                {s === a && ' (A)'}
-                                {s === b && ' (B)'}
+                                {labelOf(s)}
                             </span>
                         ))}
                     </p>
@@ -998,9 +981,13 @@ function SurfaceCompare({
     );
 }
 
-/** The surfaces of a board: a list beside the picked surface's grid. */
-export function SurfaceBoard({
-    series,
+/**
+ * Grids beside a list of them: a surface, or a currency's curves. The picked
+ * grid shows the mid, one vendor, the spread, or two sources compared.
+ */
+export function GridBoard({
+    grids,
+    label,
     watch,
     picked,
     onPick,
@@ -1011,40 +998,40 @@ export function SurfaceBoard({
     comparison,
     onCompare,
 }: {
-    readonly series: readonly Series[];
+    readonly grids: readonly Grid[];
+    readonly label: string;
     readonly watch: Watch;
     readonly picked: string;
     readonly onPick: (key: string) => void;
-    readonly mode: SurfaceMode;
-    readonly onMode: (mode: SurfaceMode) => void;
+    readonly mode: GridMode;
+    readonly onMode: (mode: GridMode) => void;
     readonly point: string;
     readonly onPoint: (uri: string) => void;
     readonly comparison: Comparison;
     readonly onCompare: (c: Comparison) => void;
 }): ReactNode {
-    const { t } = useTranslation();
-    const chosen = series.find((s) => s.key === picked) ?? series[0];
+    const chosen = grids.find((g) => g.key === picked) ?? grids[0];
     return (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[12rem_minmax(0,1fr)]">
             <nav
-                aria-label={t('marketdata.quotes.surfaces')}
+                aria-label={label}
                 className="max-h-[40rem] space-y-0.5 overflow-auto rounded-md border border-line p-2"
             >
-                {series.map((s) => {
-                    const newest = newestOf(s, watch.shown);
+                {grids.map((g) => {
+                    const newest = Math.max(0, ...g.series.map((s) => newestOf(s, watch.shown)));
                     return (
                         <button
-                            key={s.key}
+                            key={g.key}
                             type="button"
-                            onClick={() => onPick(s.key)}
+                            onClick={() => onPick(g.key)}
                             className={cx(
                                 'flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm',
-                                s.key === chosen?.key
+                                g.key === chosen?.key
                                     ? 'bg-accent/15 text-ink'
                                     : 'hover:bg-panel-2',
                             )}
                         >
-                            <span>{s.name}</span>
+                            <span>{g.name}</span>
                             <span
                                 className={cx(
                                     'text-xs',
@@ -1060,8 +1047,8 @@ export function SurfaceBoard({
                 })}
             </nav>
             {chosen === undefined ? null : (
-                <SurfaceGrid
-                    series={chosen}
+                <GridView
+                    grid={chosen}
                     watch={watch}
                     mode={mode}
                     onMode={onMode}
@@ -1075,8 +1062,8 @@ export function SurfaceBoard({
     );
 }
 
-function SurfaceGrid({
-    series,
+function GridView({
+    grid,
     watch,
     mode,
     onMode,
@@ -1085,19 +1072,19 @@ function SurfaceGrid({
     comparison,
     onCompare,
 }: {
-    readonly series: Series;
+    readonly grid: Grid;
     readonly watch: Watch;
-    readonly mode: SurfaceMode;
-    readonly onMode: (mode: SurfaceMode) => void;
+    readonly mode: GridMode;
+    readonly onMode: (mode: GridMode) => void;
     readonly point: string;
     readonly onPoint: (uri: string) => void;
     readonly comparison: Comparison;
     readonly onCompare: (c: Comparison) => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const unit = useUnit(series.kind);
-    const grid = gridOf(series);
-    const vendors = vendorsIn([series], watch);
+    const kind = grid.kind;
+    const unit = useUnit(kind);
+    const vendors = vendorsIn(grid.series, watch);
     const modes = [MID, ...vendors.map((v) => v.key), SPREAD, COMPARE];
     const chosen = modes.includes(mode) ? mode : MID;
     const vendor = watch.vendors.find((v) => v.key === chosen);
@@ -1115,10 +1102,21 @@ function SurfaceGrid({
             : chosen === SPREAD
               ? t('marketdata.quotes.spreadHint', { unit })
               : t('marketdata.quotes.vendorHint', { vendor: vendor?.provider ?? '', unit });
-    const pickedPoint = series.points.find((p) => p.uri === point);
+    const valueAt = (cell: Cell): number | null => {
+        if (vendor !== undefined) {
+            const q = cell.point.quotes.get(vendor.key);
+            return q === undefined ? null : Number(q.value);
+        }
+        const agreement = agreementOf(kind, cell.point, watch.vendors, watch.shown, watch.now);
+        if (chosen === SPREAD) return agreement.count < 2 ? null : agreement.spread;
+        return agreement.mid ?? lastOf(cell.point, watch);
+    };
+    const pickedCell = grid.rows
+        .flatMap((r) => grid.columns.map((c) => grid.at(r, c)))
+        .find((cell) => cell?.point.uri === point);
     return (
         <section className="min-w-0 space-y-3 rounded-md border border-line p-4">
-            <h2 className="text-sm font-semibold">{series.name}</h2>
+            <h2 className="text-sm font-semibold">{grid.name}</h2>
             <Choice
                 label={t('marketdata.quotes.show')}
                 options={modes}
@@ -1127,8 +1125,8 @@ function SurfaceGrid({
                 onChoose={onMode}
             />
             {chosen === COMPARE ? (
-                <SurfaceCompare
-                    series={series}
+                <GridCompare
+                    grid={grid}
                     watch={watch}
                     comparison={comparison}
                     onCompare={onCompare}
@@ -1153,8 +1151,8 @@ function SurfaceGrid({
                                     <tr key={r} className={ROW}>
                                         <td className={cx(LEFT_CELL, 'font-mono')}>{r}</td>
                                         {grid.columns.map((c) => {
-                                            const p = grid.at(r, c);
-                                            if (p === undefined)
+                                            const cell = grid.at(r, c);
+                                            if (cell === undefined)
                                                 return (
                                                     <td
                                                         key={c}
@@ -1163,26 +1161,28 @@ function SurfaceGrid({
                                                         ·
                                                     </td>
                                                 );
+                                            const p = cell.point;
                                             const agreement = agreementOf(
-                                                series.kind,
+                                                kind,
                                                 p,
                                                 watch.vendors,
                                                 watch.shown,
                                                 watch.now,
                                             );
                                             const on = p.uri === point;
-                                            if (vendor !== undefined)
-                                                return (
-                                                    <SurfaceVendorCell
-                                                        key={c}
-                                                        series={series}
-                                                        point={p}
-                                                        vendor={vendor}
-                                                        agreement={agreement}
-                                                        watch={watch}
-                                                        on={on}
-                                                        onPoint={onPoint}
-                                                    />
+                                            const q =
+                                                vendor === undefined
+                                                    ? undefined
+                                                    : p.quotes.get(vendor.key);
+                                            const stale =
+                                                q !== undefined && isStale(q.at, watch.now);
+                                            const out =
+                                                q !== undefined &&
+                                                !stale &&
+                                                isOutlier(
+                                                    kind,
+                                                    Number(q.value),
+                                                    agreement.reference,
                                                 );
                                             const spread = chosen === SPREAD;
                                             const size =
@@ -1190,11 +1190,26 @@ function SurfaceGrid({
                                                     ? 0
                                                     : Math.abs(
                                                           differenceOf(
-                                                              series.kind,
+                                                              kind,
                                                               agreement.spread,
                                                               agreement.mid,
                                                           ).amount,
                                                       );
+                                            const text =
+                                                vendor !== undefined
+                                                    ? q === undefined
+                                                        ? '·'
+                                                        : valueText(kind, Number(q.value))
+                                                    : spread
+                                                      ? spreadText(kind, agreement)
+                                                      : agreement.mid === null
+                                                        ? valueText(kind, lastOf(p, watch))
+                                                        : valueText(kind, agreement.mid);
+                                            const dim =
+                                                stale ||
+                                                (vendor === undefined &&
+                                                    !spread &&
+                                                    agreement.mid === null);
                                             return (
                                                 <td
                                                     key={c}
@@ -1202,6 +1217,8 @@ function SurfaceGrid({
                                                     className={cx(
                                                         DATA_CELL,
                                                         PICKABLE,
+                                                        dim && 'text-ink-faint',
+                                                        out && 'text-warn',
                                                         on &&
                                                             'outline-2 -outline-offset-2 outline-accent',
                                                     )}
@@ -1209,7 +1226,7 @@ function SurfaceGrid({
                                                         spread
                                                             ? {
                                                                   background: diverging(
-                                                                      series.kind,
+                                                                      kind,
                                                                       -size,
                                                                       1,
                                                                   ),
@@ -1217,9 +1234,8 @@ function SurfaceGrid({
                                                             : undefined
                                                     }
                                                 >
-                                                    {spread
-                                                        ? spreadText(series.kind, agreement)
-                                                        : valueText(series.kind, agreement.mid)}
+                                                    {text}
+                                                    {out && ' ⚠'}
                                                 </td>
                                             );
                                         })}
@@ -1228,53 +1244,32 @@ function SurfaceGrid({
                             </tbody>
                         </table>
                     </div>
-                    {pickedPoint !== undefined && (
+                    {grid.series.length > 1 ? (
+                        <TenorPlot
+                            rows={grid.rows}
+                            lines={columnLines(grid, grid.columns, valueAt)}
+                            kind={kind}
+                            label={t('marketdata.quotes.curvesOf', {
+                                name: grid.name,
+                                show: titleOf(chosen),
+                            })}
+                        />
+                    ) : (
+                        <SurfacePlots grid={grid} valueAt={valueAt} show={titleOf(chosen)} />
+                    )}
+                    {pickedCell !== undefined && (
                         <div className="space-y-2 border-t border-line pt-3">
-                            <h3 className="text-sm font-semibold">{`${series.name} ${pickedPoint.label}`}</h3>
-                            <AllQuotes series={series} point={pickedPoint} watch={watch} />
+                            <h3 className="text-sm font-semibold">{`${pickedCell.series.name} ${pickedCell.point.label}`}</h3>
+                            <AllQuotes
+                                series={pickedCell.series}
+                                point={pickedCell.point}
+                                watch={watch}
+                            />
                         </div>
                     )}
                 </>
             )}
         </section>
-    );
-}
-
-function SurfaceVendorCell({
-    series,
-    point,
-    vendor,
-    agreement,
-    watch,
-    on,
-    onPoint,
-}: {
-    readonly series: Series;
-    readonly point: Point;
-    readonly vendor: Vendor;
-    readonly agreement: Agreement;
-    readonly watch: Watch;
-    readonly on: boolean;
-    readonly onPoint: (uri: string) => void;
-}): ReactNode {
-    const q = point.quotes.get(vendor.key);
-    const stale = q !== undefined && isStale(q.at, watch.now);
-    const out =
-        q !== undefined && !stale && isOutlier(series.kind, Number(q.value), agreement.reference);
-    return (
-        <td
-            onClick={() => onPoint(point.uri)}
-            className={cx(
-                DATA_CELL,
-                PICKABLE,
-                stale && 'text-ink-faint',
-                out && 'text-warn',
-                on && 'outline-2 -outline-offset-2 outline-accent',
-            )}
-        >
-            {q === undefined ? '·' : valueText(series.kind, Number(q.value))}
-            {out && ' ⚠'}
-        </td>
     );
 }
 

@@ -5853,11 +5853,13 @@ const pt: SourceCatalogue = {
             tenor: 'Prazo',
             pickQuote:
                 'Escolha uma linha para ver a cotação de cada fornecedor e a sua última hora.',
-            pickCurve: 'Escolha uma curva para comparar os seus fornecedores prazo a prazo.',
-            curvesHint:
-                'Os prazos de cada curva lado a lado. Escolha o nome de uma curva para comparar os seus fornecedores.',
             show: 'Mostrar',
-            byTenor: '{name} por prazo, por fornecedor',
+            currencies: 'Moedas',
+            curvesOf: 'Curvas {name} por prazo · {show}',
+            familyAtm: 'ATM por prazo',
+            familyRr: 'Risk reversals por prazo',
+            familyBf: 'Butterflies por prazo',
+            plotColumn: 'Desenhar',
             surfaces: 'Superfícies',
             compare: 'Comparar',
             compareA: 'A',
@@ -5868,6 +5870,8 @@ const pt: SourceCatalogue = {
             compareHint:
                 'Cada célula é A − B em {unit}: azul onde A está acima de B, vermelho abaixo. ⚠ marca uma diferença além do limite. Escolha uma célula para cada uma das suas fontes.',
             columnGap: 'Diferença {column}, em média',
+            nothingShared:
+                '{a} e {b} não cotam nenhum ponto de {name} em comum, por isso não há nada a comparar. Escolha outras fontes.',
             widest: 'A maior',
             pastLimit: 'Além do limite',
             toSource: 'Distância a {source}',

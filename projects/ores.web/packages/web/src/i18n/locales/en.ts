@@ -5811,11 +5811,13 @@ export const en: SourceCatalogue = {
             point: 'Point',
             tenor: 'Tenor',
             pickQuote: "Pick a row to see every vendor's quote of it and their last hour.",
-            pickCurve: 'Pick a curve to compare its vendors tenor by tenor.',
-            curvesHint:
-                "Every curve's tenors side by side. Pick a curve's name to compare its vendors.",
             show: 'Show',
-            byTenor: '{name} by tenor, each vendor',
+            currencies: 'Currencies',
+            curvesOf: '{name} curves by tenor · {show}',
+            familyAtm: 'ATM by tenor',
+            familyRr: 'Risk reversals by tenor',
+            familyBf: 'Butterflies by tenor',
+            plotColumn: 'Plot',
             surfaces: 'Surfaces',
             compare: 'Compare',
             compareA: 'A',
@@ -5826,6 +5828,8 @@ export const en: SourceCatalogue = {
             compareHint:
                 'Each cell is A − B in {unit}: blue where A is above B, red where below. ⚠ marks a gap past the outlier limit. Pick a cell for every source of it.',
             columnGap: '{column} gap, on average',
+            nothingShared:
+                '{a} and {b} quote no point of {name} in common, so there is nothing to compare. Choose other sources.',
             widest: 'Widest',
             pastLimit: 'Past the limit',
             toSource: 'To {source}',

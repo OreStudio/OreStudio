@@ -158,12 +158,13 @@ via its "Verifies task" field.
   round: a rail that ticks each source in or out, in the order the providers are
   trusted, and a tab for each asset class and shape. A quotes board has a row for
   each series and a column for each vendor, with the mid, the spread and the age,
-  and the picked one's quotes and last hour on a time axis beside it. A curves
-  board puts every curve's tenors side by side for the mid or one vendor, and a
-  picked curve opens tenor by vendor with its curves drawn. A surfaces board lists
-  the surfaces beside a grid, tenor down and ATM first across, of the mid, one
-  vendor, the spread, or two sources compared: A − B in the grid, a column by
-  tenor for every source, and a cell's every source. Tenors sort as tenors, and
+  and the picked one's quotes and last hour beside it, on a time axis that starts
+  at the oldest tick held and is read again every few seconds. A curves board
+  lists the currencies, and a surfaces board the surfaces, beside one grid, tenor
+  down: a currency's curves across, or a surface's strategies, ATM first. The grid
+  shows the mid, one vendor, the spread, or two sources compared: A − B in the
+  grid, a column by tenor for every source, and a cell's every source. Every curve
+  of every currency at once, the first build, was too much to read. Tenors sort as tenors, and
   values show in pips, % and bp, or vol points. A quote far from the others is
   flagged and left out of the mid; the feeds read now states each provider's rank
   (=watchable_feed.precedence=), and with fewer than three vendors the
@@ -177,6 +178,6 @@ via its "Verifies task" field.
 - Tests: =ores.http.marketdata.tests= 46 cases (one new, the rank in the feeds
   read); =ores.marketdata.core.tests= =[tick_entitlement]= 5 cases, which now
   read ore's rank; =ores.marketdata.api.tests= 1135 cases; the web package's
-  quotes view model (14) and its boards (3, quotes and a surface compared); every
+  quotes view model (14) and its boards (5: quotes, a surface and a currency, each compared); every
   web workspace's tests and type check; the Playwright check of the boards,
   leaving a source out and a picked curve, on the running fleet as UK plc.

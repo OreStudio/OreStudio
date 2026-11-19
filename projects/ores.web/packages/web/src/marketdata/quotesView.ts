@@ -455,23 +455,80 @@ export function compare(
     return { a: va, b: vb, difference: va === null || vb === null ? null : va - vb };
 }
 
-/** The rows and columns of a surface: the first coordinates down, the second across. */
-export function gridOf(s: Series): {
-    readonly rows: readonly string[];
-    readonly columns: readonly string[];
-    readonly at: (row: string, column: string) => Point | undefined;
-} {
-    const rows = [...new Set(s.points.map((p) => p.coordinates[0] ?? ''))].sort(byTenor);
-    const columns = [...new Set(s.points.map((p) => p.coordinates[1] ?? ''))].sort(byColumn);
-    const index = new Map(s.points.map((p) => [`${p.coordinates[0]}|${p.coordinates[1]}`, p]));
-    return { rows, columns, at: (row, column) => index.get(`${row}|${column}`) };
+/** A cell of a grid: the point, and the series it belongs to. */
+export interface Cell {
+    readonly series: Series;
+    readonly point: Point;
 }
 
-/** The tenors of the curves of a board, in order, for the curves side by side. */
-export function tenorsOf(curves: readonly Series[]): string[] {
-    return [...new Set(curves.flatMap((s) => s.points.map((p) => p.coordinates[0] ?? '')))].sort(
-        byTenor,
+/**
+ * Points laid out as a grid, tenor down. A surface's columns are its second
+ * coordinate; a currency's columns are its curves. Either way a grid is read the
+ * same: as the mid, one vendor, the spread, or two sources compared.
+ */
+export interface Grid {
+    readonly key: string;
+    readonly name: string;
+    readonly kind: Kind;
+    readonly rows: readonly string[];
+    readonly columns: readonly string[];
+    readonly at: (row: string, column: string) => Cell | undefined;
+    readonly series: readonly Series[];
+}
+
+/** A surface as a grid: its first coordinate down, its second across. */
+export function gridOf(s: Series): Grid {
+    const rows = [...new Set(s.points.map((p) => p.coordinates[0] ?? ''))].sort(byTenor);
+    const columns = [...new Set(s.points.map((p) => p.coordinates[1] ?? ''))].sort(byColumn);
+    const index = new Map(
+        s.points.map((p) => [`${p.coordinates[0]}|${p.coordinates[1]}`, { series: s, point: p }]),
     );
+    return {
+        key: s.key,
+        name: s.name,
+        kind: s.kind,
+        rows,
+        columns,
+        at: (row, column) => index.get(`${row}|${column}`),
+        series: [s],
+    };
+}
+
+/** The currency a curve is of: the first word of its name, which is its subject. */
+export function currencyOf(s: Series): string {
+    return s.name.split(' ')[0] ?? s.name;
+}
+
+/** The curves of a board as one grid for each currency: tenor down, each curve across. */
+export function currencyGrids(curves: readonly Series[]): Grid[] {
+    const by = new Map<string, Series[]>();
+    for (const s of curves) by.set(currencyOf(s), [...(by.get(currencyOf(s)) ?? []), s]);
+    return [...by]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([currency, list]) => {
+            const sorted = [...list].sort((a, b) =>
+                a.name.localeCompare(b.name, undefined, { numeric: true }),
+            );
+            const rows = [
+                ...new Set(sorted.flatMap((s) => s.points.map((p) => p.coordinates[0] ?? ''))),
+            ].sort(byTenor);
+            const index = new Map(
+                sorted.flatMap((s) =>
+                    s.points.map(
+                        (p) => [`${p.coordinates[0]}|${s.name}`, { series: s, point: p }] as const,
+                    ),
+                ),
+            );
+            return {
+                key: currency,
+                name: currency,
+                kind: sorted[0]?.kind ?? 'plain',
+                rows,
+                columns: sorted.map((s) => s.name),
+                at: (row: string, column: string) => index.get(`${row}|${column}`),
+                series: sorted,
+            };
+        });
 }
 
 /** One tick of a vendor's history: when, and the value. */

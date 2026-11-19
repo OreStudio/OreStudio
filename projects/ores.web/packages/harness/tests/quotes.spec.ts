@@ -47,16 +47,25 @@ test('the quotes view shows a board per asset class and shape, each vendor a col
     });
     await page.screenshot({ path: '../../.runtime/harness/quotes-picked.png' });
 
-    // Leaving a source out takes its column off every board.
-    await rail.getByRole('checkbox').first().uncheck();
-    await expect(page.locator('table').first().locator('thead')).not.toContainText('bloomberg');
-    await rail.getByRole('checkbox').first().check();
+    // Leaving a source out takes its column off every board, when there is another to show.
+    if ((await rail.getByRole('checkbox').count()) > 1) {
+        await rail.getByRole('checkbox').first().uncheck();
+        await expect(page.locator('table').first().locator('thead')).not.toContainText('bloomberg');
+        await rail.getByRole('checkbox').first().check();
+    }
 
+    // Rates are a board per currency: its curves tenor down, and two providers compared.
     const curves = boards.getByRole('tab', { name: /curves/ });
     if ((await curves.count()) > 0) {
         await curves.first().click();
-        await page.locator('thead button').first().click();
-        await expect(page.getByRole('img', { name: /by tenor, each vendor/ })).toBeVisible();
-        await page.screenshot({ path: '../../.runtime/harness/quotes-curves.png' });
+        const currencies = page.getByRole('navigation', { name: 'Currencies' });
+        await currencies.getByRole('button', { name: /^USD/ }).click();
+        await page
+            .getByRole('group', { name: 'Show' })
+            .getByRole('button', { name: 'Compare' })
+            .click();
+        await expect(page.getByText(/^Past the limit/)).toBeVisible();
+        await expect(page.getByRole('img', { name: /by tenor, each source/ })).toBeVisible();
+        await page.screenshot({ path: '../../.runtime/harness/quotes-curves.png', fullPage: true });
     }
 });

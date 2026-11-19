@@ -94,9 +94,11 @@ A person sees the market as the vendors quote it: every quote of every provider 
   four vendors became 260 rows and the board 4,373. The second round of the
   prototype chose variant C: the rail ticks each source in or out, and the tabs
   are the boards: quotes (series by vendor, the picked one's quotes and hour
-  beside it), curves (every curve's tenors side by side, a picked curve by
-  vendor) and surfaces (a grid of the mid, one vendor, the spread, or two sources
-  compared). A series' shape is the number of its coordinates. (2026-11-19,
+  beside it), curves and surfaces. A currency's curves and a surface are both
+  grids, tenor down, picked from a list beside them, and both read as the mid,
+  one vendor, the spread, or two providers compared; every curve of every
+  currency at once was too much to read. (2026-11-19, product owner, after the
+  first build.) A series' shape is the number of its coordinates. (2026-11-19,
   product owner, replacing the source rail's sign-off.)
 - *A quote is measured against the median of three or more live vendors, or
   else the highest-ranked one.* With two, a median cannot say which is wrong, so

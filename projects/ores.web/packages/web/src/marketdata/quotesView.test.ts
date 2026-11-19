@@ -25,6 +25,7 @@ import {
     boardsOf,
     byTenor,
     compare,
+    currencyGrids,
     CONSENSUS,
     differenceOf,
     differenceText,
@@ -34,7 +35,6 @@ import {
     merged,
     onTimeAxis,
     shownSeries,
-    tenorsOf,
     valueText,
     vendorsOf,
     type Board,
@@ -175,14 +175,18 @@ describe('the boards', () => {
             '18M',
             '2Y',
         ]);
-        expect(tenorsOf([curve])).toEqual(['1W', '1M', '2M', '1Y', '10Y']);
+        const [usd] = currencyGrids([curve]);
+        expect(usd?.name).toBe('USD');
+        expect(usd?.rows).toEqual(['1W', '1M', '2M', '1Y', '10Y']);
+        expect(usd?.columns).toEqual(['USD 0D 1D']);
+        expect(usd?.at('1Y', 'USD 0D 1D')?.point.label).toBe('1Y');
     });
 
     it('lay a surface out by tenor down and strategy across, ATM first', () => {
         const grid = gridOf(series('fx.surface', 'EUR/USD'));
         expect(grid.rows).toEqual(['1W', '1M']);
         expect(grid.columns).toEqual(['ATM', '25RR']);
-        expect(grid.at('1M', 'ATM')?.quotes.size).toBe(3);
+        expect(grid.at('1M', 'ATM')?.point.quotes.size).toBe(3);
         expect(grid.at('1W', '25RR')).toBeUndefined();
     });
 
@@ -221,7 +225,7 @@ describe('the agreement on a point', () => {
 });
 
 describe('a comparison of two sources', () => {
-    const atm = gridOf(series('fx.surface', 'EUR/USD')).at('1M', 'ATM')!;
+    const atm = gridOf(series('fx.surface', 'EUR/USD')).at('1M', 'ATM')!.point;
 
     it('gives A − B for two vendors', () => {
         const c = compare('vol', atm, feedKey(tradeweb), feedKey(bloomberg), vendors, all, NOW);

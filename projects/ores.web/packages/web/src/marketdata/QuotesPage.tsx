@@ -28,18 +28,19 @@ import { useTabs } from '../ui/Tabs.js';
 import { SERIES_COLOURS } from './LineChart.js';
 import {
     COMPARE,
-    CurveBoard,
     DatumBoard,
+    GridBoard,
     MID,
     QuoteBoard,
-    SurfaceBoard,
     type Comparison,
     type Watch,
 } from './QuoteBoards.js';
 import {
     boardsOf,
     CONSENSUS,
+    currencyGrids,
     feedKey,
+    gridOf,
     instantOf,
     isStale,
     merged,
@@ -190,8 +191,7 @@ export function QuotesPage(): ReactNode {
     const [find, setFind] = useState('');
     const [order, setOrder] = useState<Order>('live');
     const [picked, setPicked] = useState<Readonly<Record<string, string>>>({});
-    const [curveSource, setCurveSource] = useState(CONSENSUS);
-    const [surfaceMode, setSurfaceMode] = useState(MID);
+    const [gridMode, setGridMode] = useState(MID);
     const [point, setPoint] = useState('');
     const [comparison, setComparison] = useState<Comparison>({
         a: '',
@@ -260,27 +260,21 @@ export function QuotesPage(): ReactNode {
         const chosen = picked[tab] ?? '';
         if (board.shape === 'quote')
             return <QuoteBoard series={series} watch={watch} picked={chosen} onPick={pick} />;
-        if (board.shape === 'curve')
+        if (board.shape === 'curve' || board.shape === 'surface')
             return (
-                <CurveBoard
-                    series={series}
+                <GridBoard
+                    grids={board.shape === 'curve' ? currencyGrids(series) : series.map(gridOf)}
+                    label={
+                        board.shape === 'curve'
+                            ? t('marketdata.quotes.currencies')
+                            : t('marketdata.quotes.surfaces')
+                    }
                     watch={watch}
                     picked={chosen}
                     onPick={pick}
-                    source={curveSource}
-                    onSource={setCurveSource}
-                />
-            );
-        if (board.shape === 'surface')
-            return (
-                <SurfaceBoard
-                    series={series}
-                    watch={watch}
-                    picked={chosen}
-                    onPick={pick}
-                    mode={surfaceMode}
+                    mode={gridMode}
                     onMode={(m) => {
-                        setSurfaceMode(m);
+                        setGridMode(m);
                         if (m === COMPARE) setPoint('');
                     }}
                     point={point}

@@ -24,8 +24,17 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { Quote, QuoteFeed } from '../api/quotes.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { COMPARE, MID, QuoteBoard, SurfaceBoard, type Watch } from './QuoteBoards.js';
-import { boardsOf, CONSENSUS, feedKey, merged, vendorsOf } from './quotesView.js';
+import { COMPARE, GridBoard, MID, QuoteBoard, type Watch } from './QuoteBoards.js';
+import {
+    boardsOf,
+    CONSENSUS,
+    currencyGrids,
+    feedKey,
+    gridOf,
+    merged,
+    vendorsOf,
+    type Grid,
+} from './quotesView.js';
 
 const NOW = Date.parse('2026-11-19T12:00:30.000Z');
 const AT = '2026-11-19 12:00:00.000000Z';
@@ -83,6 +92,23 @@ function spot(f: QuoteFeed, value: string): Quote {
     };
 }
 
+function swap(f: QuoteFeed, ccy: string, index: string, term: string, value: string): Quote {
+    return {
+        provider: f.provider,
+        feed: f.feed,
+        source: f.source,
+        uri: `oresmd://ir/${ccy}?type=quote&instrument=ir_swap&tenor=${index}&term=${term}`,
+        value,
+        previous: value,
+        at: AT,
+        asset_class: 'interest_rates',
+        instrument_type: 'ir_swap',
+        series_uri: `oresmd://ir/${ccy}?type=series&instrument=ir_swap&tenor=${index}`,
+        series: `${ccy} 0D ${index}`,
+        point: term,
+    };
+}
+
 const boards = boardsOf(
     merged(new Map(), [
         spot(bloomberg, '1.10618'),
@@ -95,10 +121,17 @@ const boards = boardsOf(
         vol(ice, '1M', '25RR', '-0.0102'),
         vol(tradeweb, '1M', 'ATM', '0.0735'),
         vol(tradeweb, '1M', '25RR', '-0.0045'),
+        swap(bloomberg, 'USD', '1D', '1Y', '0.0409'),
+        swap(tradeweb, 'USD', '1D', '1Y', '0.0411'),
+        swap(bloomberg, 'USD', '3M', '1Y', '0.0402'),
+        swap(bloomberg, 'USD', '1D', '6M', '0.0403'),
+        swap(tradeweb, 'USD', '1D', '6M', '0.0404'),
+        swap(bloomberg, 'EUR', '1D', '1Y', '0.0212'),
     ]),
     vendors,
 );
-const surfaces = boards.find((b) => b.key === 'fx.surface')!.series;
+const surfaces = boards.find((b) => b.key === 'fx.surface')!.series.map(gridOf);
+const currencies = currencyGrids(boards.find((b) => b.key === 'interest_rates.curve')!.series);
 const quotes = boards.find((b) => b.key === 'fx.quote')!.series;
 
 function render(node: ReactNode): string {
@@ -123,37 +156,54 @@ describe('the quotes board', () => {
     });
 });
 
-describe('the surface board', () => {
-    const board = (mode: string, a = feedKey(ice)): string =>
-        text(
-            render(
-                <SurfaceBoard
-                    series={surfaces}
-                    watch={watch}
-                    picked=""
-                    onPick={() => undefined}
-                    mode={mode}
-                    onMode={() => undefined}
-                    point=""
-                    onPoint={() => undefined}
-                    comparison={{ a, b: CONSENSUS, row: '', column: '' }}
-                    onCompare={() => undefined}
-                />,
-            ),
-        );
+function gridBoard(grids: readonly Grid[], mode: string, a: string, picked = ''): string {
+    return text(
+        render(
+            <GridBoard
+                grids={grids}
+                label="Grids"
+                watch={watch}
+                picked={picked}
+                onPick={() => undefined}
+                mode={mode}
+                onMode={() => undefined}
+                point=""
+                onPoint={() => undefined}
+                comparison={{ a, b: CONSENSUS, row: '', column: '' }}
+                onCompare={() => undefined}
+            />,
+        ),
+    );
+}
 
+describe('the surface board', () => {
     it('lays the surface out tenor down and ATM first across, as the mid in vol points', () => {
-        const html = board(MID);
+        const html = gridBoard(surfaces, MID, feedKey(ice));
         expect(html).toMatch(/Tenor ATM 25RR 1W 7\.17 · 1M 7\.23/);
     });
 
     it('compares a vendor with the consensus of the others, cell by cell, and flags a gap past the limit', () => {
-        const html = board(COMPARE);
+        const html = gridBoard(surfaces, COMPARE, feedKey(ice));
         expect(html).toContain('Consensus of the others');
         // ice's ATM against the mean of bloomberg and tradeweb: 7.12 − 7.29.
         expect(html).toContain('-0.17');
         // ice's 25RR against theirs: −1.02 − (−0.435), past the 0.4 vol point limit.
         expect(html).toMatch(/-0\.5[89] ⚠/);
         expect(html).toMatch(/Past the limit 1 \/ 2/);
+    });
+});
+
+describe('the curves board', () => {
+    it('lists the currencies, and shows only the curves of the picked currency, tenor down', () => {
+        expect(currencies.map((g) => g.name)).toEqual(['EUR', 'USD']);
+        const html = gridBoard(currencies, MID, feedKey(tradeweb), 'USD');
+        expect(html).toMatch(/Tenor USD 0D 1D USD 0D 3M 6M 4\.035% · 1Y 4\.100% 4\.020%/);
+        expect(html).not.toContain('EUR 0D 1D');
+    });
+
+    it('compares two providers tenor by tenor in basis points', () => {
+        const html = gridBoard(currencies, COMPARE, feedKey(tradeweb), 'USD');
+        // tradeweb against the consensus of the others, here bloomberg alone.
+        expect(html).toMatch(/6M \+1\.0 · 1Y \+2\.0 ·/);
     });
 });

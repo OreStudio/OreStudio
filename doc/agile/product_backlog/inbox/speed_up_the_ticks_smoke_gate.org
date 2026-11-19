@@ -27,9 +27,14 @@ promising:
 - *Run beside ctest, not after it.* The smoke follows =ctest= only because both
   use the environment's database. On a database of its own, the clone above,
   it could run in parallel with the suite.
-- *Provision less.* The smoke provisions a tenant with =bootstrap setup … --profile=
-  through =ores.shell=. Find which provisioning steps the tick path needs (a
-  subscription, a route, a running feed) and use a profile with only those.
+- *Provision less.* This is the largest. The smoke provisions a tenant with
+  =bootstrap setup … --profile= through =ores.shell=, and on 2026-11-19 its
+  =publish_party_surfaces= step alone was still running after 854 s of its
+  1200 s deadline (=ores.workflow.service= log, workflow
+  =8d9067dd-94fd-40c5-9668-d51db021900b=), while the shell waited with no CPU
+  time. Publishing surfaces proves nothing about ticks. Find which provisioning
+  steps the tick path needs (a subscription, a route, a running feed) and use a
+  profile with only those.
 - *Wait on an event, not a poll.* The evidence loop polls every 5 seconds with
   SQL and the journal; a subscription to the first =market_tick= subject would
   end the wait at the first tick.

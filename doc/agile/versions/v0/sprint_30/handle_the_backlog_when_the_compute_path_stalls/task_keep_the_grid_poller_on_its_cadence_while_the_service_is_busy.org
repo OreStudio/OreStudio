@@ -8,7 +8,7 @@
 #+filetags: :handle_the_backlog_when_the_compute_path_stalls:sprint_30:v0:
 #+owner: eager_maxwell
 #+branch: feature/keep-the-grid-poller-on-its-cadence-while-the-service-is-busy
-#+pr:
+#+pr: 4881
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-19
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4881][#4881]] | [compute] Keep the grid sampler on its schedule, not on its speed |
 
 * Review
 

@@ -26,11 +26,11 @@ The Windows clang leg links the synthetic service tests against the service libr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
@@ -83,3 +83,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The four synthetic service classes with out-of-line members now carry
+ORES_SYNTHETIC_SERVICE_EXPORT: derived_fx_vol_adapter, feed_kind_registry,
+registrar and simulator_adapter. Their headers include the component's
+export header. Linux exports every symbol by default, so nothing changed
+here; a Windows DLL exports only what it is told to, which is why the tests
+linked against the library and could not see feed_kind_registry at all.
+
+The same change removes scripted_batch_of from
+trade_population_planner.cpp, whose last caller moved when the multi-asset
+products were folded into a family of their own. -Wunused-function with
+-Werror had stopped ores.synthetic.core.lib building on clang, which is the
+first failure in that leg and unrelated to the exports.
+
+PR #4895. =ores.synthetic.service.lib= and =.tests= build clean, the suite
+passes 1/1, =nm -D= lists feed_kind_registry::system_containers, and
+=compass check --exclude-heavy= is 29/29.
+
+Unverified by construction: the export marks only change what a Windows DLL
+publishes and there is no Windows toolchain here. The nightly decides. If it
+still reports undefined symbols, they are other classes -- the linker stopped
+at "too many errors emitted" and the ones it named were only the first.

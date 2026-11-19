@@ -19,7 +19,11 @@
  */
 #include "ores.marketdata.core/repository/tick_entitlement.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.marketdata.core/repository/feed_repository.hpp"
+#include "ores.marketdata.core/repository/route_repository.hpp"
 #include "ores.marketdata.core/repository/subscription_repository.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <tuple>
 
 namespace ores::marketdata::repository {
 
@@ -29,6 +33,10 @@ using domain::subscription;
 
 bool may_show(const subscription& s) {
     return s.display || s.non_display;
+}
+
+bool may_display(const subscription& s) {
+    return s.display;
 }
 
 bool may_compute(const subscription& s) {
@@ -75,6 +83,25 @@ std::set<std::string> computable_providers(const ores::database::context& ctx) {
 
 bool may_compute_from_ticks(const ores::database::context& ctx, const std::string& provider_code) {
     return holds_right(ctx, provider_code, may_compute);
+}
+
+std::vector<messaging::watchable_feed> watchable_feeds(const ores::database::context& ctx,
+                                                       bool for_display) {
+    std::set<std::tuple<std::string, std::string>> feeds;
+    if (ctx.tenant_id().is_system()) {
+        for (const auto& f : feed_repository{}.read_latest(ctx))
+            feeds.emplace(f.publisher_code, boost::uuids::to_string(f.id));
+    } else if (const auto party = ctx.party_id()) {
+        const auto providers = providers_where(ctx, for_display ? may_display : may_show);
+        for (const auto& r : route_repository{}.read_latest(ctx))
+            if (r.party_id == *party && providers.contains(r.publisher_code))
+                feeds.emplace(r.publisher_code, boost::uuids::to_string(r.feed_id));
+    }
+    std::vector<messaging::watchable_feed> out;
+    out.reserve(feeds.size());
+    for (auto& [provider, feed] : feeds)
+        out.push_back({provider, feed});
+    return out;
 }
 
 }

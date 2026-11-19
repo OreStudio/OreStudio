@@ -42,13 +42,14 @@ A person sees the market as the vendors quote it: every quote of every provider 
 |------+-------+-------+-----+-------------|
 | [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][Analyse the live path and state its target in the market data docs]] | DONE | 2026-11-18 | 2026-11-18 | Review the market data documentation and code end to end for the live path, size the change to a live subject per vendor, and write the target state into the docs before any code changes. |
 | [[id:D0F85D26-99A9-42E3-9FB3-DCDEFA7E225B][Publish each vendor's ticks on its own live subject]] | DONE | 2026-11-18 | 2026-11-18 | The ingest lane publishes each accepted, conflated tick once, on a live subject keyed by the vendor, beside the party subjects until every consumer has moved. |
-| [[id:4F73C113-C598-42EA-B439-04316FD80ABF][Reach the vendor subjects through the party's subscriptions]] | BACKLOG | | | Move every live consumer from the party subjects to the vendor subjects, choosing the vendors from its party's subscriptions, with the system tenant reaching every vendor, and enforce the subscription on the live path. |
+| [[id:4F73C113-C598-42EA-B439-04316FD80ABF][Reach the vendor subjects through the party's subscriptions]] | DONE | 2026-11-19 | 2026-11-19 | Move every live consumer from the party subjects to the vendor subjects, choosing the vendors from its party's subscriptions, with the system tenant reaching every vendor, and enforce the subscription on the live path. |
 | [[id:A19780BE-443A-4811-AA53-2B7B58842892][Stop copying live ticks per party]] | BACKLOG | | | Once no consumer reads them, remove the party live subjects and the per-party publish from the ingest, and update the docs that still name them. |
 | [[id:454D2B6D-9EC8-4801-A2AB-1C5C46338D97][Read a vendor's recent ticks through the subscription]] | BACKLOG | | | Give the quotes view its history: the recent ticks of a vendor's series from the store, behind the party's subscription, with the system tenant reading every vendor. |
 | [[id:601953D5-1EB6-4E66-8F5F-9D56E67EAD03][Write the journey: watch the vendors' quotes]] | BACKLOG | | | Agree the journey catalogue for the quotes view, then write the journey with its wireframe and coverage table, in the group the analysis chooses. |
 | [[id:D9CEB730-C3E2-464A-B69D-57E518C8AAA1][Prototype the quotes view for sign-off]] | BACKLOG | | | Build a static prototype of the quotes view on mock data, with the variants and states the journey needs, and record the product owner's sign-off or the changes asked. |
 | [[id:7421F842-BD73-42CA-8EF7-D47DBA72C79B][Build the quotes view]] | BACKLOG | | | Build the signed-off quotes view in ores.web: the BFF reads the vendor subjects and the recent ticks for the party, and the screen draws them live. |
 | [[id:5127ACAD-A58C-4B63-922A-FA703836AFB2][Retire the synthetic display tap]] | BACKLOG | | | Move the synthetic feed screens' Ticks tabs onto the vendor subjects and remove the per-feed display subject and its BFF buffer, if the analysis confirms nothing else needs them. |
+| [[id:6EEF6F65-3CCF-435F-8C28-1973F2FCBC9D][Publish the ticks of a feed that no party routes to]] | BACKLOG | | | The ingest publishes each tick of a feed that no route names once on the feed's subject and stores nothing, so the system tenant's quotes view shows every feed while the store and the bill stay unchanged. |
 
 * Decisions
 
@@ -72,6 +73,10 @@ A person sees the market as the vendors quote it: every quote of every provider 
   for machines, and it does not allow a screen. So the quotes view, live and
   history, needs the display right, and a service with no screen needs the
   display or the non-display right. (2026-11-18, product owner.)
+- *The ingest publishes the ticks of a feed that no party routes to, and does
+  not store them.* The system tenant watches every feed, so its quotes view
+  needs them. The store and the bill are unchanged, because no party receives
+  them. (2026-11-19, product owner.)
 - *The synthetic display tap is not the base.* =synthetic.v1.ops.feed_tick= is
   published by the simulator's FX and IR feeds only, and a real vendor never
   publishes it.

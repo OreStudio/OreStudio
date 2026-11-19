@@ -68,6 +68,7 @@ set(files
     "repository_market_write_ceiling_tests.cpp"
     "repository_series_identity_backfill_tests.cpp"
     "repository_subscription_route_tests.cpp"
+    "repository_tick_entitlement_tests.cpp"
     "repository_tick_reads_tests.cpp"
     "series_classification_rule_eventing_integration_tests.cpp"
     "series_identity_shape_check_tests.cpp"

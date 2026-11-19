@@ -142,3 +142,41 @@ TEST_CASE("one_wildcard_covers_a_series_and_nothing_else", "[domain][tick_subjec
     CHECK(subject_matches(series, ten_years));
     CHECK_FALSE(subject_matches(series, six_months_tenor));
 }
+
+TEST_CASE("a_watcher_of_a_point_subscribes_to_the_subject_its_feed_publishes_on",
+          "[domain][tick_subjects]") {
+    const std::string uri =
+        "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=5Y";
+    const auto datum = ores::marketdata::datum::oresmd_uri_codec::read(uri).value();
+
+    const auto watched =
+        ores::marketdata::domain::feed_tick_watch_subject("bloomberg", tick_subjects_feed, datum);
+
+    REQUIRE(watched.has_value());
+    CHECK(*watched == tick_subjects_feed_subject(uri));
+}
+
+TEST_CASE("a_watcher_of_a_series_receives_its_points_and_no_other_series",
+          "[domain][tick_subjects]") {
+    using ores::marketdata::domain::subject_matches;
+    const auto series = ores::marketdata::datum::oresmd_uri_codec::read(
+                            "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate"
+                            "&fwd_start=0D&tenor=3M")
+                            .value();
+
+    const auto watched =
+        ores::marketdata::domain::feed_tick_watch_subject("bloomberg", tick_subjects_feed, series);
+
+    REQUIRE(watched.has_value());
+    CHECK(subject_matches(*watched,
+                          tick_subjects_feed_subject("oresmd://ir/USD?type=quote&instrument=ir_swap"
+                                                     "&quote=rate&fwd_start=0D&tenor=3M&term=5Y")));
+    CHECK(
+        subject_matches(*watched,
+                        tick_subjects_feed_subject("oresmd://ir/USD?type=quote&instrument=ir_swap"
+                                                   "&quote=rate&fwd_start=0D&tenor=3M&term=10Y")));
+    CHECK_FALSE(subject_matches(
+        *watched,
+        tick_subjects_feed_subject("oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate"
+                                   "&fwd_start=0D&tenor=6M&term=5Y")));
+}

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :marketdata:ticks:routing:subscriptions:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/reach-the-vendor-subjects-through-subscriptions
+#+pr: 4868
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -26,11 +26,11 @@ Every live consumer watches the vendor subjects its party subscribes to, and not
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -43,9 +43,25 @@ Every live consumer watches the vendor subjects its party subscribes to, and not
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *The rule.* =watchable_feeds(ctx, for_display)= in =tick_entitlement=:
+   - for the system tenant, every feed of the catalogue;
+   - for a party, each route whose provider the party subscribes to with the
+     right the use needs: display for a screen, display or non-display for a
+     service.
+   The answer is the provider code and the feed id of each feed.
+2. *The operation.* =marketdata.v1.ops.list_watchable_feeds=, modelled in
+   =ores.marketdata.operations.org=, answered by a handler beside the history
+   call, with the read permission of the subscriptions.
+3. *The subjects.* =feed_tick_watch_subject()= in =tick_subjects.hpp=: a point
+   watches its own subject on each feed, and a series watches its series token
+   with a wildcard coordinate. No filter is needed in the client.
+4. *The shell.* =marketdata stream= asks for the feeds for display, and watches
+   the subjects for each one. It also watches the route and subscription events,
+   and on each one it asks again, adds the feeds the answer now holds and drops
+   the feeds it no longer holds.
+5. *Tests.* The rule for a party with each right, for a route without a
+   subscription, and for the system tenant; the subjects for a point and a
+   series; the shell's watch for two feeds and its change after an event.
 
 * Measurements
 
@@ -64,7 +80,7 @@ task and name that file in the Command column.
 * Notes
 
 - From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: the only reader of the party subjects is the shell's stream watch (=marketdata_commands.cpp=). The new work is a market data operation that answers which feeds a party may watch, by the rule =may_read_ticks= uses, with every feed for the system tenant. The question names the use: a watch for a screen needs the display right, and a service with no screen needs the display or the non-display right. The broker checks only certificates, so the web servers and the shell check before they subscribe.
-- From [[id:D0F85D26-99A9-42E3-9FB3-DCDEFA7E225B][publishing on the feed subject]]: the ingest still drops a tick from a source that no route names, before it is stored or published. The system tenant watches every feed, but a feed that no party routes to has no ticks to show. Decide here whether the ingest keeps those ticks.
+- From [[id:D0F85D26-99A9-42E3-9FB3-DCDEFA7E225B][publishing on the feed subject]]: the ingest still drops a tick from a source that no route names, before it is stored or published. The system tenant watches every feed, but a feed that no party routes to has no ticks to show. Decided: the ingest publishes them live and does not store them; [[id:6EEF6F65-3CCF-435F-8C28-1973F2FCBC9D][a task of its own]] does it.
 
 * Test Scenarios
 
@@ -81,12 +97,39 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4868][#4868]] | [marketdata] Watch the feeds a party may watch, and ask again on a change |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed re-ask keeps the old feeds | marketdata_commands.cpp | Accept | A comment states the choice: a watch that dropped every feed on a failure would go dark at each service restart. |
+| 2 | The re-ask blocks the read loop | marketdata_commands.cpp | Decline | Bounded by one request timeout, and a burst of events makes one request. |
+| 3 | The check is advisory at the broker | tick_publication_and_entitlement.org | Decline | The target page records the decision: the check is made where a watch starts, and broker permissions are a separate change. |
+| 4 | The event subscription is broad | marketdata_commands.cpp | Accept in part | The event subjects carry no tenant, so they cannot be narrowed. The wildcard now comes from event_subject_wildcard(), as the eventing header asks. |
+| 5 | The URI check skips the write | marketdata_commands.cpp | Accept | stream_subjects() writes the series before it asks any feed. |
+| 6 | The watch class has no test | marketdata_commands.cpp | Decline | It wraps the concrete NATS client; tested live instead: a watch dropped the Bloomberg feed when display was taken off and added it back when display returned. |
 
 * Result
+
+- The market data service answers =marketdata.v1.ops.list_watchable_feeds=. The
+  rule, =watchable_feeds()= in =tick_entitlement.cpp=, gives the system tenant
+  every feed, and a party each feed its route picks where its subscription
+  holds the right the use needs: display for a screen, display or non-display
+  for a service.
+- The shell's =marketdata stream= is the only reader the analysis found. It
+  asks for the feeds it may show and watches the URI's subject on each one. A
+  series watches its series token with a wildcard coordinate, so the shell
+  filters nothing. It listens to the route and subscription events, asks again
+  on each, and adds or drops feeds to match.
+- The per-party subjects are still published, and no consumer reads them.
+- Tests: five database tests of the rule (display, non-display only, derived
+  only, two parties with different routes, the system tenant); the watch
+  subject of a point and of a series; the shell's subjects and its change of
+  feeds. Suites: market data API 1136 cases, market data core 458, shell
+  application 65, HTTP market data 34; all pass.
+- Tested live on the fleet: =marketdata stream= of GBP/USD as the plc party
+  watched four feeds; taking the display right off the Bloomberg subscription
+  dropped the Bloomberg feed within seconds, with no Bloomberg tick after it, and
+  giving it back added the feed again.
+- The decision on the ticks of an unrouted feed went to its own task.

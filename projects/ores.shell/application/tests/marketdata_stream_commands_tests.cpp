@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
@@ -40,8 +41,10 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string tenant_id("11111111-1111-1111-1111-111111111111");
-const std::string party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+const std::string bloomberg_feed("0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0");
+const std::string lseg_feed("1f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0");
+const std::vector<ores::marketdata::messaging::watchable_feed> two_feeds{
+    {"bloomberg", bloomberg_feed}, {"lseg", lseg_feed}};
 
 /// The URI the codec spells for the datum of the ORE key FX/RATE/EUR/USD.
 const std::string eurusd_uri("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
@@ -99,56 +102,48 @@ TEST_CASE("marketdata_commands registers the stream verb", "[commands][marketdat
           completions.end());
 }
 
-TEST_CASE("a_quote_uri_resolves_to_the_datum_key_subject", "[commands][marketdata][stream]") {
+TEST_CASE("a_quote_uri_watches_its_own_subject_on_each_feed", "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
+    const auto datum = ores::marketdata::datum::oresmd_uri_codec::read(eurusd_uri).value();
 
-    const auto watch = marketdata_commands::stream_subjects(tenant_id, party_id, eurusd_uri);
+    const auto subjects = marketdata_commands::stream_subjects(two_feeds, eurusd_uri);
 
-    REQUIRE(watch.has_value());
-    CHECK(watch->subjects == std::vector<std::string>{ores::marketdata::domain::market_tick_subject(
-                                 tenant_id, party_id, eurusd_uri)});
-    CHECK_FALSE(watch->series.has_value());
+    REQUIRE(subjects.has_value());
+    CHECK(*subjects == std::vector<std::string>{*ores::marketdata::domain::feed_tick_watch_subject(
+                                                    "bloomberg", bloomberg_feed, datum),
+                                                *ores::marketdata::domain::feed_tick_watch_subject(
+                                                    "lseg", lseg_feed, datum)});
 }
 
-TEST_CASE("a_series_uri_resolves_to_the_partys_whole_tick_subtree",
+TEST_CASE("a_series_uri_watches_the_points_of_the_series_and_no_other",
           "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
+    using ores::marketdata::domain::subject_matches;
+    const auto published = [](const std::string& uri) {
+        const auto datum = ores::marketdata::datum::oresmd_uri_codec::read(uri).value();
+        const auto series = ores::marketdata::datum::oresmd_uri_codec::write(
+                                ores::marketdata::datum::series_of(datum))
+                                .value();
+        return ores::marketdata::domain::feed_tick_subject(
+            "bloomberg", bloomberg_feed, datum, series);
+    };
 
-    const auto watch = marketdata_commands::stream_subjects(tenant_id, party_id, rating_series_uri);
+    const auto subjects = marketdata_commands::stream_subjects(two_feeds, rating_series_uri);
 
-    REQUIRE(watch.has_value());
-    // A series is not a datum a producer publishes, and each of its points has
-    // a subject of its own, so no single wildcard subject covers exactly one
-    // series; the watch takes the whole subtree and filters.
-    CHECK(watch->subjects == std::vector<std::string>{"marketdata.v1.ops.market_tick." + tenant_id +
-                                                      "." + party_id + ".>"});
-    REQUIRE(watch->series.has_value());
-    CHECK(watch->series->is_series());
+    REQUIRE(subjects.has_value());
+    REQUIRE(subjects->size() == 2);
+    CHECK(subject_matches(subjects->front(), published(rating_point_uri)));
+    CHECK_FALSE(subject_matches(subjects->front(), published(other_rating_point_uri)));
+    CHECK_FALSE(subject_matches(subjects->back(), published(rating_point_uri)));
 }
 
-TEST_CASE("a_series_filter_keeps_only_the_points_of_the_series", "[commands][marketdata][stream]") {
+TEST_CASE("a_party_that_may_watch_no_feed_watches_no_subject", "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
-    const auto series = ores::marketdata::datum::oresmd_uri_codec::read(rating_series_uri);
-    REQUIRE(series.has_value());
+    const auto subjects = marketdata_commands::stream_subjects({}, eurusd_uri);
 
-    stub_tick_source source({tick(rating_point_uri, "0.01", "synthetic.rating", 9),
-                             tick(other_rating_point_uri, "0.02", "synthetic.rating", 9)});
-    std::ostringstream out;
-
-    const auto output = marketdata_commands::run_stream(
-        source,
-        [] { return false; },
-        "",
-        out,
-        [&series](const auto& t) { return marketdata_commands::tick_in_series(t, *series); });
-
-    // The matching point is kept and the other series' point is dropped.
-    CHECK(output.count == 1);
-    REQUIRE(output.screen_lines.size() == 1);
-    CHECK(output.screen_lines[0] ==
-          "2026-10-06 09:00:00.000000Z  " + rating_point_uri + "  0.01  synthetic.rating");
-    CHECK(output.rows.size() == 2);
+    REQUIRE(subjects.has_value());
+    CHECK(subjects->empty());
 }
 
 TEST_CASE("an_unparseable_uri_is_refused_with_the_codecs_message",
@@ -156,7 +151,7 @@ TEST_CASE("an_unparseable_uri_is_refused_with_the_codecs_message",
     auto lg(make_logger(test_suite));
 
     const auto subjects = marketdata_commands::stream_subjects(
-        tenant_id, party_id, "oresmd://fx/EUR?type=quote&instrument=fx_spot");
+        two_feeds, "oresmd://fx/EUR?type=quote&instrument=fx_spot");
 
     REQUIRE_FALSE(subjects.has_value());
     // The codec quotes the URI it refused and says what the grammar did not
@@ -164,6 +159,25 @@ TEST_CASE("an_unparseable_uri_is_refused_with_the_codecs_message",
     CHECK(subjects.error().find("oresmd://fx/EUR?type=quote&instrument=fx_spot") !=
           std::string::npos);
     CHECK(subjects.error().find("quote") != std::string::npos);
+}
+
+TEST_CASE("a_watch_drops_the_feeds_the_party_lost_and_adds_the_feeds_it_gained",
+          "[commands][marketdata][stream]") {
+    auto lg(make_logger(test_suite));
+
+    const auto change = marketdata_commands::change_watch({"a", "b"}, {"b", "c", "c"});
+
+    CHECK(change.added == std::vector<std::string>{"c"});
+    CHECK(change.dropped == std::vector<std::string>{"a"});
+}
+
+TEST_CASE("a_watch_whose_feeds_did_not_change_changes_nothing", "[commands][marketdata][stream]") {
+    auto lg(make_logger(test_suite));
+
+    const auto change = marketdata_commands::change_watch({"a", "b"}, {"b", "a"});
+
+    CHECK(change.added.empty());
+    CHECK(change.dropped.empty());
 }
 
 TEST_CASE("two_ticks_render_the_expected_screen_lines_and_csv_rows",

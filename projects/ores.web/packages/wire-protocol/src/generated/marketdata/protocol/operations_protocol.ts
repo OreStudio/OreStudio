@@ -1485,6 +1485,39 @@ export interface GetSeriesTicksResponse {
 }
 
 /**
+ * @brief One feed a party may watch.
+ *
+ * The two codes are the first two tokens of the feed's live subject after the
+ * market_tick base, so a watcher builds every subject of the feed from them.
+ */
+export interface WatchableFeed {
+    provider_code: string;
+    feed_id: string;
+}
+
+/**
+ * @brief Asks which feeds the session's party may watch.
+ *
+ * The answer follows the rule of the history read: the party's route picks the feed of a
+ * provider, and its subscription to the provider holds the right the use needs. The system
+ * tenant may watch every feed.
+ */
+export interface ListWatchableFeedsRequest {
+    for_display: boolean;
+}
+
+/**
+ * @brief The feeds the session's party may watch.
+ *
+ * A party with no route, or with no subscription that holds the right, gets an empty list,
+ * which is not a refusal. A session with no party and no system tenant is refused.
+ */
+export interface ListWatchableFeedsResponse {
+    result: Result;
+    feeds: WatchableFeed[];
+}
+
+/**
  * @brief Asks this component to keep the market state a run priced against.
  *
  * The state is the output files the run wrote, and those files are far too
@@ -1545,6 +1578,7 @@ export const subjects = {
     export_market_data_request: 'marketdata.v1.ops.export_market_data',
     market_tick: 'marketdata.v1.ops.market_tick',
     get_series_ticks_request: 'marketdata.v1.ops.get_series_ticks',
+    list_watchable_feeds_request: 'marketdata.v1.ops.list_watchable_feeds',
     store_market_state_request: 'marketdata.v1.ops.store_market_state',
 } as const;
 /**
@@ -1580,5 +1614,6 @@ export const requiresSession = {
     export_market_data_request: true,
     market_tick: false,
     get_series_ticks_request: true,
+    list_watchable_feeds_request: true,
     store_market_state_request: true,
 } as const;

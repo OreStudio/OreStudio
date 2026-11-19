@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:535F4797-2CB5-459B-A0D5-7286537F3EB1][Verify the FX forward ladder screen]] | PENDING | Runs on seeded EUR and USD curves published through maker-checker. |
+| [[id:535F4797-2CB5-459B-A0D5-7286537F3EB1][Verify the FX forward ladder screen]] | PASSED | Runs on seeded EUR and USD curves published through maker-checker. |
 |          |       |       |
 
 * PRs

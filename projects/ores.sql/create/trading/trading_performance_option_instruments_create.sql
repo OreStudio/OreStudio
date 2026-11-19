@@ -25,7 +25,7 @@
  * Performance Option Instrument Table
  *
  * Represents PerformanceOption_01 trades: an option paying the participation
- * in a basket's performance against a ladder of strikes. ORE reads it through a class of its own, and its underlyings may be
+ * in a basket's performance against a ladder of strikes. ORE states it as an element of its own, and its underlyings may be
  * equities, FX rates or commodities, so it is held in the multi-asset
  * family, where each underlying row keeps its own type. The
  * basket members are instrument underlying rows under the role underlying;

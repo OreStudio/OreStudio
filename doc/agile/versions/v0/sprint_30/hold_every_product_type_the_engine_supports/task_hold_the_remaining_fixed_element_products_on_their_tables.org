@@ -130,6 +130,11 @@ via its "Verifies task" field.
 | 4887.5 | The derived base names the element | worst_of_basket_swap_builders.cpp | Declined | BaseSchedule names the element, as the reader keeps it. |
 | 4887.6 | Name the generated files | PR | Declined | The hand-written files are the builder, the projection and the SQL. |
 | 4887.7 | Follow up the equity worst-of | backlog | Accepted | Filed the capture Hold the whole equity worst-of basket swap. |
+| 4890.1 | A stale sentence in the table headers | models | Accepted | The four models now say ORE states the product as an element of its own. |
+| 4890.2 | The writer creates an element before refusing | multi_asset_instrument_projection.cpp | Accepted | It checks for a row first; the read defaults stay, as the schema requires each term. |
+| 4890.3 | The tables check different dates | models | Declined | Each table checks the dates its element states. |
+| 4890.4 | The capture names the two products | backlog | Declined | It does. |
+| 4890.5 | No database round trip of mixed underlying types | tests | Declined | The type is a text column of the shared row, which the booking tests store. |
 
 * Result
 

@@ -207,7 +207,7 @@ package "trading" #E8F5E9 {
     Autocallable Instrument Table
     Represents Autocallable_01 trades: a note that redeems early once the
     underlying fixes at or above the trigger, paying the factors accrued to
-    that date. ORE reads it through a class of its own, and its underlyings may be
+    that date. ORE states it as an element of its own, and its underlyings may be
     equities, FX rates or commodities, so it is held in the multi-asset
     family, where each underlying row keeps its own type. The underlying is an instrument underlying row under
     the role underlying; the fixing and settlement dates are instrument
@@ -1882,7 +1882,7 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     Double Digital Option Instrument Table
     Represents DoubleDigitalOption trades: a binary option paying a fixed
-    amount when two underlyings are in the money together. ORE reads it through a class of its own, and its underlyings may be
+    amount when two underlyings are in the money together. ORE states it as an element of its own, and its underlyings may be
     equities, FX rates or commodities, so it is held in the multi-asset
     family, where each underlying row keeps its own type.
     Underlying1 to Underlying4 are instrument underlying rows under the roles
@@ -2970,7 +2970,7 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     European Option Barrier Instrument Table
     Represents EuropeanOptionBarrier trades: a European option on one
-    underlying that knocks in or out on another's level. ORE reads it through a class of its own, and its underlyings may be
+    underlying that knocks in or out on another's level. ORE states it as an element of its own, and its underlyings may be
     equities, FX rates or commodities, so it is held in the multi-asset
     family, where each underlying row keeps its own type. The option
     underlying and the barrier underlying are instrument underlying rows under
@@ -4670,7 +4670,7 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     Performance Option Instrument Table
     Represents PerformanceOption_01 trades: an option paying the participation
-    in a basket's performance against a ladder of strikes. ORE reads it through a class of its own, and its underlyings may be
+    in a basket's performance against a ladder of strikes. ORE states it as an element of its own, and its underlyings may be
     equities, FX rates or commodities, so it is held in the multi-asset
     family, where each underlying row keeps its own type. The
     basket members are instrument underlying rows under the role underlying;

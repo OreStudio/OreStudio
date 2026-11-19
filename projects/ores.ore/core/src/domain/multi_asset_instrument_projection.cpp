@@ -343,17 +343,23 @@ auto write_multi_asset_instrument(xml::record_writer& trade,
     if (v == nullptr || !is_multi_asset_trade_type(trade_type))
         return false;
 
-    auto data = trade.child(element_of(trade_type));
-    if (trade_type == "Autocallable_01" && !v->autocallables.empty())
-        write_autocallable(data, v->autocallables.front());
-    else if (trade_type == "DoubleDigitalOption" && !v->double_digital_options.empty())
-        write_double_digital(data, v->double_digital_options.front());
-    else if (trade_type == "EuropeanOptionBarrier" && !v->european_option_barriers.empty())
-        write_european_option_barrier(data, v->european_option_barriers.front());
-    else if (trade_type == "PerformanceOption_01" && !v->performance_options.empty())
-        write_performance_option(data, v->performance_options.front());
-    else
+    const bool holds_row =
+        (trade_type == "Autocallable_01" && !v->autocallables.empty()) ||
+        (trade_type == "DoubleDigitalOption" && !v->double_digital_options.empty()) ||
+        (trade_type == "EuropeanOptionBarrier" && !v->european_option_barriers.empty()) ||
+        (trade_type == "PerformanceOption_01" && !v->performance_options.empty());
+    if (!holds_row)
         return false;
+
+    auto data = trade.child(element_of(trade_type));
+    if (trade_type == "Autocallable_01")
+        write_autocallable(data, v->autocallables.front());
+    else if (trade_type == "DoubleDigitalOption")
+        write_double_digital(data, v->double_digital_options.front());
+    else if (trade_type == "EuropeanOptionBarrier")
+        write_european_option_barrier(data, v->european_option_barriers.front());
+    else
+        write_performance_option(data, v->performance_options.front());
 
     for (const auto& holder : multi_asset_underlying_holders) {
         if (holder.trade_type != trade_type)

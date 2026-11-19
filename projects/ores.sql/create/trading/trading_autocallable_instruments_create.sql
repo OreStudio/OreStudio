@@ -26,7 +26,7 @@
  *
  * Represents Autocallable_01 trades: a note that redeems early once the
  * underlying fixes at or above the trigger, paying the factors accrued to
- * that date. ORE reads it through a class of its own, and its underlyings may be
+ * that date. ORE states it as an element of its own, and its underlyings may be
  * equities, FX rates or commodities, so it is held in the multi-asset
  * family, where each underlying row keeps its own type. The underlying is an instrument underlying row under
  * the role underlying; the fixing and settlement dates are instrument

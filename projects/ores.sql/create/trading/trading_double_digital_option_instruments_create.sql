@@ -25,7 +25,7 @@
  * Double Digital Option Instrument Table
  *
  * Represents DoubleDigitalOption trades: a binary option paying a fixed
- * amount when two underlyings are in the money together. ORE reads it through a class of its own, and its underlyings may be
+ * amount when two underlyings are in the money together. ORE states it as an element of its own, and its underlyings may be
  * equities, FX rates or commodities, so it is held in the multi-asset
  * family, where each underlying row keeps its own type.
  * Underlying1 to Underlying4 are instrument underlying rows under the roles

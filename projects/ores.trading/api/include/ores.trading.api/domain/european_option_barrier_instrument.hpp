@@ -39,7 +39,7 @@ namespace ores::trading::domain {
  * @brief European option with a barrier on another underlying.
  *
  * Represents EuropeanOptionBarrier trades: a European option on one
- * underlying that knocks in or out on another's level. ORE reads it through a class of its own, and
+ * underlying that knocks in or out on another's level. ORE states it as an element of its own, and
  * its underlyings may be equities, FX rates or commodities, so it is held in the multi-asset
  * family, where each underlying row keeps its own type. The option
  * underlying and the barrier underlying are instrument underlying rows under

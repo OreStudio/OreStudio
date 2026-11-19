@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/hold-the-variance-swaps-and-fvas-on-their-tables
-#+pr:
+#+pr: 4870
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -116,7 +116,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4870][#4870]] | [trading] Hold the variance swaps and FVAs on their tables |
 
 * Review
 

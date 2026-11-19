@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 1F7DC5B9-86EC-43A3-BEB7-48CCD1437930
+:END:
+#+title: A report instance is saved before its workflow is dispatched, so a failed dispatch strands it in pending
+#+description: trigger_one saves the report instance and then dispatches the workflow that runs it. When the dispatch fails -- on 2026-11-19 the JetStream store could not write, so start_workflow timed out -- the instance stays pending with no workflow behind it. Nothing retries it, nothing marks it failed, and because the in-flight check counts any non-terminal instance it blocks every later run of that definition. Three Headline Position instances sat pending from 14:40 until they were cleared by hand at 15:07. Mark the instance failed when its dispatch fails, or dispatch first and save only on success, so a run that never started cannot look like one that is still going.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

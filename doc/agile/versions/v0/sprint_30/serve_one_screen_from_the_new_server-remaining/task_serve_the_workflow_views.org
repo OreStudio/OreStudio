@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-timeline
-#+pr:
+#+pr: 4892
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -182,6 +182,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4892][#4892]] | [http] Join the subject a request's kind keeps |
 | [[https://github.com/OreStudio/OreStudio/pull/4889][#4889]] | [http] Serve the workflow composed views |
 
 * Review

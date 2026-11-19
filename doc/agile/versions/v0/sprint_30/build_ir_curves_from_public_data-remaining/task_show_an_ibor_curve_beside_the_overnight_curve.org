@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/show-every-ibor-curve-beside-its-overnight-curve
-#+pr:
+#+pr: 4876
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4876][#4876]] | [web] Show every IBOR curve beside its overnight curve |
 
 * Review
 

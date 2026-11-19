@@ -26,11 +26,11 @@ A screen that opens on a vendor's quotes fills its recent history in one call, f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -102,3 +102,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- =marketdata.v1.ops.get_provider_ticks= reads a provider's series by the
+  provider code and the series URI, in one reply of the history call's shape. A
+  point URI names its series; a URI the codec cannot read is refused with the new
+  outcome =uri_invalid=.
+- The rule is =may_read_ticks(ctx, provider, for_display)=: every provider for the
+  system tenant; the display right for a screen and either right for a service.
+- Tests: the read by series and by point URI, the display right for a screen and
+  the non-display right for a service, the system tenant, no party, a bad URI;
+  and a loop test in which the newest tick of the read is the tick the feed
+  subject carried, at the same instant and value.
+- Full build clean. Suites: market data service 318 cases, core 467, API 1039 in
+  the codec tests, database 78, shell application 65, HTTP market data 34; BFF
+  1313; all pass.

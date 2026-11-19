@@ -99,7 +99,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The two may_read_ticks overloads differ for the system tenant | tick_entitlement.hpp | Accept | The two-argument overload states why it gives the system tenant no pass. |
+| 2 | The system tenant reads without the display right | tick_entitlement.cpp | Decline | The product owner's decision: the system tenant sees every provider. |
+| 3 | The codec's text reaches the reply | series_tick_reader.cpp | Decline | The other refusals of a URI carry the codec's message too; it is what tells the caller what is wrong. |
+| 4 | The handler repeats get_ticks | series_ticks_handler.hpp | Decline | Two variants; a helper would cost more reading than it saves. |
+| 5 | System tenant and point URI tests | service_series_tick_reader_tests.cpp | No change | Both exist: the_system_tenant_reads_a_provider_no_party_of_it_subscribes_to and a_provider_read_by_a_point_uri_reads_the_points_series. |
 
 * Result
 

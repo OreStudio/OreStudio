@@ -49,7 +49,7 @@ A person sees the market as the vendors quote it: every quote of every provider 
 | [[id:D9CEB730-C3E2-464A-B69D-57E518C8AAA1][Prototype the quotes view for sign-off]] | BACKLOG | | | Build a static prototype of the quotes view on mock data, with the variants and states the journey needs, and record the product owner's sign-off or the changes asked. |
 | [[id:7421F842-BD73-42CA-8EF7-D47DBA72C79B][Build the quotes view]] | BACKLOG | | | Build the signed-off quotes view in ores.web: the BFF reads the vendor subjects and the recent ticks for the party, and the screen draws them live. |
 | [[id:5127ACAD-A58C-4B63-922A-FA703836AFB2][Retire the synthetic display tap]] | BACKLOG | | | Move the synthetic feed screens' Ticks tabs onto the vendor subjects and remove the per-feed display subject and its BFF buffer, if the analysis confirms nothing else needs them. |
-| [[id:6EEF6F65-3CCF-435F-8C28-1973F2FCBC9D][Publish the ticks of a feed that no party routes to]] | BACKLOG | | | The ingest publishes each tick of a feed that no route names once on the feed's subject and stores nothing, so the system tenant's quotes view shows every feed while the store and the bill stay unchanged. |
+| [[id:6EEF6F65-3CCF-435F-8C28-1973F2FCBC9D][Publish the ticks of a feed that no party routes to]] | DONE | 2026-11-19 | 2026-11-19 | The ingest publishes each tick of a feed that no route names once on the feed's subject and stores nothing, so the system tenant's quotes view shows every feed while the store and the bill stay unchanged. |
 
 * Decisions
 

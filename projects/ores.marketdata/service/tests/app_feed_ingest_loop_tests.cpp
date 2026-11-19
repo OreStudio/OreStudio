@@ -169,11 +169,11 @@ struct app_feed_ingest_loop_fixture {
         route(source, party_id);
     }
 
-    void route(const std::string& source, const boost::uuids::uuid& routed_party) {
+    /// The catalogue feed named @p source, written once, whatever the number of parties routed
+    /// to it. The catalogue belongs to the system tenant, which is the only tenant the ingest
+    /// loop reads it from.
+    ores::marketdata::domain::feed catalogue_feed(const std::string& source) {
         using namespace ores::marketdata;
-        // The catalogue source belongs to the system tenant, which is the only tenant the
-        // ingest loop reads the catalogue from. A source is written once, whatever the number of
-        // parties routed to it.
         const auto system_ctx =
             ores::database::service::tenant_context::with_system_tenant(h.context());
         auto sources = repository::feed_repository{}.read_latest(system_ctx);
@@ -194,6 +194,12 @@ struct app_feed_ingest_loop_fixture {
             src.change_commentary = "Route fixture source";
             repository::feed_repository{}.write(system_ctx, src);
         }
+        return src;
+    }
+
+    void route(const std::string& source, const boost::uuids::uuid& routed_party) {
+        using namespace ores::marketdata;
+        const auto src = catalogue_feed(source);
 
         auto sub = generators::generate_synthetic_subscription(gen);
         sub.tenant_id = h.tenant_id();
@@ -384,7 +390,7 @@ TEST_CASE("a_routed_tick_writes_the_series_and_the_tick", "[app][feed_ingest_loo
     CHECK(boost::uuids::to_string(points.front().party_id) == party);
 }
 
-TEST_CASE("a_tick_from_a_source_that_no_route_names_is_dropped_and_writes_nothing",
+TEST_CASE("a_tick_from_a_source_the_catalogue_does_not_name_is_dropped_and_writes_nothing",
           "[app][feed_ingest_loop]") {
     app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
@@ -398,7 +404,7 @@ TEST_CASE("a_tick_from_a_source_that_no_route_names_is_dropped_and_writes_nothin
 
     const auto outcome = loop.handle_tick(tick_from(bound_source, quote_uri));
     REQUIRE(outcome.has_value());
-    CHECK(*outcome == tick_drop::unbound_source);
+    CHECK(*outcome == tick_drop::unknown_source);
 
     CHECK(f.series_for(quote_uri).empty());
 }
@@ -1510,4 +1516,58 @@ TEST_CASE("a_tick_of_two_consumers_is_published_once_on_the_subject_of_its_feed"
         ores::marketdata::service::app::name_datum(quote_uri).value()->series_uri;
     CHECK(feed_subject.ends_with(std::string(messaging::market_tick::nats_subject) + ".ore." +
                                  feed + ".fx_spot." + domain::subject_token(series_uri) + "._"));
+}
+
+TEST_CASE("a_tick_of_a_feed_that_no_route_names_is_published_on_its_feed_and_not_stored",
+          "[app][feed_ingest_loop]") {
+    using namespace ores::marketdata;
+    app_feed_ingest_loop_fixture f;
+    const auto source = other_prefix + run_tag();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
+    const auto feed = boost::uuids::to_string(f.catalogue_feed(source).id);
+    f.connect();
+
+    std::atomic<std::size_t> on_feed{0};
+    const auto feed_sub =
+        f.nats.subscribe(std::string(messaging::market_tick::nats_subject) + ".ore." + feed + ".>",
+                         [&](ores::nats::message) { ++on_feed; });
+
+    feed_ingest_loop loop(f.nats, f.h.context());
+    loop.refresh();
+    REQUIRE_FALSE(loop.handle_tick(tick_from(source, quote_uri)).has_value());
+
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+    while (on_feed < 1 && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    // A second publish would arrive within the wait the first took.
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+
+    CHECK(on_feed == 1);
+    CHECK(f.series_for(quote_uri).empty());
+    const auto series_uri = service::app::name_datum(quote_uri).value()->series_uri;
+    CHECK(tick_rows_of(boost::uuids::to_string(datum::stream_id("ore", series_uri))) == "0");
+}
+
+TEST_CASE("a_tick_of_a_feed_that_no_route_names_is_not_published_once_it_has_aged_out",
+          "[app][feed_ingest_loop]") {
+    using namespace ores::marketdata;
+    app_feed_ingest_loop_fixture f;
+    const auto source = other_prefix + run_tag();
+    const auto feed = boost::uuids::to_string(f.catalogue_feed(source).id);
+    f.connect();
+
+    std::atomic<std::size_t> on_feed{0};
+    const auto feed_sub =
+        f.nats.subscribe(std::string(messaging::market_tick::nats_subject) + ".ore." + feed + ".>",
+                         [&](ores::nats::message) { ++on_feed; });
+
+    feed_ingest_loop loop(f.nats, f.h.context());
+    loop.refresh();
+    // Older than the age limit of any service, the end of day one included.
+    auto tick = tick_from(source, app_feed_ingest_loop_eur_usd_spot());
+    tick.observation_time -= std::chrono::days{30};
+    REQUIRE_FALSE(loop.handle_tick(tick).has_value());
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    CHECK(on_feed == 0);
 }

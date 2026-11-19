@@ -55,20 +55,38 @@ consumer app_tick_plan_make_owner(const std::string& tenant, const std::string& 
     return c;
 }
 
+/// The source the consumers of these tests consume: the bloomberg feed they all name.
+ores::marketdata::service::app::source_feed app_tick_plan_source(std::vector<consumer> consumers) {
+    const boost::uuids::string_generator uuid;
+    return {"bloomberg", uuid("55555555-5555-5555-5555-555555555555"), std::move(consumers)};
 }
 
-TEST_CASE("a_tick_from_a_source_no_route_names_is_dropped", "[app][tick_plan]") {
-    const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), {});
+}
+
+TEST_CASE("a_tick_from_a_source_the_catalogue_does_not_name_is_dropped", "[app][tick_plan]") {
+    const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), nullptr);
 
     REQUIRE_FALSE(plan.has_value());
-    CHECK(plan.error() == tick_drop::unbound_source);
+    CHECK(plan.error() == tick_drop::unknown_source);
+}
+
+TEST_CASE("a_tick_of_a_feed_no_route_names_goes_to_its_feed_alone", "[app][tick_plan]") {
+    const auto source = app_tick_plan_source({});
+
+    const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), &source);
+
+    REQUIRE(plan.has_value());
+    CHECK(plan->delivery->targets.empty());
+    CHECK(plan->delivery->feed_subject.starts_with(
+        "marketdata.v1.ops.market_tick.bloomberg.55555555-5555-5555-5555-555555555555.fx_spot."));
 }
 
 TEST_CASE("a_tick_whose_uri_names_no_datum_is_dropped", "[app][tick_plan]") {
     const std::vector<consumer> consumers{app_tick_plan_make_owner(
         "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
+    const auto source = app_tick_plan_source(consumers);
 
-    const auto plan = plan_tick(make_tick("oresmd://fx/EUR?type=quote", "1.0845"), consumers);
+    const auto plan = plan_tick(make_tick("oresmd://fx/EUR?type=quote", "1.0845"), &source);
 
     REQUIRE_FALSE(plan.has_value());
     CHECK(plan.error() == tick_drop::unnameable_datum);
@@ -77,10 +95,11 @@ TEST_CASE("a_tick_whose_uri_names_no_datum_is_dropped", "[app][tick_plan]") {
 TEST_CASE("a_tick_spelled_another_way_is_dropped_so_a_datum_has_one_subject", "[app][tick_plan]") {
     const std::vector<consumer> consumers{app_tick_plan_make_owner(
         "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
+    const auto source = app_tick_plan_source(consumers);
 
     const auto plan = plan_tick(
         make_tick("oresmd://fx/EUR?instrument=fx_spot&type=quote&quote=rate&ccy=USD", "1.0845"),
-        consumers);
+        &source);
 
     REQUIRE_FALSE(plan.has_value());
     CHECK(plan.error() == tick_drop::unnameable_datum);
@@ -89,8 +108,9 @@ TEST_CASE("a_tick_spelled_another_way_is_dropped_so_a_datum_has_one_subject", "[
 TEST_CASE("a_tick_whose_value_is_not_a_number_is_dropped", "[app][tick_plan]") {
     const std::vector<consumer> consumers{app_tick_plan_make_owner(
         "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
+    const auto source = app_tick_plan_source(consumers);
 
-    const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "one point oh"), consumers);
+    const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "one point oh"), &source);
 
     REQUIRE_FALSE(plan.has_value());
     CHECK(plan.error() == tick_drop::not_a_number);
@@ -102,8 +122,9 @@ TEST_CASE("a_tick_from_a_source_with_several_consumers_has_one_target_each", "[a
                                  "22222222-2222-2222-2222-222222222222"),
         app_tick_plan_make_owner("33333333-3333-3333-3333-333333333333",
                                  "44444444-4444-4444-4444-444444444444")};
+    const auto source = app_tick_plan_source(consumers);
 
-    const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), consumers);
+    const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), &source);
 
     REQUIRE(plan.has_value());
     CHECK(plan->value == 1.0845);
@@ -142,11 +163,12 @@ TEST_CASE("a_uri_that_names_no_datum_is_not_named", "[app][tick_plan]") {
 TEST_CASE("a_plan_uses_the_named_datum_and_the_delivery_it_is_given", "[app][tick_plan]") {
     const std::vector<consumer> consumers{app_tick_plan_make_owner(
         "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
+    const auto source = app_tick_plan_source(consumers);
     const auto named = name_datum(app_tick_plan_eur_usd_spot).value();
-    const auto delivery = make_delivery(consumers, *named);
+    const auto delivery = make_delivery(source, *named);
 
     const auto plan =
-        plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), consumers, named, delivery);
+        plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), &source, named, delivery);
 
     REQUIRE(plan.has_value());
     CHECK(plan->named == named);
@@ -159,9 +181,10 @@ TEST_CASE("a_plan_given_a_named_datum_still_refuses_a_value_that_is_no_number",
           "[app][tick_plan]") {
     const std::vector<consumer> consumers{app_tick_plan_make_owner(
         "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
+    const auto source = app_tick_plan_source(consumers);
 
     const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "one point oh"),
-                                consumers,
+                                &source,
                                 name_datum(app_tick_plan_eur_usd_spot).value());
 
     REQUIRE_FALSE(plan.has_value());
@@ -175,8 +198,9 @@ TEST_CASE("a_tick_with_several_consumers_has_one_feed_subject_that_names_no_part
                                  "22222222-2222-2222-2222-222222222222"),
         app_tick_plan_make_owner("33333333-3333-3333-3333-333333333333",
                                  "44444444-4444-4444-4444-444444444444")};
+    const auto source = app_tick_plan_source(consumers);
 
-    const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), consumers);
+    const auto plan = plan_tick(make_tick(app_tick_plan_eur_usd_spot, "1.0845"), &source);
 
     REQUIRE(plan.has_value());
     CHECK(plan->delivery->feed_subject ==

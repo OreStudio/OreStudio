@@ -61,6 +61,11 @@ The ingest publishes each accepted tick once, on its feed's subject, after the
 age gate that keeps a late tick off the live path. The number of publishes
 follows the number of ticks, whatever the number of parties.
 
+A feed that no route names still publishes its ticks, because the system tenant
+watches every feed. The ingest stores none of them and meters none, because no
+party receives them. Only a tick from a source that the catalogue does not name
+is dropped.
+
 ** Who may watch
 
 A party may watch a feed when two records agree:

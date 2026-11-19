@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: C7F93153-89B9-4F0D-AA1F-06E5049C6661
+:END:
+#+title: Task: Make the surface step's time go to its work
+#+description: The surface publish step spends its twenty minutes waiting, not computing: it asks its own service four times per surface while the tick ingest and the due-curve sweep hold the process. It gathers a party's data once, fits the party's surfaces in parallel, and writes the results in batches.
+#+type: task
+#+level: s1
+#+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
+#+owner: marco
+#+branch: feature/make-the-surface-steps-time-go-to-its-work
+#+pr: 4855
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The surface publish step spends its time waiting rather than computing, so a
+fresh tenant's surfaces cost twenty minutes of a run. The step does its own
+work in the process that holds the data, fits a party's surfaces several at a
+time, and reads and writes in batches, so its time goes to the fits.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
+| Now          | Nothing. |
+| Waiting on   | A run on a host that is not building five other branches, so the wall clock means something. |
+| Next         | Nothing. |
+| Last touched | 2026-11-18                               |
+
+* Acceptance
+
+- The step calibrates and publishes in the process that holds the data, and
+  asks no service, itself included, for work it can do where it stands.
+- A party's surfaces are fitted several at a time, so the party costs the
+  slowest lane and not the sum of its surfaces.
+- Nothing the step needs is read once per point or once per surface when one
+  read would answer for the party: the lineage a grid already has, the quotes
+  it reads and the recipes it fits are read in batches.
+- The step's duration is measured on the same host, tenant and data before and
+  after, and it publishes the same surfaces it did before.
+
+* Plan
+
+The measurements say where the time goes. In the run of =9666da04= the step
+took 20 min 27 s: 140 calibrations at a median of 7.51 s and a p90 of 16.41 s,
+against 120 publishes at a median of 0.04 s. A surface that ran in a quiet
+minute completed in about 100 ms. So the step was not computing: it was
+queueing, four requests per surface behind the tick ingest, the due-curve sweep
+and the report export, in a service that ran them all on one lane.
+
+The work is therefore in this order, each step measured on its own:
+
+1. The step does the work itself. The calibration and the publish are called
+   where the step stands, in the tenant's context narrowed to the party, as the
+   calendar step calls refdata's service. The four requests per surface go to
+   none.
+2. A party's surfaces run in lanes, four at a time, because no surface reads
+   another. Each lane reports the progress the engine reads as the heartbeat.
+3. The reads and writes are batched. The largest single offender is the
+   calibration's write, which reads the lineage of every grid point before it
+   writes it: 65 reads per surface, about nine thousand in the run. One read
+   answers for the points a grid is about. The quote read follows, five series
+   read one at a time where one statement answers for the surface, and the
+   recipe, read four times per surface where once per party answers.
+4. The approval raise stays per surface here. It becomes one request for a set
+   of surfaces in [[id:C756C87B-2284-4BCB-AAEC-F2EA4F2F6D6F][Approve a set of
+   surfaces in one request]], which is a decision about what a decider answers
+   for, and the seam is left for it: the party's surfaces are published by one
+   call that today raises one request each.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The step's requests to its own service | 0, from 4 per surface (about 420 in the run of =9666da04=) | reading =publish_party_surfaces=: it calls the calibration and the publish where it stands | =branch= |
+| Lineage statements per surface | 1, from 65 (about 9,000 in the run, one per grid point) | =read_latest_for_points= replaces the per-point =read_latest_by_observation= | =branch= |
+| The preparation's scan | the blueprint's pillars and sources are indexed once, from 325 x 325 comparisons per expiry (6.9 million per surface) | =prepare_calibration= | =branch= |
+| Surfaces fitted at once | 4 | =run_party_surfaces= | =branch= |
+| Reads per party for the catalogue and the market | 5: the party's blueprints, their pillars, their sources and their conventions, then one as-of snapshot of the party's quotes, where it was 9 per surface (about 1,200 a run) | =read_party_recipes= and =read_party_quotes= | =branch= |
+| The instant a party's surfaces are calibrated at | one, taken before the gather, where each surface took its own | =publish_party_surfaces= | =branch= |
+| =ores.marketdata.service.tests= | passed, 118 s | =ctest -R ores.marketdata.service.tests= | =branch= |
+| The run that proves the gather | the step published 26 of 35 surfaces for the one party whose blueprints the run wrote, with no error of its own; the other parties held no blueprints because the derived source quoted 2,978 of the 3,888 ids the run demands, which is upstream of this step | =./compass.sh smoke ticks --fresh= | =d2e6130c9a= |
+| Requests to its own service, forwards | 0, from 2 per pair (~3,800 a party: a read and a publish) | =publish_party_forwards= calls the forward publish service where it stands | =06c0798b6d= |
+| Pairs published at once | 4 | =run_party_forwards= | =06c0798b6d= |
+| Requests to its own service, curves | 0, from a holdings page per retry round, a published-set page, and a bootstrap and a publish per curve | =compute_and_publish_curve= calls =curve_republish_service::compute= and =approval_gated_curve_publish_handler::answer= where it stands | =b730b21b10= |
+| A party's curve holdings and published sets | 1 statement a table, from a page of requests for each | =read_party_curve_holdings= and =published_configs_of= | =b730b21b10= |
+| Curves bootstrapped and published at once | 4 | =run_party_curves= | =b730b21b10= |
+| Requests to its own service, surface blueprints | 0 reads: the party's series and blueprints are 1 statement a table | =read_party_surface_holdings= | =b730b21b10= |
+| Requests to its own service, market data | 0, from 4 requests a party (a feed page, two party pages, then two reads and up to two writes a party) | =subscribe_market_data= reads the catalogue, the parties, and each party's subscriptions and routes where it stands | =branch= |
+| The plan writes | still requests: refdata owns the tables | =information_schema.role_table_grants= shows the marketdata role holds =SELECT= only on =ores_refdata_ir_curve_bootstrap_configs_tbl=, its =pillars=, the =fx_vol_surface_blueprints=, their =pillars= and their =pillar_sources= | =b730b21b10= |
+| The step's wall clock | not measured: the host ran at a load average of 45 to 56 (other worktrees building) and two of the three runs had incomplete market data (the derived source quoted 2,978 of 3,888 ids), so the step had a fraction of its work to do | =./compass.sh smoke ticks --fresh=, =uptime= | =branch= |
+
+* Notes
+
+- The first two changes are structural and countable: the step no longer asks
+  its own service for anything, and the read that dominated the write is one
+  statement instead of sixty-five. The third is a compile-time property of the
+  preparation loop, which walked every pillar and every source for every
+  expiry.
+- What is not proved is the wall clock. Two of the three runs after the change
+  failed the smoke's own market-data criterion, and their surfaces step did a
+  fraction of the work: the derived source quoted 2,978 of the 3,888 ids
+  demanded, so three of the four parties held no blueprints when the step ran.
+  The host also carried a load average of 45 to 56 throughout, from other
+  worktrees building, which is most of what a wall-clock number would measure.
+  The task waits for a run on a host that is not doing five things at once
+  before it claims a time.
+- The lanes exposed a real constraint the old requests hid: a lane holds a unit
+  of work, and the service's pool has a fixed number of connections. One run
+  reached =No connection came free within the acquire timeout= for a surface,
+  which failed the step. A store that is momentarily full is not a surface that
+  cannot be published, so a retryable store error is now offered the surface
+  twice more before it is reported.
+- The old path retried a transient failure because the NATS client did; calling
+  the service in process took that layer away, and this is where it had to be
+  put back.
+- A party's snapshot holds every series the party sees, not only the ones a
+  surface quotes, and only a surface point carries an expiry and a strike. The
+  read therefore asks a datum whether it holds the field before it asks for its
+  value: asking a TWD overnight swap for an expiry is the error the first run
+  of this shape reported, =IR_SWAP does not hold expiry=.
+- The lists the catalogue reads pass are large enough to check rather than
+  assume, because the review of #4855 asked whether one =IN= list of every
+  blueprint or pillar could outgrow the store. Measured on this tree
+  (=select count(*) ... where tenant_id = ores_utility_system_tenant_id_fn()=):
+  the system catalogue is 35 blueprints, 2,275 pillars, 2,275 pillar sources,
+  35 curve configs and 245 curve pillars. Those are the id lists a party's
+  steps read by, so the parameter counts are in the low thousands against
+  PostgreSQL's 65,535.
+- The plan a curve or a surface step writes stays a request, and that is a
+  decision and not an omission: the configs, their pillars and the blueprints
+  are refdata's tables, and the marketdata service's role holds the read
+  privilege on them and no more. Writing them where the step stands would be
+  refused by the store, and granting the write would move a refdata table's
+  owner to a second service. The reads around them are the step's own, so the
+  split follows the tables rather than the transport.
+- One instant per party is a behaviour change worth naming: the party's surfaces
+  are one reading of the market, so they are calibrated at the instant the
+  snapshot was taken rather than at the instant each surface came round.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4855][#4855]] | [marketdata] Do the provisioning steps' work where the step stands |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered as #4855. The four marketdata kinds of step do their own work, and
+what the task set out to remove is gone: no step asks its own service for a
+read it can make or an act it can take. The one request left is the plan write
+into refdata's tables, which this service may read and not write.
+
+- Surfaces: calibrated and published in process, four lanes, one lineage read
+  per surface instead of 65, the recipes and the quotes gathered once a party.
+- Forwards: published in process, four lanes, the pair catalogue read once.
+- Curves: bootstrapped and published in process, four lanes, the holdings and
+  the published sets read locally.
+- Market data: the catalogue, the parties, and each party's subscriptions and
+  routes read, and the rows written, where the step stands.
+- Surface blueprints: the holdings read locally; the plan still asked of
+  refdata, for the reason above.
+
+Not delivered, and captured rather than claimed: the wall-clock comparison the
+acceptance asked for. The host ran at a load average of 28 to 56 from other
+worktrees throughout, and the branch's one provisioning run was starved of
+derived quotes upstream of these steps. At the user's direction the work was
+judged on its structure and not on a time taken on a busy host, so the
+measurements table records what is countable and says plainly that the step's
+duration was not measured.
+
+Two things the work found are their own tasks, listed under the parent
+story's Tasks: *Size the connection pool and the step's lanes together*, and
+*Read only the quote series a party's surfaces fit*. The tests that would hold
+the claims are the third, *Prove the step, the screen and the sweep calibrate
+alike*.

@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 06195DFF-0D7C-4298-A0CF-464338CE728E
+:END:
+#+title: Task: Size the connection pool and the step's lanes together
+#+description: The marketdata service runs two provisioning steps at once and each step now runs four lanes, so up to eight units ask a connection pool that defaults to two connections for a statement. The retry rides it out; the sizing is unstated. State the pool and the lane count as one decision.
+#+type: task
+#+level: s1
+#+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+State, in one place, how many units of work the marketdata service may hold at once: its step workers, the lanes each step runs, and the connections the pool gives them. Today the three are unconnected numbers, and the pool is the smallest of them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-18                               |
+
+* Acceptance
+
+- The number of units of work the service may hold at once is stated once and
+  is the number the pool serves: step workers, lanes per step and pool size
+  agree, and a reader of any one of them can find the other two.
+- A pool smaller than the lanes is either raised or served by a lane count that
+  fits it, and the choice is written down with the reason.
+- A step that meets a full pool still finishes: the retry is the fallback and
+  not the plan.
+- No step fails a party because a lane waited for a connection.
+
+* Plan
+
+The three numbers today, read from the tree:
+
+| What | Value | Where |
+|------+-------+-------|
+| Step workers on the marketdata service | 2 | =provisioning_step_registrar.cpp=, =provisioning_step_workers= |
+| Lanes per step | 4 | =run_party_surfaces=, =run_party_forwards=, =run_party_curves= |
+| Connections in the pool | 2 | =database_configuration.cpp=, the =db-pool-size= default, with no =ORES_MARKETDATA_SERVICE_DB_POOL_SIZE= in =.env= |
+
+So two steps and 4 lanes each can ask for eight statements at once while the
+tick ingest and the due-curve sweep ask for their own. The retry added with the
+lanes (=fit_and_publish_surface_with_retry= and its two siblings) offers a unit
+twice more when the store says the pool is full, which is why the step
+finishes; it is not a sizing.
+
+The work is to state the budget, then make the three agree: either the pool
+grows to the lanes the service runs, or the lanes are derived from the pool and
+the workers rather than written as a constant. The measurement that decides it
+is the number of connections the service actually holds at the peak of a run,
+and the acquisition failures it records, not a wall clock.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

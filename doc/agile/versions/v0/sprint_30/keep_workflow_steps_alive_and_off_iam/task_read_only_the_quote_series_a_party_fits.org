@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 011180BF-0407-49A8-B017-BE2FA38FD93F
+:END:
+#+title: Task: Read only the quote series a party's surfaces fit
+#+description: The surface step reads one as-of snapshot of every series the party sees and keeps the ones that carry an expiry and a strike. The party also holds the curves, the fixings and the raw ticks, so the snapshot is mostly rows no surface reads.
+#+type: task
+#+level: s1
+#+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Read the quotes the party's surfaces are fitted from, and not every series the party sees. The sources a party's recipes name are known before the read, so the read can name them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-18                               |
+
+* Acceptance
+
+- The as-of read names the series the party's recipes quote from, rather than
+  every series the party sees, and a series that holds no expiry or strike is
+  not read at all.
+- The step publishes the same surfaces it published before the read changed.
+- The read's cost is stated as rows read before and after, for one party of the
+  demo tenant, with the command that counted them.
+
+* Plan
+
+=read_party_quotes= today reads =market_observation_repository::read_as_of_all=
+and keeps the rows whose datum carries an expiry and a strike. The series a
+party's surfaces quote from are already known by then: =read_party_recipes=
+returns the recipes, and each recipe's =sources= name a =market_series_id=. So
+the read can be asked for those ids, the way =read_party_recipes= already asks
+for its blueprints, pillars and sources by id list.
+
+What to keep an eye on: a surface whose source series is missing is a surface
+that waits, and the wait is decided by =plan_party_surfaces= from the series
+the party holds, not from the quotes. Narrowing the quote read must not turn a
+series the party holds but that has not ticked into a series the party does not
+hold.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

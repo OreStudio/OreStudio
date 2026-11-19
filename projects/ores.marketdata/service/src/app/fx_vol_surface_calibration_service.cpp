@@ -50,6 +50,7 @@
 #include <cmath>
 #include <cstdint>
 #include <format>
+#include <map>
 #include <set>
 #include <stdexcept>
 #include <vector>
@@ -69,6 +70,22 @@ auto& calibration_log() {
     static auto instance = ores::logging::make_logger(
         "ores.marketdata.service.app.fx_vol_surface_calibration_service");
     return instance;
+}
+
+/// Whether the identifier a request states is the blueprint's own.
+///
+/// The request carries the identifier as text, and two spellings name one
+/// blueprint: an upper-case one, or one written with braces. The comparison is
+/// of what the text names rather than of how it spells it, so a caller that
+/// spells it another way is answered about the blueprint it named.
+bool names_blueprint(const std::string& stated, const boost::uuids::uuid& blueprint_id) {
+    if (stated.empty())
+        return false;
+    try {
+        return boost::uuids::string_generator{}(stated) == blueprint_id;
+    } catch (const std::exception&) {
+        return false;
+    }
 }
 
 surface_calibration_recipe
@@ -201,18 +218,136 @@ boost::uuids::uuid calibration_id_of(const boost::uuids::uuid& blueprint_id,
         boost::uuids::to_string(blueprint_id) + "@" + std::to_string(micros));
 }
 
+std::vector<surface_calibration_recipe>
+fx_vol_surface_calibration_service::read_party_recipes(const context& ctx) {
+    const auto party = ores::service::messaging::session_party(ctx, "A surface");
+    const auto blueprints = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+        return refdata_repo::fx_vol_surface_blueprint_repository{}.read_latest(ctx, offset, limit);
+    });
+
+    std::vector<surface_calibration_recipe> recipes;
+    std::map<boost::uuids::uuid, std::size_t> recipe_of;
+    std::vector<boost::uuids::uuid> blueprint_ids;
+    std::vector<std::string> convention_ids;
+    for (const auto& blueprint : blueprints) {
+        if (blueprint.party_id != party)
+            continue;
+        recipe_of.emplace(blueprint.id, recipes.size());
+        blueprint_ids.push_back(blueprint.id);
+        convention_ids.push_back(blueprint.fx_option_convention_id);
+        surface_calibration_recipe recipe;
+        recipe.blueprint = blueprint;
+        recipes.push_back(std::move(recipe));
+    }
+    if (recipes.empty())
+        return recipes;
+
+    refdata_msg::fx_vol_surface_pillars_filter pillars_of_the_party;
+    pillars_of_the_party.blueprint_id_one_of = blueprint_ids;
+    const auto pillars = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+        return refdata_repo::fx_vol_surface_pillar_repository{}.read_latest(
+            ctx, offset, limit, {}, pillars_of_the_party);
+    });
+    std::vector<boost::uuids::uuid> pillar_ids;
+    pillar_ids.reserve(pillars.size());
+    for (const auto& pillar : pillars) {
+        pillar_ids.push_back(pillar.id);
+        if (const auto found = recipe_of.find(pillar.blueprint_id); found != recipe_of.end())
+            recipes[found->second].pillars.push_back(pillar);
+    }
+    if (!pillar_ids.empty()) {
+        refdata_msg::fx_vol_surface_pillar_sources_filter sources_of_the_party;
+        sources_of_the_party.pillar_id_one_of = pillar_ids;
+        const auto sources = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+            return refdata_repo::fx_vol_surface_pillar_source_repository{}.read_latest(
+                ctx, offset, limit, {}, sources_of_the_party);
+        });
+        // A source belongs to the pillar it names, and the recipe it belongs to
+        // is the pillar's: one index answers for both.
+        std::map<boost::uuids::uuid, std::size_t> recipe_of_pillar;
+        for (std::size_t i = 0; i < recipes.size(); ++i)
+            for (const auto& pillar : recipes[i].pillars)
+                recipe_of_pillar.emplace(pillar.id, i);
+        for (const auto& source : sources)
+            if (const auto found = recipe_of_pillar.find(source.pillar_id);
+                found != recipe_of_pillar.end())
+                recipes[found->second].sources.push_back(source);
+    }
+
+    std::ranges::sort(convention_ids);
+    convention_ids.erase(std::unique(convention_ids.begin(), convention_ids.end()),
+                         convention_ids.end());
+    std::map<std::string, refdata::domain::fx_option_convention> convention_of;
+    for (const auto& convention :
+         refdata_repo::fx_option_convention_repository{}.read_latest(ctx, convention_ids))
+        convention_of.emplace(convention.id, convention);
+    for (auto& recipe : recipes)
+        if (const auto found = convention_of.find(recipe.blueprint.fx_option_convention_id);
+            found != convention_of.end())
+            recipe.convention = found->second;
+    return recipes;
+}
+
+std::map<boost::uuids::uuid, surface_series_quotes>
+fx_vol_surface_calibration_service::read_party_quotes(const context& ctx, time_point as_of) {
+    std::map<boost::uuids::uuid, surface_series_quotes> quotes;
+    for (const auto& obs : repository::market_observation_repository{}.read_as_of_all(ctx, as_of)) {
+        const auto named = datum::oresmd_uri_codec::read(obs.oresmd_uri);
+        if (!named)
+            continue;
+        // The snapshot holds every series the party sees, and only a surface's
+        // point carries an expiry and a strike: a series that holds neither is
+        // another datum and is skipped, not asked for a field it cannot have.
+        if (!named->holds(datum::field::expiry) || !named->holds(datum::field::strike_label))
+            continue;
+        const auto* expiry = named->get<datum::field::expiry>();
+        const auto* label = named->get<datum::field::strike_label>();
+        const auto value = ores::platform::numeric::parse_double(obs.value);
+        if (!expiry || !label || !value || !std::isfinite(*value))
+            continue;
+        quotes[obs.series_id][{expiry->text(), label->text()}] = *value;
+    }
+    return quotes;
+}
+
 mm::calibrate_fx_vol_surface_response
 fx_vol_surface_calibration_service::calibrate(const context& ctx,
                                               const mm::calibrate_fx_vol_surface_request& req) {
+    // The gather is this call's and not the fit's, and it fails the same way: a
+    // session without a party or a blueprint the catalogue does not hold is an
+    // answer the caller reads, because the caller is a handler that replies
+    // with what it is given rather than catching what it is thrown.
     mm::calibrate_fx_vol_surface_response out;
     try {
         const auto party = ores::service::messaging::session_party(ctx, "A surface");
         const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
+        const auto recipe = read_recipe(ctx, req.blueprint_id, party);
+        std::map<boost::uuids::uuid, surface_series_quotes> quotes;
+        for (const auto& source : recipe.sources)
+            if (!quotes.contains(source.market_series_id))
+                quotes.emplace(source.market_series_id,
+                               read_quotes(ctx, source.market_series_id, as_of));
+        return calibrate_from(ctx, recipe, quotes, req);
+    } catch (const std::exception& e) {
+        out.success = false;
+        out.message = e.what();
+    }
+    return out;
+}
+
+mm::calibrate_fx_vol_surface_response fx_vol_surface_calibration_service::calibrate_from(
+    const context& ctx,
+    const surface_calibration_recipe& recipe,
+    const std::map<boost::uuids::uuid, surface_series_quotes>& quotes,
+    const mm::calibrate_fx_vol_surface_request& req) {
+    mm::calibrate_fx_vol_surface_response out;
+    try {
+        const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
         if (as_of == time_point{})
             throw std::invalid_argument(
                 "Name the as-of instant the calibration reads the market at.");
-
-        const auto recipe = read_recipe(ctx, req.blueprint_id, party);
+        if (!names_blueprint(req.blueprint_id, recipe.blueprint.id))
+            throw std::invalid_argument("The recipe is not the blueprint the calibration names.");
         // A published surface never changes: its grid is what the publish authorised.
         for (const auto& published :
              repository::fx_vol_surface_publish_repository{}.read_published_for_blueprint(
@@ -229,11 +364,6 @@ fx_vol_surface_calibration_service::calibrate(const context& ctx,
                                         " is refused: " + checked.error() + ".");
 
         const auto forwards = read_forwards(ctx, recipe, as_of);
-        std::map<boost::uuids::uuid, surface_series_quotes> quotes;
-        for (const auto& source : recipe.sources)
-            if (!quotes.contains(source.market_series_id))
-                quotes.emplace(source.market_series_id,
-                               read_quotes(ctx, source.market_series_id, as_of));
         const auto prepared = prepare_calibration(
             recipe, *checked, forwards, quotes, pillar_tolerance, minimum_expiries);
         if (!prepared)
@@ -300,10 +430,27 @@ fx_vol_surface_calibration_service::calibrate(const context& ctx,
 
         boost::uuids::random_generator uuid_gen;
         repository::observation_lineage_repository lineage_repo;
+
+        // The lineage rows this grid already has, read in one statement: a
+        // read per point costs the fit more than the fit does.
+        std::vector<std::string> uris;
+        uris.reserve(datums.size());
+        for (const auto& d : datums)
+            uris.push_back(datum::oresmd_uri_codec::write(d).value());
+        std::vector<repository::observation_lineage_repository::point_key> points;
+        points.reserve(uris.size());
+        for (const auto& uri : uris)
+            points.push_back({as_of, uri});
+        const auto annexed =
+            lineage_repo.read_latest_for_points(tx, blueprint.output_series_id, points);
+        std::map<std::string, boost::uuids::uuid> annex_of;
+        for (const auto& row : annexed)
+            annex_of.emplace(row.oresmd_uri, row.id);
+
         std::vector<domain::market_observation> observations;
         std::vector<domain::observation_lineage> lineages;
         for (std::size_t i = 0; i < fit->grid.size(); ++i) {
-            const auto uri = datum::oresmd_uri_codec::write(datums[i]).value();
+            const auto& uri = uris[i];
             domain::market_observation obs;
             obs.id = uuid_gen();
             obs.tenant_id = ctx.tenant_id();
@@ -316,11 +463,10 @@ fx_vol_surface_calibration_service::calibrate(const context& ctx,
             obs.feed_id = domain::catalogue_ids::ore_derived_feed_id();
             observations.push_back(std::move(obs));
 
-            const auto existing =
-                lineage_repo.read_latest_by_observation(tx, blueprint.output_series_id, as_of, uri);
+            const auto existing = annex_of.find(uri);
             domain::observation_lineage lin;
             lin.tenant_id = ctx.tenant_id();
-            lin.id = existing ? existing->id : uuid_gen();
+            lin.id = existing != annex_of.end() ? existing->second : uuid_gen();
             lin.party_id = blueprint.party_id;
             lin.series_id = blueprint.output_series_id;
             lin.observation_datetime = as_of;

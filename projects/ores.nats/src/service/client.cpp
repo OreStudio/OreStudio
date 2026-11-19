@@ -42,6 +42,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <filesystem>
+#include <format>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -942,6 +943,20 @@ void client::js_publish(std::string_view subject,
     // js_PublishMsg(jsPubAck**, jsCtx*, natsMsg*, jsPubOptions*, jsErrCode*)
     const natsStatus s = js_PublishMsg(&received, impl_->js, msg.get(), &opts, &jerr);
     const pub_ack_handle ack(received);
+
+    if (s == NATS_TIMEOUT && jerr == 0) {
+        // A store that cannot write withholds the acknowledgement rather than
+        // refusing it, so the caller learns nothing from the library's bare
+        // "Timeout". Naming the wait and the absence of a confirmation says
+        // what is known: the message was not stored, and nothing here can say
+        // why, because only the server knows.
+        throw std::runtime_error(
+            std::format("JetStream publish failed: no acknowledgement within {}ms, so {} was "
+                        "not confirmed stored; the store's own log states why it could not "
+                        "accept it",
+                        ack_wait.count(),
+                        full_subject));
+    }
 
     ensure_result(s, jerr, "JetStream publish failed");
 }

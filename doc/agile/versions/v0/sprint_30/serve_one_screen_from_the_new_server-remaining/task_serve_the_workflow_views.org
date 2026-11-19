@@ -26,11 +26,11 @@ Serve these composed views from ores.workflow and ores.inbox: one subject's stor
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Every view answers but one, and the two subjects a kind keeps are joined. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | One subject's story at GET /api/timeline, which wants its own branch: see the notes. |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -127,25 +127,7 @@ set it authorises and a cut request carries the cut, each with the reason it
 carries none when the row cannot be read. A kind that keeps no subject carries
 neither member.
 
-The last view, and what is known about it, so the next branch does not begin from
-the BFF again. A request's timeline is the story this part already serves, wrapped
-with its subject and no gaps. A person's is the account's own versions, the roles
-it was given and the parties it works in read as link histories, its contact
-record, and its sign-ins, which are a rolling window and are stated as a gap for
-that reason. A party's is its own versions, the versions of each part it holds and
-the links it keeps, and every part that was removed is a gap because no read lists
-a closed row. The entity keys are =ores.iam.account=, =ores.iam.account_role=,
-=ores.iam.account_party=, =ores.iam.account_contact_information=,
-=ores.iam.auth_event= for a person, and =ores.refdata.party= with its parts and
-links for a party. The history read every one of them uses is the gateway's own,
-reached by =history_subject_for(entity_type)=.
-
-It is not served here, and that is a decision rather than an omission: the view is
-three compositions of six to eight reads each, and a person's timeline that
-silently left out the sign-ins, or a party's that left out the parts it holds,
-would look complete while being short — the failure this task's review named as
-the one worth refusing. It wants its own branch, its own suite, and the gaps
-mechanism proved source by source.
+The last view, one subject's story, is its own task: [[id:67A1E35D-7B51-458C-987D-6D0C771DF1BC][Serve one subject's story]]. It was sized while these views were served and left to that task on purpose, because a timeline that silently leaves a source out reads as complete while being short.
 
 What the approval inbox owes, for the next family: the BFF
 reads it for three subjects and each is its own composition. A request is the
@@ -192,3 +174,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Five of the area's six composed views answer, and the two subjects a kind keeps
+are joined, so the workflow area stands at 17 of the 18 routes the inventory
+counts for it.
+
+The run's progress is one read of the engine's own answer, kept for the interval a
+page asks again. The approval inbox is the queue the inbox service picks, with the
+roles, the latest decision and the trades of each row joined beside it, and the
+published curve or the cut a publish or cut request authorises. What a request
+proposes and what running it says are answered by the component that owns the
+kind. One request's whole story merges its versions, the answers given on it, the
+roles it asked for and the notices the reader was given onto the one ordering the
+timeline uses.
+
+The part's request joins and page parser were shared rather than copied, so the
+five routes that draw a request draw it the same way, and the gateway formats an
+instant through one function.
+
+Everything was verified on a base newer than the branch: the part's suite passed
+49 cases and 539 assertions, the local gate passed 43 of 43 checks, and the
+inventory regenerates to itself.
+
+The last view is [[id:67A1E35D-7B51-458C-987D-6D0C771DF1BC][Serve one subject's story]], which states its three compositions, the entity keys each reads and the two standing gaps.

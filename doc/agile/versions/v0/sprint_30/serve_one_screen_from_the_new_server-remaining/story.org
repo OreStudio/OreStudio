@@ -116,7 +116,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:8338F10C-815D-4D7F-A1C5-109FEB986371][Serve the ORE schema as a zip]] | DONE | 2026-11-16 | 2026-11-16 | One route: a schema and every schema it includes, at the engine version asked for, with a missing include a 404 that names it. |
 | [[id:B55B55AE-1F27-402A-86F4-92419A2A6E38][Serve the reference data reads this story moved here]] | DONE | 2026-11-16 | 2026-11-16 | Three routes the story's Acceptance moves from the reference data and pick-list tasks: a party's curve configurations, one configuration drawn from its document, and the write of the leaves it names. |
 | [[id:9796EE15-7695-4999-B00C-F872F84B2763][Serve the convention documents this story moved here]] | DONE | 2026-11-17 | 2026-11-17 | Two routes the moved-reference-data task splits off: one family's convention document with its terms, and the write of those terms. |
-| [[id:67A1E35D-7B51-458C-987D-6D0C771DF1BC][Serve one subject's story]] | STARTED | 2026-11-19 | | The workflow area's last composed view, GET /api/timeline, is answered only by the BFF. |
+| [[id:67A1E35D-7B51-458C-987D-6D0C771DF1BC][Serve one subject's story]] | DONE | 2026-11-19 | 2026-11-19 | The workflow area's last composed view, GET /api/timeline, is answered only by the BFF. |
 
 * Decisions
 

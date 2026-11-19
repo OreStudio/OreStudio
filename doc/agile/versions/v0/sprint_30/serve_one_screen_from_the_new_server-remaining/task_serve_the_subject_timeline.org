@@ -32,11 +32,11 @@ rather than a failure, which is why the answer carries a list of gaps at all.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Served, proved, and answering review.  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR and answer its review.    |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance

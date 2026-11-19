@@ -2,7 +2,7 @@
 :ID: E351A753-69AD-4D45-9C7C-77208CB434CA
 :END:
 #+title: Watch the vendors' quotes prototype
-#+description: The quotes each vendor sends as they tick, any asset class, on the feeds the session may watch for display: every datum or by series, for one vendor or several side by side, and the system tenant's view of every feed.
+#+description: The quotes each vendor sends as they tick, any asset class, on the feeds the session may watch for display, every datum or by series, and three idiomatic ways to choose and compare the vendors.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:
@@ -29,27 +29,24 @@ read, then each live tick.
 
 ** The question
 
-Is the view one row for each datum, or one row for each series that opens into
-its points? A vol surface quotes many points, and a flat table may bury the FX
-and the rates around it; a grouped table hides the points until a person opens
-them. And how does a person see one series as several vendors quote it?
+How does a person choose the vendors, and compare them? The first rounds put the
+vendors on cards that were also their health and a toggle that changed the
+columns; the product owner found that confusing (2026-11-19). Both layouts stay:
+every datum and by series. The variants are three idiomatic ways to choose and
+compare vendors, and in each the feeds' health is a status line, not a control.
 
-The product owner's answers (2026-11-19): both layouts, as layouts of one screen;
-and the vendors are a selection, one or several, not a layout. With one vendor
-picked, a row is its value, change, time and age; with several, a row has one
-column for each picked vendor, the spread between them and the age of the newest
-quote, so GBP/USD reads as Bloomberg and Tradeweb quote it side by side. A picked
-row draws one line for each picked vendor.
+** The variants
 
-** The layouts and the vendors
+Switch with the bar at the foot, or =?variant=.
 
-Switch the layout in the page, or with =?layout=; pick the vendors on their cards,
-or with =?vendors=bloomberg,tradeweb=.
+| Variant | Name                    | The idiom |
+|---------+-------------------------+-----------|
+| =a=     | A vendor filter         | The vendor is a filter like any other: a multi-select in the filter bar. Each row is one vendor's quote of one datum, with a vendor column, so more vendors means more rows, never more columns, and the rows of one datum sit together. |
+| =b=     | Monitor and all quotes  | A quote monitor of one vendor, chosen in a plain drop-down. The picked row opens an /All quotes/ panel: every vendor's quote of that datum, its distance to the mid, the spread and the age, with each vendor's last hour drawn. The idiom of a terminal's all-quotes page. Recommended. |
+| =c=     | A source rail           | The vendors listed once on the left, with their health, and /All vendors/ at the top. One vendor is its monitor; all vendors is variant a's rows. The picked row opens variant b's /All quotes/ panel. |
 
-| Layout   | Name        | What it shows |
-|----------+-------------+---------------|
-| =datum=  | Every datum | One row for each datum the picked vendors quote. |
-| =series= | By series   | One row for each series, with its point count and, for several vendors, how many points each quotes; a series opens into its points. |
+=?layout=datum|series= groups the rows in each variant; =?pick=0= opens the first
+datum's quotes.
 
 The asset class filter is the asset class codes table, the one market series and
 routes name (FX, Interest Rate, Credit, Equity, Commodity, Inflation, Bond,

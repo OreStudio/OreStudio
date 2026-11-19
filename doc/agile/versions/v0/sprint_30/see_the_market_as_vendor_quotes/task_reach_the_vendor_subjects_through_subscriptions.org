@@ -26,11 +26,11 @@ Every live consumer watches the vendor subjects its party subscribes to, and not
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -106,3 +106,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The market data service answers =marketdata.v1.ops.list_watchable_feeds=. The
+  rule, =watchable_feeds()= in =tick_entitlement.cpp=, gives the system tenant
+  every feed, and a party each feed its route picks where its subscription
+  holds the right the use needs: display for a screen, display or non-display
+  for a service.
+- The shell's =marketdata stream= is the only reader the analysis found. It
+  asks for the feeds it may show and watches the URI's subject on each one. A
+  series watches its series token with a wildcard coordinate, so the shell
+  filters nothing. It listens to the route and subscription events, asks again
+  on each, and adds or drops feeds to match.
+- The per-party subjects are still published, and no consumer reads them.
+- Tests: five database tests of the rule (display, non-display only, derived
+  only, two parties with different routes, the system tenant); the watch
+  subject of a point and of a series; the shell's subjects and its change of
+  feeds. Suites: market data API 1136 cases, market data core 458, shell
+  application 65, HTTP market data 34; all pass.
+- Not tested: a live watch that asks again after a real change event. The
+  decision is unit tested; the event path needs a running fleet.
+- The decision on the ticks of an unrouted feed went to its own task.

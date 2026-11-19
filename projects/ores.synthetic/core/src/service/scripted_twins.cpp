@@ -30,6 +30,7 @@
 #include <format>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 namespace ores::synthetic::service {
 
@@ -163,11 +164,52 @@ std::vector<std::string> product_column(const instrument_batch& batch,
     return out;
 }
 
+/// The role a source names a whole schedule by, as instrument_schedules[<role>].
+std::optional<std::string_view> schedule_role_of(std::string_view source) {
+    constexpr std::string_view prefix = "instrument_schedules[";
+    if (!source.starts_with(prefix) || !source.ends_with(']'))
+        return std::nullopt;
+    return source.substr(prefix.size(), source.size() - prefix.size() - 1);
+}
+
+/// The schedule under the role, as its rules or as its listed dates; nothing when no row states it.
+std::optional<std::variant<tb::scripted_schedule, tb::scripted_dates>>
+whole_schedule(const instrument_batch& batch, std::string_view role) {
+    for (const auto& row : batch.instrument_schedules) {
+        if (row.schedule_role != role)
+            continue;
+        if (row.schedule_kind == "dates") {
+            tb::scripted_dates out{.calendar = row.calendar, .convention = row.convention};
+            for (const auto& date : batch.instrument_schedule_dates)
+                if (date.schedule_role == role &&
+                    date.schedule_sequence_number == row.sequence_number)
+                    out.dates.push_back(date.schedule_date);
+            return out;
+        }
+        if (row.schedule_kind != "rules")
+            throw trade_population_error("The " + std::string(role) + " schedule is " +
+                                         row.schedule_kind + ", which a twin cannot read.");
+        if (!row.start_date || !row.end_date || !row.tenor)
+            throw trade_population_error("The " + std::string(role) +
+                                         " schedule states no start, end or tenor.");
+        return tb::scripted_schedule{.start = *row.start_date,
+                                     .end = *row.end_date,
+                                     .tenor = *row.tenor,
+                                     .calendar = row.calendar.value_or("TARGET"),
+                                     .convention = row.convention.value_or("F"),
+                                     .term_convention = row.term_convention,
+                                     .rule = row.rule.value_or("Forward")};
+    }
+    return std::nullopt;
+}
+
 std::vector<std::string> one_source(const instrument_batch& batch,
                                     std::string_view trade_type_code,
                                     std::string_view source) {
     if (source.size() >= 2 && source.front() == '\'' && source.back() == '\'')
         return {std::string(source.substr(1, source.size() - 2))};
+    if (const auto role = schedule_role_of(source))
+        return rows_column(batch, "instrument_schedule_dates", *role, "schedule_date");
     const auto dot = source.rfind('.');
     if (dot == std::string_view::npos)
         throw trade_population_error("The twin recipe source '" + std::string(source) +
@@ -204,10 +246,15 @@ std::string transformed(std::string value, std::string_view transform) {
                                  value + "'.");
 }
 
-/// The twin's id: a name-based id over the native trade's, so no other trade draws it.
-boost::uuids::uuid twin_id_for(const boost::uuids::uuid& native) {
+/**
+ * @brief The twin's id: a name-based id over the native trade's id and type, so
+ * no other trade draws it. The type keeps apart the twins of natives that share
+ * an id across separately drawn plans, as the recorded trades of each asset
+ * class do.
+ */
+boost::uuids::uuid twin_id_for(const boost::uuids::uuid& native, std::string_view trade_type) {
     static const boost::uuids::name_generator_sha1 generate(native_namespace());
-    return generate(boost::uuids::to_string(native) + "/scripted");
+    return generate(boost::uuids::to_string(native) + "/" + std::string(trade_type) + "/scripted");
 }
 
 }
@@ -250,6 +297,20 @@ scripted_twin_of(const domain::trade_population_slot& native) {
         input.is_array = row->is_array;
         inputs.push_back(std::move(input));
 
+        tb::scripted_variable variable{.name = std::string(row->input_name),
+                                       .type = std::string(row->data_type),
+                                       .value = std::string()};
+        // A whole schedule is carried as the native trade states it, by rules or by dates.
+        if (const auto role = schedule_role_of(row->source)) {
+            auto schedule = whole_schedule(native.instruments, *role);
+            if (!schedule)
+                throw trade_population_error(
+                    "The " + native.trade_type_code + " twin finds no schedule for " +
+                    std::string(row->input_name) + " at " + std::string(row->source) + ".");
+            std::visit([&](auto& s) { variable.value = std::move(s); }, *schedule);
+            variables.push_back(std::move(variable));
+            continue;
+        }
         auto values = twin_source_values(native.instruments, native.trade_type_code, row->source);
         if (values.empty())
             throw trade_population_error(
@@ -257,9 +318,6 @@ scripted_twin_of(const domain::trade_population_slot& native) {
                 std::string(row->input_name) + " at " + std::string(row->source) + ".");
         for (auto& value : values)
             value = transformed(std::move(value), row->transform);
-        tb::scripted_variable variable{.name = std::string(row->input_name),
-                                       .type = std::string(row->data_type),
-                                       .value = std::string()};
         if (row->is_array)
             variable.value = std::move(values);
         else
@@ -276,7 +334,7 @@ scripted_twin_of(const domain::trade_population_slot& native) {
                                      built.error().term + ": " + built.error().message);
 
     domain::trade_population_slot twin = native;
-    twin.trade_id = twin_id_for(native.trade_id);
+    twin.trade_id = twin_id_for(native.trade_id, native.trade_type_code);
     twin.trade_type_code = "ScriptedTrade";
     twin.internal_identifier = native.internal_identifier + "-scripted";
     twin.instruments = instrument_batch{};

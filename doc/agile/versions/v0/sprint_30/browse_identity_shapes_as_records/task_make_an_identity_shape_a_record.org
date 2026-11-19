@@ -115,7 +115,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4902 review 1: removing a shape from the shell leaves its entries | =series_identity_shape_check.cpp= | Decline | The book skips an orphan, a C++ case pins it, and pgTAP asserts the seed holds none; a cascade is out of scope |
+| 2 | PR #4902 review 1: a duplicate entry could make a field both required and forbidden | =marketdata_series_identity_shape_entries_create.sql= | Decline | The unique index on tenant, shape code and field over the current rows refuses it |
+| 3 | PR #4902 review 1: an unknown requirement value is ignored silently | =marketdata_series_identity_shape_entries_create.sql= | Decline | A check constraint holds the column to required or forbidden |
+| 4 | PR #4902 review 1: test the refusal of an entry whose shape code names no shape | =marketdata_series_identity_shape_test.sql= | Decline | The pgTAP case 'an entry that names no stated shape is refused' asserts it |
+| 5 | PR #4902 review 1: keep the hand-written changes apart from the generated code | commits | Decline | The guard, the seed and the web pages are already in commits of their own |
 
 * Result
 

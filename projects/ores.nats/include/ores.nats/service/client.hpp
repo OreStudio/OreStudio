@@ -183,12 +183,27 @@ public:
      * @brief Publish a message to a JetStream stream.
      *
      * The target subject must be covered by a stream configured on the
-     * NATS server. Blocks until the server acknowledges receipt.
+     * NATS server. Blocks until the server acknowledges receipt, or for five
+     * seconds if it never does.
      * Throws on failure.
      */
     void js_publish(std::string_view subject,
                     std::span<const std::byte> data,
                     std::unordered_map<std::string, std::string> headers = {});
+
+    /**
+     * @brief As above, waiting @p ack_wait for the acknowledgement.
+     *
+     * A caller that shares its thread with work it must not delay bounds the
+     * wait here: the server withholds the acknowledgement while it cannot
+     * store the message, so an unacknowledged publish holds the thread for the
+     * whole wait and then throws. A short wait turns an ailing store into a
+     * quick failure the caller can retry, rather than a stall.
+     */
+    void js_publish(std::string_view subject,
+                    std::span<const std::byte> data,
+                    std::unordered_map<std::string, std::string> headers,
+                    std::chrono::milliseconds ack_wait);
 
     /**
      * @brief Queue-group push-subscribe to a JetStream subject.

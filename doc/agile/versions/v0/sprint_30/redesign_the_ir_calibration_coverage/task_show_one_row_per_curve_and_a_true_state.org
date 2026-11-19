@@ -26,11 +26,11 @@ A person reads the IR calibration coverage at a glance: one line per curve with 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E98B52CA-07FA-4FF3-962A-E8AD386B5BD7][Redesign the IR calibration coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
@@ -42,9 +42,23 @@ A person reads the IR calibration coverage at a glance: one line per curve with 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The screen stacked every curve of a currency in one cell, repeated each curve's
+publish time beside a column that held it again, repeated the policy's window on
+every row, and said no feed on every row.
+
+1. Find why every row said no feed. The coverage read each currency's feed from
+   the calibration of the class. The calibrate handler takes the FX spot kind
+   and reads each built input as an FX spot input, so it answers
+   =interest_rates= with no feed. The route test passed because it fed the
+   calibration an IR feed the service never returns. A first fix that set the
+   IR candidate's asset class was dropped: that path never reaches the
+   calibration.
+2. Read the IR feed facts where they live: the IR generation config says
+   whether the feed starts from a fixing, and the running feed's recorded start
+   says from which provider, or why it kept its level.
+3. Give each curve its own gap from its own publish.
+4. Lay the table out one row per curve, the currency and its feed spanning the
+   currency's rows; draw the policy as a card.
 
 * Measurements
 
@@ -58,9 +72,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Live IR coverage before | 28 rows, 0 feeds from the calibration, every row no feed | probe of =GET /api/synthetic/calibration/interest_rates= as the system administrator | main at 02441243f1 |
+| Live IR coverage after | 28 rows: 10 covered, 16 no public source with the run's recorded reason, 2 no curve config; 35 curves live | the same probe | 0f9f5635ed |
+| BFF and web suites | 1,316 and 2,590 tests, pass | =npx vitest run= in each package | 809c57a6cd |
+| Harness against the running services | 1 case, pass | =npx playwright test tests/ibor-beside-overnight.spec.ts= | 0f9f5635ed |
+| compass-ng gates | 0 new diagnostics | =compass-ng check --ratchet origin/main= | 0f9f5635ed |
 
 * Notes
+
+- The branch changes no C++, so the gate runs the web and documentation checks.
+  The live check ran against the fleet built for PR #4902, whose services answer
+  these reads as main does, with this branch's BFF and web bundle.
 
 * Test Scenarios
 
@@ -86,3 +108,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The IR calibration coverage is one row per curve: its role, its tenor, the curve
+it discounts off, its publish and its own state, with the currency and its feed
+named once beside the currency's curves. The class policy is a card with the
+window, the inverse rule and the fallback, and the source order as numbered
+chips.
+
+All four acceptance points are met, the second by removing the window outright:
+an IR config holds no window of its own, so there is no override to show. The
+states are true: before, every one of the 28 currencies said no feed; now 10 are
+covered, 16 state the reason their run recorded for keeping a fixed level, and 2
+have no curve config.

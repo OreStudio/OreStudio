@@ -54,7 +54,7 @@ enum class tick_drop {
  */
 struct named_datum final {
     datum::market_datum datum;
-    /// The canonical spelling of the datum, which the republish subject carries.
+    /// The canonical spelling of the datum, which the tick and the meter carry.
     std::string uri;
     /// The URI of the series the datum belongs to.
     std::string series_uri;
@@ -84,12 +84,12 @@ struct consumer final {
 };
 
 /**
- * @brief One consumer of a tick: the party the tick is delivered to, the subject it is
- * republished on, and the route that makes the party a consumer of the source.
+ * @brief One consumer of a tick: the party that receives it, and the route that makes the party
+ * a consumer of the source. The party watches the feed's subject; the target is what the store
+ * and the meter count against.
  */
 struct tick_target final {
     consumer owner;
-    std::string subject;
     /// The tenant and the party of the consumer as text, written once so the loop writes none
     /// for each tick.
     std::string tenant_text;
@@ -121,7 +121,7 @@ struct tick_delivery final {
 
 /**
  * @brief The delivery of a tick of @p named from @p source: the feed subject, and one target for
- * each consumer, each with the republish subject for that consumer's tenant and party.
+ * each consumer.
  *
  * The delivery depends on the source and the datum alone, so the loop builds it once for each
  * source and datum and shares it. It is a delivery plan: the store writes one row for each tick
@@ -147,7 +147,7 @@ struct tick_plan final {
  * The checks run in the order the loop reports them: a null @p source is a source
  * the catalogue does not name, then the URI must name a datum, then the value must
  * be a number. A tick that passes gets the feed subject and one target per
- * consumer, each with the republish subject for that consumer's tenant and party.
+ * consumer.
  *
  * A caller that has read the URI already passes @p named, and the URI is not read again. A
  * caller that has built the delivery for this source and datum passes @p delivery.

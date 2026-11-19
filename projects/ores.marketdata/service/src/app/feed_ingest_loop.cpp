@@ -42,6 +42,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <format>
 #include <optional>
 #include <set>
@@ -591,7 +592,7 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
     const auto& items = batch.items;
 
     // After the commit, or without it when the store did not answer: stats, the CRM
-    // bridge, and the republish.
+    // bridge, and the publish.
     const auto now = std::chrono::system_clock::now();
     const auto ages = translator();
 
@@ -615,15 +616,18 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
                                         const std::vector<std::byte>& payload) {
         try {
             nats_.publish(subject, payload);
+            return true;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Failed to publish a tick on '" << subject << "': " << e.what();
+            return false;
         }
     };
 
-    std::vector<std::vector<std::byte>> payloads(ticks.size());
-    // A tick is published on its feed's subject once, whatever the number of its targets.
-    std::vector<bool> on_feed(ticks.size(), false);
+    // A tick is published on its feed's subject once, whatever the number of its targets, and
+    // every route of the tick reads what became of that one publish.
+    enum class feed_publish : std::uint8_t { pending, sent, failed, late };
+    std::vector<feed_publish> on_feed(ticks.size(), feed_publish::pending);
     // The deliveries of this batch, by consumer and item. The views point into the ticks of the
     // batch, which outlive this function.
     std::map<std::pair<const tick_target*, std::string_view>, std::int64_t> delivered;
@@ -644,14 +648,24 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
         if (prev_count == 0)
             BOOST_LOG_SEV(lg(), info)
                 << "INGEST FIRST TICK: source='" << c.source_name << "' datum='" << tick.oresmd_uri
-                << "' subject='" << it.target->subject << "' value=" << tick.value;
+                << "' subject='" << it.plan->delivery->feed_subject << "' value=" << tick.value;
 
-        // The live path never carries a tick that has aged out while its batch was
-        // written. The tick stays in the store as history.
-        if (now - tick.observation_time > ages->max_quote_age(tick.source)) {
-            late_unpublished_.fetch_add(1, std::memory_order_relaxed);
-            continue;
+        auto& published = on_feed[it.tick_index];
+        if (published == feed_publish::pending) {
+            // The live path never carries a tick that has aged out while its batch was
+            // written. The tick stays in the store as history.
+            if (now - tick.observation_time > ages->max_quote_age(tick.source)) {
+                late_unpublished_.fetch_add(1, std::memory_order_relaxed);
+                published = feed_publish::late;
+            } else {
+                published = publish_on_feed(it.plan->delivery->feed_subject,
+                                            ores::nats::default_wire_codec().encode(tick)) ?
+                                feed_publish::sent :
+                                feed_publish::failed;
+            }
         }
+        if (published == feed_publish::late)
+            continue;
 
         // Currency driver pairs are FX-shaped, so only an FX spot rate is a
         // candidate driver update. The bridge offers it tenant-wide.
@@ -662,21 +676,10 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
                                 it.plan->value,
                                 tick.observation_time);
 
-        auto& payload = payloads[it.tick_index];
-        if (payload.empty())
-            payload = ores::nats::default_wire_codec().encode(tick);
-        if (!on_feed[it.tick_index]) {
-            on_feed[it.tick_index] = true;
-            publish_on_feed(it.plan->delivery->feed_subject, payload);
-        }
-        try {
-            nats_.publish(it.target->subject, payload);
-            if (meter_)
-                ++delivered[{it.target, tick.oresmd_uri}];
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to republish a tick on '" << it.target->subject << "': " << e.what();
-        }
+        // The bill counts what each route was entitled to receive, which is the tick its feed
+        // carried, so each route of a tick that went out counts one delivery.
+        if (meter_ && published == feed_publish::sent)
+            ++delivered[{it.target, tick.oresmd_uri}];
     }
 
     // A tick of a feed that no route names has no target, so it has no item above. It is not

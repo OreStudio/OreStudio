@@ -25,6 +25,16 @@ import { useTranslation } from '../i18n/Provider.js';
 import { show } from '../refdata/records.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
+import {
+    besideChoices,
+    comparesAcross,
+    currenciesOf,
+    curvesOf,
+    differentialOf,
+    isFunding,
+    pairOf,
+    type CurveOption,
+} from './curveChoice.js';
 import { LineChart, SERIES_COLOURS, type ChartSeries } from './LineChart.js';
 import { HEAD_CELL, DATA_CELL, asOfInstant, oneOf, todayIso, useReadParty } from './readScreen.js';
 
@@ -60,22 +70,6 @@ type Metric = (typeof METRICS)[number];
 type ChartAxis = (typeof AXES)[number];
 type PairView = (typeof VIEWS)[number];
 
-/**
- * One curve configuration, as the picker and the pair both need it.
- *
- * A name alone does not say what a curve is: USD-SOFR-FOMC and USD-LIBOR-1M are
- * two names in a list until the role and the index tenor beside them say which
- * one is the overnight and which one is a tenor of LIBOR projected off it.
- */
-interface CurveOption {
-    readonly id: string;
-    readonly name: string;
-    readonly role: string;
-    readonly indexTenor: string;
-    /** The funding curve a projection names as the one it discounts off. */
-    readonly discountId: string;
-}
-
 function percent(value: number, language: string): string {
     return (value * 100).toLocaleString(language, {
         minimumFractionDigits: 4,
@@ -108,6 +102,7 @@ export function CurveAnalyticsPage(): ReactNode {
     const options: readonly CurveOption[] = (configs.data ?? []).map((row) => ({
         id: show(row['id']),
         name: show(row['name']),
+        currency: show(row['currency_code']),
         role: show(row['curve_family_role']),
         indexTenor: show(row['index_tenor']),
         discountId: show(row['discount_curve_config_id']),
@@ -116,9 +111,22 @@ export function CurveAnalyticsPage(): ReactNode {
         const role = option.role === '' ? '' : t(`marketdata.curveBlueprints.roles.${option.role}`);
         return [option.name, role, option.indexTenor].filter((part) => part !== '').join(' · ');
     };
+    /**
+     * A curve is read within its currency, so the currency is chosen first: the one
+     * the address names, else the one of the curve it names, else the first.
+     */
     const stated = search.get('curve') ?? '';
+    const statedCurve = options.find((option) => option.id === stated || option.name === stated);
+    const currencies = currenciesOf(options);
+    const statedCurrency = search.get('ccy') ?? '';
+    const currency = currencies.includes(statedCurrency)
+        ? statedCurrency
+        : (statedCurve?.currency ?? currencies[0] ?? '');
+    const ofCurrency = curvesOf(options, currency);
     const chosen =
-        options.find((option) => option.id === stated || option.name === stated) ?? options[0];
+        statedCurve !== undefined && statedCurve.currency === currency
+            ? statedCurve
+            : ofCurrency[0];
 
     /**
      * The curve drawn beside the chosen one: for a projection, the funding curve
@@ -130,14 +138,24 @@ export function CurveAnalyticsPage(): ReactNode {
             ? undefined
             : options.find((option) => option.id === curve.discountId);
     const statedAgainst = search.get('against');
+    const named =
+        statedAgainst === null || statedAgainst === NO_SECOND_CURVE
+            ? undefined
+            : options.find(
+                  (option) => option.id === statedAgainst || option.name === statedAgainst,
+              );
+    /**
+     * Another currency is offered only beside an overnight curve, and only when the
+     * reader asks for it; an address that names such a pair asks for it.
+     */
+    const across =
+        isFunding(chosen) && (search.get('across') === '1' || comparesAcross(chosen, named));
+    const choices = besideChoices(options, chosen, across);
+    const allowed = [...choices.same, ...choices.other];
     const namedAgainst =
         statedAgainst === null
             ? fundingOf(chosen)
-            : statedAgainst === NO_SECOND_CURVE
-              ? undefined
-              : options.find(
-                    (option) => option.id === statedAgainst || option.name === statedAgainst,
-                );
+            : allowed.find((option) => option.id === named?.id);
     /** A curve is not drawn beside itself. */
     const beside = namedAgainst === chosen ? undefined : namedAgainst;
 
@@ -189,8 +207,7 @@ export function CurveAnalyticsPage(): ReactNode {
      * overnight it is projected off, not a sign that depends on the order of two
      * selections.
      */
-    const discounts = (option: CurveOption | undefined): boolean => option?.role === 'FUNDING';
-    const fundingLeads = data !== undefined && discounts(beside) && !discounts(chosen);
+    const fundingLeads = data !== undefined && isFunding(beside) && !isFunding(chosen);
     const leftValues = fundingLeads ? sideBySide : showing;
     const rightValues = fundingLeads ? showing : sideBySide;
     const leftName = (fundingLeads ? besideData?.name : data?.name) ?? '';
@@ -213,16 +230,41 @@ export function CurveAnalyticsPage(): ReactNode {
                 )}
             </div>
             <section className="flex flex-wrap items-end gap-4 rounded-md border border-line p-4">
+                <Field label={t('marketdata.curveAnalytics.currency')}>
+                    <Select
+                        value={currency}
+                        onChange={(event) => {
+                            // A new currency starts from its own funding curve, alone or
+                            // beside what it discounts, never from the last currency's pair.
+                            set({
+                                ccy: event.target.value,
+                                curve: undefined,
+                                against: undefined,
+                                across: undefined,
+                            });
+                        }}
+                    >
+                        {currencies.map((code) => (
+                            <option key={code} value={code}>
+                                {code}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
                 <Field label={t('marketdata.curveAnalytics.curve')}>
                     <Select
                         value={chosen?.id ?? ''}
                         onChange={(event) => {
                             // The pair belongs to the curve, so a new curve starts from
                             // its own funding curve rather than carrying the last one.
-                            set({ curve: event.target.value, against: undefined });
+                            set({
+                                curve: event.target.value,
+                                against: undefined,
+                                across: undefined,
+                            });
                         }}
                     >
-                        {options.map((option) => (
+                        {ofCurrency.map((option) => (
                             <option key={option.id} value={option.id}>
                                 {labelOf(option)}
                             </option>
@@ -239,15 +281,57 @@ export function CurveAnalyticsPage(): ReactNode {
                         <option value={NO_SECOND_CURVE}>
                             {t('marketdata.curveAnalytics.compareNone')}
                         </option>
-                        {options
-                            .filter((option) => option.id !== chosen?.id)
-                            .map((option) => (
-                                <option key={option.id} value={option.id}>
-                                    {labelOf(option)}
-                                </option>
-                            ))}
+                        {choices.same.length > 0 && (
+                            <optgroup
+                                label={t('marketdata.curveAnalytics.sameCurrency', { currency })}
+                            >
+                                {choices.same.map((option) => (
+                                    <option key={option.id} value={option.id}>
+                                        {labelOf(option)}
+                                    </option>
+                                ))}
+                            </optgroup>
+                        )}
+                        {choices.other.length > 0 && (
+                            <optgroup label={t('marketdata.curveAnalytics.otherCurrencies')}>
+                                {choices.other.map((option) => (
+                                    <option key={option.id} value={option.id}>
+                                        {labelOf(option)}
+                                    </option>
+                                ))}
+                            </optgroup>
+                        )}
                     </Select>
                 </Field>
+                <label
+                    className="flex items-center gap-2 pb-2 text-sm"
+                    title={
+                        isFunding(chosen)
+                            ? undefined
+                            : t('marketdata.curveAnalytics.acrossOnlyOvernight')
+                    }
+                >
+                    <input
+                        type="checkbox"
+                        checked={across}
+                        disabled={!isFunding(chosen)}
+                        onChange={(event) => {
+                            // Leaving the other currencies takes their curve away too.
+                            set(
+                                event.target.checked
+                                    ? { across: '1' }
+                                    : {
+                                          across: undefined,
+                                          ...(comparesAcross(chosen, beside)
+                                              ? { against: undefined }
+                                              : {}),
+                                      },
+                            );
+                        }}
+                        data-compare-across
+                    />
+                    {t('marketdata.curveAnalytics.across')}
+                </label>
                 <Field label={t('marketdata.curveAnalytics.compare')}>
                     <Input
                         type="date"
@@ -590,23 +674,9 @@ export function CurveAnalyticsPage(): ReactNode {
                 </>
             )}
             <WhatThePairTeaches pair={pairOf(chosen, beside)} />
+            <WhatTheDifferentialShows pair={differentialOf(chosen, beside)} />
         </div>
     );
-}
-
-/** A funding curve and a projection curve drawn together, or undefined for any other pair. */
-export function pairOf(
-    chosen: CurveOption | undefined,
-    beside: CurveOption | undefined,
-): { readonly funding: CurveOption; readonly projection: CurveOption } | undefined {
-    if (chosen === undefined || beside === undefined) return undefined;
-    if (chosen.role === 'FUNDING' && beside.role === 'PROJECTION') {
-        return { funding: chosen, projection: beside };
-    }
-    if (chosen.role === 'PROJECTION' && beside.role === 'FUNDING') {
-        return { funding: beside, projection: chosen };
-    }
-    return undefined;
 }
 
 /**
@@ -647,6 +717,54 @@ function WhatThePairTeaches({ pair }: { readonly pair: ReturnType<typeof pairOf>
             </dl>
             <p className="text-sm text-ink-muted">
                 {t('marketdata.curveAnalytics.teaches.lesson')}
+            </p>
+        </section>
+    );
+}
+
+/**
+ * What two currencies' overnight curves drawn together show: the rate
+ * differential between two economies. Neither curve discounts or projects off
+ * the other, so the funding and projection lesson does not apply to them.
+ */
+function WhatTheDifferentialShows({
+    pair,
+}: {
+    readonly pair: ReturnType<typeof differentialOf>;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (pair === undefined) return null;
+    const names = {
+        left: pair.left.name,
+        right: pair.right.name,
+        leftCurrency: pair.left.currency,
+        rightCurrency: pair.right.currency,
+    };
+    const points = ['gap', 'forward', 'carry'] as const;
+    return (
+        <section
+            className="space-y-3 rounded-md border border-line p-4"
+            aria-label={t('marketdata.curveAnalytics.differential.title')}
+            data-differential
+        >
+            <h2 className="font-medium">{t('marketdata.curveAnalytics.differential.title')}</h2>
+            <p className="text-sm text-ink-muted">
+                {t('marketdata.curveAnalytics.differential.lead', names)}
+            </p>
+            <dl className="grid gap-3 text-sm md:grid-cols-3">
+                {points.map((point) => (
+                    <div key={point}>
+                        <dt className="font-medium">
+                            {t(`marketdata.curveAnalytics.differential.${point}.title`)}
+                        </dt>
+                        <dd className="text-ink-muted">
+                            {t(`marketdata.curveAnalytics.differential.${point}.body`, names)}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
+            <p className="text-sm text-ink-muted">
+                {t('marketdata.curveAnalytics.differential.lesson')}
             </p>
         </section>
     );

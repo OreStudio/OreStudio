@@ -160,17 +160,57 @@ const pairOfConfigs = [
     {
         id: CONFIG_ID,
         name: 'USD-SOFR-FOMC',
+        currency_code: 'USD',
         curve_family_role: 'FUNDING',
         index_tenor: '1D',
     },
     {
         id: PROJECTION_ID,
         name: 'USD-LIBOR-1M',
+        currency_code: 'USD',
         curve_family_role: 'PROJECTION',
         index_tenor: '1M',
         discount_curve_config_id: CONFIG_ID,
     },
 ];
+
+const EUR_ID = 'c0000000-0000-0000-0000-000000000003';
+const EURIBOR_ID = 'c0000000-0000-0000-0000-000000000004';
+
+/** Two currencies, each with an overnight curve and a term curve projected off it. */
+const twoCurrencies = [
+    ...pairOfConfigs,
+    {
+        id: EUR_ID,
+        name: 'EUR-ESTR',
+        currency_code: 'EUR',
+        curve_family_role: 'FUNDING',
+        index_tenor: '1D',
+    },
+    {
+        id: EURIBOR_ID,
+        name: 'EUR-EURIBOR-6M',
+        currency_code: 'EUR',
+        curve_family_role: 'PROJECTION',
+        index_tenor: '6M',
+        discount_curve_config_id: EUR_ID,
+    },
+];
+
+/** The EUR overnight curve, drawn beside the USD one. */
+const estr: CurveAnalytics = { ...analytics, instrument_id: EUR_ID, name: 'EUR-ESTR' };
+
+/** The checkbox that offers other currencies, as the page drew it. */
+function acrossBox(page: string): string {
+    return page.match(/<input[^>]*data-compare-across[^>]*>/)?.[0] ?? '';
+}
+
+/** The options of the select a label names, as the page drew them. */
+function optionsOf(page: string, label: string): string {
+    const start = page.indexOf(`>${label}</span>`);
+    const end = page.indexOf('</select>', start);
+    return page.slice(start, end);
+}
 
 function draw(
     address: string,
@@ -382,5 +422,72 @@ describe('the curve analytics page', () => {
             </QueryClientProvider>,
         );
         expect(page).toContain('The party holds no curve configuration.');
+    });
+
+    it("asks for a currency first, and offers that currency's curves only", () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${PROJECTION_ID}&asof=2026-11-13`,
+            libor,
+            twoCurrencies,
+            funding,
+        );
+        expect(optionsOf(page, 'Currency')).toContain('<option value="EUR">EUR</option>');
+        expect(optionsOf(page, 'Currency')).toContain(
+            '<option value="USD" selected="">USD</option>',
+        );
+        const curves = optionsOf(page, 'Curve');
+        expect(curves).toContain('USD-SOFR-FOMC');
+        expect(curves).not.toContain('EUR-ESTR');
+        expect(optionsOf(page, 'Beside')).not.toContain('EUR-');
+    });
+
+    it('offers no other currency beside a term curve, and says why', () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${PROJECTION_ID}&asof=2026-11-13&across=1`,
+            libor,
+            twoCurrencies,
+            funding,
+        );
+        expect(acrossBox(page)).toContain('disabled=""');
+        expect(page).toContain('Only an overnight curve compares with another currency.');
+        expect(optionsOf(page, 'Beside')).not.toContain('EUR-ESTR');
+    });
+
+    it("offers other currencies' overnight curves beside an overnight curve, when asked", () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13&across=1`,
+            funding,
+            twoCurrencies,
+        );
+        const beside = optionsOf(page, 'Beside');
+        expect(beside).toContain('label="Other currencies, overnight"');
+        expect(beside).toContain('EUR-ESTR');
+        expect(beside).not.toContain('EUR-EURIBOR-6M');
+    });
+
+    it('states the rate differential, and no funding lesson, for two currencies overnight', () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13&against=${EUR_ID}`,
+            funding,
+            twoCurrencies,
+            estr,
+        );
+        expect(page).toContain('data-differential');
+        expect(page).toContain(
+            'USD-SOFR-FOMC and EUR-ESTR are the overnight curves of USD and EUR.',
+        );
+        expect(page).toContain('what lending USD earns over lending EUR');
+        expect(page).not.toContain('data-pair-teaches');
+        expect(acrossBox(page)).toContain('checked=""');
+    });
+
+    it("draws no other currency's term curve, even when the address names one", () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13&across=1&against=${EURIBOR_ID}`,
+            funding,
+            twoCurrencies,
+        );
+        expect(page).not.toContain('data-differential');
+        expect(page).not.toContain('Pillar by pillar');
     });
 });

@@ -603,18 +603,6 @@ constexpr fx_value_list fx_worst_of_value_lists[] = {
     {"FixedTriggerLevels", "FixedTriggerLevel", "fixed_trigger_level"},
 };
 
-/// The schedules the worst-of basket swap states, and the role each schedule row keeps.
-constexpr std::pair<std::string_view, std::string_view> fx_worst_of_schedules[] = {
-    {"FloatingPeriodSchedule", "floating_period_schedule"},
-    {"FloatingFixingSchedule", "floating_fixing_schedule"},
-    {"FixedDeterminationSchedule", "fixed_determination_schedule"},
-    {"FloatingPayDates", "floating_pay_schedule"},
-    {"FixedPayDates", "fixed_pay_schedule"},
-    {"KnockOutDeterminationSchedule", "knock_out_determination_schedule"},
-    {"FixedAccrualSchedule", "fixed_accrual_schedule"},
-    {"KnockInDeterminationSchedule", "knock_in_determination_schedule"},
-};
-
 auto read_fx_worst_of_basket_swap(const record_reader& trade)
     -> fx_worst_of_basket_swap_instrument {
     auto r = fx_instrument_projection_make_row<fx_worst_of_basket_swap_instrument>(
@@ -1047,35 +1035,6 @@ void write_fx_window_barrier_option(record_writer& trade,
     barrier_block::write_kept_barriers(data, "", carrier, "barrier");
 }
 
-void write_fx_worst_of_basket_swap(record_writer& trade,
-                                   const fx_worst_of_basket_swap_instrument& v,
-                                   const fx_instrument_data& carrier) {
-    auto data = trade.child("FxWorstOfBasketSwapData");
-    scalar_terms::write_text(data, "LongShort", v.long_short);
-    scalar_terms::write_text(data, "Currency", v.currency);
-    set_decimal_from_double(data, "Quantity", v.quantity);
-    volatility_product::write_decimal(data, "FixedRate", v.fixed_rate);
-    scalar_terms::write_text(data, "FloatingIndex", v.floating_index);
-    scalar_terms::write_text(data, "FloatingDayCountFraction", v.floating_day_count_fraction);
-    scalar_terms::write_terms(data, v, fx_worst_of_basket_swap_terms);
-    auto members = data.child("Underlyings");
-    underlying_block::write_underlyings(members, "Underlying", carrier, "underlying");
-    for (const auto& list : fx_worst_of_value_lists) {
-        std::vector<const instrument_value*> rows;
-        for (const auto& row : carrier.values)
-            if (row.value_role == list.role)
-                rows.push_back(&row);
-        if (rows.empty())
-            continue;
-        std::ranges::sort(rows, {}, &instrument_value::sequence_number);
-        auto element = data.child(list.element);
-        for (const auto* row : rows)
-            element.append_decimal(list.leaf, row->value);
-    }
-    for (const auto& [element, role] : fx_worst_of_schedules)
-        option_block::write_product_schedule(data, carrier, element, role);
-}
-
 void write_fx_pairwise_variance_swap(record_writer& trade,
                                      const fx_pairwise_variance_swap_instrument& v,
                                      const fx_instrument_data& carrier) {
@@ -1251,6 +1210,35 @@ constexpr option_block::product_schedule fx_product_schedules[] = {
     {"FxPairwiseVarianceSwap", "ValuationSchedule", "valuation_schedule"},
     {"FxPairwiseVarianceSwap", "LaggedValuationSchedule", "lagged_valuation_schedule"},
 };
+
+void write_fx_worst_of_basket_swap(record_writer& trade,
+                                   const fx_worst_of_basket_swap_instrument& v,
+                                   const fx_instrument_data& carrier) {
+    auto data = trade.child("FxWorstOfBasketSwapData");
+    scalar_terms::write_text(data, "LongShort", v.long_short);
+    scalar_terms::write_text(data, "Currency", v.currency);
+    set_decimal_from_double(data, "Quantity", v.quantity);
+    volatility_product::write_decimal(data, "FixedRate", v.fixed_rate);
+    scalar_terms::write_text(data, "FloatingIndex", v.floating_index);
+    scalar_terms::write_text(data, "FloatingDayCountFraction", v.floating_day_count_fraction);
+    scalar_terms::write_terms(data, v, fx_worst_of_basket_swap_terms);
+    auto members = data.child("Underlyings");
+    underlying_block::write_underlyings(members, "Underlying", carrier, "underlying");
+    for (const auto& list : fx_worst_of_value_lists) {
+        std::vector<const instrument_value*> rows;
+        for (const auto& row : carrier.values)
+            if (row.value_role == list.role)
+                rows.push_back(&row);
+        if (rows.empty())
+            continue;
+        std::ranges::sort(rows, {}, &instrument_value::sequence_number);
+        auto element = data.child(list.element);
+        for (const auto* row : rows)
+            element.append_decimal(list.leaf, row->value);
+    }
+    option_block::write_product_schedules(
+        data, carrier, "FxWorstOfBasketSwap", fx_product_schedules);
+}
 
 std::optional<std::string> fx_option_data_element(std::string_view trade_type) {
     static constexpr std::string_view with_option_data[] = {

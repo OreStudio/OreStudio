@@ -8,7 +8,7 @@
 #+filetags: :marketdata:market_data:identity:test_data:sprint_30:build_ir_curves_from_public_data-remaining:v0:
 #+owner: marco
 #+branch: feature/generate-a-series-that-is-an-identity
-#+pr:
+#+pr: 4871
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -137,7 +137,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4871][#4871]] | [marketdata] Generate a series that is an identity |
 
 * Review
 

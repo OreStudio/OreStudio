@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/hold-the-best-entry-and-strike-resettable-options-on-their-tables
-#+pr:
+#+pr: 4872
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -117,7 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4872][#4872]] | [trading] Hold the best-entry and strike-resettable options on their tables |
 
 * Review
 

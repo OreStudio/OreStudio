@@ -142,15 +142,15 @@ auto rate_instrument_projection_to_ore_date(const std::optional<std::chrono::yea
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto rate_instrument_projection_text_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto rate_instrument_projection_text_of(const record_reader& r,
+                                        std::string_view name) -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto rate_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto rate_instrument_projection_spelling_of(const record_reader& r,
+                                            std::string_view name) -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -162,8 +162,8 @@ auto rate_instrument_projection_decimal_text(const record_reader& r) -> decimal 
 }
 
 /// A schema decimal element as the domain's exact decimal.
-auto rate_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
-    -> decimal {
+auto rate_instrument_projection_decimal_of(const record_reader& r,
+                                           std::string_view name) -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -448,8 +448,8 @@ auto read_rate_digital_option(const record_reader& trade) -> swap_instrument_dat
 }
 
 // A straddle states a swaption's element under its own name, so both read here.
-auto read_swaption(const record_reader& trade, std::string_view trade_type)
-    -> swap_instrument_data {
+auto read_swaption(const record_reader& trade,
+                   std::string_view trade_type) -> swap_instrument_data {
     swap_instrument_data result;
     result.header = rate_instrument_projection_make_header(trade_type);
     result.facts = swaption_instrument{};

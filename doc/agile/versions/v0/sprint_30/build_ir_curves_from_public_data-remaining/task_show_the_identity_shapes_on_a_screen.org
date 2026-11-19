@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:identity:web:ui:build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-the-identity-shapes-on-a-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ The identity shapes are data, so a person should be able to read them and change
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

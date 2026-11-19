@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle-the-backlog-when-the-compute-path-stalls]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
@@ -83,3 +83,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A withheld acknowledgement now reads as what it is. =js_publish= names the
+subject that was not confirmed stored and the wait it was given, and says
+that the store's own log holds the reason, which only the server knows. The
+batch workflow bridge counts the polls in a row that could not store each
+completion, so a store that has stopped writing shows as a growing attempt
+count on one batch instead of a line that repeats with no history.
+
+PR #4886. =compass check --exclude-heavy=: 28/28 passed; both changed units
+build clean. Nothing exercises the withheld-acknowledgement path: no fixture
+drives a stream into refusing to store.
+
+Left open, because each needs a decision rather than a patch:
+
+- Reporting the refusal *out* of band. The obvious channel is the one that
+  is down, so a run stranded by an unstoreable completion still hangs. The
+  candidates are a core NATS request to the reporting service's =fail_report=
+  op, which means the compute service depending on reporting.api, or a
+  service-level health signal the site already reads.
+- Showing the bus's storage state on the site. The telemetry service already
+  samples =/jsz=, including the account's API error count, but nothing reads
+  it into a screen.

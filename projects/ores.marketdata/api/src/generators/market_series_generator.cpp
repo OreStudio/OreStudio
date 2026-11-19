@@ -48,27 +48,11 @@ generate_synthetic_market_series(utility::generation::generation_context& ctx) {
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.oresmd_uri = std::string("oresmd://generic/") + std::string(faker::word::noun()) + "-" +
-                   std::to_string(idx) + "?type=fixing" + "-" + std::to_string(idx);
+    r.oresmd_uri = std::string("oresmd://ir/EUR?type=fixing&index=ibor&name=GEN") +
+                   faker::string::alphanumeric(8, faker::string::StringCasing::Upper) +
+                   std::to_string(idx);
     r.provider_code = std::string("ore");
-    r.series_subclass = [idx] {
-        static constexpr std::string_view subclasses[] = {"spot",
-                                                          "forward",
-                                                          "volatility",
-                                                          "yield",
-                                                          "basis",
-                                                          "fra",
-                                                          "xccy",
-                                                          "spread",
-                                                          "index_credit",
-                                                          "recovery",
-                                                          "swap",
-                                                          "capfloor",
-                                                          "seasonality",
-                                                          "price",
-                                                          "correlation"};
-        return std::string(subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)]);
-    }();
+    r.series_subclass = std::string("index_fixing");
     r.derivation_kind = std::string("OBSERVED");
     r.derivation_config_id = boost::uuids::nil_uuid();
     r.derivation_config_version = 0;

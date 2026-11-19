@@ -83,6 +83,7 @@ owned_series make_series(database_helper& h,
     if (!provider.empty())
         s.provider_code = provider;
     s.oresmd_uri = zero_uri(curve_id);
+    s.series_subclass = "yield";
     market_series_repository{}.write(h.context(), s);
     if (with_subscription)
         subscribe(h, s.party_id, s.provider_code);

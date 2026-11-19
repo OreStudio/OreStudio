@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :marketdata:market_data:identity:test_data:sprint_30:build_ir_curves_from_public_data-remaining:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-a-series-that-is-an-identity
+#+pr: 4871
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
-#+updated: 2026-11-15
+#+updated: 2026-11-19
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ A series a test generates carries an identity the codec reads and a family the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
 
 * Acceptance
 
@@ -67,6 +67,14 @@ usually a test about something else, and an explicit row reads better than a fak
 word. Whichever is chosen, the done condition is the third acceptance bullet: no
 suite writes an identity row of kind =unknown=.
 
+The first seam was taken. The generator writes an IBOR fixing, which the codec
+reads and the =ir/index_fixing/ibor= shape states, so one expression is enough
+for the URI and the subclass is the constant =index_fixing=. The two expressions
+stay in step without a codegen change, because the subclass no longer varies.
+The URI collision the plan feared does not arise: the index name carries the
+row's counter, which keeps two rows of one party apart, and a random part, which
+keeps a run apart from earlier runs in the tick store.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -79,9 +87,40 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =unknown= identity rows in the dev database before the change | 150, of which 134 under =oresmd://generic/= | =compass sql -u ddl= count by =identity_kind= | ca430b8a79 |
+| Generated outputs the model change alters | 2: =market_series_generator.cpp= and the =market_series.hpp= doc comment | =compass diff= | f2d09e023e |
+| =unknown= rows written by generated series, three suite runs on a recreated database | 0 | =compass sql -u ddl=, URIs grouped by fixture | 4f6bbf4827 |
+| =unknown= rows per run that remain, by fixture | FX option 7, identity fixture 6, unreadable backfill case 1 | the same query | 4f6bbf4827 |
+| Market data core suite, two runs in a row | 456 cases pass each run | =ctest -R 'ores\.marketdata\.(core\|api)\.tests'= twice | 4f6bbf4827 |
+| Market data API suite | pass | the same =ctest= run | 4f6bbf4827 |
 
 * Notes
+
+The random part of the name is needed. A first version used the counter alone.
+The counter restarts in each test process, and the tick store keys its streams by
+the URI and keeps them between runs, so a second run would have read the first
+run's ticks.
+
+Three fixtures that override the generated URI were brought in line. The two zero
+curve fixtures now state =yield=, the subclass of the curve their URI names. The
+tick reads fixture wrote a =generic= URI and now writes an IBOR fixing named from
+the series id.
+
+Two fixtures still write =unknown= rows, both by hand rather than through the
+generator:
+
+- The identity fixture in =repository_market_series_repository_tests.cpp= writes
+  a =generic= URI. A fixing URI there makes
+  =two_providers_keep_two_series_for_one_item_and_party= fail, because the
+  identity table's unique index for fixings leaves out the provider. That is a
+  defect in the identity table, not in the fixture, and it is captured as
+  [[id:3B58C44F-5E31-4A30-B185-C06A75E6451C][Two providers of one fixing collide in the identity table]].
+- The FX option fixture in =service_observation_reader_tests.cpp= adds a =tag=
+  field to keep each series apart, and the =fx_option= schema has no such field.
+  The instrument's identity is its currency pair only, so a readable URI would
+  collide across cases on the shared party.
+
+The backfill case that writes =no_such_instrument= is unreadable on purpose.
 
 * Test Scenarios
 
@@ -98,12 +137,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4871][#4871]] | [marketdata] Generate a series that is an identity |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4871 review 1: check that =std::erase= on a string has =string= | =repository_tick_reads_tests.cpp= | Decline | Included directly at line 38 |
+| 2 | PR #4871 review 1: the random name part is not guaranteed unique | =market_series_generator.cpp= | Decline | A collision needs the same eight characters, counter and party; the party is fresh per row |
+| 3 | PR #4871 review 1: the provider collision and the FX option fixture remain | task Notes | Decline | Captured and recorded in Notes |
 
 * Result
+
+The test generator now writes a series that is an identity: an IBOR fixing whose
+name the codec reads, under the =index_fixing= subclass. Every fixture built on
+it exercises the projection and the shape guard rather than the unreadable path.
+
+All three acceptance points are met. The generated series projects to the stated
+family =ir/index_fixing/ibor=. Its subclass and URI agree, so the identity kind
+rule accepts them, and the fixtures that override the URI now state the matching
+subclass. Across three suite runs on a recreated database, no generated series
+wrote an =unknown= identity row. The rows that remain come from two hand-written
+fixtures, named in Notes, and one from the deliberate unreadable case.

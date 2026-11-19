@@ -30,4 +30,5 @@ set(files
     "request_routes_tests.cpp"
     "request_story_routes_tests.cpp"
     "retry_routes_tests.cpp"
+    "timeline_routes_tests.cpp"
 )

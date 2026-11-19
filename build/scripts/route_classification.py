@@ -434,6 +434,13 @@ RULES = (
          "What one request proposes, answered by ores.http at the address and in the shape the BFF"
          " answered: the request is read first because its kind decides where its lines are kept,"
          " and then the component that owns the kind states them beside the value in force."),
+    Rule("one subject's story",
+         ("exact", "GET /api/timeline"),
+         CPP, COMPOSED, "workflow",
+         "One person's, party's or request's story answered by ores.http at the address and in"
+         " the shape the BFF answered: a request wraps the stream the inbox already serves, a"
+         " person and a party compose every source their owner gates, and a source that refuses"
+         " travels as a gap rather than as a hole in the answer."),
     Rule("the request story",
          ("regex", r"^GET /api/requests/:id/(story|changes)$"),
          BFF, COMPOSED, "workflow",

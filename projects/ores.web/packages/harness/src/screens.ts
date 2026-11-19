@@ -69,6 +69,8 @@ const RECORD_ROUTES: Readonly<Record<string, Placement>> = {
     'party-countries': 'link',
     'party-currencies': 'link',
     'party-counterparties': 'link',
+    'series-identity-shapes': '/market-data/identity-shapes',
+    'series-identity-shape-entries': 'part',
 };
 
 export function recordScreens(): readonly Screen[] {

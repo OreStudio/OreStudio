@@ -213,6 +213,7 @@ export {
     rebuildCalendar,
     recordResource,
     removeRecord,
+    resourceComponent,
     resourceName,
     saveRecord,
 } from './records.js';

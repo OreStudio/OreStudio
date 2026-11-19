@@ -537,14 +537,13 @@ RULES = (
          BFF, COMPOSED, "market-data",
          "The publishers, suppliers, adapters, sessions, feeds, scopes and routes the"
          " Connectivity screen draws, seven collection reads in one answer."),
-    Rule("the identity shapes",
-         ("regex", r"^(GET /api/marketdata/series-identity-shapes(/versions)?"
-                   r"|(PUT|DELETE) /api/marketdata/series-identity-shapes"
-                   r"|GET /api/marketdata/series-classification-rules)$"),
-         BFF, RESOURCE, "market-data",
-         "The fields each market series family requires and forbids: every row the session"
-         " reads, one row's versions, its write and its removal, and the classification rules"
-         " the oresmd editor reads to name a URL's family."),
+    Rule("the identity shape fields",
+         ("regex", r"^GET /api/marketdata/(series-identity-shape-fields"
+                   r"|series-classification-rules)$"),
+         BFF, COMPOSED, "market-data",
+         "What the oresmd editor reads to mark a URL's fields: each field a family requires"
+         " or forbids, joined from the identity shapes and their entries, and the"
+         " classification rules that name a URL's family. The shapes themselves are records."),
     Rule("an item's fixing series",
          ("exact", "GET /api/marketdata/fixing-series"),
          BFF, COMPOSED, "market-data",

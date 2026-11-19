@@ -72,7 +72,7 @@ an API publishes no area, so it is counted under =(none)=.
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
 | grid | compute, grid-app-versions, grid-downloads, grid-jobs, operations | 25 | composed view 3, resource 22 |
-| market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, series, series-identity-shapes, subscriptions | 65 | composed view 6, resource 59 |
+| market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, series, series-identity-shapes, subscriptions | 62 | composed view 8, resource 54 |
 | operations | core, inbox, operations, server, workflow | 9 | composed view 2, resource 5, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 306 | composed view 2, resource 304 |
@@ -117,6 +117,7 @@ change of its own, not part of the port.
 | the grid summary | GET /api/operations/grid | web/src/api/client.ts | ores.compute | the stored summary, the host registry with its hardware rows, and the service roster, three reads | ETag on the whole view, stale after 10 s |
 | the grid usage | GET /api/operations/grid/usage | web/src/api/client.ts | ores.compute | the results grouped by tenant or by party with each group's share, and the party names beside them | ETag on the whole view, stale after 30 s |
 | the hand take | POST /api/reporting/cuts/take | web/src/api/client.ts | ores.reporting | the body assembled from the trading, market data, compute and reporting reads, answered part by part with the gaps it could not fill, and the cut the press wrote with the approval request it raised | no cache: the call writes when it does not preview |
+| the identity shape fields | GET /api/marketdata/series-classification-rules, GET /api/marketdata/series-identity-shape-fields | harness/tests/identity-shapes.spec.ts |  |  |  |
 | the image map | GET /api/image-map | web/src/api/client.ts | ores.assets | which image every flagged record uses: currencies, countries, calendars and business centres in one code to image map, five reads, with a country fallback and a placeholder | ETag on the whole view, stale after 5 min |
 | the kinds of cut | DELETE /api/reporting/cut-kinds/:code, GET /api/reporting/cut-kinds, GET /api/reporting/cut-kinds/:code, PUT /api/reporting/cut-kinds/:code | web/src/api/client.ts | ores.reporting | the cut kinds with their family and resolution rule names, the approval kinds the kinds point at, and one cut read for the counts, four reads | ETag on the whole view, stale after 60 s |
 | the lookups a cut kind names | GET /api/reporting/cut-kind-choices | web/src/api/client.ts | ores.reporting | the cut families, the cut resolution rules and the inbox approval kinds, three collection reads | ETag on the whole view, stale after 5 min |
@@ -150,7 +151,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 11 | 3 |
-| market-data | 40 | 25 | 15 |
+| market-data | 37 | 25 | 12 |
 | operations | 5 | 3 | 2 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 30 | 0 |
@@ -160,7 +161,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 17 | 1 |
 | (none) | 35 | 28 | 7 |
-| total | 333 | 287 | 46 |
+| total | 330 | 287 | 43 |
 
 * The pairing
 
@@ -279,10 +280,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/marketdata/routes= | POST /api/marketdata/routes |
 | DELETE =/api/marketdata/routes/:publisher= | DELETE /api/marketdata/routes/{publisher} |
 | GET =/api/marketdata/series-classification-rules= | none |
-| DELETE =/api/marketdata/series-identity-shapes= | none |
-| GET =/api/marketdata/series-identity-shapes= | none |
-| PUT =/api/marketdata/series-identity-shapes= | none |
-| GET =/api/marketdata/series-identity-shapes/versions= | none |
+| GET =/api/marketdata/series-identity-shape-fields= | none |
 | GET =/api/marketdata/subscriptions= | GET /api/marketdata/subscriptions |
 | POST =/api/marketdata/subscriptions= | POST /api/marketdata/subscriptions |
 | DELETE =/api/marketdata/subscriptions/:provider= | DELETE /api/marketdata/subscriptions/{provider} |
@@ -337,11 +335,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/qa/scenarios/:id/steps/:step/images= | none |
 | GET =/api/queue/authorisations= | none |
 | GET =/api/refdata= | GET /api/refdata |
-| DELETE =/api/refdata/:resource= | DELETE /api/refdata/{resource}, one per resource (21) |
-| GET =/api/refdata/:resource= | GET /api/refdata/{resource}, one per resource (26) |
-| PUT =/api/refdata/:resource= | PUT /api/refdata/{resource}, one per resource (21) |
-| GET =/api/refdata/:resource/by/:parent= | GET /api/refdata/{resource}/by/{parent}, one per resource (13) |
-| GET =/api/refdata/:resource/key/:key= | GET /api/refdata/{resource}/key/{key}, one per resource (19) |
+| DELETE =/api/refdata/:resource= | DELETE /api/refdata/{resource}, one per resource (23) |
+| GET =/api/refdata/:resource= | GET /api/refdata/{resource}, one per resource (28) |
+| PUT =/api/refdata/:resource= | PUT /api/refdata/{resource}, one per resource (23) |
+| GET =/api/refdata/:resource/by/:parent= | GET /api/refdata/{resource}/by/{parent}, one per resource (14) |
+| GET =/api/refdata/:resource/key/:key= | GET /api/refdata/{resource}/key/{key}, one per resource (21) |
 | GET =/api/refdata/calendars/:code/days= | GET /api/refdata/calendars/{code}/days |
 | POST =/api/refdata/calendars/:code/rebuild= | POST /api/refdata/calendars/{code}/rebuild |
 | GET =/api/refdata/currencies/ore-document= | GET /api/refdata/currencies/ore-document |
@@ -502,7 +500,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1386 routes: 333 answered by the BFF and 1053 by ores.http.
+1383 routes: 330 answered by the BFF and 1053 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -869,11 +867,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | market-data | post | =/api/marketdata/routes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:283 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | delete | =/api/marketdata/routes/:publisher= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:280 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
 | resource | market-data | delete | =/api/marketdata/routes/{publisher}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:309 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
-| resource | market-data | get | =/api/marketdata/series-classification-rules= | bff | projects/ores.web/packages/bff/src/series-identity-shapes.ts:94 | The fields each market series family requires and forbids: every row the session reads, one row's versions, its write and its removal, and the classification rules the oresmd editor reads to name a URL's family. |
-| resource | market-data | delete | =/api/marketdata/series-identity-shapes= | bff | projects/ores.web/packages/bff/src/series-identity-shapes.ts:161 | The fields each market series family requires and forbids: every row the session reads, one row's versions, its write and its removal, and the classification rules the oresmd editor reads to name a URL's family. |
-| resource | market-data | get | =/api/marketdata/series-identity-shapes= | bff | projects/ores.web/packages/bff/src/series-identity-shapes.ts:112 | The fields each market series family requires and forbids: every row the session reads, one row's versions, its write and its removal, and the classification rules the oresmd editor reads to name a URL's family. |
-| resource | market-data | put | =/api/marketdata/series-identity-shapes= | bff | projects/ores.web/packages/bff/src/series-identity-shapes.ts:140 | The fields each market series family requires and forbids: every row the session reads, one row's versions, its write and its removal, and the classification rules the oresmd editor reads to name a URL's family. |
-| resource | market-data | get | =/api/marketdata/series-identity-shapes/versions= | bff | projects/ores.web/packages/bff/src/series-identity-shapes.ts:124 | The fields each market series family requires and forbids: every row the session reads, one row's versions, its write and its removal, and the classification rules the oresmd editor reads to name a URL's family. |
+| composed view | market-data | get | =/api/marketdata/series-classification-rules= | bff | projects/ores.web/packages/bff/src/series-identity-shapes.ts:56 | What the oresmd editor reads to mark a URL's fields: each field a family requires or forbids, joined from the identity shapes and their entries, and the classification rules that name a URL's family. The shapes themselves are records. |
+| composed view | market-data | get | =/api/marketdata/series-identity-shape-fields= | bff | projects/ores.web/packages/bff/src/series-identity-shapes.ts:75 | What the oresmd editor reads to mark a URL's fields: each field a family requires or forbids, joined from the identity shapes and their entries, and the classification rules that name a URL's family. The shapes themselves are records. |
 | resource | market-data | get | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:153 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
 | resource | market-data | get | =/api/marketdata/subscriptions= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:206 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | post | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:207 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
@@ -969,13 +964,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | qa | put | =/api/qa/scenarios/:id/run= | bff | projects/ores.web/packages/bff/src/qa.ts:172 | Runs one scenario and answers its verdict, the write that makes it a run rather than a document. |
 | resource | qa | post | =/api/qa/scenarios/:id/steps/:step/images= | bff | projects/ores.web/packages/bff/src/qa.ts:193 | An image a tester attaches to one step of a scenario, written into the scenario's own store and read back with it. |
 | composed view | operations | get | =/api/queue/authorisations= | bff | projects/ores.web/packages/bff/src/inbox.ts:648 | The authorisation requests this person may decide with the deal each one names as it looks now, the open requests and the answered tail in one answer. |
-| not an API | (none) | get | =/api/refdata= | bff | projects/ores.web/packages/bff/src/records.ts:499 | A catalogue of the resources a screen may read, each with its key fields, sortable fields, search flag, version flag and the write and delete permission names, which is a table description rather than a resource. |
+| not an API | (none) | get | =/api/refdata= | bff | projects/ores.web/packages/bff/src/records.ts:528 | A catalogue of the resources a screen may read, each with its key fields, sortable fields, search flag, version flag and the write and delete permission names, which is a table description rather than a resource. |
 | not an API | (none) | get | =/api/refdata= | ores.http | projects/ores.http/refdata/src/routes/refdata/refdata_routes.cpp:218 | The catalogue the BFF answered, built from each record unit's own entry, so the screens keep reading the resources they may name when the BFF goes. |
-| not an API | (none) | delete | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:679 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
-| not an API | (none) | get | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:525 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
-| not an API | (none) | put | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:649 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
-| not an API | (none) | get | =/api/refdata/:resource/by/:parent= | bff | projects/ores.web/packages/bff/src/records.ts:565 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
-| not an API | (none) | get | =/api/refdata/:resource/key/:key= | bff | projects/ores.web/packages/bff/src/records.ts:547 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| not an API | (none) | delete | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:708 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| not an API | (none) | get | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:554 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| not an API | (none) | put | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:678 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| not an API | (none) | get | =/api/refdata/:resource/by/:parent= | bff | projects/ores.web/packages/bff/src/records.ts:594 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| not an API | (none) | get | =/api/refdata/:resource/key/:key= | bff | projects/ores.web/packages/bff/src/records.ts:576 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
 | not an API | (none) | delete | =/api/refdata/business-centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_web_routes.cpp:322 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/business-centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_web_routes.cpp:289 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | put | =/api/refdata/business-centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_web_routes.cpp:311 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
@@ -1007,8 +1002,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | delete | =/api/refdata/calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_web_routes.cpp:324 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_web_routes.cpp:291 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | put | =/api/refdata/calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_web_routes.cpp:313 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
-| resource | reference-data | get | =/api/refdata/calendars/:code/days= | bff | projects/ores.web/packages/bff/src/records.ts:579 | The materialised days of one calendar in one year, one page of a derived collection. |
-| resource | reference-data | post | =/api/refdata/calendars/:code/rebuild= | bff | projects/ores.web/packages/bff/src/records.ts:638 | Builds the materialised days of one calendar to the end of a year, a write to one calendar's derived rows. |
+| resource | reference-data | get | =/api/refdata/calendars/:code/days= | bff | projects/ores.web/packages/bff/src/records.ts:608 | The materialised days of one calendar in one year, one page of a derived collection. |
+| resource | reference-data | post | =/api/refdata/calendars/:code/rebuild= | bff | projects/ores.web/packages/bff/src/records.ts:667 | Builds the materialised days of one calendar to the end of a year, a write to one calendar's derived rows. |
 | not an API | (none) | get | =/api/refdata/calendars/key/{key}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_web_routes.cpp:302 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | resource | reference-data | get | =/api/refdata/calendars/{code}/days= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_screen_routes.cpp:101 | One calendar's built days in one year, and the build of its days to the end of a year, at the address and in the shape the BFF answered. |
 | resource | reference-data | post | =/api/refdata/calendars/{code}/rebuild= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_screen_routes.cpp:153 | One calendar's built days in one year, and the build of its days to the end of a year, at the address and in the shape the BFF answered. |
@@ -1024,11 +1019,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | get | =/api/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_web_routes.cpp:294 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | put | =/api/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_web_routes.cpp:316 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/currencies/key/{key}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_web_routes.cpp:305 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
-| resource | reference-data | get | =/api/refdata/currencies/ore-document= | bff | projects/ores.web/packages/bff/src/records.ts:597 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
+| resource | reference-data | get | =/api/refdata/currencies/ore-document= | bff | projects/ores.web/packages/bff/src/records.ts:626 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
 | resource | reference-data | get | =/api/refdata/currencies/ore-document= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_ore_document_routes.cpp:96 | The currencies' ORE import and export: the document the ORE service writes, what a file would change, and the import, each answered with the service's own words. |
-| resource | reference-data | post | =/api/refdata/currencies/ore-import= | bff | projects/ores.web/packages/bff/src/records.ts:619 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
+| resource | reference-data | post | =/api/refdata/currencies/ore-import= | bff | projects/ores.web/packages/bff/src/records.ts:648 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
 | resource | reference-data | post | =/api/refdata/currencies/ore-import= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_ore_document_routes.cpp:116 | The currencies' ORE import and export: the document the ORE service writes, what a file would change, and the import, each answered with the service's own words. |
-| resource | reference-data | post | =/api/refdata/currencies/ore-import/preview= | bff | projects/ores.web/packages/bff/src/records.ts:606 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
+| resource | reference-data | post | =/api/refdata/currencies/ore-import/preview= | bff | projects/ores.web/packages/bff/src/records.ts:635 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
 | resource | reference-data | post | =/api/refdata/currencies/ore-import/preview= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_ore_document_routes.cpp:103 | The currencies' ORE import and export: the document the ORE service writes, what a file would change, and the import, each answered with the service's own words. |
 | not an API | (none) | delete | =/api/refdata/currency-calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_calendar_web_routes.cpp:340 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/currency-calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_calendar_web_routes.cpp:307 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |

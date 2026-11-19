@@ -4538,6 +4538,7 @@ const fr: SourceCatalogue = {
                 authorisation: 'Autorisation',
                 runs: 'Runs',
                 cuts: 'Coupures',
+                entries: 'Entrées',
             },
         },
         fields: {
@@ -4654,6 +4655,10 @@ const fr: SourceCatalogue = {
             curve_role_code: 'Rôle de courbe',
         },
         choices: {
+            requirement: {
+                required: 'Obligatoire',
+                forbidden: 'Interdit',
+            },
             ore_currency_type: { Major: 'Majeure', Metal: 'Métal', Crypto: 'Crypto' },
             curve_family_role: {
                 FUNDING: 'Financement',
@@ -5404,33 +5409,38 @@ const fr: SourceCatalogue = {
         },
         identityShapes: {
             title: "Formes d'identité",
-            lead: "Les champs que chaque famille de séries de marché exige et interdit. L'écriture refuse une série dont l'identité enfreint la forme de sa famille.",
-            add: 'Ajouter une ligne',
-            none: "Aucune famille n'indique encore de forme.",
-            field: 'Champ',
-            requirement: 'Exigence',
-            description: 'Pourquoi',
-            owner: 'Propriétaire',
-            shared: 'Partagée',
-            own: 'Propre',
-            history: 'Historique',
-            edit: 'Modifier',
-            remove: 'Retirer',
-            version: 'Version',
-            changedBy: 'Modifié par',
-            reason: 'Motif',
-            recorded: 'Enregistré',
-            assetClass: "Classe d'actifs",
-            seriesSubclass: 'Sous-classe de série',
-            indexFamily: "Famille d'indice (vide sauf pour un fixing)",
-            addTitle: 'Ajouter une ligne de forme',
-            editTitle: 'Modifier {field} de {family}',
-            removeTitle: 'Retirer {field} de {family}',
-            removeLead:
-                "La famille n'exige ni n'interdit plus ce champ. Les identités écrites ensuite n'y sont plus soumises.",
-            requirements: {
-                required: 'Exigé',
-                forbidden: 'Interdit',
+            lead: "La forme d'identité de chaque famille de séries de marché : à quoi sert la famille, et les champs que son identité exige et interdit. L'écrivain refuse une série dont l'identité ne respecte pas la forme de sa famille.",
+            add: 'Ajouter une forme',
+            addTitle: "Ajouter une forme d'identité",
+            addEntry: 'Ajouter un champ',
+            entry: 'Champ',
+            removeEntry: 'Supprimer le champ',
+            entriesLead:
+                "Les champs que cette famille exige et interdit. Un champ que la forme ne nomme pas n'est pas vérifié.",
+            removeWarning:
+                'La forme et tous ses champs sont supprimés. Les séries de cette famille sont ensuite écrites sans vérification.',
+            fields: {
+                code: 'Code',
+                asset_class: "Classe d'actif",
+                series_subclass: 'Sous-classe de série',
+                index_family: "Famille d'indice",
+                description: 'À quoi elle sert',
+                field: 'Champ',
+                requirement: 'Exigence',
+                entry_description: 'Pourquoi',
+            },
+            help: {
+                asset_class: "Comme l'écrit l'URI oresmd : ir, fx, credit.",
+                series_subclass:
+                    "Comme l'écrit la taxonomie des séries : index_fixing, yield, spot.",
+                index_family:
+                    'Seulement pour un fixing : ibor, swap, fx. Laissez vide pour toute autre famille.',
+                description: "Ce qu'est la famille, et à quoi sert une série de cette famille.",
+                field: "La colonne d'identité, comme ccy, unit_ccy, index_name ou tenor.",
+                requirement: {
+                    required: 'Une série de cette famille doit donner ce champ.',
+                    forbidden: 'Une série de cette famille ne doit pas donner ce champ.',
+                },
             },
         },
         connectivity: {

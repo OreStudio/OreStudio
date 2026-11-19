@@ -877,6 +877,69 @@ describe('GET /api/timeline for a party', () => {
     });
 });
 
+describe('the identity shape resources', () => {
+    const IBOR = {
+        code: 'ir.index_fixing.ibor',
+        asset_class: 'ir',
+        series_subclass: 'index_fixing',
+        index_family: 'ibor',
+        description: 'A fixing of an interbank offered rate.',
+    };
+
+    it('reaches the registry under the market data permissions the server checks', async () => {
+        const { server, sessionId } = buildTestServer({});
+        const response = await send(server, sessionId, 'GET', '/api/refdata');
+        const resources = (response.json() as { resources: Record<string, unknown>[] }).resources;
+        expect(resources.find((it) => it.key === 'series-identity-shapes')).toMatchObject({
+            keyFields: ['code'],
+            search: true,
+            writePermission: 'marketdata::series_identity_shapes:write',
+            deletePermission: 'marketdata::series_identity_shapes:delete',
+            events: { component: 'marketdata', entity: 'series_identity_shapes' },
+        });
+        expect(resources.find((it) => it.key === 'series-identity-shape-entries')).toMatchObject({
+            keyFields: ['id'],
+            writePermission: 'marketdata::series_identity_shape_entries:write',
+        });
+    });
+
+    it('writes a shape whose code is its family, through the market data subject', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.series_identity_shapes.put': { result: ok },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/refdata/series-identity-shapes',
+            {
+                write: IBOR,
+                version: null,
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(204);
+        expect(calls[0]?.body).toMatchObject({ change: { write: IBOR } });
+    });
+
+    it('refuses a shape whose code names another family, before asking the service', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/refdata/series-identity-shapes',
+            {
+                write: { ...IBOR, code: 'ir.index_fixing.swap' },
+                version: null,
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+});
+
 describe('the curve blueprint resources', () => {
     const CONFIG = '99999999-9999-4999-8999-999999999998';
     const row = {

@@ -250,10 +250,11 @@ export function Composer({
     const held = useHeld();
     const readsShapes =
         held('marketdata::series_identity_shapes:read') &&
+        held('marketdata::series_identity_shape_entries:read') &&
         held('marketdata::series_classification_rules:read');
     const shapes = useQuery({
-        queryKey: ['series-identity-shapes'],
-        queryFn: identityShapes.list,
+        queryKey: ['series-identity-shape-fields'],
+        queryFn: identityShapes.fields,
         enabled: row !== null && readsShapes,
         retry: false,
     });

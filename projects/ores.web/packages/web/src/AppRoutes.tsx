@@ -72,7 +72,7 @@ import {
 } from './operations/AuthorisationQueuePage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
 import { ConnectivityPage } from './marketdata/ConnectivityPage.js';
-import { IdentityShapesPage } from './marketdata/IdentityShapesPage.js';
+import { IdentityShapePage, IdentityShapesPage } from './marketdata/IdentityShapesPage.js';
 import { FixingSeriesPage } from './marketdata/FixingSeriesPage.js';
 import { MarketDataFeedsPage } from './operations/MarketDataFeedsPage.js';
 import { PublicRatesPage } from './marketdata/PublicRatesPage.js';
@@ -619,8 +619,20 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    (view) => (
-                        <IdentityShapesPage mode={view.mode} />
+                    () => (
+                        <IdentityShapesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.identityShapes}/:code`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <IdentityShapePage />
                     ),
                     'workspace',
                 )}

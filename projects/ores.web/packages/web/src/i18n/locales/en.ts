@@ -4475,6 +4475,7 @@ export const en: SourceCatalogue = {
                 authorisation: 'Authorisation',
                 runs: 'Runs',
                 cuts: 'Cuts',
+                entries: 'Entries',
             },
         },
         fields: {
@@ -4591,6 +4592,10 @@ export const en: SourceCatalogue = {
             curve_role_code: 'Curve role',
         },
         choices: {
+            requirement: {
+                required: 'Required',
+                forbidden: 'Forbidden',
+            },
             ore_currency_type: { Major: 'Major', Metal: 'Metal', Crypto: 'Crypto' },
             curve_family_role: {
                 FUNDING: 'Funding',
@@ -5324,33 +5329,37 @@ export const en: SourceCatalogue = {
         },
         identityShapes: {
             title: 'Identity shapes',
-            lead: "The fields each market series family requires and forbids. The writer refuses a series whose identity breaks its family's shape.",
-            add: 'Add a row',
-            none: 'No family states a shape yet.',
-            field: 'Field',
-            requirement: 'Requirement',
-            description: 'Why',
-            owner: 'Owner',
-            shared: 'Shared',
-            own: 'Own',
-            history: 'History',
-            edit: 'Change',
-            remove: 'Remove',
-            version: 'Version',
-            changedBy: 'Changed by',
-            reason: 'Reason',
-            recorded: 'Recorded',
-            assetClass: 'Asset class',
-            seriesSubclass: 'Series subclass',
-            indexFamily: 'Index family (empty unless a fixing)',
-            addTitle: 'Add a shape row',
-            editTitle: 'Change {field} of {family}',
-            removeTitle: 'Remove {field} of {family}',
-            removeLead:
-                'The family no longer requires or forbids this field. Identities written after this are not held to it.',
-            requirements: {
-                required: 'Required',
-                forbidden: 'Forbidden',
+            lead: "Each market series family's identity shape: what the family is for, and the fields its identity requires and forbids. The writer refuses a series whose identity breaks its family's shape.",
+            add: 'Add a shape',
+            addTitle: 'Add an identity shape',
+            addEntry: 'Add a field',
+            entry: 'Field',
+            removeEntry: 'Remove the field',
+            entriesLead:
+                'The fields this family requires and forbids. A field the shape does not name is not checked.',
+            removeWarning:
+                'The shape and all of its fields are removed. Series of this family are then written without a check.',
+            fields: {
+                code: 'Code',
+                asset_class: 'Asset class',
+                series_subclass: 'Series subclass',
+                index_family: 'Index family',
+                description: 'What it is for',
+                field: 'Field',
+                requirement: 'Requirement',
+                entry_description: 'Why',
+            },
+            help: {
+                asset_class: 'As the oresmd URI spells it: ir, fx, credit.',
+                series_subclass: 'As the series taxonomy spells it: index_fixing, yield, spot.',
+                index_family:
+                    'Only for a fixing: ibor, swap, fx. Leave it empty for any other family.',
+                description: 'What the family is, and what a series of it is for.',
+                field: 'The identity column, such as ccy, unit_ccy, index_name or tenor.',
+                requirement: {
+                    required: 'A series of this family must give this field.',
+                    forbidden: 'A series of this family must not give this field.',
+                },
             },
         },
         connectivity: {

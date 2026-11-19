@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { ClassificationRule, Shape } from '../api/identityShapes.js';
+import type { ClassificationRule, ShapeField } from '../api/identityShapes.js';
 import { EMPTY, rowOf, type EditorState } from './editor.js';
 import { columnOf, familyOfEditor, marksOf, unreachableOf } from './family.js';
 import { SCHEMA } from './testSchema.js';
@@ -45,22 +45,11 @@ const RULES: readonly ClassificationRule[] = [
 ];
 
 function shape(
-    family: Pick<Shape, 'asset_class' | 'series_subclass' | 'index_family'>,
+    family: Pick<ShapeField, 'asset_class' | 'series_subclass' | 'index_family'>,
     field: string,
-    requirement: Shape['requirement'],
-): Shape {
-    return {
-        ...family,
-        field,
-        requirement,
-        description: '',
-        version: 1,
-        system: true,
-        modified_by: '',
-        recorded_at: '',
-        change_reason_code: '',
-        change_commentary: '',
-    };
+    requirement: ShapeField['requirement'],
+): ShapeField {
+    return { ...family, field, requirement, description: '' };
 }
 
 const IBOR = { asset_class: 'ir', series_subclass: 'index_fixing', index_family: 'ibor' };

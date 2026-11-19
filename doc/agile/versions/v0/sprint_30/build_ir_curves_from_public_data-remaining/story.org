@@ -21,11 +21,11 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The curves are built, the IBOR projections publish beside their funding curves, and the identity shape of a fixing is stated, enforced and shared. A series the identity shape refuses is now stored nowhere, and the test generator writes a series the shape guards. A check names every family in use that no shape states, and the shapes have a screen. One task is open: the IBOR curve screens. |
+| Now           | Nothing. Every task is done: the curves are built and publish, the IBOR projections stand beside their funding curves on the coverage and analytics screens, and the identity shape of a series is stated, enforced, checked and shown. |
 | Waiting on    | Nothing. |
-| Next          | [[id:52257743-2F40-4DFD-98B2-B08311947335][Show every IBOR curve beside its overnight curve]]: the curves and coverage screens, and the page that states the difference. |
+| Next          | Nothing. |
 | Last touched  | 2026-11-19 |
 
 * Acceptance
@@ -45,7 +45,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | [[id:C0BA69C1-6E68-4AD2-896C-0F6283BD3BAF][Read the public overnight rates through an adapter]] | ABANDONED | | | Moved to the story [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]], which has one specialised adapter for each publisher. |
 | [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]] | DONE | 2026-11-13 | 2026-11-13 | The system tenant runs synthetic feeds of indices that have ceased or are not the currency's overnight average: LIBOR for USD, GBP, JPY and CHF, TELBOR for ILS, HIBOR for CNH, the BUBOR overnight quote for HUF and TAIBOR for TWD; decide per currency what replaces each, and remove or replace the feed. |
 | [[id:7FC9444F-77FA-44E2-A288-A8ED85A48DA7][Show the IR coverage of each currency]] | DONE | 2026-11-13 | 2026-11-13 | A screen shows, for each supported currency, its public source, its calibration policy, its bootstrap config and its latest published curve, as the calibration screen shows the FX coverage. |
-| [[id:52257743-2F40-4DFD-98B2-B08311947335][Show every IBOR curve beside its overnight curve]] | STARTED | | | A person can open a currency's overnight curve and its IBOR curve, see both on one screen, and read which one discounts and which one projects. The first slice of teaching the difference between an overnight average and a term IBOR. |
+| [[id:52257743-2F40-4DFD-98B2-B08311947335][Show every IBOR curve beside its overnight curve]] | DONE | 2026-11-13 | 2026-11-19 | A person can open a currency's overnight curve and its IBOR curve, see both on one screen, and read which one discounts and which one projects. The first slice of teaching the difference between an overnight average and a term IBOR. |
 | [[id:0A87FC5F-F15E-40D8-8CF6-572D24A203EE][Make the ICE and Tradeweb feeds tick]] | DONE | 2026-11-13 | 2026-11-13 | ICE and Tradeweb have no provider notation and no feed route, so their LIBOR and EURIBOR quotes are published as internal ticks and dropped before ingest. Implement both notations, seed their catalogue feeds, routes and subscriptions, and prove a LIBOR quote lands in a series. |
 | [[id:BF673434-ABA7-473E-8550-FC0E7EDD9399][State the identity shape of a fixing]] | DONE | 2026-11-15 | 2026-11-17 | State, as data beside the series classification rules, which fields each market series family requires and which it forbids, and hold the identity writer to it. |
 | [[id:ABFE5452-57B4-4621-86A4-011CF2B03E6A][Write a series and its identity in one act]] | DONE | 2026-11-18 | 2026-11-19 | Take the identity projection before the series is stored, so a series the shape refuses leaves nothing behind. |
@@ -94,6 +94,14 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 - The next step for IBOR is the visual comparison: a bootstrap config for the IBOR curve of a
   currency beside its overnight curve, so a person can open both, and the coverage screen
   groups by currency and family rather than taking one row per currency.
+
+- Closed on 2026-11-19. The last four tasks ran in one pass: the test generator writes a
+  series the shape guards, the shape suite names every family in use that no shape
+  states, the shapes have a screen and the oresmd editor marks a family's fields, and
+  the coverage lists every curve of a currency with the analytics stating what an
+  overnight and a term curve teach together. A defect found on the way, two providers
+  of one fixing colliding in the identity table, is captured as
+  [[id:3B58C44F-5E31-4A30-B185-C06A75E6451C][Two providers of one fixing collide in the identity table]].
 
 * Out of scope
 

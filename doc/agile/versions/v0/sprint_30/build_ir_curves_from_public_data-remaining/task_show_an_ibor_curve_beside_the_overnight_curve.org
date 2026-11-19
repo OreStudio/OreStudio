@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
-#+updated: 2026-11-14
+#+updated: 2026-11-19
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Every IBOR feed has a bootstrapped curve beside its overnight curve, marked as a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | The curve analytics screen names each curve's role and index tenor, draws a projection beside the funding curve it discounts off, and states the gap pillar by pillar. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The curves and coverage screens: group every curve of a currency, and the page that states the difference the comparison teaches. |
-| Last touched | 2026-11-14                             |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                             |
 
 * Acceptance
 
@@ -43,9 +43,24 @@ Every IBOR feed has a bootstrapped curve beside its overnight curve, marked as a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Earlier work on this task, merged before 2026-11-19, bootstrapped every IBOR
+feed, published it with role projection beside its funding curve, and taught
+the curve analytics to draw a projection beside the curve it discounts off.
+What remained was the coverage screen and the page that states the difference.
+
+The coverage took one curve per currency: the newest published of its configs.
+Each row now carries every curve its bootstrap configs build, the funding curve
+first, with its role, a projection's index tenor and the curve it discounts
+off, its latest publish, and a link to the curve analytics, which holds the
+three views. The currency is covered by its funding curve. Before, a projection
+that published later than a stale funding curve made the currency look
+covered.
+
+The page that states the difference is the curve analytics itself. When the pair
+on screen is a funding curve and a projection, a panel states the four points
+the prototype set out: the underlying, how each fixes, what each is for, and why
+the shape differs. The curve names and the index tenor come from the pair on
+screen, so the text is about the two curves the person is reading.
 
 * Measurements
 
@@ -59,9 +74,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Coverage computation tests | 14, pass, including a funding curve covering the currency over a later projection | =npx vitest run src/calibration.test.ts= in =packages/bff= | dab8702763 |
+| Coverage and analytics screen tests | 44 and 15, pass | =npx vitest run src/marketdata/calibration src/marketdata/curveAnalyticsScreen.test.tsx= | dab8702763 |
+| Web and BFF suites | 2,589 and 1,313 tests, pass | =npx vitest run= in each package | dab8702763 |
+| Harness against the running services | 1 case, pass: a projection in the coverage opens beside its funding curve with the panel | =npx playwright test tests/ibor-beside-overnight.spec.ts= | b6bc841a77 |
 
 * Notes
+
+- The live run found a defect already on main: the web client required a
+  =price_source= on each IR coverage row, which the BFF never sends and nothing
+  reads, so the interest rates calibration failed to parse for every reader. The
+  field is gone from the web schema, in its own commit on this branch.
+- Calibration is a system control, so the harness reads it as the system
+  administrator.
 
 - The IBOR feeds are already seeded and publish as projection curves: ICE's five LIBOR
   curves (USD 1M/6M, GBP 3M, CHF 3M, JPY 3M) and Tradeweb's three (GBP 1M, CHF 6M,
@@ -146,3 +171,17 @@ so the pair has both sides to draw.
   either" is unbuilt rather than untested.
 - The acceptance item that a test states no consumer takes a projection for a
   discount curve is still unmet.
+
+** The coverage, the teaching panel, and the close
+
+A currency's IBOR curves now stand beside its overnight curve on the two
+screens a person reads them from. The coverage screen lists every curve of a
+currency, the funding curve first, each with its role, a projection's index
+tenor and the curve it discounts off, its latest publish, and a link to the
+curve analytics. The curve analytics draws a projection beside its funding
+curve in the three views, and it now states what the pair teaches.
+
+All five acceptance points are met. The first, second and fifth were met by the
+earlier work on this task: every IBOR feed bootstraps and publishes with role
+projection, and a projection names its discount curve. This branch meets the
+third and the fourth, and the harness proves both against the running services.

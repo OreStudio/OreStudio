@@ -86,6 +86,7 @@ void batch_workflow_bridge::poll_once() {
                 // The link belongs to the batch's tenant, and a removal stays
                 // tenant-scoped, so it is removed as that tenant.
                 link_repo.remove(tenant_ctx, batch_id);
+                unstoreable_attempts_.erase(batch_id);
                 continue;
             }
 
@@ -130,13 +131,15 @@ void batch_workflow_bridge::poll_once() {
                     ores::nats::headers::publish_identity_headers(link.workflow_step_id),
                     publish_ack_wait);
             } catch (const std::exception& e) {
+                const auto attempts = ++unstoreable_attempts_[batch_id];
                 BOOST_LOG_SEV(lg(), error)
                     << "Could not fire step_completed for batch " << batch_id
                     << " (step=" << link.workflow_step_id
-                    << " instance=" << link.workflow_instance_id << "): " << e.what()
-                    << "; the remaining links wait for the next poll.";
+                    << " instance=" << link.workflow_instance_id << ") on attempt " << attempts
+                    << ": " << e.what() << "; the remaining links wait for the next poll.";
                 return;
             }
+            unstoreable_attempts_.erase(batch_id);
 
             BOOST_LOG_SEV(lg(), info) << "Fired step_completed for batch " << batch_id
                                       << " (step=" << link.workflow_step_id

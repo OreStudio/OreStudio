@@ -25,6 +25,7 @@
 #include "ores.nats/service/client.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <cstdint>
+#include <unordered_map>
 
 namespace ores::compute::service::app {
 
@@ -66,6 +67,15 @@ private:
     std::uint32_t interval_seconds_;
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
+    /**
+     * @brief How many polls in a row could not store each link's completion.
+     *
+     * A link is retried until the store accepts it, so this count is what
+     * separates a passing hiccup from a store that has stopped writing. The
+     * poll runs on the service's single io_context thread, so one thread owns
+     * this map and it needs no lock.
+     */
+    std::unordered_map<std::string, std::uint32_t> unstoreable_attempts_;
 };
 
 }

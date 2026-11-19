@@ -29,11 +29,11 @@ time, and reads and writes in batches, so its time goes to the fits.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Every step of the marketdata family reads and publishes where it stands, and runs its independent units in lanes. The four steps still ask refdata for one thing: the plan they write into refdata's tables. |
+| Now          | Nothing. |
 | Waiting on   | A run on a host that is not building five other branches, so the wall clock means something. |
-| Next         | The batch approval task, [[id:C756C87B-2284-4BCB-AAEC-F2EA4F2F6D6F][Approve a set of surfaces in one request]]. |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -179,3 +179,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered as #4855. The four marketdata kinds of step do their own work, and
+what the task set out to remove is gone: no step asks its own service for a
+read it can make or an act it can take. The one request left is the plan write
+into refdata's tables, which this service may read and not write.
+
+- Surfaces: calibrated and published in process, four lanes, one lineage read
+  per surface instead of 65, the recipes and the quotes gathered once a party.
+- Forwards: published in process, four lanes, the pair catalogue read once.
+- Curves: bootstrapped and published in process, four lanes, the holdings and
+  the published sets read locally.
+- Market data: the catalogue, the parties, and each party's subscriptions and
+  routes read, and the rows written, where the step stands.
+- Surface blueprints: the holdings read locally; the plan still asked of
+  refdata, for the reason above.
+
+Not delivered, and captured rather than claimed: the wall-clock comparison the
+acceptance asked for. The host ran at a load average of 28 to 56 from other
+worktrees throughout, and the branch's one provisioning run was starved of
+derived quotes upstream of these steps. At the user's direction the work was
+judged on its structure and not on a time taken on a busy host, so the
+measurements table records what is countable and says plainly that the step's
+duration was not measured.
+
+Two things the work found are their own tasks, listed under the parent
+story's Tasks: *Size the connection pool and the step's lanes together*, and
+*Read only the quote series a party's surfaces fit*. The tests that would hold
+the claims are the third, *Prove the step, the screen and the sweep calibrate
+alike*.

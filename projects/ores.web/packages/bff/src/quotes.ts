@@ -103,12 +103,20 @@ export class QuoteBoard {
         this.#subscribe = subscribe;
     }
 
-    /** Starts listening, the first time it is called. */
+    /**
+     * Starts listening, the first time it is called. A transport that is not connected
+     * yet throws; the board then stays unstarted and the next read tries again, and the
+     * read in hand answers from the empty board rather than failing.
+     */
     start(): void {
         if (this.#stop !== undefined) return;
-        this.#stop = this.#subscribe(`${MARKET_TICK_BASE}.>`, (tick, subject) => {
-            this.take(subject, tick);
-        });
+        try {
+            this.#stop = this.#subscribe(`${MARKET_TICK_BASE}.>`, (tick, subject) => {
+                this.take(subject, tick);
+            });
+        } catch {
+            this.#stop = undefined;
+        }
     }
 
     /** Takes one tick heard on @p subject; a subject that names no feed is ignored. */
@@ -220,7 +228,9 @@ export function labelsOf(
         .split('&')
         .map((pair) => {
             const equals = pair.indexOf('=');
-            return { raw: pair, name: pair.slice(0, equals), value: pair.slice(equals + 1) };
+            return equals < 0
+                ? { raw: pair, name: pair, value: '' }
+                : { raw: pair, name: pair.slice(0, equals), value: pair.slice(equals + 1) };
         });
     const instrument = pairs.find((p) => p.name === 'instrument')?.value ?? '';
     const shape = shapes.get(instrument);
@@ -294,9 +304,12 @@ function wireInstant(text: string): string {
     return text.replace('T', ' ');
 }
 
-/** The instant a server writes as text, as the milliseconds since the epoch. */
-function epochOf(text: string): number {
-    return Date.parse(text.replace(' ', 'T'));
+/** The instant a server writes as text, as the microseconds since the epoch. */
+function microsOf(text: string): number {
+    const iso = text.replace(' ', 'T');
+    const fraction = /\.(\d+)Z$/.exec(iso)?.[1] ?? '';
+    const millis = Date.parse(iso.replace(/\.\d+Z$/, 'Z'));
+    return millis * 1000 + Number((fraction + '000000').slice(0, 6));
 }
 
 export function registerQuoteRoutes(
@@ -304,7 +317,11 @@ export function registerQuoteRoutes(
     requireSession: (request: FastifyRequest) => LiveSession,
     board: QuoteBoard,
 ): void {
-    /** The schema's shapes, read once with the first reader's session and kept. */
+    /**
+     * The schema's shapes, read once with the first reader's session and kept for the
+     * life of the process: the schema is the codec's own table and changes with a
+     * release, which restarts the BFF.
+     */
     let shapes: Map<string, InstrumentShape> | undefined;
     const labels = new Map<string, QuoteLabels | undefined>();
     const shapesFor = async (session: LiveSession): Promise<Map<string, InstrumentShape>> => {
@@ -355,11 +372,12 @@ export function registerQuoteRoutes(
                 message: `The after parameter is not a board sequence: ${query.data.after ?? ''}`,
             });
         board.start();
-        const now = board.sequence;
         const feeds = new Set(
             (await watchable(session)).map((f) => `${f.provider_code}|${f.feed_id}`),
         );
-        const { rows, sequence } = pageOf(board.after(after, feeds), now);
+        // The sequence is read with the rows, after the entitlement's answer, so a quote that
+        // arrives while it is asked is sent once and not again.
+        const { rows, sequence } = pageOf(board.after(after, feeds), board.sequence);
         const known = await shapesFor(session);
         const quotes = [];
         for (const q of rows) {
@@ -419,7 +437,7 @@ export function registerQuoteRoutes(
                 code: 'upstream-unavailable',
                 message: "The history reply's arrays differ in length.",
             });
-        let at = answer.first_instant ? epochOf(answer.first_instant) * 1000 : 0;
+        let at = answer.first_instant ? microsOf(answer.first_instant) : 0;
         return {
             ticks: answer.values.map((value, i) => {
                 at += answer.gaps_us[i] ?? 0;

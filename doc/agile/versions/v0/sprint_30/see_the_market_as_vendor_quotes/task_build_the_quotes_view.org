@@ -121,6 +121,12 @@ via its "Verifies task" field.
 | 4 | The client map has no bound | QuotesPage.tsx | Decline | Bounded by the server's board and by the feeds the session may watch. |
 | 5 | Each poll asks the entitlement | quote_routes.cpp | Decline | A changed subscription must take effect at the next read; one read a second for each open screen is the price. |
 | 6 | The history reply's arrays are trusted | quote_routes.cpp | Accept | A reply whose arrays differ in length is refused. |
+| 7 | A start before the transport connects is never retried (BFF) | quotes.ts | Accept | The NATS transport throws when not connected; the board now catches it, stays unstarted and tries at the next read; a test covers it. |
+| 8 | The sequence is read before the entitlement call | quotes.ts, quote_routes.cpp | Accept | Read with the rows, after the answer, in both servers. |
+| 9 | A query pair with no = loses a character | quotes.ts | Accept | Handled on purpose; a test covers it. |
+| 10 | History time loses microseconds (BFF) | quotes.ts | Accept | The first instant is read to the microsecond. |
+| 11 | The labels cache has no bound of its own | quotes.ts | Decline | Bounded by the board's capacity; it holds no tenant's data. |
+| 12 | The schema shapes are kept for the process | quotes.ts | Accept | The comment states that the schema changes with a release, which restarts the BFF. |
 
 * Result
 

@@ -175,8 +175,11 @@ void quote_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                     rr::refuse_unknown_params(req, {"after"});
                     const auto after = after_of(req);
                     board->start();
+                    // The sequence is read after the entitlement's answer, with the rows, so a
+                    // quote that arrives while it is asked is sent once and not again.
+                    const auto feeds = keys_of(entitled(req));
                     auto now = board->sequence();
-                    auto rows = board->after(after, keys_of(entitled(req)));
+                    auto rows = board->after(after, feeds);
                     // A read over the ceiling sends the oldest and states the sequence of the
                     // last it sent, so the next read carries on from there and loses none.
                     if (rows.size() > most_quotes) {

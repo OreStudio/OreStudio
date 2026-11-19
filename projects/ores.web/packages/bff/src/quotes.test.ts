@@ -94,6 +94,20 @@ describe('the quote board', () => {
         expect(heard).toEqual(['marketdata.v1.ops.market_tick.>']);
     });
 
+    it('tries again at the next read when the transport cannot subscribe yet', () => {
+        let connected = false;
+        const heard: string[] = [];
+        const board = new QuoteBoard((s) => {
+            if (!connected) throw new Error('Cannot subscribe: not connected');
+            heard.push(s);
+            return () => undefined;
+        });
+        expect(() => board.start()).not.toThrow();
+        connected = true;
+        board.start();
+        expect(heard).toEqual(['marketdata.v1.ops.market_tick.>']);
+    });
+
     it('reads the provider and the feed from a subject, and nothing from another', () => {
         expect(feedOf(subject('bloomberg', BLOOMBERG))).toEqual({
             provider: 'bloomberg',
@@ -147,6 +161,12 @@ describe('the labels of a quote', () => {
             series: 'GBP USD',
             point: '',
         });
+    });
+
+    it('keep a query pair with no value as it is', () => {
+        expect(labelsOf(`${GBPUSD}&flag`, SHAPES)?.series_uri).toBe(
+            'oresmd://fx/GBP?type=series&instrument=fx_spot&quote=rate&ccy=USD&flag',
+        );
     });
 
     it('give nothing for a type the schema does not name', () => {

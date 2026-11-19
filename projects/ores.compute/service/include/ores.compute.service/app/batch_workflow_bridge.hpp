@@ -71,7 +71,9 @@ private:
      * @brief How many polls in a row could not store each link's completion.
      *
      * A link is retried until the store accepts it, so this count is what
-     * separates a passing hiccup from a store that has stopped writing.
+     * separates a passing hiccup from a store that has stopped writing. The
+     * poll runs on the service's single io_context thread, so one thread owns
+     * this map and it needs no lock.
      */
     std::unordered_map<std::string, std::uint32_t> unstoreable_attempts_;
 };

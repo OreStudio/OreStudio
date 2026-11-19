@@ -938,7 +938,9 @@ void client::js_publish(std::string_view subject,
     opts.MaxWait = ack_wait.count();
     jsPubAck* received = nullptr;
     // The JetStream error explains a refusal to store, so a full store reads as
-    // a full store rather than as the timeout an absent ack looks like.
+    // a full store rather than as the timeout an absent ack looks like. A
+    // timeout says only that no acknowledgement came back: the store may have
+    // refused the message, or written it and lost the reply.
     jsErrCode jerr = static_cast<jsErrCode>(0);
     // js_PublishMsg(jsPubAck**, jsCtx*, natsMsg*, jsPubOptions*, jsErrCode*)
     const natsStatus s = js_PublishMsg(&received, impl_->js, msg.get(), &opts, &jerr);

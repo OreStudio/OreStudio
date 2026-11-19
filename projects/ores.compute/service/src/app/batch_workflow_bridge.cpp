@@ -86,6 +86,7 @@ void batch_workflow_bridge::poll_once() {
                 // The link belongs to the batch's tenant, and a removal stays
                 // tenant-scoped, so it is removed as that tenant.
                 link_repo.remove(tenant_ctx, batch_id);
+                unstoreable_attempts_.erase(batch_id);
                 continue;
             }
 

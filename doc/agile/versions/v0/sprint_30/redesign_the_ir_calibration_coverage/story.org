@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: E98B52CA-07FA-4FF3-962A-E8AD386B5BD7
+:END:
+#+title: Story: Redesign the IR calibration coverage
+#+description: The IR calibration screen stacks every curve of a currency in one cell, repeats the window and the publish time, and says no feed on every row. Show one row per curve, the class policy as a compact card, and a state that is true.
+#+type: story
+#+level: s2
+#+filetags: :synthetic:calibration:web:sprint_30:v0:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-19                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5DA437A0-8241-4215-BD5A-3BA6BF2BFEC1][Show one row per curve, and a state that is true]] | STARTED | 2026-11-19 | | Lay the IR coverage out as one row per curve with the policy in a compact card, and make the IR feeds reach the calibration so the state each row shows is true. |
+
+* Decisions
+
+* Out of scope
+
+-

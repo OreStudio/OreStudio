@@ -26,6 +26,7 @@
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include <algorithm>
 #include <cstddef>
+#include <expected>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -177,6 +178,18 @@ inline std::string coordinates_token(const datum::market_datum& datum) {
     return text.empty() ? std::string(no_coordinates_token) : subject_token(text);
 }
 
+/// Every token of a feed's tick subject up to the series, which the coordinate token follows.
+inline std::string feed_series_subject(std::string_view provider_code,
+                                       std::string_view feed_id,
+                                       datum::instrument_type type,
+                                       std::string_view series_uri) {
+    std::string subject(messaging::market_tick::nats_subject);
+    subject.append(".").append(subject_token(provider_code));
+    subject.append(".").append(feed_id);
+    subject.append(".").append(datum::oresmd_uri_codec::instrument_spelling(type));
+    return subject.append(".").append(subject_token(series_uri));
+}
+
 /**
  * @brief The subject a feed's ticks of one datum travel on:
  * "marketdata.v1.ops.market_tick.<provider>.<feed>.<instrument_type>.<series_token>.<coordinate_token>".
@@ -190,12 +203,26 @@ inline std::string feed_tick_subject(std::string_view provider_code,
                                      std::string_view feed_id,
                                      const datum::market_datum& datum,
                                      std::string_view series_uri) {
-    std::string subject(messaging::market_tick::nats_subject);
-    subject.append(".").append(subject_token(provider_code));
-    subject.append(".").append(feed_id);
-    subject.append(".").append(datum::oresmd_uri_codec::instrument_spelling(datum.type()));
-    subject.append(".").append(subject_token(series_uri));
-    return subject.append(".").append(coordinates_token(datum));
+    return feed_series_subject(provider_code, feed_id, datum.type(), series_uri)
+        .append(".")
+        .append(coordinates_token(datum));
+}
+
+/**
+ * @brief The subject a watcher of @p datum subscribes to on one feed.
+ *
+ * A point watches its own subject. A series has no subject of its own, so it watches its
+ * series token with a wildcard for the coordinate, and the broker sends every point of the
+ * series and nothing else. The error is the codec's own message.
+ */
+inline std::expected<std::string, std::string> feed_tick_watch_subject(
+    std::string_view provider_code, std::string_view feed_id, const datum::market_datum& datum) {
+    const auto series = datum::oresmd_uri_codec::write(datum::series_of(datum));
+    if (!series)
+        return std::unexpected(series.error());
+    if (!datum.is_series())
+        return feed_tick_subject(provider_code, feed_id, datum, *series);
+    return feed_series_subject(provider_code, feed_id, datum.type(), *series).append(".*");
 }
 
 }

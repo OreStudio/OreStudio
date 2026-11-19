@@ -28,15 +28,15 @@ for each routed party, which every consumer still reads. The story
 ** Today
 
 The ingest publishes each accepted tick once on its feed's subject
-(=feed_tick_subject()=), and no consumer reads it yet. It also turns each route
+(=feed_tick_subject()=). The shell's stream watch reads it: it asks
+=list_watchable_feeds= which feeds the party may show, and watches those. The
+ingest also turns each route
 into a consumer, and for each accepted tick it publishes one copy for each
 consumer, on
 =marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=, where the token is the
 whole oresmd URI of the datum (=tick_plan.cpp=, =make_delivery=). The copies cost
 one publish for each party, so the live path grows with the parties and not with
-the market. The copy's token holds the whole URI, so no wildcard covers one
-series, and a watcher of a series takes the whole party subtree and filters it
-(=marketdata_commands.cpp=, =stream_subjects=).
+the market. No consumer reads the copies any more, and they go next.
 
 ** The subject
 
@@ -98,11 +98,15 @@ is made where a watch starts:
   Every new watcher asks it before it subscribes. A watcher that subscribes to a
   feed subject without the answer skips the entitlement, and that is a defect.
 - The market data service answers from the routes and the subscriptions, by the
-  rule above, with the system tenant's answer being every feed.
+  rule above, with the system tenant's answer being every feed. The operation is
+  =marketdata.v1.ops.list_watchable_feeds=, and the rule is =watchable_feeds()=
+  in =tick_entitlement.cpp=.
 
 A watch can last for hours, and a route or a subscription can change while it
 runs. When a party's route or subscription changes, the watcher asks again, adds
 the feeds that the answer now holds and drops the feeds that it no longer holds.
+It learns of the change from the route and subscription events,
+=marketdata.v1.events.routes.>= and =marketdata.v1.events.subscriptions.>=.
 
 Checking the subjects on the broker itself needs an account and permissions for
 each client. That is a separate change, and this target does not need it.

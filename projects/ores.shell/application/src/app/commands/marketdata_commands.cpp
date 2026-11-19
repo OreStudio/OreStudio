@@ -18,13 +18,17 @@
  *
  */
 #include "ores.shell/app/commands/marketdata_commands.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include "ores.marketdata.api/eventing/route_event.hpp"
+#include "ores.marketdata.api/eventing/subscription_event.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/buffered_subscription.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -52,12 +56,15 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cli/cli.h>
 #include <csignal>
+#include <expected>
 #include <format>
 #include <fstream>
 #include <functional>
+#include <map>
 #include <optional>
 #include <ostream>
 #include <sstream>
@@ -109,25 +116,44 @@ std::string csv_field(const std::string& text) {
 }
 
 /**
- * @brief The ticks a live subscription carries, decoded one tick per message.
+ * @brief The ticks a live watch carries, on the subjects of the feeds the party may watch now.
  *
- * Reads only what arrived since the last call, so a tick is printed once. A
- * watch may hold one subscription per subject it covers, and their messages
- * arrive in whatever order the service published them.
+ * The watch holds one subscription for each subject, and reads only what arrived since the
+ * last call, so a tick is printed once. The broker does not check subjects, so a change to a
+ * route or a subscription marks the watch, and the next read asks again which feeds the party
+ * may watch and changes the subscriptions to match. A feed the party loses stops arriving.
  */
-class subscription_tick_source final : public tick_source {
+class watched_tick_source final : public tick_source {
 public:
-    subscription_tick_source(ores::nats::service::client& transport,
-                             const std::vector<std::string>& subjects) {
-        for (const auto& subject : subjects) {
-            subscriptions_.push_back(
-                {transport.subscribe_buffered(subject, stream_buffer_capacity), 0});
-        }
+    using subjects_now = std::function<std::expected<std::vector<std::string>, std::string>()>;
+
+    watched_tick_source(ores::nats::service::client& transport,
+                        const std::vector<std::string>& subjects,
+                        subjects_now ask,
+                        std::ostream& out)
+        : transport_(transport)
+        , ask_(std::move(ask))
+        , out_(out) {
+        watch(subjects);
+        using ores::eventing::domain::entity_event_traits;
+        for (const auto prefix :
+             {entity_event_traits<marketdata::messaging::route_event>::subject_prefix,
+              entity_event_traits<marketdata::messaging::subscription_event>::subject_prefix})
+            events_.push_back(transport.subscribe(
+                std::string(prefix) + ".>", [this](ores::nats::message) { changed_ = true; }));
     }
 
     std::pair<std::vector<marketdata::messaging::market_tick>, bool> next() override {
+        if (changed_.exchange(false)) {
+            if (const auto wanted = ask_())
+                watch(*wanted);
+            else
+                fail(out_) << "Failed to ask again which feeds to watch: " << wanted.error()
+                           << std::endl;
+        }
         std::vector<marketdata::messaging::market_tick> ticks;
-        for (auto& [subscription, read] : subscriptions_) {
+        for (auto& [subject, held] : subscriptions_) {
+            auto& [subscription, read] = held;
             const auto snapshot = subscription.snapshot();
             for (; read < snapshot.size(); ++read) {
                 auto decoded =
@@ -141,7 +167,33 @@ public:
     }
 
 private:
-    std::vector<std::pair<ores::nats::service::buffered_subscription, std::size_t>> subscriptions_;
+    void watch(const std::vector<std::string>& wanted) {
+        std::vector<std::string> held;
+        held.reserve(subscriptions_.size());
+        for (const auto& entry : subscriptions_)
+            held.push_back(entry.first);
+        const auto change = marketdata_commands::change_watch(held, wanted);
+        for (const auto& subject : change.dropped) {
+            subscriptions_.erase(subject);
+            out_ << "Stopped watching '" << subject << "'." << std::endl;
+        }
+        for (const auto& subject : change.added) {
+            subscriptions_.emplace(
+                subject,
+                std::pair{transport_.subscribe_buffered(subject, stream_buffer_capacity),
+                          std::size_t{0}});
+            out_ << "Watching '" << subject << "'." << std::endl;
+        }
+    }
+
+    ores::nats::service::client& transport_;
+    subjects_now ask_;
+    std::ostream& out_;
+    std::map<std::string, std::pair<ores::nats::service::buffered_subscription, std::size_t>>
+        subscriptions_;
+    std::atomic<bool> changed_{false};
+    // Last, so the event handlers stop before the state they write goes.
+    std::vector<ores::nats::service::subscription> events_;
 };
 
 bool write_file(const std::string& path, const std::string& content) {
@@ -431,34 +483,34 @@ void marketdata_commands::process_backfill_identity(std::ostream& out,
     BOOST_LOG_SEV(lg(), info) << "Identity backfill succeeded: " << result->message;
 }
 
-std::expected<stream_watch, std::string> marketdata_commands::stream_subjects(
-    std::string_view tenant_id, std::string_view party_id, std::string_view uri) {
-    auto datum = marketdata::datum::oresmd_uri_codec::read(uri);
+std::expected<std::vector<std::string>, std::string> marketdata_commands::stream_subjects(
+    const std::vector<marketdata::messaging::watchable_feed>& feeds, std::string_view uri) {
+    const auto datum = marketdata::datum::oresmd_uri_codec::read(uri);
     if (!datum)
         return std::unexpected(datum.error());
-
-    if (!datum->is_series()) {
-        // The URI the codec writes is the datum's one spelling, and the subject
-        // is made from it, as the ingest loop makes it.
-        const auto canonical = marketdata::datum::oresmd_uri_codec::write(*datum);
-        if (!canonical)
-            return std::unexpected(canonical.error());
-        return stream_watch{
-            {marketdata::domain::market_tick_subject(tenant_id, party_id, *canonical)},
-            std::nullopt};
+    std::vector<std::string> subjects;
+    subjects.reserve(feeds.size());
+    for (const auto& feed : feeds) {
+        auto subject =
+            marketdata::domain::feed_tick_watch_subject(feed.provider_code, feed.feed_id, *datum);
+        if (!subject)
+            return std::unexpected(subject.error());
+        subjects.push_back(std::move(*subject));
     }
-
-    // A series is not a datum a producer publishes: it only ever names points,
-    // each on a subject of its own, so no NATS wildcard covers exactly one
-    // series' points. Watch the party's whole tick subtree and keep the ticks
-    // whose series matches.
-    return stream_watch{{marketdata::domain::market_tick_subject_all(tenant_id, party_id)}, *datum};
+    return subjects;
 }
 
-bool marketdata_commands::tick_in_series(const marketdata::messaging::market_tick& tick,
-                                         const marketdata::datum::market_datum& series) {
-    const auto datum = marketdata::datum::oresmd_uri_codec::read(tick.oresmd_uri);
-    return datum && marketdata::datum::series_of(*datum) == series;
+watch_change marketdata_commands::change_watch(const std::vector<std::string>& held,
+                                               const std::vector<std::string>& wanted) {
+    watch_change change;
+    for (const auto& subject : wanted)
+        if (std::ranges::find(held, subject) == held.end() &&
+            std::ranges::find(change.added, subject) == change.added.end())
+            change.added.push_back(subject);
+    for (const auto& subject : held)
+        if (std::ranges::find(wanted, subject) == wanted.end())
+            change.dropped.push_back(subject);
+    return change;
 }
 
 std::string marketdata_commands::tick_line(const marketdata::messaging::market_tick& tick) {
@@ -478,12 +530,10 @@ std::string marketdata_commands::tick_row(const marketdata::messaging::market_ti
         csv_field(tick.source));
 }
 
-stream_output marketdata_commands::run_stream(
-    tick_source& source,
-    const std::function<bool()>& cancelled,
-    const std::string& csv_path,
-    std::ostream& out,
-    const std::function<bool(const marketdata::messaging::market_tick&)>& accept) {
+stream_output marketdata_commands::run_stream(tick_source& source,
+                                              const std::function<bool()>& cancelled,
+                                              const std::string& csv_path,
+                                              std::ostream& out) {
     stream_output output;
     output.rows.push_back(std::string(stream_csv_header));
 
@@ -501,8 +551,6 @@ stream_output marketdata_commands::run_stream(
     for (;;) {
         auto [ticks, more] = source.next();
         for (const auto& tick : ticks) {
-            if (accept && !accept(tick))
-                continue;
             output.screen_lines.push_back(tick_line(tick));
             output.rows.push_back(tick_row(tick));
             out << output.screen_lines.back() << std::endl;
@@ -720,38 +768,48 @@ void marketdata_commands::process_stream(std::ostream& out,
 
     const auto& uri = parsed->positionals[0];
     const auto& csv_path = parsed->flag("csv");
-    const auto& auth = session.auth();
 
-    auto watch = stream_subjects(auth.tenant_id, auth.default_party_id, uri);
-    if (!watch) {
-        // The codec's own message names what the URI got wrong, which a raw
-        // subject error would not.
-        fail(out) << watch.error() << std::endl;
+    // The codec's own message names what the URI got wrong, which a raw subject error would not,
+    // so the URI is read before the service is asked anything.
+    if (const auto checked = stream_subjects({}, uri); !checked) {
+        fail(out) << checked.error() << std::endl;
         return;
     }
 
-    for (const auto& subject : watch->subjects)
-        out << "Watching '" << subject << "' for " << uri << "; Ctrl-C to stop." << std::endl;
-    if (watch->series)
-        out << "Keeping only ticks of this series." << std::endl;
+    // The broker does not check subjects, so the shell watches only the feeds the service says
+    // the party may show on a screen, and asks again when they may have changed.
+    const auto ask =
+        [&out, &session, uri]() -> std::expected<std::vector<std::string>, std::string> {
+        marketdata::messaging::list_watchable_feeds_request req;
+        req.for_display = true;
+        const auto result = do_auth_request<marketdata::messaging::list_watchable_feeds_response>(
+            out, session, std::string(req.nats_subject), req);
+        if (!result)
+            return std::unexpected("the market data service did not answer");
+        if (result->result.outcome != ores::utility::domain::outcome::ok)
+            return std::unexpected(result->result.message + " (" + result->result.code + ")");
+        return stream_subjects(result->feeds, uri);
+    };
+    const auto subjects = ask();
+    if (!subjects) {
+        fail(out) << "Failed to read which feeds the party may watch: " << subjects.error()
+                  << std::endl;
+        return;
+    }
+    out << "Watching " << uri << " on " << subjects->size() << " feed(s); Ctrl-C to stop."
+        << std::endl;
     if (!csv_path.empty())
         out << "Writing CSV to " << csv_path << std::endl;
 
-    subscription_tick_source source(session.transport(), watch->subjects);
-
-    std::function<bool(const marketdata::messaging::market_tick&)> accept;
-    if (watch->series)
-        accept = [series = *watch->series](const marketdata::messaging::market_tick& tick) {
-            return tick_in_series(tick, series);
-        };
+    watched_tick_source source(session.transport(), *subjects, ask, out);
 
     interrupted = 0;
     const auto previous = std::signal(SIGINT, on_interrupt);
-    const auto output = run_stream(source, [] { return interrupted != 0; }, csv_path, out, accept);
+    const auto output = run_stream(source, [] { return interrupted != 0; }, csv_path, out);
     std::signal(SIGINT, previous);
 
     if (output.count == 0)
-        out << "No ticks arrived on '" << watch->subjects.front() << "'." << std::endl;
+        out << "No ticks arrived for " << uri << "." << std::endl;
     out << output.count << " tick(s)." << std::endl;
     if (!output.csv_error.empty())
         fail(out) << "Cannot write CSV file: " << output.csv_error << std::endl;

@@ -12,7 +12,7 @@
 #+brief: The marketdata component's domain operations.
 #+filetags: :model:operation:marketdata:
 #+created: 2026-09-30
-#+updated: 2026-11-13
+#+updated: 2026-11-19
 
 These are the component's messages that are not entity verbs. Each one acts
 on an aggregate, a live computation or a whole-tenant export rather than on
@@ -4163,6 +4163,89 @@ For each tick, the index of its coordinate in =coordinates=.
 :END:
 
 For each tick, its value.
+
+** watchable_feed
+
+One feed a party may watch: the provider and the feed that its live subject names.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One feed a party may watch.
+ *
+ * The two codes are the first two tokens of the feed's live subject after the
+ * market_tick base, so a watcher builds every subject of the feed from them.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The code of the provider that publishes the feed.
+
+*** feed_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The id of the feed.
+
+** list_watchable_feeds_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.list_watchable_feeds
+:response: list_watchable_feeds_response
+:END:
+
+Asks which feeds the session's party may watch live. The broker does not check subjects, so a
+watcher asks this before it subscribes, and asks again when a route or a subscription changes.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks which feeds the session's party may watch.
+ *
+ * The answer follows the rule of the history read: the party's route picks the feed of a
+ * provider, and its subscription to the provider holds the right the use needs. The system
+ * tenant may watch every feed.
+ */
+#+end_src
+
+*** for_display
+:PROPERTIES:
+:cpp_type: bool
+:default: true
+:END:
+
+Whether the ticks are shown to a person. A watch for a screen needs the display right. A
+service that uses the ticks with no screen asks with false, and the display or the non-display
+right serves it.
+
+** list_watchable_feeds_response
+
+The feeds the party may watch, in the order of the provider code and then the feed id.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The feeds the session's party may watch.
+ *
+ * A party with no route, or with no subscription that holds the right, gets an empty list,
+ * which is not a refusal. A session with no party and no system tenant is refused.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+How the call ended. A session with no party is refused here.
+
+*** feeds
+:PROPERTIES:
+:cpp_type: std::vector<watchable_feed>
+:END:
+
+The feeds, each once.
 
 ** store_market_state_request
 :PROPERTIES:

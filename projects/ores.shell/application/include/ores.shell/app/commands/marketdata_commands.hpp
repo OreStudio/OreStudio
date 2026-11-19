@@ -74,16 +74,12 @@ struct stream_output {
 };
 
 /**
- * @brief What one stream watches: the subjects to subscribe to, and the series
- * every arriving tick must belong to.
- *
- * A point URI watches its own key alone and matches every tick on it, so it
- * carries no filter. A series URI has no key of its own, so it watches the
- * party's whole tick subtree and carries the series as a filter.
+ * @brief How a live watch changes when the feeds it may watch change: the subjects to add and
+ * the subjects to drop.
  */
-struct stream_watch {
-    std::vector<std::string> subjects;
-    std::optional<marketdata::datum::market_datum> series;
+struct watch_change {
+    std::vector<std::string> added;
+    std::vector<std::string> dropped;
 };
 
 /**
@@ -216,19 +212,19 @@ public:
                                const std::vector<std::string>& args);
 
     /**
-     * @brief What a stream for @p uri watches.
+     * @brief The subjects a stream for @p uri watches on @p feeds, the feeds the party may watch.
      *
-     * A point URI resolves to one subject: its datum's canonical ORE key, and
-     * no filter. A series URI resolves to the party's whole tick subtree and
-     * the series to match, because no NATS wildcard covers exactly the points
-     * of one series. The error is the codec's own message.
+     * Each feed gives one subject: a point URI its datum's own subject, and a series URI its
+     * series with a wildcard coordinate, so the broker sends the points of the series and
+     * nothing else. The error is the codec's own message.
      */
-    [[nodiscard]] static std::expected<stream_watch, std::string>
-    stream_subjects(std::string_view tenant_id, std::string_view party_id, std::string_view uri);
+    [[nodiscard]] static std::expected<std::vector<std::string>, std::string>
+    stream_subjects(const std::vector<marketdata::messaging::watchable_feed>& feeds,
+                    std::string_view uri);
 
-    /// True when @p tick's URI names a point of @p series.
-    [[nodiscard]] static bool tick_in_series(const marketdata::messaging::market_tick& tick,
-                                             const marketdata::datum::market_datum& series);
+    /// The change from the subjects a watch holds, @p held, to the subjects it may hold now.
+    [[nodiscard]] static watch_change change_watch(const std::vector<std::string>& held,
+                                                   const std::vector<std::string>& wanted);
 
     /// One tick as the screen renders it: time, point URI, value and source.
     [[nodiscard]] static std::string tick_line(const marketdata::messaging::market_tick& tick);
@@ -243,15 +239,12 @@ public:
      * The loop is what a test drives: it appends each screen line and each
      * CSV row in arrival order, writes the file when @p csv_path is set, and
      * returns the count. A source that yields nothing still produces the
-     * header row, which is what makes an empty run's file valid. Only ticks
-     * @p accept admits are rendered; an empty @p accept admits every tick.
+     * header row, which is what makes an empty run's file valid.
      */
-    [[nodiscard]] static stream_output
-    run_stream(tick_source& source,
-               const std::function<bool()>& cancelled,
-               const std::string& csv_path,
-               std::ostream& out,
-               const std::function<bool(const marketdata::messaging::market_tick&)>& accept = {});
+    [[nodiscard]] static stream_output run_stream(tick_source& source,
+                                                  const std::function<bool()>& cancelled,
+                                                  const std::string& csv_path,
+                                                  std::ostream& out);
 };
 
 }

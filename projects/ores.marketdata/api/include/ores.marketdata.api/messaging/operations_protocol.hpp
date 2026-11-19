@@ -1955,6 +1955,56 @@ struct get_series_ticks_response {
 };
 
 /**
+ * @brief One feed a party may watch.
+ *
+ * The two codes are the first two tokens of the feed's live subject after the
+ * market_tick base, so a watcher builds every subject of the feed from them.
+ */
+struct watchable_feed {
+    std::string provider_code;
+    std::string feed_id;
+
+    friend bool operator==(const watchable_feed&, const watchable_feed&) = default;
+};
+
+/**
+ * @brief Asks which feeds the session's party may watch.
+ *
+ * The answer follows the rule of the history read: the party's route picks the feed of a
+ * provider, and its subscription to the provider holds the right the use needs. The system
+ * tenant may watch every feed.
+ */
+struct list_watchable_feeds_request {
+    using response_type = struct list_watchable_feeds_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.list_watchable_feeds";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    bool for_display = true;
+
+    friend bool operator==(const list_watchable_feeds_request&,
+                           const list_watchable_feeds_request&) = default;
+};
+
+/**
+ * @brief The feeds the session's party may watch.
+ *
+ * A party with no route, or with no subscription that holds the right, gets an empty list,
+ * which is not a refusal. A session with no party and no system tenant is refused.
+ */
+struct list_watchable_feeds_response {
+    ores::utility::domain::result result;
+    std::vector<watchable_feed> feeds;
+
+    friend bool operator==(const list_watchable_feeds_response&,
+                           const list_watchable_feeds_response&) = default;
+};
+
+/**
  * @brief Asks this component to keep the market state a run priced against.
  *
  * The state is the output files the run wrote, and those files are far too
@@ -3450,6 +3500,50 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
 }
 
 /**
+ * @brief The members of watchable_feed, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<watchable_feed>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"provider_code", &watchable_feed::provider_code},
+        ::ores::utility::codec::field{"feed_id", &watchable_feed::feed_id},
+    };
+}
+
+/**
+ * @brief The members of list_watchable_feeds_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_watchable_feeds_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"for_display", &list_watchable_feeds_request::for_display},
+    };
+}
+
+/**
+ * @brief The members of list_watchable_feeds_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_watchable_feeds_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"result", &list_watchable_feeds_response::result},
+        ::ores::utility::codec::field{"feeds", &list_watchable_feeds_response::feeds},
+    };
+}
+
+/**
  * @brief The members of store_market_state_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -4415,6 +4509,44 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::get_series_ticks_response& v);
     static ores::marketdata::messaging::get_series_ticks_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::watchable_feed> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::watchable_feed& v);
+    static ores::marketdata::messaging::watchable_feed read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::watchable_feed& v);
+    static ores::marketdata::messaging::watchable_feed
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_watchable_feeds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_watchable_feeds_request& v);
+    static ores::marketdata::messaging::list_watchable_feeds_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_watchable_feeds_request& v);
+    static ores::marketdata::messaging::list_watchable_feeds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_watchable_feeds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_watchable_feeds_response& v);
+    static ores::marketdata::messaging::list_watchable_feeds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_watchable_feeds_response& v);
+    static ores::marketdata::messaging::list_watchable_feeds_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

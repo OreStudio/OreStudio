@@ -24,7 +24,9 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include <memory>
 #include <string>
 
@@ -43,6 +45,19 @@ public:
     /// The inbox's answer, kept fresh for fifteen seconds.
     static ores::http::domain::http_response
     inbox_answer(const ores::http::domain::http_request& req, std::string body);
+
+    /**
+     * @brief The curve publish a request authorises, as its row carries it.
+     *
+     * Stated on its own so a test can read the shape without a service behind it:
+     * the members are the browser's, and the instant is the wire's text.
+     */
+    static std::string
+    published_subject_json(const ores::marketdata::messaging::published_curve_set& set);
+
+    /// The cut a request authorises, as its row carries it.
+    static std::string
+    cut_subject_json(const ores::reporting::messaging::cut_authorisation_subject& subject);
 
     static void register_routes(std::shared_ptr<ores::http::net::router> router,
                                 std::shared_ptr<ores::http::openapi::endpoint_registry> registry,

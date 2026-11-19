@@ -121,15 +121,13 @@ std::string with_subject(const std::string& row,
 }
 
 
-/**
- * The curve publish each request of a page authorises.
- *
- * A publish request's subject is the market data component's own detail row,
- * keyed by the request's id, and one read answers the whole page. A reader who
- * may not read the curves keeps the page and loses the subject, and the reason
- * travels with the absence: a refusal is a grant to ask for, and a set that is
- * not there is a fact about the request.
- */
+/// The curve publish each request of a page authorises.
+///
+/// A publish request's subject is the market data component's own detail row,
+/// keyed by the request's id, and one read answers the whole page. A reader who may
+/// not read the curves keeps the page and loses the subject, and the reason travels
+/// with the absence: a refusal is a grant to ask for, and a set that is not there is
+/// a fact about the request.
 subject_join published_subjects_of(const http_request& req,
                                    nats_client& session,
                                    const std::vector<std::string>& request_ids) {
@@ -143,23 +141,17 @@ subject_join published_subjects_of(const http_request& req,
         msg.request_id_one_of = request_ids;
         msg.limit = static_cast<std::uint32_t>(request_ids.size());
         const auto reply = forwarding::forward(req, session, msg);
-        if (!reply.success)
+        if (!reply.success) {
+            BOOST_LOG_SEV(inbox_lg(), ores::logging::debug)
+                << "The curve publish subjects of a page were refused: " << reply.message;
             return {std::map<std::string, std::string>{}, "refused"};
+        }
         for (const auto& set : reply.sets) {
             if (set.request_id.empty())
                 continue;
-            out.by_request.emplace(
-                set.request_id,
-                "{\"publish_id\":" + json::write(set.publish_id) + ",\"curve\":" +
-                    json::write(set.curve) + ",\"party\":" + json::write(set.party) +
-                    ",\"party_id\":" + json::write(set.party_id) +
-                    ",\"series_id\":" + json::write(set.series_id) +
-                    ",\"as_of\":" + json::write(instant_text(set.as_of)) +
-                    ",\"point_count\":" + std::to_string(set.point_count) +
-                    ",\"state_code\":" + json::write(set.state_code) + ",\"published_at\":" +
-                    (set.published_at ? json::write(instant_text(*set.published_at)) :
-                                        std::string("null")) +
-                    "}");
+            // A set and its request are one subject: when two sets name the same
+            // request the first stands, which is the newest the service orders.
+            out.by_request.emplace(set.request_id, inbox_view_routes::published_subject_json(set));
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(inbox_lg(), ores::logging::warn)
@@ -180,29 +172,17 @@ subject_join cut_subjects_of(const http_request& req,
         reporting_messaging::list_cut_authorisation_subjects_request msg;
         msg.request_ids = request_ids;
         const auto reply = forwarding::forward(req, session, msg);
-        if (reply.result.outcome != ores::utility::domain::outcome::ok)
+        if (reply.result.outcome != ores::utility::domain::outcome::ok) {
+            BOOST_LOG_SEV(inbox_lg(), ores::logging::debug)
+                << "The cut subjects of a page were refused: " << reply.result.message;
             return {std::map<std::string, std::string>{}, "refused"};
+        }
         for (const auto& subject : reply.subjects) {
             if (subject.request_id.empty())
                 continue;
-            out.by_request.emplace(
-                subject.request_id,
-                "{\"cut_id\":" + json::write(subject.cut_id) +
-                    ",\"label\":" + json::write(subject.label) +
-                    ",\"kind_code\":" + json::write(subject.kind_code) +
-                    ",\"kind_name\":" + json::write(subject.kind_name) +
-                    ",\"timepoint\":" + json::write(subject.timepoint) +
-                    ",\"timepoint_timezone\":" + json::write(subject.timepoint_timezone) +
-                    ",\"scope_code\":" + json::write(subject.scope_code) +
-                    ",\"business_centre_code\":" + json::write(subject.business_centre_code) +
-                    ",\"state\":" + json::write(subject.state) +
-                    ",\"deal_count\":" + std::to_string(subject.deal_count) +
-                    ",\"market_data_set_count\":" + std::to_string(subject.market_data_set_count) +
-                    ",\"gap_count\":" + std::to_string(subject.gap_count) +
-                    ",\"applied_by\":" + json::write(subject.applied_by) + ",\"applied_at\":" +
-                    (subject.applied_at.empty() ? std::string("null") :
-                                                  json::write(subject.applied_at)) +
-                    "}");
+            // A cut and its request are one subject, and the first stands.
+            out.by_request.emplace(subject.request_id,
+                                   inbox_view_routes::cut_subject_json(subject));
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(inbox_lg(), ores::logging::warn)
@@ -281,6 +261,41 @@ std::string page_json(const std::vector<ores::inbox::domain::approval_request>& 
     return rr::array_of(written);
 }
 
+}
+
+std::string
+inbox_view_routes::published_subject_json(const marketdata_messaging::published_curve_set& set) {
+    return rr::object_of(
+        {"\"publish_id\":" + json::write(set.publish_id),
+         "\"curve\":" + json::write(set.curve),
+         "\"party\":" + json::write(set.party),
+         "\"party_id\":" + json::write(set.party_id),
+         "\"series_id\":" + json::write(set.series_id),
+         "\"as_of\":" + json::write(instant_text(set.as_of)),
+         "\"point_count\":" + std::to_string(set.point_count),
+         "\"state_code\":" + json::write(set.state_code),
+         "\"published_at\":" + (set.published_at ? json::write(instant_text(*set.published_at)) :
+                                                   std::string("null"))});
+}
+
+std::string
+inbox_view_routes::cut_subject_json(const reporting_messaging::cut_authorisation_subject& subject) {
+    return rr::object_of(
+        {"\"cut_id\":" + json::write(subject.cut_id),
+         "\"label\":" + json::write(subject.label),
+         "\"kind_code\":" + json::write(subject.kind_code),
+         "\"kind_name\":" + json::write(subject.kind_name),
+         "\"timepoint\":" + json::write(subject.timepoint),
+         "\"timepoint_timezone\":" + json::write(subject.timepoint_timezone),
+         "\"scope_code\":" + json::write(subject.scope_code),
+         "\"business_centre_code\":" + json::write(subject.business_centre_code),
+         "\"state\":" + json::write(subject.state),
+         "\"deal_count\":" + std::to_string(subject.deal_count),
+         "\"market_data_set_count\":" + std::to_string(subject.market_data_set_count),
+         "\"gap_count\":" + std::to_string(subject.gap_count),
+         "\"applied_by\":" + json::write(subject.applied_by),
+         "\"applied_at\":" +
+             (subject.applied_at.empty() ? std::string("null") : json::write(subject.applied_at))});
 }
 
 http_response inbox_view_routes::inbox_answer(const http_request& req, std::string body) {

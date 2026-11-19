@@ -24,6 +24,7 @@
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <string>
 
 using ores::http::domain::http_method;
@@ -101,4 +102,58 @@ TEST_CASE("the_inbox_is_kept_privately_for_fifteen_seconds", "[workflow_inbox]")
     revalidation.headers["if-none-match"] = first.headers.at("ETag");
     CHECK(inbox_view_routes::inbox_answer(revalidation, an_inbox_body).status ==
           http_status::not_modified);
+}
+
+TEST_CASE("the_subject_a_publish_request_authorises_is_written_as_the_screen_reads_it",
+          "[workflow_inbox]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the publish subject's members";
+
+    ores::marketdata::messaging::published_curve_set set;
+    set.publish_id = "publish-1";
+    set.request_id = "66666666-6666-6666-6666-666666666666";
+    set.curve = "USD.IRS";
+    set.party = "ACME";
+    set.party_id = "77777777-7777-7777-7777-777777777777";
+    set.series_id = "series-1";
+    set.as_of = std::chrono::system_clock::time_point(std::chrono::seconds(0));
+    set.state_code = "candidate";
+    set.point_count = 12;
+
+    const auto written = inbox_view_routes::published_subject_json(set);
+    CHECK(inbox_holds(written, R"("curve":"USD.IRS")"));
+    CHECK(inbox_holds(written, R"("party":"ACME")"));
+    CHECK(inbox_holds(written, R"("point_count":12)"));
+    CHECK(inbox_holds(written, R"("state_code":"candidate")"));
+    // A candidate holds no published instant, and the screen states it as null.
+    CHECK(inbox_holds(written, R"("published_at":null)"));
+    CHECK_FALSE(inbox_holds(written, R"("published_at":"")"));
+}
+
+TEST_CASE("the_subject_a_cut_request_authorises_is_written_as_the_screen_reads_it",
+          "[workflow_inbox]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the cut subject's members";
+
+    ores::reporting::messaging::cut_authorisation_subject subject;
+    subject.request_id = "66666666-6666-6666-6666-666666666666";
+    subject.cut_id = "cut-1";
+    subject.label = "EOD 2026-11-18";
+    subject.kind_code = "eod";
+    subject.kind_name = "End of day";
+    subject.timepoint = "2026-11-18 17:00:00.000000Z";
+    subject.scope_code = "book";
+    subject.state = "waiting";
+    subject.deal_count = 42;
+    subject.market_data_set_count = 7;
+    subject.gap_count = 2;
+    subject.applied_by = "alice";
+
+    const auto written = inbox_view_routes::cut_subject_json(subject);
+    CHECK(inbox_holds(written, R"("label":"EOD 2026-11-18")"));
+    CHECK(inbox_holds(written, R"("deal_count":42)"));
+    CHECK(inbox_holds(written, R"("market_data_set_count":7)"));
+    CHECK(inbox_holds(written, R"("gap_count":2)"));
+    // An empty instant is the wire's way of saying there is none.
+    CHECK(inbox_holds(written, R"("applied_at":null)"));
 }

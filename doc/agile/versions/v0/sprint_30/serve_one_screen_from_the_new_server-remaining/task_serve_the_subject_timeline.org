@@ -202,3 +202,38 @@ via its "Verifies task" field.
 | 6 | =roles_of= reads at most 1000 roles | =person_timeline.cpp= | Kept | The filter limits the answer to the ids asked for. |
 
 * Result
+
+One subject's story is served. =GET /api/timeline= answers a person, a party and a
+request at the BFF's address, with its member names and status codes, so the
+workflow area serves all 18 of the routes the inventory counts for it and 288 of the
+BFF's 333 are paired.
+
+A request's stream is the story the inbox already answers, wrapped, because the
+entry and its one ordering left that route and became the part's own. A person's is
+the account, its contact record, the roles it was given, the parties it works in and
+its sign-ins. A party's is its own versions, the versions of each part it holds and
+the opening and closing of each link it keeps. No route invents a subject: every
+entity type reaches its read through the gateway's own history step, which is now
+stated once and carries the service's answer whether or not it answered.
+
+The gaps are the part worth reading twice, because what the product cannot say is
+not the same for a person and a party. A person's sign-in log keeps a window, and
+the stream reads the most recent 200. A part removed from a party is closed, and no
+read lists a closed row, so the party's stream says so for each kind of part
+instead of showing a story that looks complete. A source the caller may not read is
+a gap; a source that fails is thrown and answered as the service not answering, so
+a service that is down is never reported as a permission the person lacks. The one
+thing the reply cannot distinguish - no read, no permission, a failed read, all
+stated in one flag - is stated as what is true of all three, and the shared read
+says why.
+
+Everything was verified on the rebased tree. The part's suite passed 58 cases and
+595 assertions, the local gate passed 52 of 52 checks, the inventory regenerates to
+itself, and the parts and the server build. The database was recreated from the
+checkout, so the schema and the tree agree at fingerprint =cabc2ecdbf1f608e=, and
+the gateway the systemd unit runs answered the three subjects with 21, 492 and 3
+events and their gaps; that run is =evidence/timeline_live_run.txt=.
+
+The review of [[https://github.com/OreStudio/OreStudio/pull/4907][#4907]] found one
+real defect: an unanswered history read was reported as a permission the person
+lacks. It is fixed, and the rest of its points are answered on the task.

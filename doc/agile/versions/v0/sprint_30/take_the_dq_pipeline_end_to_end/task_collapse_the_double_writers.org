@@ -190,11 +190,12 @@ Gates, each run on the tree it names:
 
 | Gate | Tree | Result |
 |------+------+--------|
-| Database recreate from the tree | this branch | succeeded; the first two runs found the ordering work, the third is clean |
-| pgTAP | this branch | 927 assertions in 98 files, all pass |
+| Database recreate from the tree | this branch, before and after the rebase | succeeded; the first two runs found the ordering work, the third is clean |
+| pgTAP | this branch, rebased onto f3f28a7eef | 934 assertions in 98 files, all pass |
 | Codegen suite | this branch | 1814 passed |
 | =check_single_writer.py= | this branch | 9 tables written both ways, all listed |
 | =check_populate_references.py=, =check_entity_table_writes.py=, =check_rls_system_tenant_widenings.py= | this branch | clean, no new writer, 13 widenings |
+| `compass check --exclude-heavy` | this branch, rebased | 90 of 91 pass; the one failure is `ore-parameters-seed`, which fails on `origin/main` in a clean worktree too |
 | Build, ctest, ticks smoke | this branch | not run here: the host is building elsewhere |
 | Build, ctest 103 of 103 | PR #4833 | succeeded on that tree |
 

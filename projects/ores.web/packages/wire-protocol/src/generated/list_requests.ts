@@ -5884,12 +5884,57 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.cbo_basket_members.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_basket_members'],
+    },
+    'trading.v1.cbo_basket_members.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_basket_members'],
+    },
+    'trading.v1.cbo_basket_members_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.cbo_instruments.list': {
         asOf: true,
         filter: ['trade_id_one_of'],
         rows: ['cbo_instruments'],
     },
     'trading.v1.cbo_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.cbo_structures.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_structures'],
+    },
+    'trading.v1.cbo_structures.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_structures'],
+    },
+    'trading.v1.cbo_structures_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.cbo_tranches.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_tranches'],
+    },
+    'trading.v1.cbo_tranches.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_tranches'],
+    },
+    'trading.v1.cbo_tranches_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6895,6 +6940,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['results'],
     },
     'trading.v1.script_results_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.script_twin_inputs.list': {
+        asOf: true,
+        filter: [],
+        rows: ['inputs'],
+    },
+    'trading.v1.script_twin_inputs_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

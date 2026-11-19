@@ -38,12 +38,12 @@ export interface CurvePublishLookup {
 
 export interface CurvePublishesFilter {
     request_id: string | null;
-    party_id: string | null;
     bootstrap_config_id: string | null;
+    party_id: string | null;
     id_one_of: string[] | null;
     request_id_one_of: string[] | null;
-    party_id_one_of: string[] | null;
     bootstrap_config_id_one_of: string[] | null;
+    party_id_one_of: string[] | null;
 }
 
 export interface CurvePublishEvent {

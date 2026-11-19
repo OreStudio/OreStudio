@@ -35,8 +35,8 @@ export interface CurvePublish {
     tenant_id: string;
     id: string;
     request_id: string;
-    party_id: string;
     bootstrap_config_id: string;
+    party_id: string;
     output_series_id: string;
     as_of: string;
     published_by: string;

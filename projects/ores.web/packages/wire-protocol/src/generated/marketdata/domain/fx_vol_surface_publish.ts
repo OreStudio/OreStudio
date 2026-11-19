@@ -35,8 +35,8 @@ export interface FxVolSurfacePublish {
     tenant_id: string;
     id: string;
     request_id: string;
-    party_id: string;
     blueprint_id: string;
+    party_id: string;
     as_of: string;
     output_series_id: string;
     calibration_id: string;

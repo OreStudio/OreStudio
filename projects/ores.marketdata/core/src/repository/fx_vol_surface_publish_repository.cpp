@@ -99,12 +99,12 @@ std::optional<query_builder::condition> fx_vol_surface_publish_filter_condition(
     if (filter->request_id)
         r.push_back(
             query_builder::equals("request_id", query_builder::filter_value(*filter->request_id)));
-    if (filter->party_id)
-        r.push_back(
-            query_builder::equals("party_id", query_builder::filter_value(*filter->party_id)));
     if (filter->blueprint_id)
         r.push_back(query_builder::equals("blueprint_id",
                                           query_builder::filter_value(*filter->blueprint_id)));
+    if (filter->party_id)
+        r.push_back(
+            query_builder::equals("party_id", query_builder::filter_value(*filter->party_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
@@ -117,17 +117,17 @@ std::optional<query_builder::condition> fx_vol_surface_publish_filter_condition(
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("request_id", std::move(values)));
     }
-    if (filter->party_id_one_of) {
-        std::vector<query_builder::value> values;
-        for (const auto& v : *filter->party_id_one_of)
-            values.push_back(query_builder::filter_value(v));
-        r.push_back(query_builder::one_of("party_id", std::move(values)));
-    }
     if (filter->blueprint_id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->blueprint_id_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("blueprint_id", std::move(values)));
+    }
+    if (filter->party_id_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->party_id_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("party_id", std::move(values)));
     }
     return query_builder::all_of(std::move(r));
 }
@@ -549,13 +549,14 @@ void fx_vol_surface_publish_repository::remove(const context& ctx,
 
 
 std::optional<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_latest_by_request(const context& ctx,
-                                                          const std::string& request_id) {
+fx_vol_surface_publish_repository::read_latest_by_request_and_blueprint(
+    const context& ctx, const std::string& request_id, const boost::uuids::uuid& blueprint_id) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
-                                            "valid_to"_c == max);
+    const auto query =
+        query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
+                             "blueprint_id"_c == blueprint_id && "valid_to"_c == max);
     auto rows = query_builder::execute_read_query<fx_vol_surface_publish_entity,
                                                   domain::fx_vol_surface_publish>(
         ctx,

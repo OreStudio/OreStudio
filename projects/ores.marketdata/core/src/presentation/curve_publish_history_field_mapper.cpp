@@ -40,9 +40,9 @@ render_curve_publish_fields(const domain::curve_publish& v) {
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Request ID", .value = boost::uuids::to_string(v.request_id)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "Bootstrap Config ID", .value = boost::uuids::to_string(v.bootstrap_config_id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "Output Series ID", .value = boost::uuids::to_string(v.output_series_id)});
     fields.push_back(

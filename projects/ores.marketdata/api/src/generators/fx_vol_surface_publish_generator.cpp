@@ -46,8 +46,8 @@ generate_synthetic_fx_vol_surface_publish(utility::generation::generation_contex
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.request_id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
     r.blueprint_id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.as_of = ctx.past_timepoint();
     r.output_series_id = ctx.generate_uuid();
     r.calibration_id = ctx.generate_uuid();

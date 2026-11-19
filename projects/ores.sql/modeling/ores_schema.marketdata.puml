@@ -150,8 +150,8 @@ package "marketdata" #E3F2FD {
         --
         * version : integer
         * request_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
         * bootstrap_config_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
         * output_series_id : uuid <<FK>>
         * as_of : timestamptz
         * published_by : text
@@ -192,8 +192,9 @@ package "marketdata" #E3F2FD {
     subject is published: the timestamp is the instant the published set moved, and
     the username is the account that applied it. The row is bitemporal, so the
     applied version is a new version of the same row and the history holds the
-    unapplied subject beside it. request_id is the natural key, so a request
-    authorises one publish and no second apply can find a row to write.
+    unapplied subject beside it. request_id and the configuration are the natural
+    key, so a request authorises one publish of each configuration it names and no
+    second apply can find an unapplied row to write.
     A set ends once, and the end is two more facts on the same row rather than a
     second entity. withdrawn_at, withdrawn_by, withdrawn_reason_code and
     withdrawal_request_id are the withdrawal: the instant, the account, the reason
@@ -516,8 +517,8 @@ package "marketdata" #E3F2FD {
         --
         * version : integer
         * request_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
         * blueprint_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
         * as_of : timestamptz
         * output_series_id : uuid <<FK>>
         * calibration_id : uuid <<FK>>
@@ -557,8 +558,8 @@ package "marketdata" #E3F2FD {
     A blueprint's output series holds one live surface. The apply ends every live set
     of the series in the same act, as a curve publish does, so the superseded set and
     its successor both stay in the history. published_at and published_by are the
-    publication record, empty while the request waits. request_id is the natural
-    key, so a request authorises one publish.
+    publication record, empty while the request waits. request_id and the blueprint are the
+    natural key, so a request authorises one publish of each surface it names.
     end note
 
     entity ores_marketdata_market_calibration_values_tbl <<temporal>> #C6F0D8 {

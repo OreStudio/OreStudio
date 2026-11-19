@@ -56,8 +56,9 @@ namespace ores::marketdata::domain {
  * subject is published: the timestamp is the instant the published set moved, and
  * the username is the account that applied it. The row is bitemporal, so the
  * applied version is a new version of the same row and the history holds the
- * unapplied subject beside it. request_id is the natural key, so a request
- * authorises one publish and no second apply can find a row to write.
+ * unapplied subject beside it. request_id and the configuration are the natural
+ * key, so a request authorises one publish of each configuration it names and no
+ * second apply can find an unapplied row to write.
  *
  * A set ends once, and the end is two more facts on the same row rather than a
  * second entity. withdrawn_at, withdrawn_by, withdrawn_reason_code and
@@ -96,18 +97,12 @@ struct curve_publish final {
     /**
      * @brief The approval request this record is the subject of.
      *
-     * One request, one publish: the row is written when the request is raised and stamped when it
-     * is applied, so a request that authorised one publish has no second row to authorise another.
+     * One row a member of the set: the row is written when the request is raised and stamped when
+     * it is applied, and a request authorises as many subjects as it names. The pair of the request
+     * and the configuration is the natural key, so a request authorises one publish of one
+     * configuration and no second row can name the same two.
      */
     boost::uuids::uuid request_id;
-
-    /**
-     * @brief The party the published configuration belongs to.
-     *
-     * The subject names it because the same curve code in two parties is two curves, and a publish
-     * of one must not authorise the other.
-     */
-    boost::uuids::uuid party_id;
 
     /**
      * @brief The ir_curve_bootstrap_config whose output the publish writes.
@@ -116,6 +111,14 @@ struct curve_publish final {
      * what the bootstrap recomputes from the market.
      */
     boost::uuids::uuid bootstrap_config_id;
+
+    /**
+     * @brief The party the published configuration belongs to.
+     *
+     * The subject names it because the same curve code in two parties is two curves, and a publish
+     * of one must not authorise the other.
+     */
+    boost::uuids::uuid party_id;
 
     /**
      * @brief The market series the configuration's output is written to.

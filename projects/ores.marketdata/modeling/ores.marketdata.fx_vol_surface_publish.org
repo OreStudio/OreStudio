@@ -29,8 +29,8 @@ apply refuses a version the request did not name.
 A blueprint's output series holds one live surface. The apply ends every live set
 of the series in the same act, as a curve publish does, so the superseded set and
 its successor both stay in the history. =published_at= and =published_by= are the
-publication record, empty while the request waits. =request_id= is the natural
-key, so a request authorises one publish.
+publication record, empty while the request waits. =request_id= and the blueprint are the
+natural key, so a request authorises one publish of each surface it names.
 
 * Flags
 :PROPERTIES:
@@ -81,10 +81,11 @@ ctx.generate_uuid()
 
 ** blueprint_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:filterable: true
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:filterable:  true
+:natural_key: true
 :END:
 
 The =fx_vol_surface_blueprint= (in ores.refdata) the surface was calibrated from.
@@ -383,16 +384,22 @@ nothing.
 :entity_plural_words:   FX volatility surface publishes
 :END:
 
-*** read_latest_by_request
+*** read_latest_by_request_and_blueprint
 :PROPERTIES:
 :ID: 4681D66B-F3CF-4277-8134-0F5107E2BE8E
 :END:
 
-Reads the record of one request, if the store holds one. The gate asks here.
+Reads the row a request names for one blueprint, if the store holds one. The
+gate asks here: whether the request authorises this surface at all, and whether
+that member has been applied, are one row. A request that names a set answers
+with the member it is asked about, and with nothing when it does not name that
+blueprint.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::optional<domain::fx_vol_surface_publish>
-read_latest_by_request(const context& ctx, const std::string& request_id);
+std::optional<domain::fx_vol_surface_publish> read_latest_by_request_and_blueprint(
+    const context& ctx,
+    const std::string& request_id,
+    const boost::uuids::uuid& blueprint_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -402,12 +409,13 @@ read_latest_by_request(const context& ctx, const std::string& request_id);
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_latest_by_request(const context& ctx, const std::string& request_id) {
+fx_vol_surface_publish_repository::read_latest_by_request_and_blueprint(
+    const context& ctx, const std::string& request_id, const boost::uuids::uuid& blueprint_id) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
                        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
-                                            "valid_to"_c == max);
+                                            "blueprint_id"_c == blueprint_id && "valid_to"_c == max);
     auto rows = query_builder::execute_read_query<fx_vol_surface_publish_entity, domain::fx_vol_surface_publish>(
         ctx,
         query,

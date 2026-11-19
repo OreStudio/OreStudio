@@ -55,8 +55,9 @@ struct curve_publish_entity {
     int version = 0;
     boost::uuids::uuid request_id;
 
-    boost::uuids::uuid party_id;
     boost::uuids::uuid bootstrap_config_id;
+
+    boost::uuids::uuid party_id;
     boost::uuids::uuid output_series_id;
     db_timestamp as_of;
     std::string published_by = "";
@@ -85,8 +86,8 @@ struct curve_publish_entity {
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("request_id", &e::request_id) |
-               query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("bootstrap_config_id", &e::bootstrap_config_id) |
+               query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("output_series_id", &e::output_series_id) |
                query_builder::bind("as_of", &e::as_of) |
                query_builder::bind("published_by", &e::published_by) |

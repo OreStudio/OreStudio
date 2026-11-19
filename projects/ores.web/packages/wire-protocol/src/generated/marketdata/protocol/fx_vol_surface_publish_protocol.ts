@@ -38,12 +38,12 @@ export interface FxVolSurfacePublishLookup {
 
 export interface FxVolSurfacePublishesFilter {
     request_id: string | null;
-    party_id: string | null;
     blueprint_id: string | null;
+    party_id: string | null;
     id_one_of: string[] | null;
     request_id_one_of: string[] | null;
-    party_id_one_of: string[] | null;
     blueprint_id_one_of: string[] | null;
+    party_id_one_of: string[] | null;
 }
 
 export interface FxVolSurfacePublishEvent {

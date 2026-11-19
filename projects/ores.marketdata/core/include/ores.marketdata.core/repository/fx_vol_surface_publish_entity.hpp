@@ -55,8 +55,9 @@ struct fx_vol_surface_publish_entity {
     int version = 0;
     boost::uuids::uuid request_id;
 
-    boost::uuids::uuid party_id;
     boost::uuids::uuid blueprint_id;
+
+    boost::uuids::uuid party_id;
     db_timestamp as_of;
     boost::uuids::uuid output_series_id;
     boost::uuids::uuid calibration_id;
@@ -87,8 +88,8 @@ struct fx_vol_surface_publish_entity {
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("request_id", &e::request_id) |
-               query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("blueprint_id", &e::blueprint_id) |
+               query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("as_of", &e::as_of) |
                query_builder::bind("output_series_id", &e::output_series_id) |
                query_builder::bind("calibration_id", &e::calibration_id) |

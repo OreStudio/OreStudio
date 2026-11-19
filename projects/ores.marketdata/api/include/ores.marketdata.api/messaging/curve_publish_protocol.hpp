@@ -57,12 +57,12 @@ struct curve_publish_lookup {
 
 struct curve_publishes_filter {
     std::optional<boost::uuids::uuid> request_id;
-    std::optional<boost::uuids::uuid> party_id;
     std::optional<boost::uuids::uuid> bootstrap_config_id;
+    std::optional<boost::uuids::uuid> party_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> request_id_one_of;
-    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> bootstrap_config_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
 
     friend bool operator==(const curve_publishes_filter&, const curve_publishes_filter&) = default;
 };
@@ -309,13 +309,13 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_publishes_filter>) {
     return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &curve_publishes_filter::request_id},
-        utility::codec::field{"party_id", &curve_publishes_filter::party_id},
         utility::codec::field{"bootstrap_config_id", &curve_publishes_filter::bootstrap_config_id},
+        utility::codec::field{"party_id", &curve_publishes_filter::party_id},
         utility::codec::field{"id_one_of", &curve_publishes_filter::id_one_of},
         utility::codec::field{"request_id_one_of", &curve_publishes_filter::request_id_one_of},
-        utility::codec::field{"party_id_one_of", &curve_publishes_filter::party_id_one_of},
         utility::codec::field{"bootstrap_config_id_one_of",
                               &curve_publishes_filter::bootstrap_config_id_one_of},
+        utility::codec::field{"party_id_one_of", &curve_publishes_filter::party_id_one_of},
     };
 }
 

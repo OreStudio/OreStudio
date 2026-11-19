@@ -52,8 +52,8 @@ namespace ores::marketdata::domain {
  * A blueprint's output series holds one live surface. The apply ends every live set
  * of the series in the same act, as a curve publish does, so the superseded set and
  * its successor both stay in the history. published_at and published_by are the
- * publication record, empty while the request waits. request_id is the natural
- * key, so a request authorises one publish.
+ * publication record, empty while the request waits. request_id and the blueprint are the
+ * natural key, so a request authorises one publish of each surface it names.
  */
 struct fx_vol_surface_publish final {
     /**
@@ -77,15 +77,15 @@ struct fx_vol_surface_publish final {
     boost::uuids::uuid request_id;
 
     /**
+     * @brief The fx_vol_surface_blueprint (in ores.refdata) the surface was calibrated from.
+     */
+    boost::uuids::uuid blueprint_id;
+
+    /**
      * @brief The party the surface belongs to: its blueprint's party. Only a person acting for it
      * raises the publish.
      */
     boost::uuids::uuid party_id;
-
-    /**
-     * @brief The fx_vol_surface_blueprint (in ores.refdata) the surface was calibrated from.
-     */
-    boost::uuids::uuid blueprint_id;
 
     /**
      * @brief The as-of of the calibration the request authorises.

@@ -32,8 +32,9 @@ while the request waits, and both are written in one act when the approved
 subject is published: the timestamp is the instant the published set moved, and
 the username is the account that applied it. The row is bitemporal, so the
 applied version is a new version of the same row and the history holds the
-unapplied subject beside it. =request_id= is the natural key, so a request
-authorises one publish and no second apply can find a row to write.
+unapplied subject beside it. =request_id= and the configuration are the natural
+key, so a request authorises one publish of each configuration it names and no
+second apply can find an unapplied row to write.
 
 A set ends once, and the end is two more facts on the same row rather than a
 second entity. =withdrawn_at=, =withdrawn_by=, =withdrawn_reason_code= and
@@ -82,9 +83,11 @@ Surrogate UUID identifying this publish record.
 
 The approval request this record is the subject of.
 
-One request, one publish: the row is written when the request is raised and
-stamped when it is applied, so a request that authorised one publish has no
-second row to authorise another.
+One row a member of the set: the row is written when the request is raised and
+stamped when it is applied, and a request authorises as many subjects as it
+names. The pair of the request and the configuration is the natural key, so a
+request authorises one publish of one configuration and no second row can name
+the same two.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
@@ -109,10 +112,11 @@ ctx.generate_uuid()
 
 ** bootstrap_config_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:filterable: true
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:filterable:  true
+:natural_key: true
 :END:
 
 The =ir_curve_bootstrap_config= whose output the publish writes.
@@ -452,17 +456,20 @@ nothing.
 :entity_plural_words:   curve publishes
 :END:
 
-*** read_latest_by_request
+*** read_latest_by_request_and_config
 :PROPERTIES:
 :ID: 2C6C1B4A-6C0E-4C4B-9C57-1F4C0A6B7D31
 :END:
 
-Reads the record of one request, if the store holds one. The gate asks here:
-the subject the request authorises and whether it has been applied are one row.
+Reads the row a request names for one configuration, if the store holds one.
+The gate asks here: whether the request authorises this configuration at all,
+and whether that member has been applied, are one row. A request that names a
+set answers with the member it is asked about, and with nothing when it does not
+name that configuration.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::optional<domain::curve_publish>
-read_latest_by_request(const context& ctx, const std::string& request_id);
+std::optional<domain::curve_publish> read_latest_by_request_and_config(
+    const context& ctx, const std::string& request_id, const std::string& bootstrap_config_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -471,14 +478,14 @@ read_latest_by_request(const context& ctx, const std::string& request_id);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::optional<domain::curve_publish>
-curve_publish_repository::read_latest_by_request(const context& ctx, const std::string& request_id) {
+std::optional<domain::curve_publish> curve_publish_repository::read_latest_by_request_and_config(
+    const context& ctx, const std::string& request_id, const std::string& bootstrap_config_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the publish record of request: " << request_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_publish_entity>> |
                        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
-                             "valid_to"_c == max);
+                             "bootstrap_config_id"_c == bootstrap_config_id && "valid_to"_c == max);
 
     auto rows = query_builder::execute_read_query<curve_publish_entity, domain::curve_publish>(
         ctx,

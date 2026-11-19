@@ -98,12 +98,12 @@ curve_publish_filter_condition(const std::optional<messaging::curve_publishes_fi
     if (filter->request_id)
         r.push_back(
             query_builder::equals("request_id", query_builder::filter_value(*filter->request_id)));
-    if (filter->party_id)
-        r.push_back(
-            query_builder::equals("party_id", query_builder::filter_value(*filter->party_id)));
     if (filter->bootstrap_config_id)
         r.push_back(query_builder::equals(
             "bootstrap_config_id", query_builder::filter_value(*filter->bootstrap_config_id)));
+    if (filter->party_id)
+        r.push_back(
+            query_builder::equals("party_id", query_builder::filter_value(*filter->party_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
@@ -116,17 +116,17 @@ curve_publish_filter_condition(const std::optional<messaging::curve_publishes_fi
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("request_id", std::move(values)));
     }
-    if (filter->party_id_one_of) {
-        std::vector<query_builder::value> values;
-        for (const auto& v : *filter->party_id_one_of)
-            values.push_back(query_builder::filter_value(v));
-        r.push_back(query_builder::one_of("party_id", std::move(values)));
-    }
     if (filter->bootstrap_config_id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->bootstrap_config_id_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("bootstrap_config_id", std::move(values)));
+    }
+    if (filter->party_id_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->party_id_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("party_id", std::move(values)));
     }
     return query_builder::all_of(std::move(r));
 }
@@ -521,15 +521,15 @@ void curve_publish_repository::remove(const context& ctx, const std::vector<std:
 }
 
 
-std::optional<domain::curve_publish>
-curve_publish_repository::read_latest_by_request(const context& ctx,
-                                                 const std::string& request_id) {
+std::optional<domain::curve_publish> curve_publish_repository::read_latest_by_request_and_config(
+    const context& ctx, const std::string& request_id, const std::string& bootstrap_config_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the publish record of request: " << request_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<curve_publish_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
-                                            "valid_to"_c == max);
+    const auto query =
+        query_builder::read<std::vector<curve_publish_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
+                             "bootstrap_config_id"_c == bootstrap_config_id && "valid_to"_c == max);
 
     auto rows = query_builder::execute_read_query<curve_publish_entity, domain::curve_publish>(
         ctx,

@@ -52,8 +52,8 @@ fx_vol_surface_publish_mapper::map(const fx_vol_surface_publish_entity& v) {
     r.tenant_id = v.tenant_id;
     r.id = v.id;
     r.request_id = v.request_id;
-    r.party_id = v.party_id;
     r.blueprint_id = v.blueprint_id;
+    r.party_id = v.party_id;
     r.as_of = v.as_of;
     r.output_series_id = v.output_series_id;
     r.calibration_id = v.calibration_id;
@@ -86,8 +86,8 @@ fx_vol_surface_publish_mapper::map(const domain::fx_vol_surface_publish& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.request_id = v.request_id;
-    r.party_id = v.party_id;
     r.blueprint_id = v.blueprint_id;
+    r.party_id = v.party_id;
     r.as_of = v.as_of;
     r.output_series_id = v.output_series_id;
     r.calibration_id = v.calibration_id;

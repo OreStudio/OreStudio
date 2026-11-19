@@ -88,7 +88,9 @@ TEST_CASE("a_zero_rule_a_run_left_open_is_restored_before_the_next_test", tags) 
     ores::inbox::repository::approval_kind_repository repo;
     repo.write(ctx, leaked);
 
-    { zero_approval_kind zeroed(h); }
+    {
+        zero_approval_kind zeroed(h);
+    }
 
     const auto after = lifecycle.kind(std::string(curve_publish_kind_code));
     REQUIRE(after);
@@ -144,7 +146,8 @@ TEST_CASE("asking_for_a_publish_raises_the_kind_and_records_the_subject", tags) 
     // The subject is the kind's detail, keyed by the request: the curve, the
     // instant and the party the request authorises, and nothing published yet.
     ores::marketdata::repository::curve_publish_repository repo;
-    const auto record = repo.read_latest_by_request(maker.ctx, boost::uuids::to_string(raised.id));
+    const auto record = repo.read_latest_by_request_and_config(
+        maker.ctx, boost::uuids::to_string(raised.id), boost::uuids::to_string(f.config_id));
     REQUIRE(record.has_value());
     CHECK(record->bootstrap_config_id == f.config_id);
     CHECK(record->output_series_id == f.output_series_id);

@@ -185,14 +185,19 @@ void apply_surface_publish(const context& ctx,
                        std::string(fx_vol_surface_publish_kind_code) + " request.";
         return;
     }
+    // The request names a set, and this is the member the publish asks about: a
+    // request that does not name this blueprint authorises nothing here, which
+    // is the same answer a request that names no surface at all gets.
     const auto record =
-        repository::fx_vol_surface_publish_repository{}.read_latest_by_request(ctx, request_id);
+        repository::fx_vol_surface_publish_repository{}.read_latest_by_request_and_blueprint(
+            ctx, request_id, blueprint_id);
     if (!record) {
-        resp.message = "The request names no surface, so it authorises no publish.";
+        resp.message =
+            "The request does not name the surface this publish is about, so it authorises no "
+            "publish of it.";
         return;
     }
-    if (record->party_id != party || record->blueprint_id != blueprint_id ||
-        record->as_of != as_of) {
+    if (record->party_id != party || record->as_of != as_of) {
         resp.message =
             "The request authorises blueprint " + boost::uuids::to_string(record->blueprint_id) +
             " as of " + datetime::to_iso8601_utc(record->as_of) + " for party " +
@@ -340,12 +345,26 @@ fx_vol_surface_publish_service::read(const context& ctx,
     msg::get_fx_vol_surface_publish_subject_response out;
     out.approval_request_id = req.approval_request_id;
     try {
-        const auto record = repository::fx_vol_surface_publish_repository{}.read_latest_by_request(
-            ctx, req.approval_request_id);
-        if (!record) {
+        // A request names a set. This read answers about one surface, so it
+        // answers only when the request names one: a set is read through the
+        // publish list filtered by the request, which is what a screen showing a
+        // set uses.
+        msg::fx_vol_surface_publishes_filter by_request;
+        by_request.request_id = boost::uuids::string_generator{}(req.approval_request_id);
+        const auto records = repository::fx_vol_surface_publish_repository{}.read_latest(
+            ctx, 0, 1000, {}, by_request);
+        if (records.empty()) {
             out.message = "No surface publish request has the id " + req.approval_request_id + ".";
             return out;
         }
+        if (records.size() > 1) {
+            out.message = "The request " + req.approval_request_id + " authorises " +
+                          std::to_string(records.size()) +
+                          " surfaces, so its subject cannot be read one at a time. Read them "
+                          "through the publish list, which names the request.";
+            return out;
+        }
+        const auto& record = records.front();
         const auto request =
             ores::inbox::service::approval_lifecycle(ctx).request(req.approval_request_id);
         if (!request) {
@@ -357,23 +376,23 @@ fx_vol_surface_publish_service::read(const context& ctx,
         out.state_code = request->state_code;
         const auto blueprints =
             ores::refdata::repository::fx_vol_surface_blueprint_repository{}.read_latest(
-                ctx, boost::uuids::to_string(record->blueprint_id));
-        out.blueprint_name = blueprints.empty() ? boost::uuids::to_string(record->blueprint_id) :
+                ctx, boost::uuids::to_string(record.blueprint_id));
+        out.blueprint_name = blueprints.empty() ? boost::uuids::to_string(record.blueprint_id) :
                                                   blueprints.front().name;
-        out.party_id = boost::uuids::to_string(record->party_id);
-        out.as_of = record->as_of;
-        out.calibration_id = boost::uuids::to_string(record->calibration_id);
-        out.calibration_version = record->calibration_version;
-        out.converged = record->converged;
-        out.max_abs_error = record->max_abs_error;
-        out.pillars_beyond_tolerance = record->pillars_beyond_tolerance;
-        out.violation_count = record->violation_count;
-        out.published_at = record->published_at;
-        out.published_by = record->published_by;
-        out.superseded_at = record->superseded_at;
-        if (record->superseded_by_request_id)
+        out.party_id = boost::uuids::to_string(record.party_id);
+        out.as_of = record.as_of;
+        out.calibration_id = boost::uuids::to_string(record.calibration_id);
+        out.calibration_version = record.calibration_version;
+        out.converged = record.converged;
+        out.max_abs_error = record.max_abs_error;
+        out.pillars_beyond_tolerance = record.pillars_beyond_tolerance;
+        out.violation_count = record.violation_count;
+        out.published_at = record.published_at;
+        out.published_by = record.published_by;
+        out.superseded_at = record.superseded_at;
+        if (record.superseded_by_request_id)
             out.superseded_by_request_id =
-                boost::uuids::to_string(*record->superseded_by_request_id);
+                boost::uuids::to_string(*record.superseded_by_request_id);
     } catch (const std::exception& e) {
         out.success = false;
         out.message = e.what();

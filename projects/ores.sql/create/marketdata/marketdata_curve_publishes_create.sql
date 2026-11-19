@@ -42,8 +42,9 @@
  * subject is published: the timestamp is the instant the published set moved, and
  * the username is the account that applied it. The row is bitemporal, so the
  * applied version is a new version of the same row and the history holds the
- * unapplied subject beside it. request_id is the natural key, so a request
- * authorises one publish and no second apply can find a row to write.
+ * unapplied subject beside it. request_id and the configuration are the natural
+ * key, so a request authorises one publish of each configuration it names and no
+ * second apply can find an unapplied row to write.
  *
  * A set ends once, and the end is two more facts on the same row rather than a
  * second entity. withdrawn_at, withdrawn_by, withdrawn_reason_code and
@@ -69,8 +70,8 @@ create table if not exists "ores_marketdata_curve_publishes_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "request_id" uuid not null,
-    "party_id" uuid not null,
     "bootstrap_config_id" uuid not null,
+    "party_id" uuid not null,
     "output_series_id" uuid not null,
     "as_of" timestamp with time zone not null,
     "published_by" text not null,
@@ -106,9 +107,9 @@ create table if not exists "ores_marketdata_curve_publishes_tbl" (
     check (("withdrawn_at" is null) or ("superseded_at" is null))
 );
 
--- Unique request_id for active records
-create unique index if not exists curve_publishes_request_id_uniq_idx
-on "ores_marketdata_curve_publishes_tbl" (tenant_id, request_id)
+-- Composite natural key: unique combination for active records
+create unique index if not exists curve_publishes_request_id_bootstrap_config_id_uniq_idx
+on "ores_marketdata_curve_publishes_tbl" (tenant_id, request_id, bootstrap_config_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

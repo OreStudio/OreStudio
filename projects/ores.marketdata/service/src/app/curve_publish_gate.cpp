@@ -255,16 +255,20 @@ publish_verdict verdict_on_publish(const ores::database::context& ctx,
                            " request, and a publish is permitted by a " +
                            std::string(curve_publish_kind_code) + " request."};
 
+    // The request names a set, and this is the member the publish asks about: a
+    // request that does not name this configuration authorises nothing here,
+    // which is the same answer a request that names no configuration at all
+    // gets.
     repository::curve_publish_repository repo;
-    auto record = repo.read_latest_by_request(ctx, request_id);
+    auto record = repo.read_latest_by_request_and_config(
+        ctx, request_id, boost::uuids::to_string(attempted.bootstrap_config_id));
     if (!record)
         return {.approved = false,
                 .state_code = request->state_code,
-                .message = "The request is a " + std::string(curve_publish_kind_code) +
-                           " request that names no subject, so it authorises no publish."};
+                .message = "The request does not name the curve this publish is about, so it "
+                           "authorises no publish of it."};
 
-    if (record->bootstrap_config_id != attempted.bootstrap_config_id ||
-        at_store_precision(record->as_of) != at_store_precision(attempted.as_of) ||
+    if (at_store_precision(record->as_of) != at_store_precision(attempted.as_of) ||
         record->party_id != attempted.party_id) {
         const auto authorised =
             describe(names_of(ctx, record->party_id, record->output_series_id, record->as_of));

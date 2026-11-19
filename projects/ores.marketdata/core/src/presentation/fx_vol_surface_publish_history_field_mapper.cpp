@@ -40,8 +40,8 @@ render_fx_vol_surface_publish_fields(const domain::fx_vol_surface_publish& v) {
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Request ID", .value = boost::uuids::to_string(v.request_id)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Blueprint ID", .value = boost::uuids::to_string(v.blueprint_id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "As Of", .value = ores::platform::time::datetime::to_iso8601_utc(v.as_of)});
     fields.push_back(

@@ -218,8 +218,8 @@ public:
      */
     void remove(const context& ctx, const std::vector<std::string>& ids);
 
-    std::optional<domain::fx_vol_surface_publish>
-    read_latest_by_request(const context& ctx, const std::string& request_id);
+    std::optional<domain::fx_vol_surface_publish> read_latest_by_request_and_blueprint(
+        const context& ctx, const std::string& request_id, const boost::uuids::uuid& blueprint_id);
 
     std::vector<domain::fx_vol_surface_publish>
     read_live_for_series(const context& ctx, const boost::uuids::uuid& series_id);

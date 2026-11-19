@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: EE29DB0C-EDEE-4402-B796-5ACFCF100ADE
+:END:
+#+title: The generated population floats on indices no generated curv…
+#+description: The generated population floats on indices no generated curve covers. Of the 18 interest rate fixing addresses the 808 trades of the acme_demo provision name, 15 answer with no fixing because no curve states their index at their tenor: the seeded curve configs hold no AOA, BWP, HKD, IDR, MYR, OMR, SAR or THB curve, no JPY EYTIBOR, no PLN WIBOR, no COP IBR at a tenor and no USD SOFR at a tenor. A fixing is derived from the curve of its index and tenor, so the curve is the gap. Measured at f73b077f00 with doc/agile/versions/v0/sprint_30/run_a_report_with_market_data/evidence/fixing_coverage_query.sql. The same provision also wrote 808 of the 1100 trades the mix states: the ACCOUK rates config is refused for a PKR KIBOR cross-currency index and the ACCOUS rates config for a forward rate agreement whose index the tenant holds no convention for.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

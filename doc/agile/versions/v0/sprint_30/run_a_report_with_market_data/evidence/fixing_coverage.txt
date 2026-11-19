@@ -1,0 +1,79 @@
+The fixing coverage of the acme_demo population, before and after the run
+states the fixings of its own indices. The query is fixing_coverage_query.sql
+beside this file. Both readings are of the same provision, on 2026-11-19: the
+database the acme_demo profile built at 00:20, read once before the writer ran
+(from commit b586ec39f9, which carries no fixing writer) and once after it ran
+(from commit f73b077f00, the writer in place, the synthetic service restarted).
+
+== Before, at b586ec39f9
+
+ trades | addresses | fixing_addresses
+--------+-----------+------------------
+    808 |       132 |               68
+
+   klass   | empty
+-----------+-------
+ commodity |     6
+ equity    |    11
+ fx        |    24
+ inflation |     3
+ ir        |    21
+ security  |     3
+
+The klass table counts the fixing addresses alone: 21 of the 68 had no fixing
+row. Listing every 'oresmd://ir/%' address gives 24 rows, of which 3 are curve
+series (=type=series&instrument=zero=) rather than fixings. No fixing series
+existed in the tenant at all, so no interest rate fixing address answered.
+
+  ir    |      - |     - |      0 |       0
+
+== After, at f73b077f00
+
+ trades | addresses | fixing_addresses
+--------+-----------+------------------
+    808 |       132 |               68
+
+   klass   | empty
+-----------+-------
+ commodity |     6
+ equity    |    11
+ fx        |    24
+ inflation |     3
+ ir        |    15
+ security  |     3
+
+The klass table counts the fixing addresses alone: 15 of the 68 have no fixing
+row, so 6 of the 21 answer now. Listing every 'oresmd://ir/%' address gives 18
+rows, of which 3 are curve series. The 15 fixing addresses that stay empty name:
+
+  oresmd://ir/AOA?type=fixing&index=ibor&name=GENERIC&tenor=3M
+  oresmd://ir/BWP?type=fixing&index=ibor&name=GENERIC&tenor=3M
+  oresmd://ir/COP?type=fixing&index=ibor&name=IBR&tenor=3M
+  oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR&tenor=1M
+  oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR&tenor=2W
+  oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR&tenor=3M
+  oresmd://ir/IDR?type=fixing&index=ibor&name=GENERIC&tenor=3M
+  oresmd://ir/JPY?type=fixing&index=ibor&name=EYTIBOR&tenor=3M
+  oresmd://ir/KRW?type=fixing&index=ibor&name=GENERIC&tenor=3M
+  oresmd://ir/MYR?type=fixing&index=ibor&name=GENERIC&tenor=3M
+  oresmd://ir/OMR?type=fixing&index=ibor&name=GENERIC&tenor=3M
+  oresmd://ir/PLN?type=fixing&index=ibor&name=WIBOR&tenor=6M
+  oresmd://ir/SAR?type=fixing&index=ibor&name=SAIBOR&tenor=3M
+  oresmd://ir/THB?type=fixing&index=ibor&name=BIBOR&tenor=3M
+  oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M
+
+Every one of them is an index no generated curve covers: the seeded curve
+configs hold no AOA, BWP, HKD, IDR, MYR, OMR, PLN WIBOR, SAR or THB curve, no
+JPY EYTIBOR, no COP IBR at a tenor and no USD SOFR at a tenor. A fixing derived
+from the curve of that index and tenor therefore has no curve to come from, and
+the curve is the gap, not the fixing.
+
+The series the writer keeps, and where they live:
+
+ klass |              tenant_id               | provider_code | party        | series | fixings
+-------+----------------------------------------+---------------+--------------+--------+---------
+ ir    | ffffffff-ffff-ffff-ffff-ffffffffffff   | derived       | system_party |     41 |   21320
+
+The system tenant is the tenant a party's export falls back to for an index it
+does not hold itself, which is why the run's fixings are kept there: one series
+per index, read by every party.

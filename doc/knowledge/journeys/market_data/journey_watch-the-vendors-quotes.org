@@ -50,26 +50,25 @@ the same rows.
    asks which feeds the session may watch for display, and shows them as the
    vendor list: the provider and the feed. A party with no subscription sees an
    empty list and a line that says so.
-2. *Choose a vendor.* The person picks a vendor and feed, or all of them. The
-   system watches the live ticks of the chosen feeds and fills one row for each
-   datum it receives: the instrument type, the series, the point within the
-   series, the value, the change from the datum's previous tick, the time and
-   the age. A row updates in place when its datum ticks again, and briefly marks
-   the change.
-3. *Lay it out.* The person switches between three layouts of the same rows:
-   every datum of the vendor; the vendor's rows grouped by series, a series
-   opening into its points; and across the vendors, one row for each datum and
-   one column for each vendor the session may watch, with the spread between
-   them, so GBP/USD reads as Bloomberg and Tradeweb quote it side by side.
+2. *Choose the vendors.* The person picks one vendor or several. The system
+   watches the live ticks of the picked feeds and fills one row for each datum
+   they quote: the asset class, the instrument type, the series and the point
+   within the series. With one vendor, the row shows the value, the change from
+   the datum's previous tick, the time and the age. With several, it shows one
+   value for each picked vendor, the spread between them and the age of the
+   newest quote, so GBP/USD reads as Bloomberg and Tradeweb quote it side by
+   side. A cell updates in place when its vendor's datum ticks again, and
+   briefly marks the change.
+3. *Lay it out.* The person switches between two layouts of the same rows:
+   every datum, or grouped by series, a series opening into its points.
 4. *Narrow it.* The person narrows by asset class, from the asset class codes
    table, or by instrument type within it, or types
    part of a series to find it. The screen filters the rows it holds, with no
    call. Narrowing to one series is the exception: the system then asks the
    broker for that series alone.
 5. *Read one datum.* The person selects a row. The system reads its ticks of
-   the last hour from the store in one call for each vendor shown and draws them
-   as lines, one for each vendor across the vendors, then extends them with each
-   live tick. The rows above keep ticking.
+   the last hour from the store in one call for each picked vendor and draws one
+   line for each, then extends them with each live tick. The rows above keep ticking.
 6. *Notice a silent feed.* A row whose age grows marks itself stale. A feed with
    no tick for a while shows its age in the vendor list, once it has ticked. The person sees that a
    vendor stopped without leaving the screen.
@@ -123,11 +122,11 @@ oresmd URI, read by the codec; the schema the client needs to split it is
 |------+-----------+---------+--------|
 | Open the quotes | Ask which feeds the session may watch | =marketdata.v1.ops.list_watchable_feeds= | exists |
 | Open the quotes | Read the feeds' names | =marketdata.v1.feeds.list= | exists |
-| Choose a vendor | Watch a feed's ticks | =marketdata.v1.ops.market_tick.<provider>.<feed>.>= | exists |
-| Choose a vendor | Carry the watched ticks to the browser | none | missing |
-| Choose a vendor | Split a URI into its type, series and point | =marketdata.v1.ops.describe_oresmd_schema= | exists |
+| Choose the vendors | Watch a feed's ticks | =marketdata.v1.ops.market_tick.<provider>.<feed>.>= | exists |
+| Choose the vendors | Carry the watched ticks to the browser | none | missing |
+| Choose the vendors | Split a URI into its type, series and point | =marketdata.v1.ops.describe_oresmd_schema= | exists |
 | Narrow it | Watch one series | =marketdata.v1.ops.market_tick.<provider>.<feed>.<type>.<series>.*= | exists |
-| Read one series | Read the series' recent ticks | =marketdata.v1.ops.get_provider_ticks= | exists |
+| Read one datum | Read its recent ticks, for each picked vendor | =marketdata.v1.ops.get_provider_ticks= | exists |
 | A route or subscription changes | Learn of the change | =marketdata.v1.events.routes.>=, =marketdata.v1.events.subscriptions.>= | exists |
 
 Switching the layout, narrowing by class or text and pausing are done on the

@@ -73,10 +73,12 @@ td.spread{color:var(--ink-dim)}
   updated in place as they tick, whatever the asset class, and one datum drawn
   from its history and its live ticks.
 
-  Three layouts on one screen, switched in the page (?layout=datum|series|vendors):
-  every datum of one vendor; the same rows grouped by series, a series opening
-  into its points; and across vendors, one row for each datum and one column for
-  each vendor the session may watch, with the spread between them. The class
+  The person picks one vendor or several from the cards. With one, a row is its
+  value, change, time and age; with several, a row has one column for each
+  picked vendor and the spread between them, so GBP/USD reads as Bloomberg and
+  Tradeweb quote it side by side. Two layouts of the same rows, switched in the
+  page (?layout=datum|series, ?vendors=bloomberg,tradeweb): every datum, or grouped by series, a series
+  opening into its points. The class
   filter is the asset class codes table, the one market series and routes name,
   and the instrument type narrows it.
   ?state=party|system|none|silent switches the session and the market.
@@ -88,7 +90,7 @@ td.spread{color:var(--ink-dim)}
 const params = new URLSearchParams(location.search);
 const pick = (v, allowed) => allowed.includes(v) ? v : allowed[0];
 const state = pick(params.get('state'), ['party','system','none','silent']);
-let layout = pick(params.get('layout'), ['datum','series','vendors']);
+let layout = pick(params.get('layout'), ['datum','series']);
 
 /* the asset class codes table, in its display order, and the instrument types the asset class
    catalogue maps onto each through the oresmd namespace (fx -> fx, ir -> interest_rates) */
@@ -142,13 +144,17 @@ function add(type, series, point, mid, dp, providers){
 add('fx_spot', 'EUR/GBP', '', 0.82871, 5, ['composite']);
 
 const watched = feeds.map(f => f.provider);
-let vendor = feeds[0] ? feeds[0].provider : '';
+const asked = (params.get('vendors') || '').split(',').filter(p => feeds.some(f => f.provider === p));
+const picked_vendors = new Set(asked.length ? asked : feeds.length ? [feeds[0].provider] : []);
+const shownVendors = () => feeds.map(f => f.provider).filter(p => picked_vendors.has(p));
 let cls = 'all', type = 'all', find = '', paused = false, picked = null, open = new Set();
 if (silent && D[0]) D.forEach(d => { if (d.q[silent]) d.q[silent].at = now() - 14*60000; });
 
 function quotedBy(d){ return Object.keys(d.q).filter(p => watched.includes(p)); }
+function quotedIn(d){ return shownVendors().filter(p => d.q[p]); }
+function newest(d){ return quotedIn(d).map(p => d.q[p]).reduce((a, b) => a.at > b.at ? a : b); }
 function visible(d){
-  if (layout === 'vendors' ? !quotedBy(d).length : !d.q[vendor]) return false;
+  if (!quotedIn(d).length) return false;
   if (cls !== 'all' && classOf(d.type).code !== cls) return false;
   if (type !== 'all' && d.type !== type) return false;
   if (find && !(d.series + ' ' + d.point).toLowerCase().includes(find.toLowerCase())) return false;
@@ -179,9 +185,11 @@ function header(){
       <span>${paused ? '<span class="tag warn">paused</span>' : '<span class="tag ok">live</span>'}</span>
       <button class="btn" id="pause" style="margin-left:auto">${paused ? 'Resume' : 'Pause'}</button>
     </div>
+    ${feeds.length ? `<div class="row" style="align-items:center"><span class="faint" style="font-size:.8rem">Pick one vendor or several</span>
+      <button class="btn" id="all">All</button><button class="btn" id="one">Only the first</button></div>` : ''}
     <div class="vendors" id="vendors"></div>
     ${feeds.length ? `<div class="row">
-      <div class="field"><label>Layout</label><div class="seg">${[['datum','Every datum'],['series','By series'],['vendors','Across vendors']].map(([l,t]) =>
+      <div class="field"><label>Layout</label><div class="seg">${[['datum','Every datum'],['series','By series']].map(([l,t]) =>
         `<button data-l="${l}" class="${l === layout ? 'on' : ''}">${t}</button>`).join('')}</div></div>
       <div class="field"><label>Asset class</label><select id="cls"><option value="all">all</option>${ASSET_CLASSES.map(a =>
         `<option value="${a.code}" ${a.code === cls ? 'selected' : ''}>${a.name}</option>`).join('')}</select></div>
@@ -195,54 +203,59 @@ function vendors(){
   return feeds.map(f => {
     const quoted = D.filter(d => d.q[f.provider]);
     const last = Math.max(...quoted.map(d => d.q[f.provider].at));
-    const on = layout === 'vendors' || f.provider === vendor;
+    const on = picked_vendors.has(f.provider);
     return `<div class="vendor ${on ? 'on' : ''}" data-p="${f.provider}">
       <b>${f.provider}</b><small>${f.feed} · ${quoted.length} datums</small>
       <small class="age ${now() - last > 60000 ? 'bad' : ''}">last tick ${age(now() - last)} ago${f.party ? '' : ' · not routed to Acme'}</small></div>`;
   }).join('');
 }
 const pointCell = d => d.point || '<span class="faint">—</span>';
-function datumRow(d, cssClass){
-  const q = d.q[vendor], i = D.indexOf(d);
-  return `<tr class="${cssClass} ${stale(q) ? 'stale' : ''} ${picked === d ? 'pick' : ''}" data-i="${i}">
-    <td>${classOf(d.type).name}</td><td>${d.type}</td><td>${d.series}</td><td>${pointCell(d)}</td>
-    <td class="num ${flash(q)}">${q.value.toFixed(d.dp)}</td><td class="num">${chg(q, d.dp)}</td>
-    <td class="mono">${time(q.at)}</td><td class="num">${age(now() - q.at)}</td></tr>`;
+const lead = d => `<td>${classOf(d.type).name}</td><td>${d.type}</td>`;
+function cells(d){
+  const ps = shownVendors();
+  if (ps.length === 1) {
+    const q = d.q[ps[0]];
+    return `<td class="num ${flash(q)}">${q.value.toFixed(d.dp)}</td><td class="num">${chg(q, d.dp)}</td>
+      <td class="mono">${time(q.at)}</td><td class="num">${age(now() - q.at)}</td>`;
+  }
+  const vals = quotedIn(d).map(p => d.q[p].value);
+  const spread = vals.length > 1 ? (Math.max(...vals) - Math.min(...vals)).toFixed(d.dp) : '';
+  return ps.map(p => { const q = d.q[p];
+      return q ? `<td class="num ${flash(q)} ${stale(q) ? 'faint' : ''}">${q.value.toFixed(d.dp)}</td>` : '<td class="blank">—</td>'; }).join('') +
+    `<td class="num spread">${spread}</td><td class="num">${age(now() - newest(d).at)}</td>`;
 }
-function vendorRow(d){
-  const ps = quotedBy(d), vals = ps.map(p => d.q[p].value);
-  const spread = ps.length > 1 ? (Math.max(...vals) - Math.min(...vals)).toFixed(d.dp) : '';
-  return `<tr class="series ${picked === d ? 'pick' : ''}" data-i="${D.indexOf(d)}">
-    <td>${classOf(d.type).name}</td><td>${d.type}</td><td>${d.series}</td><td>${pointCell(d)}</td>
-    ${feeds.map(f => { const q = d.q[f.provider];
-      return q ? `<td class="num ${flash(q)} ${stale(q) ? 'faint' : ''}">${q.value.toFixed(d.dp)}</td>` : '<td class="blank">—</td>'; }).join('')}
-    <td class="num spread">${spread}</td></tr>`;
+function datumRow(d, cssClass){
+  return `<tr class="${cssClass} ${stale(newest(d)) ? 'stale' : ''} ${picked === d ? 'pick' : ''}" data-i="${D.indexOf(d)}">
+    ${lead(d)}<td>${d.series}</td><td>${pointCell(d)}</td>${cells(d)}</tr>`;
+}
+function seriesRow(s, ds){
+  const ps = shownVendors();
+  const latest = ds.reduce((a, b) => newest(a).at > newest(b).at ? a : b), q = newest(latest);
+  const tail = ps.length === 1
+    ? `<td class="num faint">${latest.point}: ${q.value.toFixed(latest.dp)}</td><td class="num">${chg(q, latest.dp)}</td><td class="mono">${time(q.at)}</td><td class="num">${age(now() - q.at)}</td>`
+    : ps.map(p => { const n = ds.filter(d => d.q[p]).length; return `<td class="num faint">${n ? n + ' pts' : '—'}</td>`; }).join('') +
+      `<td></td><td class="num">${age(now() - q.at)}</td>`;
+  return `<tr class="series" data-s="${s}">${lead(ds[0])}<td>${open.has(s) ? '▾' : '▸'} ${s}</td><td class="faint">${ds.length} points</td>${tail}</tr>`;
 }
 function body(){
   const shown = D.filter(visible);
-  const cols = layout === 'vendors' ? 5 + feeds.length : 8;
+  const cols = 4 + (shownVendors().length === 1 ? 4 : shownVendors().length + 2);
   if (!shown.length) return `<tr><td colspan="${cols}" class="faint">No datum matches.</td></tr>`;
   if (layout === 'datum') return shown.map(d => datumRow(d, 'series')).join('');
-  if (layout === 'vendors') return shown.map(vendorRow).join('');
   const bySeries = new Map();
   shown.forEach(d => { if (!bySeries.has(d.series)) bySeries.set(d.series, []); bySeries.get(d.series).push(d); });
-  return [...bySeries].map(([s, ds]) => {
-    if (ds.length === 1) return datumRow(ds[0], 'series');
-    const newest = ds.reduce((a, b) => a.q[vendor].at > b.q[vendor].at ? a : b), q = newest.q[vendor];
-    const head = `<tr class="series" data-s="${s}"><td>${classOf(ds[0].type).name}</td><td>${ds[0].type}</td><td>${open.has(s) ? '▾' : '▸'} ${s}</td>
-      <td class="faint">${ds.length} points</td><td class="num faint">${newest.point}: ${q.value.toFixed(newest.dp)}</td>
-      <td class="num">${chg(q, newest.dp)}</td><td class="mono">${time(q.at)}</td><td class="num">${age(now() - q.at)}</td></tr>`;
-    return head + (open.has(s) ? ds.map(d => datumRow(d, 'point')).join('') : '');
-  }).join('');
+  return [...bySeries].map(([s, ds]) => ds.length === 1 ? datumRow(ds[0], 'series')
+    : seriesRow(s, ds) + (open.has(s) ? ds.map(d => datumRow(d, 'point')).join('') : '')).join('');
 }
 function table(){
   if (!feeds.length) return `<div class="panel"><h2>No feed to watch</h2><div class="notice">Your party subscribes to no
     provider with the display right, so there is no vendor to show. Vendor streams are paid for: a party sees the vendors it
     subscribes to, through the feed its route picks. <a href="#">Manage market data subscriptions &rarr;</a></div></div>`;
-  const heads = layout === 'vendors'
-    ? feeds.map(f => `<th style="text-align:right">${f.provider}</th>`).join('') + '<th style="text-align:right">Spread</th>'
-    : '<th style="text-align:right">Value</th><th style="text-align:right">Change</th><th>Time</th><th style="text-align:right">Age</th>';
-  const title = layout === 'datum' ? 'Every datum of ' + vendor : layout === 'series' ? 'By series, ' + vendor : 'Across the vendors you may watch';
+  const ps = shownVendors();
+  const heads = ps.length === 1
+    ? '<th style="text-align:right">Value</th><th style="text-align:right">Change</th><th>Time</th><th style="text-align:right">Age</th>'
+    : ps.map(p => `<th style="text-align:right">${p}</th>`).join('') + '<th style="text-align:right">Spread</th><th style="text-align:right">Age</th>';
+  const title = (layout === 'datum' ? 'Every datum' : 'By series') + ' · ' + ps.join(', ');
   return `<div class="panel"><h2>${title}</h2>
     <table><thead><tr><th>Asset class</th><th>Type</th><th>Series</th><th>Point</th>${heads}</tr></thead>
     <tbody id="rows">${body()}</tbody></table></div>`;
@@ -251,13 +264,13 @@ const COLOURS = ['#58a6ff','#3fb950','#d29922','#f85149','#bc8cff','#39c5cf','#f
 function detail(){
   if (!feeds.length) return '';
   if (!picked) return '<div class="panel"><h2>One datum</h2><p class="faint">Pick a row to draw its last hour.</p></div>';
-  const ps = layout === 'vendors' ? quotedBy(picked) : [vendor];
+  const ps = quotedIn(picked);
   const all = ps.flatMap(p => picked.q[p].hist), lo = Math.min(...all), hi = Math.max(...all), span = hi - lo || 1;
   const W = 1000, H = 150, n = Math.max(...ps.map(p => picked.q[p].hist.length));
   const line = (p, k) => { const h = picked.q[p].hist;
     return `<polyline points="${h.map((v, i) => (i*W/(n-1)).toFixed(1) + ',' + (H - 8 - (v-lo)/span*(H-16)).toFixed(1)).join(' ')}" fill="none" stroke="${COLOURS[k % COLOURS.length]}" stroke-width="1.5"/>`; };
   const split = ((picked.seeded - 1)*W/(n-1)).toFixed(1);
-  return `<div class="panel"><h2>${picked.series}${picked.point ? ' · ' + picked.point : ''} · the last hour${ps.length > 1 ? ' · every vendor' : ' · ' + vendor}</h2>
+  return `<div class="panel"><h2>${picked.series}${picked.point ? ' · ' + picked.point : ''} · the last hour · ${ps.join(', ')}</h2>
     <div class="chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="${split}" x2="${split}" y1="0" y2="${H}" stroke="#30363d" stroke-dasharray="4 4"/>
     ${ps.map(line).join('')}</svg></div>
     <div class="legend">${ps.map((p, k) => `<span><span class="sw" style="background:${COLOURS[k % COLOURS.length]}"></span>${p}</span>`).join('')}
@@ -289,7 +302,14 @@ document.getElementById('app').addEventListener('click', e => {
   const ven = e.target.closest('.vendor'), tr = e.target.closest('tr');
   if (e.target.id === 'pause') { paused = !paused; render(); return; }
   if (e.target.dataset.l) { layout = e.target.dataset.l; render(); return; }
-  if (ven) { vendor = ven.dataset.p; if (layout === 'vendors') layout = 'datum'; picked = null; render(); return; }
+  if (e.target.id === 'all') { feeds.forEach(f => picked_vendors.add(f.provider)); render(); return; }
+  if (e.target.id === 'one') { picked_vendors.clear(); picked_vendors.add(feeds[0].provider); render(); return; }
+  if (ven) {
+    const p = ven.dataset.p;
+    if (picked_vendors.has(p) && picked_vendors.size > 1) picked_vendors.delete(p); else picked_vendors.add(p);
+    if (picked && !quotedIn(picked).length) picked = null;
+    render(); return;
+  }
   if (tr && tr.dataset.s) { open.has(tr.dataset.s) ? open.delete(tr.dataset.s) : open.add(tr.dataset.s); render(); return; }
   if (tr && tr.dataset.i) {
     picked = D[+tr.dataset.i];
@@ -318,6 +338,7 @@ document.getElementById('bar').addEventListener('click', e => {
   const next = new URLSearchParams(location.search);
   next.set('state', s);
   next.set('layout', layout);
+  next.set('vendors', shownVendors().join(','));
   location.search = next.toString();
 });
 </script>

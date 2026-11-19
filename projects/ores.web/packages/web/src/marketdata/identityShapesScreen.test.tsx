@@ -116,8 +116,8 @@ describe('the identity shape page', () => {
     it('lists the fields the shape requires and forbids, in field order', () => {
         const html = render('/market-data/identity-shapes/ir.index_fixing.ibor?tab=entries');
         expect(html.indexOf('ccy')).toBeLessThan(html.indexOf('unit_ccy'));
-        expect(html).toContain('Required');
-        expect(html).toContain('Forbidden');
+        expect(html).toMatch(/<span class="[^"]*text-up[^"]*">Required<\/span>/);
+        expect(html).toMatch(/<span class="[^"]*text-warn[^"]*">Forbidden<\/span>/);
         expect(html).toContain('Why unit_ccy.');
     });
 });

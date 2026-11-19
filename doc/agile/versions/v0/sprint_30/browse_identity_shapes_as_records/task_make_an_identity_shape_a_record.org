@@ -120,6 +120,7 @@ via its "Verifies task" field.
 | 3 | PR #4902 review 1: an unknown requirement value is ignored silently | =marketdata_series_identity_shape_entries_create.sql= | Decline | A check constraint holds the column to required or forbidden |
 | 4 | PR #4902 review 1: test the refusal of an entry whose shape code names no shape | =marketdata_series_identity_shape_test.sql= | Decline | The pgTAP case 'an entry that names no stated shape is refused' asserts it |
 | 5 | PR #4902 review 1: keep the hand-written changes apart from the generated code | commits | Decline | The guard, the seed and the web pages are already in commits of their own |
+| 6 | Owner: the requirement of an entry lost its badge | =IdentityShapesPage.tsx= | Accept | Drawn as a small tag again, green for required and amber for forbidden, as the old screen drew it |
 
 * Result
 

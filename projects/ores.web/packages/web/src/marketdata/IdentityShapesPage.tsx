@@ -46,6 +46,7 @@ import {
     type FieldSpec,
 } from '../refdata/records.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
+import { Tag } from '../ui/Primitives.js';
 import { PATHS } from '../shell/paths.js';
 
 const SHAPES = 'series-identity-shapes';
@@ -126,6 +127,16 @@ export function codeOf(write: Readonly<Record<string, unknown>>): string {
         .map(show)
         .filter((part) => part !== '')
         .join('.');
+}
+
+/** A requirement as a small tag: green when the family requires the field, amber when it forbids it. */
+function RequirementTag({ requirement }: { readonly requirement: string }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <Tag small tone={requirement === 'required' ? 'up' : 'warn'}>
+            {t(`refdata.choices.requirement.${requirement}`)}
+        </Tag>
+    );
 }
 
 export function identityShapePath(code?: string): string {
@@ -290,8 +301,9 @@ function ShapeBody({ shape }: { readonly shape: RecordRow }): ReactNode {
                         },
                         {
                             header: t(labelOf('requirement')),
-                            cell: (row) =>
-                                t(`refdata.choices.requirement.${show(row['requirement'])}`),
+                            cell: (row) => (
+                                <RequirementTag requirement={show(row['requirement'])} />
+                            ),
                         },
                         {
                             header: t(labelOf('entry_description')),

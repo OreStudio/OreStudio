@@ -64,6 +64,7 @@ export const MENU: readonly MenuItem[] = [
             'marketdata::market_observations:read',
             'marketdata::subscriptions:read',
             'marketdata::providers:read',
+            'marketdata::series_identity_shapes:read',
         ],
     },
     {

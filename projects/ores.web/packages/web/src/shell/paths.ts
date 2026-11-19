@@ -61,6 +61,7 @@ export const PATHS = {
     curveBlueprints: '/market-data/curve-blueprints',
     subscriptions: '/market-data/subscriptions',
     connectivity: '/market-data/connectivity',
+    identityShapes: '/market-data/identity-shapes',
     fixingSeries: '/market-data/fixings',
     instruments: '/market-data/instruments',
     rateLadder: '/market-data/rate-ladder',

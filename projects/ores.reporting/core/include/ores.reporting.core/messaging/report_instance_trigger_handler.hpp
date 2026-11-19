@@ -456,16 +456,67 @@ private:
         // names it, so a caller is told which run it asked for even when
         // starting that run fails afterwards.
         response.report_instance_id = inst_id_str;
+
+        if (dispatch) {
+            try {
+                dispatch_workflow(
+                    req, *def, kind, type->workflow_type, inst_id_str, *grant, rg, msg);
+            } catch (const std::exception& e) {
+                // A run that was recorded but never asked for is failed here.
+                // Nothing retries it, and the in-flight check counts any
+                // non-terminal instance, so leaving it pending would hold every
+                // later run of this definition behind work that will never
+                // happen.
+                mark_dispatch_failed(tenant_ctx, receipt.instance_id, e.what());
+                response.result.outcome = ores::utility::domain::outcome::failed;
+                response.result.code = "dispatch_failed";
+                response.result.message =
+                    std::format("Report instance {} was created but its workflow could not be "
+                                "started: {}",
+                                inst_id_str,
+                                e.what());
+                BOOST_LOG_SEV(report_instance_trigger_handler_lg(), error)
+                    << response.result.message;
+                return;
+            }
+        }
+
         BOOST_LOG_SEV(report_instance_trigger_handler_lg(), info)
             << "Created report instance " << inst_id_str << " for definition " << definition_id
             << (dispatch ? " and dispatched its workflow" : " without dispatching a workflow");
 
-        if (dispatch) {
-            dispatch_workflow(req, *def, kind, type->workflow_type, inst_id_str, *grant, rg, msg);
-        }
-
         response.result.code = dispatch ? "triggered" : "not_dispatched";
         response.result.message = std::format("Report instance {} created.", inst_id_str);
+    }
+
+    /**
+     * @brief Marks a run failed whose workflow could not be started.
+     *
+     * The run never began, so nothing else will move it, and a failure to
+     * record that is logged rather than thrown: the caller is already being
+     * told why its run did not start.
+     */
+    void mark_dispatch_failed(const ores::database::context& tenant_ctx,
+                              const boost::uuids::uuid& instance_id,
+                              std::string_view reason) {
+        try {
+            service::report_instance_service inst_svc(tenant_ctx);
+            auto inst = inst_svc.get_instance(instance_id);
+            if (!inst) {
+                BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn)
+                    << "Could not find report instance " << boost::uuids::to_string(instance_id)
+                    << " to mark it failed";
+                return;
+            }
+            inst->fsm_state_id = instance_states_.require("failed");
+            inst->change_reason_code = "reporting.dispatch_failed";
+            inst->change_commentary = std::string(reason);
+            inst_svc.save_instance(*inst);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), error)
+                << "Could not mark report instance " << boost::uuids::to_string(instance_id)
+                << " failed: " << e.what();
+        }
     }
 
     /**

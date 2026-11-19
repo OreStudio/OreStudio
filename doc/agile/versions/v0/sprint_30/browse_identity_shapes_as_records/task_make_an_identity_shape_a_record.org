@@ -26,11 +26,11 @@ A person browses identity shapes the way they browse any other record: a paged l
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9366D329-61FA-48E6-B347-B219A9667001][Browse identity shapes as records]] |
-| Now          | Implemented; the local gate runs.      |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR and stop for the owner to try it. |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
@@ -80,9 +80,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web, BFF and wire-protocol suites | 2,589, 1,312 and 226 tests, pass | =npx vitest run= in each package | e84ff67a44 |
+| C++ build | pass | =compass check --only build= | 8556a17608 |
+| pgTAP, with the shape suite at 16 assertions | pass | =compass check --only pgtap= | 8556a17608 |
+| ctest, every suite | pass, after the generator fix | =compass check --only ctest=, then =compass test run -- -R marketdata= | 11ee08a693 |
+| compass-ng gates | 0 new diagnostics | =compass-ng check --ratchet origin/main= | 8556a17608 |
+| Harness against the running services | 5 cases, pass | =npx playwright test tests/identity-shapes.spec.ts= | dd252e08e0 |
 
 * Notes
+
+- The first gate run could not recreate the database: one connection to it did
+  not close within 60 seconds, so ctest ran with no broker and pgTAP on the old
+  schema. The rerun recreated it and both suites ran against the new schema.
+- The ticks smoke test passed in the first gate run, on its own fresh database.
 
 * Test Scenarios
 
@@ -108,3 +118,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An identity shape is now a record. The screen lists the shapes a page at a time,
+searched and sorted on the server, each with what its family is for, and a shape
+opens on its own page with its details, its entries and its history. The seed
+states seven shapes, each with a description, and their 29 entries.
+
+All four acceptance points are met. The list and the page are the record pattern
+the calendars use; every seeded shape has a description; the guard reads the
+shapes and their entries into the same family map it held before, so the writer
+enforces them as before; and the shape suite still names every family in use that
+no shape states, now with the shapes as the families.

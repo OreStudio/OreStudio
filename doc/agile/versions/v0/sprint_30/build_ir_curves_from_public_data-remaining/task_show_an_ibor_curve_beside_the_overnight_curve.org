@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch: feature/bootstrap-every-ibor-curve
+#+branch: feature/show-every-ibor-curve-beside-its-overnight-curve
 #+pr:
 #+blocked_on:
 #+blocked_since:

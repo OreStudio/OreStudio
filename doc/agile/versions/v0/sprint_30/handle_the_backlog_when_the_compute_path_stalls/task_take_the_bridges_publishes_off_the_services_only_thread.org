@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: BC700C53-DF63-4D2E-9B87-1E7A8F72DAE7
+:END:
+#+title: Task: Take the bridge's publishes off the service's only thread
+#+description: batch_workflow_bridge::poll_once walks every pending link and calls nats_.js_publish synchronously. One link whose ack never arrives blocks the coroutine for the client's five second default, and because the bridge, the grid poller and every request handler share one io_context, the whole service stops with it. Cap the work a single poll may do, publish without blocking the executor, and back off when a publish fails instead of retrying every link in turn.
+#+type: task
+#+level: s1
+#+filetags: :handle_the_backlog_when_the_compute_path_stalls:sprint_30:v0:
+#+owner: eager_maxwell
+#+branch: feature/take-the-bridges-publishes-off-the-services-only-thread
+#+pr: 4879
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle-the-backlog-when-the-compute-path-stalls]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle-the-backlog-when-the-compute-path-stalls]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4879][#4879]] | [nats] Bound the wait a JetStream publish may cost the caller |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=js_publish= takes the wait it allows for the acknowledgement, defaulting to
+=client::default_js_publish_ack_wait=, and passes the server's JetStream error
+code into the failure it throws. The batch workflow bridge allows one second
+per completion and ends its poll on the first failure, so a store that cannot
+acknowledge costs the service's shared thread one second rather than five
+seconds once per pending link.
+
+This bounds the damage but does not remove the cause: a link the store never
+accepts still holds the ones behind it, and the store's own reason for
+refusing is only visible once =js_publish= reports it. Both are covered by
+the story's remaining tasks.
+
+PR #4879. =compass check --exclude-heavy=: 47/47 passed. The nats and compute
+service unity units build clean. No test drives a stream into refusing an
+acknowledgement, so the bound and the early exit rest on inspection and the
+gate.
+

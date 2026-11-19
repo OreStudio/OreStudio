@@ -925,18 +925,25 @@ subscription client::queue_subscribe(std::string_view subject,
 
 void client::js_publish(std::string_view subject,
                         std::span<const std::byte> data,
-                        std::unordered_map<std::string, std::string> headers) {
+                        std::unordered_map<std::string, std::string> headers,
+                        std::chrono::milliseconds ack_wait) {
 
     const std::string full_subject(make_subject(subject));
     log_publish(*impl_, "NATS js-publish", full_subject);
 
     const auto msg = make_msg(full_subject, data, headers);
+    jsPubOptions opts;
+    jsPubOptions_Init(&opts);
+    opts.MaxWait = ack_wait.count();
     jsPubAck* received = nullptr;
+    // The JetStream error explains a refusal to store, so a full store reads as
+    // a full store rather than as the timeout an absent ack looks like.
+    jsErrCode jerr = static_cast<jsErrCode>(0);
     // js_PublishMsg(jsPubAck**, jsCtx*, natsMsg*, jsPubOptions*, jsErrCode*)
-    const natsStatus s = js_PublishMsg(&received, impl_->js, msg.get(), nullptr, nullptr);
+    const natsStatus s = js_PublishMsg(&received, impl_->js, msg.get(), &opts, &jerr);
     const pub_ack_handle ack(received);
 
-    ensure_result(s, "JetStream publish failed");
+    ensure_result(s, jerr, "JetStream publish failed");
 }
 
 namespace {

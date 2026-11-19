@@ -30,9 +30,24 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <format>
 
 namespace ores::compute::service::app {
+
+namespace {
+
+/**
+ * @brief How long one completion may wait for the store to acknowledge it.
+ *
+ * A healthy store acknowledges in milliseconds. The wait is short because the
+ * poll runs on the thread the rest of the service shares, and a store that
+ * cannot acknowledge must cost that thread a moment, not the default five
+ * seconds once per pending link.
+ */
+constexpr std::chrono::milliseconds publish_ack_wait{1000};
+
+}
 
 using namespace ores::logging;
 
@@ -96,10 +111,32 @@ void batch_workflow_bridge::poll_once() {
             //
             // The step id is the identity of the work, so a retry after a
             // failed publish stores one completion rather than two.
-            nats_.js_publish(
-                std::string(ores::workflow::messaging::step_completed_event::nats_subject),
-                ores::nats::default_wire_codec().encode(evt),
-                ores::nats::headers::publish_identity_headers(link.workflow_step_id));
+            //
+            // The wait for the acknowledgement is billed to the thread this
+            // poll runs on, which it shares with the rest of the service. A
+            // store that cannot keep up withholds the acknowledgement, so the
+            // wait is bounded here and a failure ends the poll: every link is
+            // retried by the next one, and a stalled store costs the service
+            // one wait rather than one per pending link.
+            //
+            // A link the store never accepts therefore holds the ones behind
+            // it, and it shows up as the batch it names failing to advance
+            // rather than as a service that stops.
+            const auto completion = ores::nats::default_wire_codec().encode(evt);
+            try {
+                nats_.js_publish(
+                    std::string(ores::workflow::messaging::step_completed_event::nats_subject),
+                    completion,
+                    ores::nats::headers::publish_identity_headers(link.workflow_step_id),
+                    publish_ack_wait);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Could not fire step_completed for batch " << batch_id
+                    << " (step=" << link.workflow_step_id
+                    << " instance=" << link.workflow_instance_id << "): " << e.what()
+                    << "; the remaining links wait for the next poll.";
+                return;
+            }
 
             BOOST_LOG_SEV(lg(), info) << "Fired step_completed for batch " << batch_id
                                       << " (step=" << link.workflow_step_id

@@ -126,7 +126,6 @@ const usdCurve: IrCurveCoverageRow = {
     config_id: '44444444-4444-4444-8444-444444444444',
     source_name: 'synthetic.rates.usd.sofr',
     provider_code: 'fred',
-    window_days_override: null,
     bootstrap_config_id: '55555555-5555-4555-8555-555555555555',
     bootstrap_config_name: 'USD SOFR curve',
     published_as_of: AS_OF,
@@ -164,7 +163,6 @@ const jpyCurve: IrCurveCoverageRow = {
     config_id: '',
     source_name: '',
     provider_code: '',
-    window_days_override: null,
     bootstrap_config_id: '66666666-6666-4666-8666-666666666666',
     bootstrap_config_name: 'JPY TONAR curve',
     published_as_of: '',
@@ -322,15 +320,6 @@ describe('the interest rates coverage', () => {
         expect(html).toContain('USD SOFR curve');
         expect(html).toContain('title="2026-11-01 10:00:00.000000Z"');
         expect(html).not.toContain('Window (days)');
-        expect(html).not.toContain('Own window');
-    });
-
-    it("states a feed's own window under its source", () => {
-        const html = render(
-            '/market-data/calibration/interest_rates',
-            irCalibration([{ ...usdCurve, window_days_override: 30 }]),
-        );
-        expect(html).toContain('Own window: 30 days');
     });
 
     it('states each curve by its own publish, a live funding curve beside an unpublished projection', () => {

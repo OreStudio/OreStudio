@@ -5072,7 +5072,6 @@ const pt: SourceCatalogue = {
                 role: 'Papel',
                 tenor: 'Prazo',
                 discountsOff: 'Desconta sobre',
-                ownWindow: 'Janela própria: {days} dias',
                 neverPublished: 'nunca publicada',
                 published: 'Publicada',
                 stateHeader: 'Estado',

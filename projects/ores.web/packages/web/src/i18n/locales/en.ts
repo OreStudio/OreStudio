@@ -5036,7 +5036,6 @@ export const en: SourceCatalogue = {
                 role: 'Role',
                 tenor: 'Tenor',
                 discountsOff: 'Discounts off',
-                ownWindow: 'Own window: {days} days',
                 neverPublished: 'never published',
                 published: 'Published',
                 stateHeader: 'State',

@@ -5110,7 +5110,6 @@ const fr: SourceCatalogue = {
                 role: 'Rôle',
                 tenor: 'Ténor',
                 discountsOff: 'Actualise sur',
-                ownWindow: 'Fenêtre propre : {days} jours',
                 neverPublished: 'jamais publiée',
                 published: 'Publiée',
                 stateHeader: 'État',

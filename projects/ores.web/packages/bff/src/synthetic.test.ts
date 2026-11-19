@@ -659,16 +659,36 @@ describe('synthetic calibration', () => {
         expect(calls.map((c) => c.subject)).toEqual(['synthetic.v1.ops.calibrate_feeds']);
     });
 
-    it('adds the IR coverage rows to the interest rates class', async () => {
+    it('adds the IR coverage rows to the interest rates class, reading each feed by its run', async () => {
+        // The calibration resolves FX spot feeds only, so it answers the IR class with none.
+        // The IR feed's start comes from the run the service holds for it.
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.calibrate_feeds': {
                 success: true,
                 policy: { from_policy_row: false, window_days: 90 },
-                feeds: [
+                feeds: [],
+            },
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                message: '',
+                running_feeds: [
                     {
-                        config_id: ID,
                         source_name: 'synthetic.bloomberg.usdsofr',
-                        start: { from_fixing: true, provider_code: 'bloomberg', note: '' },
+                        start: {
+                            from_fixing: true,
+                            item: '',
+                            provider_code: 'bloomberg',
+                            vendor_id: '',
+                            value: '',
+                            inverted: false,
+                            fixing_date: null,
+                            received_at: null,
+                            window_days: 90,
+                            used: 1,
+                            hourly_spread: null,
+                            note: '',
+                            dispersion: [],
+                        },
                     },
                 ],
             },
@@ -715,7 +735,6 @@ describe('synthetic calibration', () => {
                 config_id: ID,
                 source_name: 'synthetic.bloomberg.usdsofr',
                 provider_code: 'bloomberg',
-                window_days_override: null,
                 bootstrap_config_id: OTHER,
                 bootstrap_config_name: 'USD-SOFR',
                 published_as_of: '2026-01-01 00:00:00Z',
@@ -741,6 +760,7 @@ describe('synthetic calibration', () => {
             'synthetic.v1.ops.calibrate_feeds',
             'synthetic.v1.ir_curve_generation_configs.list',
             'refdata.v1.ir_curve_bootstrap_configs.list',
+            'synthetic.v1.feed_configs.list',
             'marketdata.v1.ops.get_published_curve_sets',
         ]);
         expect(calls.at(-1)?.body).toEqual({

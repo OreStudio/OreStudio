@@ -790,7 +790,7 @@ const runningFeedSchema = z.object({
 });
 
 /** The feeds the service runs now, each with where it started, by source name. */
-async function readRunningFeeds(
+export async function readRunningFeeds(
     session: LiveSession,
 ): Promise<readonly z.infer<typeof runningFeedSchema>[]> {
     const reply = await session.client.callAuthenticated(

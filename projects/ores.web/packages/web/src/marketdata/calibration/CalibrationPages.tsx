@@ -341,18 +341,6 @@ function IrCoverage({ rows }: { readonly rows: readonly IrCurveCoverageRow[] }):
                                                                 {row.provider_code}
                                                             </div>
                                                         )}
-                                                        {row.window_days_override != null && (
-                                                            <div className="text-xs text-ink-muted">
-                                                                {t(
-                                                                    'marketdata.calibration.ir.ownWindow',
-                                                                    {
-                                                                        days: String(
-                                                                            row.window_days_override,
-                                                                        ),
-                                                                    },
-                                                                )}
-                                                            </div>
-                                                        )}
                                                         {feedGap && (
                                                             <div className="mt-1 space-y-0.5">
                                                                 <GapTag gap={row.gap} />

@@ -8,7 +8,7 @@
 #+filetags: :marketdata:ticks:history:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
 #+branch: feature/read-a-vendors-recent-ticks
-#+pr:
+#+pr: 4882
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4882][#4882]] | [marketdata] Read a provider's ticks by the series URI, for every tenant |
 
 * Review
 

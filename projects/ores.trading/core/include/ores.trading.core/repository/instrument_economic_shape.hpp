@@ -42,8 +42,10 @@
 #include "ores.trading.core/repository/equity_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_basket_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_basket_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_forward_volatility_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_pairwise_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_position_instrument_repository.hpp"
@@ -55,8 +57,10 @@
 #include "ores.trading.core/repository/fx_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_basket_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_basket_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_forward_volatility_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_pairwise_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
@@ -125,11 +129,18 @@ void read_instrument_components(const ores::database::context& ctx,
         case domain::instrument_table::equity_basket_option_instrument:
             append(equity_basket_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
+        case domain::instrument_table::equity_basket_variance_swap_instrument:
+            append(equity_basket_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
         case domain::instrument_table::equity_digital_option_instrument:
             append(equity_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::equity_forward_instrument:
             append(equity_forward_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_forward_volatility_agreement_instrument:
+            append(equity_forward_volatility_agreement_instrument_repository{}.read_latest(
+                ctx, trade_id));
             break;
         case domain::instrument_table::equity_option_instrument:
             append(equity_option_instrument_repository{}.read_latest(ctx, trade_id));
@@ -162,11 +173,18 @@ void read_instrument_components(const ores::database::context& ctx,
         case domain::instrument_table::fx_basket_option_instrument:
             append(fx_basket_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
+        case domain::instrument_table::fx_basket_variance_swap_instrument:
+            append(fx_basket_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
         case domain::instrument_table::fx_digital_option_instrument:
             append(fx_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::fx_forward_instrument:
             append(fx_forward_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_forward_volatility_agreement_instrument:
+            append(
+                fx_forward_volatility_agreement_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::fx_pairwise_variance_swap_instrument:
             append(fx_pairwise_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));

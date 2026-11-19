@@ -2208,3 +2208,19 @@ tangled into the runnable script library
 * Fx Basket Option Instruments
 
 - [[id:288E17A3-EA62-5365-9CA6-BA451FF7D399][How do I run the fx_basket_option_instruments commands from the shell?]]
+
+* Equity Basket Variance Swap Instruments
+
+- [[id:F7370D75-4466-5DE9-A816-70218B591CA7][How do I run the equity_basket_variance_swap_instruments commands from the shell?]]
+
+* Equity Forward Volatility Agreement Instruments
+
+- [[id:1CE63C7A-9E23-5D04-A199-0E73A9C26745][How do I run the equity_forward_volatility_agreement_instruments commands from the shell?]]
+
+* Fx Basket Variance Swap Instruments
+
+- [[id:B16256C1-EBE5-54F1-B335-9B128BE55856][How do I run the fx_basket_variance_swap_instruments commands from the shell?]]
+
+* Fx Forward Volatility Agreement Instruments
+
+- [[id:B18C02EB-595E-5975-9EB2-A9DA996A2D44][How do I run the fx_forward_volatility_agreement_instruments commands from the shell?]]

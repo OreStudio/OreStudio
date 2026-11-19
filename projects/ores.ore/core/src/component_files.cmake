@@ -137,6 +137,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/script_library_projection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/todays_market_projection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/underlying_block_projection.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/volatility_product_projection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/hierarchy/import_node.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"

@@ -25,8 +25,10 @@
 #include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_basket_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_basket_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument.hpp"
+#include "ores.trading.api/domain/equity_forward_volatility_agreement_instrument.hpp"
 #include "ores.trading.api/domain/equity_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_pairwise_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_position_instrument.hpp"
@@ -47,7 +49,9 @@ using equity_instrument_variant = std::variant<equity_option_instrument,
                                                equity_position_instrument,
                                                equity_pairwise_variance_swap_instrument,
                                                cash_position_instrument,
-                                               equity_basket_option_instrument>;
+                                               equity_basket_option_instrument,
+                                               equity_basket_variance_swap_instrument,
+                                               equity_forward_volatility_agreement_instrument>;
 
 } // namespace ores::trading::domain
 

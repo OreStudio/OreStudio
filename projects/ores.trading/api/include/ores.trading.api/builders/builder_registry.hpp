@@ -30,6 +30,7 @@
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/builders/scripted_builders.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
+#include "ores.trading.api/builders/volatility_product_builders.hpp"
 #include <set>
 #include <string_view>
 #include <tuple>
@@ -71,12 +72,12 @@ using all_builders =
                window_barrier_option_builder<scripted_family::equity>,
                window_barrier_option_builder<scripted_family::fx>,
                equity_generic_barrier_option_builder,
-               basket_variance_swap_builder<scripted_family::equity>,
-               basket_variance_swap_builder<scripted_family::fx>,
+               equity_basket_variance_swap_builder,
+               fx_basket_variance_swap_builder,
                equity_pairwise_variance_swap_builder,
                fx_pairwise_variance_swap_builder,
-               forward_volatility_agreement_builder<scripted_family::equity>,
-               forward_volatility_agreement_builder<scripted_family::fx>,
+               equity_forward_volatility_agreement_builder,
+               fx_forward_volatility_agreement_builder,
                european_option_barrier_builder,
                fx_worst_of_basket_swap_builder,
                equity_future_option_builder,

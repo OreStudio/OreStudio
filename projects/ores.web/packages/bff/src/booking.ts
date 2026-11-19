@@ -165,6 +165,10 @@ function emptyBatch(): InstrumentBatch {
         fx_pairwise_variance_swap_instruments: [],
         equity_basket_option_instruments: [],
         fx_basket_option_instruments: [],
+        equity_basket_variance_swap_instruments: [],
+        fx_basket_variance_swap_instruments: [],
+        equity_forward_volatility_agreement_instruments: [],
+        fx_forward_volatility_agreement_instruments: [],
     };
 } /** The intent every write of a booking carries. */
 function intent(): { readonly reason_code: string; readonly commentary: string } {

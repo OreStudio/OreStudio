@@ -31,8 +31,10 @@ import type { EquityAccumulatorInstrument } from './domain/equity_accumulator_in
 import type { EquityAsianOptionInstrument } from './domain/equity_asian_option_instrument.js';
 import type { EquityBarrierOptionInstrument } from './domain/equity_barrier_option_instrument.js';
 import type { EquityBasketOptionInstrument } from './domain/equity_basket_option_instrument.js';
+import type { EquityBasketVarianceSwapInstrument } from './domain/equity_basket_variance_swap_instrument.js';
 import type { EquityDigitalOptionInstrument } from './domain/equity_digital_option_instrument.js';
 import type { EquityForwardInstrument } from './domain/equity_forward_instrument.js';
+import type { EquityForwardVolatilityAgreementInstrument } from './domain/equity_forward_volatility_agreement_instrument.js';
 import type { EquityOptionInstrument } from './domain/equity_option_instrument.js';
 import type { EquityPairwiseVarianceSwapInstrument } from './domain/equity_pairwise_variance_swap_instrument.js';
 import type { EquityPositionInstrument } from './domain/equity_position_instrument.js';
@@ -43,8 +45,10 @@ import type { FxAsianForwardInstrument } from './domain/fx_asian_forward_instrum
 import type { FxAsianOptionInstrument } from './domain/fx_asian_option_instrument.js';
 import type { FxBarrierOptionInstrument } from './domain/fx_barrier_option_instrument.js';
 import type { FxBasketOptionInstrument } from './domain/fx_basket_option_instrument.js';
+import type { FxBasketVarianceSwapInstrument } from './domain/fx_basket_variance_swap_instrument.js';
 import type { FxDigitalOptionInstrument } from './domain/fx_digital_option_instrument.js';
 import type { FxForwardInstrument } from './domain/fx_forward_instrument.js';
+import type { FxForwardVolatilityAgreementInstrument } from './domain/fx_forward_volatility_agreement_instrument.js';
 import type { FxPairwiseVarianceSwapInstrument } from './domain/fx_pairwise_variance_swap_instrument.js';
 import type { FxVanillaOptionInstrument } from './domain/fx_vanilla_option_instrument.js';
 import type { FxVarianceSwapInstrument } from './domain/fx_variance_swap_instrument.js';
@@ -134,8 +138,10 @@ export interface InstrumentBatch {
     equity_asian_option_instruments: EquityAsianOptionInstrument[];
     equity_barrier_option_instruments: EquityBarrierOptionInstrument[];
     equity_basket_option_instruments: EquityBasketOptionInstrument[];
+    equity_basket_variance_swap_instruments: EquityBasketVarianceSwapInstrument[];
     equity_digital_option_instruments: EquityDigitalOptionInstrument[];
     equity_forward_instruments: EquityForwardInstrument[];
+    equity_forward_volatility_agreement_instruments: EquityForwardVolatilityAgreementInstrument[];
     equity_option_instruments: EquityOptionInstrument[];
     equity_pairwise_variance_swap_instruments: EquityPairwiseVarianceSwapInstrument[];
     equity_position_instruments: EquityPositionInstrument[];
@@ -146,8 +152,10 @@ export interface InstrumentBatch {
     fx_asian_option_instruments: FxAsianOptionInstrument[];
     fx_barrier_option_instruments: FxBarrierOptionInstrument[];
     fx_basket_option_instruments: FxBasketOptionInstrument[];
+    fx_basket_variance_swap_instruments: FxBasketVarianceSwapInstrument[];
     fx_digital_option_instruments: FxDigitalOptionInstrument[];
     fx_forward_instruments: FxForwardInstrument[];
+    fx_forward_volatility_agreement_instruments: FxForwardVolatilityAgreementInstrument[];
     fx_pairwise_variance_swap_instruments: FxPairwiseVarianceSwapInstrument[];
     fx_vanilla_option_instruments: FxVanillaOptionInstrument[];
     fx_variance_swap_instruments: FxVarianceSwapInstrument[];

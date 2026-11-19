@@ -46,8 +46,10 @@ enum class instrument_table {
     equity_asian_option_instrument,
     equity_barrier_option_instrument,
     equity_basket_option_instrument,
+    equity_basket_variance_swap_instrument,
     equity_digital_option_instrument,
     equity_forward_instrument,
+    equity_forward_volatility_agreement_instrument,
     equity_option_instrument,
     equity_pairwise_variance_swap_instrument,
     equity_position_instrument,
@@ -58,8 +60,10 @@ enum class instrument_table {
     fx_asian_option_instrument,
     fx_barrier_option_instrument,
     fx_basket_option_instrument,
+    fx_basket_variance_swap_instrument,
     fx_digital_option_instrument,
     fx_forward_instrument,
+    fx_forward_volatility_agreement_instrument,
     fx_pairwise_variance_swap_instrument,
     fx_vanilla_option_instrument,
     fx_variance_swap_instrument,
@@ -102,7 +106,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "InflationSwap")
         return instrument_table::rate_instrument;
     if (trade_type == "FxForwardVolatilityAgreement")
-        return instrument_table::scripted_instrument;
+        return instrument_table::fx_forward_volatility_agreement_instrument;
     if (trade_type == "FxForward")
         return instrument_table::fx_forward_instrument;
     if (trade_type == "FxSwap")
@@ -138,7 +142,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "FxPairwiseVarianceSwap")
         return instrument_table::fx_pairwise_variance_swap_instrument;
     if (trade_type == "FxBasketVarianceSwap")
-        return instrument_table::scripted_instrument;
+        return instrument_table::fx_basket_variance_swap_instrument;
     if (trade_type == "FxAccumulator")
         return instrument_table::fx_accumulator_instrument;
     if (trade_type == "FxTaRF")
@@ -192,7 +196,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "EquityAutoDeltaHedgedOption")
         return instrument_table::equity_position_instrument;
     if (trade_type == "EquityForwardVolatilityAgreement")
-        return instrument_table::scripted_instrument;
+        return instrument_table::equity_forward_volatility_agreement_instrument;
     if (trade_type == "EquityOption")
         return instrument_table::equity_option_instrument;
     if (trade_type == "EquityFutureOption")
@@ -224,7 +228,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "EquityPairwiseVarianceSwap")
         return instrument_table::equity_pairwise_variance_swap_instrument;
     if (trade_type == "EquityBasketVarianceSwap")
-        return instrument_table::scripted_instrument;
+        return instrument_table::equity_basket_variance_swap_instrument;
     if (trade_type == "EquityCliquetOption")
         return instrument_table::equity_option_instrument;
     if (trade_type == "EquityAccumulator")

@@ -22,8 +22,10 @@
 #include "ores.trading.core/messaging/fx_asian_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_barrier_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_basket_option_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/fx_basket_variance_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_digital_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_forward_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/fx_forward_volatility_agreement_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_pairwise_variance_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_vanilla_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_variance_swap_instrument_registrar.hpp"
@@ -103,6 +105,18 @@ register_fx_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(fx_basket_option_instrument_subs.begin()),
                 std::make_move_iterator(fx_basket_option_instrument_subs.end()));
+
+    auto fx_basket_variance_swap_instrument_subs =
+        register_fx_basket_variance_swap_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(fx_basket_variance_swap_instrument_subs.begin()),
+                std::make_move_iterator(fx_basket_variance_swap_instrument_subs.end()));
+
+    auto fx_forward_volatility_agreement_instrument_subs =
+        register_fx_forward_volatility_agreement_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(fx_forward_volatility_agreement_instrument_subs.begin()),
+                std::make_move_iterator(fx_forward_volatility_agreement_instrument_subs.end()));
 
     return subs;
 }

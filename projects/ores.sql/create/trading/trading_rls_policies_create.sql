@@ -449,6 +449,111 @@ for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
+
+-- -----------------------------------------------------------------------------
+-- Equity Basket Variance Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_basket_var_swap_instruments_tbl enable row level security;
+
+drop policy if exists equity_basket_variance_swap_instruments_tenant_isolation_policy
+    on ores_trading_equity_basket_var_swap_instruments_tbl;
+
+create policy equity_basket_variance_swap_instruments_tenant_isolation_policy on ores_trading_equity_basket_var_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists equity_basket_variance_swap_instruments_party_isolation_policy
+    on ores_trading_equity_basket_var_swap_instruments_tbl;
+
+create policy equity_basket_variance_swap_instruments_party_isolation_policy
+on ores_trading_equity_basket_var_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Forward Volatility Agreement Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_fva_instruments_tbl enable row level security;
+
+drop policy if exists equity_fva_instruments_tenant_isolation_policy
+    on ores_trading_equity_fva_instruments_tbl;
+
+create policy equity_fva_instruments_tenant_isolation_policy on ores_trading_equity_fva_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists equity_fva_instruments_party_isolation_policy
+    on ores_trading_equity_fva_instruments_tbl;
+
+create policy equity_fva_instruments_party_isolation_policy
+on ores_trading_equity_fva_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Basket Variance Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_basket_variance_swap_instruments_tbl enable row level security;
+
+drop policy if exists fx_basket_variance_swap_instruments_tenant_isolation_policy
+    on ores_trading_fx_basket_variance_swap_instruments_tbl;
+
+create policy fx_basket_variance_swap_instruments_tenant_isolation_policy on ores_trading_fx_basket_variance_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists fx_basket_variance_swap_instruments_party_isolation_policy
+    on ores_trading_fx_basket_variance_swap_instruments_tbl;
+
+create policy fx_basket_variance_swap_instruments_party_isolation_policy
+on ores_trading_fx_basket_variance_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Forward Volatility Agreement Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_fva_instruments_tbl enable row level security;
+
+drop policy if exists fx_fva_instruments_tenant_isolation_policy
+    on ores_trading_fx_fva_instruments_tbl;
+
+create policy fx_fva_instruments_tenant_isolation_policy on ores_trading_fx_fva_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists fx_fva_instruments_party_isolation_policy
+    on ores_trading_fx_fva_instruments_tbl;
+
+create policy fx_fva_instruments_party_isolation_policy
+on ores_trading_fx_fva_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- FX Pairwise Variance Swap Instruments
 -- -----------------------------------------------------------------------------

@@ -3270,7 +3270,7 @@ TEST_CASE("a_window_and_a_generic_barrier_hold_their_barriers_schedule_and_kiko_
     check_generic(rebuild(items[1]));
 }
 
-TEST_CASE("the_variance_swaps_and_a_forward_volatility_agreement_hold_their_terms_as_rows",
+TEST_CASE("the_variance_swaps_and_the_forward_volatility_agreements_hold_their_terms_as_rows",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
@@ -3349,22 +3349,70 @@ TEST_CASE("the_variance_swaps_and_a_forward_volatility_agreement_hold_their_term
       <SettlementDate>2020-01-29</SettlementDate>
     </FxForwardVolatilityAgreementData>
   </Trade>
+  <Trade id="EquityBasketVarianceSwap#1">
+    <TradeType>EquityBasketVarianceSwap</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityBasketVarianceSwapData>
+      <LongShort>Long</LongShort>
+      <Currency>USD</Currency>
+      <Notional>1000</Notional>
+      <Strike>0.2</Strike>
+      <Underlyings>
+        <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name><Weight>0.6</Weight></Underlying>
+        <Underlying><Type>Equity</Type><Name>RIC:.NDX</Name><Weight>0.4</Weight></Underlying>
+      </Underlyings>
+      <SquaredPayoff>True</SquaredPayoff>
+      <Cap>2.5</Cap>
+      <Floor>0.1</Floor>
+      <ValuationSchedule>
+        <Rules>
+          <StartDate>2022-01-31</StartDate>
+          <EndDate>2023-01-31</EndDate>
+          <Tenor>1D</Tenor>
+          <Calendar>US</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ValuationSchedule>
+      <SettlementDate>2023-02-02</SettlementDate>
+    </EquityBasketVarianceSwapData>
+  </Trade>
+  <Trade id="EquityForwardVolatilityAgreement#1">
+    <TradeType>EquityForwardVolatilityAgreement</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityForwardVolatilityAgreementData>
+      <FvaDate>2022-07-25</FvaDate>
+      <OptionExpiry>2023-01-27</OptionExpiry>
+      <PremiumDate>2022-07-27</PremiumDate>
+      <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name></Underlying>
+      <LongShort>Short</LongShort>
+      <ImpliedVolStrike>0.21</ImpliedVolStrike>
+      <Quantity>1000</Quantity>
+      <PayCcy>USD</PayCcy>
+      <SettlementDate>2023-01-31</SettlementDate>
+      <DayCountFraction>A365F</DayCountFraction>
+      <DividendYield>0.015</DividendYield>
+      <FixedRate>0.03</FixedRate>
+      <PayoffType>Straddle</PayoffType>
+    </EquityForwardVolatilityAgreementData>
+  </Trade>
 </Portfolio>)");
-    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
-                             std::string_view name) -> std::string {
-        for (const auto& p : data.parameters)
-            if (p.name == name)
-                return p.value.value_or("");
-        return "<absent>";
-    };
-    const auto check_basket = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+    const auto check_basket = [](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = std::get_if<ores::trading::domain::fx_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        CHECK(value_of(*data, "SquaredPayoff") == "false");
-        CHECK(value_of(*data, "Strike") == "0.07");
+        REQUIRE(data->basket_variance_swaps.size() == 1);
+        const auto& row = data->basket_variance_swaps[0];
+        CHECK(row.identity.trade_type_code == "FxBasketVarianceSwap");
+        CHECK(row.long_short == "Short");
+        CHECK(row.currency == "EUR");
+        CHECK(row.notional == decimal_of("1000"));
+        CHECK(row.strike == decimal_of("0.07"));
+        CHECK_FALSE(row.squared_payoff);
+        CHECK_FALSE(row.cap.has_value());
+        CHECK(row.settlement_date == std::chrono::year{2024} / 2 / 2);
         REQUIRE(data->instrument_underlyings.size() == 2);
         CHECK(data->instrument_underlyings[1].weight == 0.5);
-        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "valuationschedule"));
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "valuation_schedule"));
     };
     std::vector<std::string> first_read;
     const auto check_pairwise = [&](const ores::ore::xml::trade_import_item& item) {
@@ -3395,23 +3443,67 @@ TEST_CASE("the_variance_swaps_and_a_forward_volatility_agreement_hold_their_term
         CHECK(row->settlement_date == std::chrono::year{2022} / 6 / 29);
         CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "valuation_schedule"));
     };
-    const auto check_fva = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+    const auto check_fva = [](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = std::get_if<ores::trading::domain::fx_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        CHECK(value_of(*data, "FvaDate") == "2019-07-25");
-        CHECK(value_of(*data, "ImpliedVolStrike") == "0.09675");
-        CHECK(value_of(*data, "UnderlyingStrike") == "1.29844");
+        REQUIRE(data->forward_volatility_agreements.size() == 1);
+        const auto& row = data->forward_volatility_agreements[0];
+        CHECK(row.fva_date == std::chrono::year{2019} / 7 / 25);
+        CHECK(row.option_expiry == std::chrono::year{2020} / 1 / 27);
+        CHECK(row.premium_date == std::chrono::year{2019} / 7 / 29);
+        CHECK(row.long_short == "Long");
+        CHECK(row.implied_vol_strike == 0.09675);
+        CHECK(row.quantity == 89000000.0);
+        CHECK(row.pay_currency == "USD");
+        CHECK(row.settlement_date == std::chrono::year{2020} / 1 / 29);
+        CHECK(row.underlying_strike == std::optional(decimal_of("1.29844")));
+        CHECK_FALSE(row.day_count_fraction.has_value());
+        REQUIRE(data->instrument_underlyings.size() == 1);
+    };
+    const auto check_equity_basket = [](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        const auto* row =
+            std::get_if<ores::trading::domain::equity_basket_variance_swap_instrument>(
+                &data->instrument);
+        REQUIRE(row != nullptr);
+        CHECK(row->squared_payoff);
+        CHECK(row->cap == std::optional(decimal_of("2.5")));
+        CHECK(row->floor == std::optional(decimal_of("0.1")));
+        REQUIRE(data->instrument_underlyings.size() == 2);
+        CHECK(data->instrument_underlyings[0].weight == 0.6);
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "valuation_schedule"));
+    };
+    const auto check_equity_fva = [](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        const auto* row =
+            std::get_if<ores::trading::domain::equity_forward_volatility_agreement_instrument>(
+                &data->instrument);
+        REQUIRE(row != nullptr);
+        CHECK(row->long_short == "Short");
+        CHECK_FALSE(row->underlying_strike.has_value());
+        CHECK(row->day_count_fraction == std::optional<std::string>("A365F"));
+        CHECK(row->dividend_yield == std::optional(decimal_of("0.015")));
+        CHECK(row->fixed_rate == std::optional(decimal_of("0.03")));
+        CHECK(row->payoff_type == std::optional<std::string>("Straddle"));
         REQUIRE(data->instrument_underlyings.size() == 1);
     };
 
     const auto items = portfolio_projection::map(document);
-    REQUIRE(items.size() == 3);
+    REQUIRE(items.size() == 5);
     check_basket(items[0]);
     check_basket(rebuild(items[0]));
     check_pairwise(items[1]);
     check_pairwise(rebuild(items[1]));
     check_fva(items[2]);
     check_fva(rebuild(items[2]));
+    check_equity_basket(items[3]);
+    check_equity_basket(rebuild(items[3]));
+    check_equity_fva(items[4]);
+    check_equity_fva(rebuild(items[4]));
 }
 
 TEST_CASE("a_european_option_barrier_and_an_fx_worst_of_hold_their_terms_as_rows",

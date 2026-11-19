@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 144
+Tables: 148
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2080,6 +2080,44 @@ package "trading" #E8F5E9 {
     the role observation_schedule.
     end note
 
+    entity ores_trading_equity_basket_var_swap_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * long_short : text <<FK>>
+        * strike : numeric(38, 12)
+        * notional : numeric(38, 12)
+        * squared_payoff : boolean
+          cap : numeric(38, 12)
+          floor : numeric(38, 12)
+        * settlement_date : date
+        * currency : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_basket_var_swap_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Basket Variance Swap Instrument Table
+    Represents EquityBasketVarianceSwap trades: a swap on the realised variance of a weighted
+    basket, which ORE reads through a class of its own. The members are
+    instrument underlying rows under the role underlying; an equity is named EQ- and its
+    address.
+    The ValuationSchedule is an instrument schedule row under the role
+    valuation_schedule.
+    end note
+
     entity ores_trading_equity_cliquet_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -2201,6 +2239,47 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     Equity Forward Instrument Table
     Represents EquityForward trades.
+    end note
+
+    entity ores_trading_equity_fva_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * fva_date : date
+        * option_expiry : date
+        * premium_date : date
+        * long_short : text <<FK>>
+        * implied_vol_strike : double
+        * quantity : double
+        * pay_currency : text
+        * settlement_date : date
+          underlying_strike : numeric(38, 12)
+          day_count_fraction : text
+          dividend_yield : numeric(38, 12)
+          fixed_rate : numeric(38, 12)
+          payoff_type : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_fva_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Forward Volatility Agreement Instrument Table
+    Represents EquityForwardVolatilityAgreement trades: an agreement to buy, on the FVA date, a
+    straddle struck at the level then and priced at the implied volatility
+    agreed now. ORE reads it through a class of its own. The underlying is an
+    instrument underlying row under the role underlying; an equity is named EQ- and its address.
     end note
 
     entity ores_trading_equity_instruments_tbl <<temporal>> #C6F0D8 {
@@ -2964,6 +3043,44 @@ package "trading" #E8F5E9 {
     the role observation_schedule.
     end note
 
+    entity ores_trading_fx_basket_variance_swap_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * long_short : text <<FK>>
+        * strike : numeric(38, 12)
+        * notional : numeric(38, 12)
+        * squared_payoff : boolean
+          cap : numeric(38, 12)
+          floor : numeric(38, 12)
+        * settlement_date : date
+        * currency : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_fx_basket_variance_swap_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Basket Variance Swap Instrument Table
+    Represents FxBasketVarianceSwap trades: a swap on the realised variance of a weighted
+    basket, which ORE reads through a class of its own. The members are
+    instrument underlying rows under the role underlying; an FX index is named FX- and the
+    index.
+    The ValuationSchedule is an instrument schedule row under the role
+    valuation_schedule.
+    end note
+
     entity ores_trading_fx_digital_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -3048,6 +3165,47 @@ package "trading" #E8F5E9 {
     Represents FxForward and FxSwap (near leg only) trades. The FxSwap
     far leg (FarDate, FarBoughtAmount, FarSoldAmount) is a documented
     coverage gap.
+    end note
+
+    entity ores_trading_fx_fva_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * fva_date : date
+        * option_expiry : date
+        * premium_date : date
+        * long_short : text <<FK>>
+        * implied_vol_strike : double
+        * quantity : double
+        * pay_currency : text
+        * settlement_date : date
+          underlying_strike : numeric(38, 12)
+          day_count_fraction : text
+          dividend_yield : numeric(38, 12)
+          fixed_rate : numeric(38, 12)
+          payoff_type : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_fx_fva_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Forward Volatility Agreement Instrument Table
+    Represents FxForwardVolatilityAgreement trades: an agreement to buy, on the FVA date, a
+    straddle struck at the level then and priced at the implied volatility
+    agreed now. ORE reads it through a class of its own. The underlying is an
+    instrument underlying row under the role underlying; an FX index is named FX- and the index.
     end note
 
     entity ores_trading_fx_pairwise_variance_swap_instruments_tbl <<temporal>> #C6F0D8 {
@@ -5665,6 +5823,9 @@ ores_trading_trades_tbl ||--o{ ores_trading_equity_barrier_option_instruments_tb
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_barrier_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_basket_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_basket_option_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_equity_basket_var_swap_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_basket_var_swap_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_basket_var_swap_instruments_tbl : "has"
 ores_trading_option_types_tbl ||--o{ ores_trading_equity_cliquet_option_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_cliquet_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_digital_option_instruments_tbl : "has"
@@ -5672,6 +5833,9 @@ ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_digital_option_inst
 ores_trading_trades_tbl ||--o{ ores_trading_equity_forward_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_forward_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_forward_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_equity_fva_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_fva_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_fva_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_option_instruments_tbl : "has"
@@ -5718,6 +5882,9 @@ ores_trading_barrier_types_tbl ||--o{ ores_trading_fx_barrier_option_instruments
 ores_trading_settlement_types_tbl ||--o{ ores_trading_fx_barrier_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_basket_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_basket_option_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_fx_basket_variance_swap_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_basket_variance_swap_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_basket_variance_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
 ores_trading_option_types_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
@@ -5726,6 +5893,9 @@ ores_trading_barrier_types_tbl ||--o{ ores_trading_fx_digital_option_instruments
 ores_trading_trades_tbl ||--o{ ores_trading_fx_forward_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_forward_instruments_tbl : "has"
 ores_trading_settlement_types_tbl ||--o{ ores_trading_fx_forward_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_fx_fva_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_fva_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_fva_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_pairwise_variance_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_pairwise_variance_swap_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_pairwise_variance_swap_instruments_tbl : "has"

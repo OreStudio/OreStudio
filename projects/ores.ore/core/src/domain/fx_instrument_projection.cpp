@@ -25,6 +25,7 @@
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/underlying_block_projection.hpp"
+#include "ores.ore.core/domain/volatility_product_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
@@ -52,6 +53,8 @@ using trading::domain::fx_vanilla_option_instrument;
 using trading::domain::fx_variance_swap_instrument;
 using trading::domain::fx_asian_option_instrument;
 using trading::domain::fx_basket_option_instrument;
+using trading::domain::fx_basket_variance_swap_instrument;
+using trading::domain::fx_forward_volatility_agreement_instrument;
 using trading::domain::fx_pairwise_variance_swap_instrument;
 using trading::domain::range_bound;
 
@@ -77,7 +80,8 @@ constexpr bool is_fx_trade_type(std::string_view type) {
            type == "FxGenericBarrierOption" || type == "FxDoubleBarrierOption" ||
            type == "FxEuropeanBarrierOption" || type == "FxKIKOBarrierOption" ||
            type == "FxAsianOption" || type == "FxPairwiseVarianceSwap" ||
-           type == "FxBasketOption" || type == "FxRainbowOption";
+           type == "FxBasketOption" || type == "FxRainbowOption" ||
+           type == "FxBasketVarianceSwap" || type == "FxForwardVolatilityAgreement";
 }
 
 template <typename Row>
@@ -516,6 +520,24 @@ auto read_fx_basket_option(const record_reader& trade, std::string_view trade_ty
     return r;
 }
 
+auto read_fx_basket_variance_swap(const record_reader& trade)
+    -> fx_basket_variance_swap_instrument {
+    auto r = fx_instrument_projection_make_row<fx_basket_variance_swap_instrument>(
+        "FxBasketVarianceSwap");
+    if (const auto data = trade.child("FxBasketVarianceSwapData"))
+        volatility_product::read_basket_variance_swap(*data, r);
+    return r;
+}
+
+auto read_fx_forward_volatility_agreement(const record_reader& trade)
+    -> fx_forward_volatility_agreement_instrument {
+    auto r = fx_instrument_projection_make_row<fx_forward_volatility_agreement_instrument>(
+        "FxForwardVolatilityAgreement");
+    if (const auto data = trade.child("FxForwardVolatilityAgreementData"))
+        volatility_product::read_forward_volatility_agreement(*data, r);
+    return r;
+}
+
 auto read_fx_pairwise_variance_swap(const record_reader& trade)
     -> fx_pairwise_variance_swap_instrument {
     auto r = fx_instrument_projection_make_row<fx_pairwise_variance_swap_instrument>(
@@ -864,6 +886,24 @@ void write_fx_basket_option(record_writer& trade,
     option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
 }
 
+void write_fx_basket_variance_swap(record_writer& trade,
+                                   const fx_basket_variance_swap_instrument& v,
+                                   const fx_instrument_data& carrier) {
+    auto data = trade.child("FxBasketVarianceSwapData");
+    volatility_product::write_basket_variance_swap(data, v);
+    auto members = data.child("Underlyings");
+    underlying_block::write_underlyings(members, "Underlying", carrier, "underlying");
+    option_block::write_product_schedule(data, carrier, "ValuationSchedule", "valuation_schedule");
+}
+
+void write_fx_forward_volatility_agreement(record_writer& trade,
+                                           const fx_forward_volatility_agreement_instrument& v,
+                                           const fx_instrument_data& carrier) {
+    auto data = trade.child("FxForwardVolatilityAgreementData");
+    volatility_product::write_forward_volatility_agreement(data, v);
+    underlying_block::write_underlyings(data, "Underlying", carrier, "underlying");
+}
+
 void write_fx_pairwise_variance_swap(record_writer& trade,
                                      const fx_pairwise_variance_swap_instrument& v,
                                      const fx_instrument_data& carrier) {
@@ -968,6 +1008,8 @@ constexpr underlying_block::underlying_holder fx_underlying_holders[] = {
     {"FxAsianOption", "", "Underlying", "underlying"},
     {"FxBasketOption", "Underlyings", "Underlying", "underlying"},
     {"FxRainbowOption", "Underlyings", "Underlying", "underlying"},
+    {"FxBasketVarianceSwap", "Underlyings", "Underlying", "underlying"},
+    {"FxForwardVolatilityAgreement", "", "Underlying", "underlying"},
 };
 
 /// The single-valued terms each FX product row keeps, by its element.
@@ -1018,6 +1060,7 @@ constexpr option_block::product_schedule fx_product_schedules[] = {
     {"FxTaRF", "ScheduleData", "product_schedule"},
     {"FxAsianOption", "ObservationDates", "observation_schedule"},
     {"FxBasketOption", "ObservationDates", "observation_schedule"},
+    {"FxBasketVarianceSwap", "ValuationSchedule", "valuation_schedule"},
     {"FxPairwiseVarianceSwap", "ValuationSchedule", "valuation_schedule"},
     {"FxPairwiseVarianceSwap", "LaggedValuationSchedule", "lagged_valuation_schedule"},
 };
@@ -1077,6 +1120,10 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
         data.pairwise_variance_swaps.push_back(read_fx_pairwise_variance_swap(trade));
     } else if (trade_type == "FxBasketOption" || trade_type == "FxRainbowOption") {
         data.basket_options.push_back(read_fx_basket_option(trade, trade_type));
+    } else if (trade_type == "FxBasketVarianceSwap") {
+        data.basket_variance_swaps.push_back(read_fx_basket_variance_swap(trade));
+    } else if (trade_type == "FxForwardVolatilityAgreement") {
+        data.forward_volatility_agreements.push_back(read_fx_forward_volatility_agreement(trade));
     } else if (trade_type == "FxAccumulator") {
         // The range bounds are the product's child, so they land beside the
         // fact row rather than inside it.
@@ -1207,6 +1254,12 @@ auto write_fx_instrument(xml::record_writer& trade,
                 matched = true;
             } else if constexpr (std::is_same_v<Row, fx_basket_option_instrument>) {
                 write_fx_basket_option(trade, trade_type, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_basket_variance_swap_instrument>) {
+                write_fx_basket_variance_swap(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_forward_volatility_agreement_instrument>) {
+                write_fx_forward_volatility_agreement(trade, row, *v);
                 matched = true;
             }
         },

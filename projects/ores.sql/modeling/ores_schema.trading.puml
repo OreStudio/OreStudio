@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 152
+Tables: 155
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2325,6 +2325,49 @@ package "trading" #E8F5E9 {
     instrument underlying row under the role underlying; an equity is named EQ- and its address.
     end note
 
+    entity ores_trading_equity_generic_barrier_options_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * pay_currency : text
+          quantity : double
+          strike : numeric(38, 12)
+          amount : numeric(38, 12)
+          settlement_date : date
+          settlement_lag : text
+          settlement_calendar : text
+          settlement_convention : text
+          barrier_start_date : date
+          barrier_end_date : date
+          kiko_type : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_generic_barrier_options_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Generic Barrier Option Instrument Table
+    Represents EquityGenericBarrierOption trades: a vanilla, asset-or-nothing
+    or cash-or-nothing option with barriers watched on a schedule. ORE reads it
+    through a class of its own. The OptionData block is an instrument option row
+    with its exercise dates; each BarrierData under Barriers is an instrument
+    barrier row under the role barrier, and each under TransatlanticBarrier
+    one under transatlantic; the barrier ScheduleData is an instrument
+    schedule row under barrier_schedule; the underlying is an instrument
+    underlying row under the role underlying.
+    end note
+
     entity ores_trading_equity_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -2771,6 +2814,42 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     Equity Variance Swap Instrument Table
     Represents EquityVarianceSwap trades.
+    end note
+
+    entity ores_trading_equity_window_barrier_options_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * currency : text
+        * fixing_amount : numeric(38, 12)
+        * strike : numeric(38, 12)
+          strike_currency : text
+        * start_date : date
+        * end_date : date
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_window_barrier_options_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Window Barrier Option Instrument Table
+    Represents EquityWindowBarrierOption trades: an option whose barrier is watched only
+    between the start and the end date. ORE reads it through a class of its
+    own. The OptionData block is an instrument option row with its exercise
+    dates; the BarrierData block is an instrument barrier row under the role
+    barrier; the underlying is an instrument underlying row under the role
+    underlying; an equity is named EQ- and its address.
     end note
 
     entity ores_trading_exercise_types_tbl <<temporal>> #C6F0D8 {
@@ -3490,6 +3569,42 @@ package "trading" #E8F5E9 {
     FX Variance Swap Instrument Table
     Routes ORE product type: FxVarianceSwap. moment_type distinguishes
     Variance swaps from Volatility swaps.
+    end note
+
+    entity ores_trading_fx_window_barrier_option_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * currency : text
+        * fixing_amount : numeric(38, 12)
+        * strike : numeric(38, 12)
+          strike_currency : text
+        * start_date : date
+        * end_date : date
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_fx_window_barrier_option_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Window Barrier Option Instrument Table
+    Represents FxWindowBarrierOption trades: an option whose barrier is watched only
+    between the start and the end date. ORE reads it through a class of its
+    own. The OptionData block is an instrument option row with its exercise
+    dates; the BarrierData block is an instrument barrier row under the role
+    barrier; the underlying is an instrument underlying row under the role
+    underlying; an FX index is named FX- and the index.
     end note
 
     entity ores_trading_index_cds_instruments_tbl <<temporal>> #C6F0D8 {
@@ -6009,6 +6124,8 @@ ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_forward_instruments
 ores_trading_trades_tbl ||--o{ ores_trading_equity_fva_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_fva_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_fva_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_equity_generic_barrier_options_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_generic_barrier_options_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_option_instruments_tbl : "has"
@@ -6035,6 +6152,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_equity_variance_swap_instruments_tbl
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_variance_swap_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_variance_swap_instruments_tbl : "has"
 ores_trading_moment_types_tbl ||--o{ ores_trading_equity_variance_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_equity_window_barrier_options_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_window_barrier_options_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_flexi_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_flexi_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_flexi_swap_lower_notionals_tbl : "has"
@@ -6092,6 +6211,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
 ores_trading_moment_types_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_fx_window_barrier_option_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_window_barrier_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_index_cds_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_index_cds_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_index_cds_option_instruments_tbl : "has"

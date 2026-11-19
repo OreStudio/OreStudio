@@ -51,12 +51,14 @@ enum class instrument_table {
     equity_digital_option_instrument,
     equity_forward_instrument,
     equity_forward_volatility_agreement_instrument,
+    equity_generic_barrier_option_instrument,
     equity_option_instrument,
     equity_pairwise_variance_swap_instrument,
     equity_position_instrument,
     equity_strike_resettable_option_instrument,
     equity_swap_instrument,
     equity_variance_swap_instrument,
+    equity_window_barrier_option_instrument,
     fx_accumulator_instrument,
     fx_asian_forward_instrument,
     fx_asian_option_instrument,
@@ -71,6 +73,7 @@ enum class instrument_table {
     fx_strike_resettable_option_instrument,
     fx_vanilla_option_instrument,
     fx_variance_swap_instrument,
+    fx_window_barrier_option_instrument,
     rate_instrument,
     scripted_instrument
 };
@@ -130,7 +133,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "FxEuropeanBarrierOption")
         return instrument_table::fx_barrier_option_instrument;
     if (trade_type == "FxWindowBarrierOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::fx_window_barrier_option_instrument;
     if (trade_type == "FxGenericBarrierOption")
         return instrument_table::fx_barrier_option_instrument;
     if (trade_type == "FxKIKOBarrierOption")
@@ -214,9 +217,9 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "EquityEuropeanBarrierOption")
         return instrument_table::equity_barrier_option_instrument;
     if (trade_type == "EquityWindowBarrierOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::equity_window_barrier_option_instrument;
     if (trade_type == "EquityGenericBarrierOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::equity_generic_barrier_option_instrument;
     if (trade_type == "EquityTouchOption")
         return instrument_table::equity_digital_option_instrument;
     if (trade_type == "EquityDoubleTouchOption")

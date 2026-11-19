@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/hold-the-window-and-generic-barrier-options-on-their-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,11 +28,11 @@ table holds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -53,9 +53,30 @@ table holds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three tables. ORE states the window barrier in one shape for both families
+(=windowBarrierOptionData2=), and only the equity generic barrier is in scope:
+=FxGenericBarrierOption= is already held on =fx_barrier_option_instrument=.
+=equity_barrier_option_instrument= has no column for a generic barrier's
+quantity, amount, settlement or kiko type, so the equity generic barrier gets a
+table of its own. One header, =barrier_product_projection.hpp=, reads and
+writes the scalars.
+
+- Window barrier: currency, fixing amount, strike, an optional strike currency
+  (the =StrikeData= form) and the window dates are columns. The OptionData
+  block is an option row with its exercise dates, the BarrierData an
+  =barrier= row, and the underlying an underlying row, all through the families'
+  shared holders. The equity table is named =equity_window_barrier_options= to fit
+  the identifier budget.
+- Equity generic barrier: pay currency, quantity (a double), strike, amount, the
+  settlement date or lag, calendar and convention, the barrier start and end dates
+  and the kiko type are columns, all optional as the schema states. The barriers
+  under =Barriers= and =TransatlanticBarrier= are barrier rows; the barrier
+  =ScheduleData= is a schedule row under =barrier_schedule=, as the FX generic
+  barrier holds it.
+- The builders move to =barrier_product_builders= and return the family's rows;
+  the generator books the element form. The class-read entries are removed.
+- The catalogue names =WindowBarrierOption= and =GenericBarrierOption= as the
+  scripted forms, including the FX generic barrier's.
 
 * Measurements
 
@@ -69,7 +90,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.trading.api.tests | 5279 test cases, all pass | =./ores.trading.api.tests= | 0c5380ea12 |
+| ores.trading.core.tests, on a recreated database | 271 test cases, all pass | =./ores.trading.core.tests= | 0c5380ea12 |
+| ores.shell.trading.tests | 1653 test cases, all pass | =./ores.shell.trading.tests= | 0c5380ea12 |
+| ores.ore.core.tests, with the ORE engine | 566 test cases, all pass | =./ores.ore.core.tests= | 0c5380ea12 |
+| ores.synthetic.core.tests, with the ORE engine | 149 test cases, all pass | =./ores.synthetic.core.tests= | 0c5380ea12 |
+| Generated trades after two refreshes | no file changed | =ORES_UPDATE_GENERATED_TRADES=1 ./ores.synthetic.core.tests "[generated]"= | 0c5380ea12 |
 
 * Notes
 
@@ -102,3 +128,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three types are held natively: =equity_window_barrier_options=,
+=fx_window_barrier_option_instruments= and =equity_generic_barrier_options=.
+The scalars are columns, with the strike's currency when the document states a
+=StrikeData=. The OptionData block, the barriers under =BarrierData=, =Barriers=
+and =TransatlanticBarrier=, the barrier schedule and the underlying are the
+families' shared rows. The round-trip test covers the FX window and the equity
+generic examples, plus an equity window with a =StrikeData= strike and an
+equity generic that states its settlement lag, amount and barrier window, and
+checks every column and the exercise date before and after a rebuild. The
+builders return the family's rows and the generator books them; the recorded
+trades are unchanged. The class-read entries are removed, and the catalogue
+names =WindowBarrierOption= and =GenericBarrierOption= as the scripted forms.
+
+The first run showed that the families wrote a product's exercise dates from
+the rows only for the baskets. These products keep their expiry only as an
+exercise date row, so the families now write it for them too; the round trip
+now checks the exercise date, which it did not before.

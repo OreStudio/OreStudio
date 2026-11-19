@@ -50,6 +50,7 @@
 #include "ores.trading.api/domain/fx_strike_resettable_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_window_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include "ores.trading.api/domain/instrument_barrier.hpp"
@@ -545,6 +546,11 @@ struct fx_instrument_data {
     std::vector<fx_strike_resettable_option_instrument> strike_resettable_options;
 
     /**
+     * @brief The fx_window_barrier_option_instrument rows: FxWindowBarrierOption.
+     */
+    std::vector<fx_window_barrier_option_instrument> window_barrier_options;
+
+    /**
      * @brief The range_bound rows: the RangeBounds list an accumulator states.
      *
      * A child of the product rather than a product, so it states no type and
@@ -609,7 +615,8 @@ inline constexpr auto fx_instrument_arrays =
                &fx_instrument_data::basket_variance_swaps,
                &fx_instrument_data::forward_volatility_agreements,
                &fx_instrument_data::best_entry_options,
-               &fx_instrument_data::strike_resettable_options};
+               &fx_instrument_data::strike_resettable_options,
+               &fx_instrument_data::window_barrier_options};
 
 /**
  * @brief The family's child arrays: rows a product owns rather than rows a

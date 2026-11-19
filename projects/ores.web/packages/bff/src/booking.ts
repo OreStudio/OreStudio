@@ -173,6 +173,9 @@ function emptyBatch(): InstrumentBatch {
         fx_best_entry_option_instruments: [],
         equity_strike_resettable_option_instruments: [],
         fx_strike_resettable_option_instruments: [],
+        equity_window_barrier_option_instruments: [],
+        fx_window_barrier_option_instruments: [],
+        equity_generic_barrier_option_instruments: [],
     };
 } /** The intent every write of a booking carries. */
 function intent(): { readonly reason_code: string; readonly commentary: string } {

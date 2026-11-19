@@ -292,6 +292,12 @@
 \ir ./trading_equity_strike_resettable_option_instruments_drop.sql
 \ir ./trading_fx_strike_resettable_option_instruments_notify_trigger_drop.sql
 \ir ./trading_fx_strike_resettable_option_instruments_drop.sql
+\ir ./trading_equity_window_barrier_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_window_barrier_option_instruments_drop.sql
+\ir ./trading_fx_window_barrier_option_instruments_notify_trigger_drop.sql
+\ir ./trading_fx_window_barrier_option_instruments_drop.sql
+\ir ./trading_equity_generic_barrier_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_generic_barrier_option_instruments_drop.sql
 \ir ./trading_fx_asian_option_instruments_notify_trigger_drop.sql
 \ir ./trading_fx_asian_option_instruments_drop.sql
 \ir ./trading_cash_position_instruments_notify_trigger_drop.sql

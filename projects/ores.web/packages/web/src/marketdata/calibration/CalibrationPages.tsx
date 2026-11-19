@@ -230,7 +230,7 @@ function CurvesOfCurrency({
                 <li key={curve.bootstrap_config_id} data-ir-curve={curve.name}>
                     <Link
                         className="text-accent-bright hover:underline"
-                        to={`${PATHS.curveAnalytics}?curve=${encodeURIComponent(curve.name)}`}
+                        to={`${PATHS.curveAnalytics}?curve=${encodeURIComponent(curve.bootstrap_config_id)}`}
                     >
                         {curve.name}
                     </Link>{' '}

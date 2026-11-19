@@ -5785,11 +5785,11 @@ export const en: SourceCatalogue = {
                 lead: '{funding} and {projection} answer different questions. One says what a secured overnight deposit earns; the other says what the market expects a {tenor} term rate to be.',
                 underlying: {
                     title: 'Underlying',
-                    body: '{funding} averages overnight transactions. {projection} is a term rate, so it carries the credit and liquidity of the banks that quote it.',
+                    body: '{funding} averages overnight transactions. {projection} is a quoted term rate, such as an IBOR, so it carries the credit and liquidity of the banks that quote it.',
                 },
                 fixing: {
                     title: 'How it fixes',
-                    body: 'An overnight rate fixes backwards: each day is known after the day. A term rate fixes forwards: the {tenor} rate is set today for a period that starts today.',
+                    body: 'An overnight rate fixes backwards: each day is known after the day. A quoted term rate fixes forwards: the {tenor} rate is set today for a period that starts today. A term rate compounded from overnight fixings does not.',
                 },
                 use: {
                     title: 'What it is for',

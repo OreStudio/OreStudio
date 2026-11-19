@@ -5826,11 +5826,11 @@ const pt: SourceCatalogue = {
                 lead: '{funding} e {projection} respondem a perguntas diferentes. Uma diz quanto rende um depósito garantido overnight; a outra diz o que o mercado espera de uma taxa a prazo de {tenor}.',
                 underlying: {
                     title: 'Subjacente',
-                    body: '{funding} faz a média das transações overnight. {projection} é uma taxa a prazo, por isso carrega o crédito e a liquidez dos bancos que a cotam.',
+                    body: '{funding} faz a média das transações overnight. {projection} é uma taxa a prazo cotada, como um IBOR, por isso carrega o crédito e a liquidez dos bancos que a cotam.',
                 },
                 fixing: {
                     title: 'Como se fixa',
-                    body: 'Uma taxa overnight fixa-se para trás: cada dia é conhecido depois do dia. Uma taxa a prazo fixa-se para a frente: a taxa de {tenor} é fixada hoje para um período que começa hoje.',
+                    body: 'Uma taxa overnight fixa-se para trás: cada dia é conhecido depois do dia. Uma taxa a prazo cotada fixa-se para a frente: a taxa de {tenor} é fixada hoje para um período que começa hoje. Uma taxa a prazo composta a partir de fixings overnight não.',
                 },
                 use: {
                     title: 'Para que serve',

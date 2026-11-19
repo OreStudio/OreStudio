@@ -5867,11 +5867,11 @@ const fr: SourceCatalogue = {
                 lead: "{funding} et {projection} répondent à des questions différentes. L'une dit ce que rapporte un dépôt garanti au jour le jour ; l'autre dit ce que le marché attend d'un taux à terme {tenor}.",
                 underlying: {
                     title: 'Sous-jacent',
-                    body: '{funding} fait la moyenne des transactions au jour le jour. {projection} est un taux à terme, il porte donc le crédit et la liquidité des banques qui le cotent.',
+                    body: '{funding} fait la moyenne des transactions au jour le jour. {projection} est un taux à terme coté, comme un IBOR, il porte donc le crédit et la liquidité des banques qui le cotent.',
                 },
                 fixing: {
                     title: 'Comment il se fixe',
-                    body: "Un taux au jour le jour se fixe à rebours : chaque jour est connu après le jour. Un taux à terme se fixe en avance : le taux {tenor} est fixé aujourd'hui pour une période qui commence aujourd'hui.",
+                    body: "Un taux au jour le jour se fixe à rebours : chaque jour est connu après le jour. Un taux à terme coté se fixe en avance : le taux {tenor} est fixé aujourd'hui pour une période qui commence aujourd'hui. Un taux à terme composé à partir des fixings au jour le jour, non.",
                 },
                 use: {
                     title: 'À quoi il sert',

@@ -323,7 +323,9 @@ describe('the interest rates coverage', () => {
     it('lists every curve of a currency with its role, and a projection with its tenor and discount curve', () => {
         const html = render('/market-data/calibration/interest_rates', irCalibration());
         expect(html.match(/data-ir-curve=/g)).toHaveLength(2);
-        expect(html).toContain('href="/market-data/curve-analytics?curve=USD-LIBOR-3M"');
+        expect(html).toContain(
+            'href="/market-data/curve-analytics?curve=77777777-7777-4777-8777-777777777777"',
+        );
         expect(html).toContain('>Funding</span>');
         expect(html).toContain('>Projection</span>');
         expect(html).toContain('discounts off USD SOFR curve');

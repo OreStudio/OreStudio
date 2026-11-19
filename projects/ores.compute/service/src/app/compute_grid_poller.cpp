@@ -30,6 +30,7 @@
 #include <boost/system/system_error.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -117,6 +118,12 @@ boost::asio::awaitable<void> compute_grid_poller::run() {
     boost::asio::steady_timer timer(executor);
 
     try {
+        // The samples are a chart's series, so they follow the schedule rather
+        // than the time each read took; an interval a read overran is skipped
+        // rather than caught up on, which would bunch samples at one instant.
+        auto next = std::chrono::steady_clock::now();
+        const auto interval = std::chrono::seconds(interval_seconds_);
+
         for (;;) {
             try {
                 poll_once();
@@ -124,7 +131,12 @@ boost::asio::awaitable<void> compute_grid_poller::run() {
                 BOOST_LOG_SEV(lg(), warn) << "Grid poll failed: " << e.what();
             }
 
-            timer.expires_after(std::chrono::seconds(interval_seconds_));
+            next += interval;
+            const auto now = std::chrono::steady_clock::now();
+            if (next <= now)
+                next = now + interval;
+
+            timer.expires_at(next);
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
     } catch (const boost::system::system_error& e) {

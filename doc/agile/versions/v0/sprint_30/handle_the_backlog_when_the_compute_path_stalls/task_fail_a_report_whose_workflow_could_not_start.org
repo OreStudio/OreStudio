@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 08C9CF98-6EE7-4205-8564-3840B0CA85D6
+:END:
+#+title: Task: Fail a report whose workflow could not start
+#+description: The trigger saves the instance and then dispatches its workflow. When the dispatch fails, the run is left pending: nothing retries it, nothing marks it failed, and the in-flight check counts it, so it blocks every later run of that definition. On 2026-11-19 three Headline Position instances sat pending from 14:40 until they were cleared by hand.
+#+type: task
+#+level: s1
+#+filetags: :handle_the_backlog_when_the_compute_path_stalls:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/fail-a-report-whose-workflow-could-not-start
+#+pr: 4891
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle the backlog when the compute path stalls]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report instance that was saved but never dispatched stays pending with no workflow behind it, so nothing retries it and the in-flight check counts it against every later run. Fail it, with the reason, at the point its dispatch throws.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle the backlog when the compute path stalls]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4891][#4891]] | [reporting] Fail a report whose workflow could not start |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The trigger wraps the dispatch of a run's workflow. A dispatch that throws now
+marks the instance failed with the reason it carries, and answers the caller
+with that reason, so a run that never began cannot keep holding its
+definition's in-flight slot. The instance is still recorded and its id still
+returned, so a caller learns which run it asked for.
+
+The review found the first version of this writing a change reason that is not
+seeded, which the instance trigger rejects: the save would have thrown, been
+swallowed, and left the run pending exactly as before. The seed now carries
+=system.dispatch_failed=, the handler names it, and an answer that could not
+mark the run failed says so instead of implying the run is finished.
+
+PR #4891. =compass check --exclude-heavy=: 35/35 passed and
+=ores.reporting.core.lib= builds clean. No test drives a failed dispatch.
+
+Left open: nothing retries a run whose dispatch failed, and the run's failure
+is only visible to the caller and in the log, not on the run's card.

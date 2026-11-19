@@ -214,6 +214,53 @@ function Loading({
 }
 
 /**
+ * Every curve of one currency, the funding curve first: each names its role and,
+ * for a projection, its index tenor and the curve it discounts off, and opens in
+ * the curve analytics, where a projection is drawn beside its funding curve.
+ */
+function CurvesOfCurrency({
+    curves,
+}: {
+    readonly curves: IrCurveCoverageRow['curves'];
+}): ReactNode {
+    const { t, language } = useTranslation();
+    return (
+        <ul className="space-y-1">
+            {curves.map((curve) => (
+                <li key={curve.bootstrap_config_id} data-ir-curve={curve.name}>
+                    <Link
+                        className="text-accent-bright hover:underline"
+                        to={`${PATHS.curveAnalytics}?curve=${encodeURIComponent(curve.bootstrap_config_id)}`}
+                    >
+                        {curve.name}
+                    </Link>{' '}
+                    {curve.role !== '' && (
+                        <Tag small tone={curve.role === 'FUNDING' ? 'accent' : 'muted'}>
+                            {t(`marketdata.curveBlueprints.roles.${curve.role}`)}
+                        </Tag>
+                    )}
+                    {curve.index_tenor !== '' && (
+                        <span className="ml-1 text-ink-faint">{curve.index_tenor}</span>
+                    )}
+                    {curve.discount_curve_name !== '' && (
+                        <div className="text-ink-faint">
+                            {t('marketdata.calibration.ir.discountsOff', {
+                                curve: curve.discount_curve_name,
+                            })}
+                        </div>
+                    )}
+                    <div className="text-ink-faint" title={curve.published_as_of}>
+                        {curve.published_as_of === ''
+                            ? t('marketdata.calibration.ir.neverPublished')
+                            : formatDateTime(curve.published_as_of, language)}
+                    </div>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+/**
  * The class's IR curve coverage: one row per currency, with the source it reads, the bootstrap
  * config that builds its curve and the latest curve published, or the first gap that stops it
  * and the reason the system recorded for that gap.
@@ -232,7 +279,7 @@ function IrCoverage({ rows }: { readonly rows: readonly IrCurveCoverageRow[] }):
                         <th className="py-2">{t('marketdata.calibration.ir.currency')}</th>
                         <th className="py-2">{t('marketdata.calibration.ir.source')}</th>
                         <th className="py-2 text-right">{t('marketdata.calibration.ir.window')}</th>
-                        <th className="py-2">{t('marketdata.calibration.ir.bootstrap')}</th>
+                        <th className="py-2">{t('marketdata.calibration.ir.curves')}</th>
                         <th className="py-2">{t('marketdata.calibration.ir.published')}</th>
                         <th className="py-2">{t('marketdata.calibration.ir.stateHeader')}</th>
                     </tr>
@@ -272,9 +319,11 @@ function IrCoverage({ rows }: { readonly rows: readonly IrCurveCoverageRow[] }):
                                         {row.window_days}
                                     </td>
                                     <td className="py-2 font-mono text-xs">
-                                        {row.bootstrap_config_name === ''
-                                            ? '—'
-                                            : row.bootstrap_config_name}
+                                        {row.curves.length === 0 ? (
+                                            '—'
+                                        ) : (
+                                            <CurvesOfCurrency curves={row.curves} />
+                                        )}
                                     </td>
                                     <td
                                         className="whitespace-nowrap py-2 font-mono text-xs text-ink-muted"

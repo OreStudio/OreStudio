@@ -264,6 +264,32 @@ describe('the curve analytics page', () => {
         expect(page).toContain('+26.0');
     });
 
+    it('states what the pair teaches when a projection is drawn beside its funding curve', () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${PROJECTION_ID}&asof=2026-11-13`,
+            libor,
+            pairOfConfigs,
+            funding,
+        );
+        expect(page).toContain('data-pair-teaches');
+        expect(page).toContain('USD-SOFR-FOMC and USD-LIBOR-1M answer different questions');
+        expect(page).toContain('a 1M term rate');
+        expect(page).toContain('USD-SOFR-FOMC discounts');
+        expect(page).toContain('USD-LIBOR-1M projects');
+    });
+
+    it('teaches nothing over one curve alone', () => {
+        const alone = draw(
+            `/market-data/curve-analytics?curve=${PROJECTION_ID}&asof=2026-11-13&against=none`,
+            libor,
+            pairOfConfigs,
+            funding,
+        );
+        expect(alone).not.toContain('data-pair-teaches');
+        const fundingOnly = draw(`/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13`);
+        expect(fundingOnly).not.toContain('data-pair-teaches');
+    });
+
     it('draws one curve alone when the reader asks for no second curve', () => {
         const page = draw(
             `/market-data/curve-analytics?curve=${PROJECTION_ID}&asof=2026-11-13&against=none`,

@@ -80,7 +80,7 @@ an API publishes no area, so it is counted under =(none)=.
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
-| workflow | inbox, server, timeline, workflow | 35 | composed view 11, resource 24 |
+| workflow | inbox, server, timeline, workflow | 36 | composed view 12, resource 24 |
 | (none) | books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 429 | not an API 407, transport capability 22 |
 
 * The composed views
@@ -159,9 +159,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
-| workflow | 18 | 17 | 1 |
+| workflow | 18 | 18 | 0 |
 | (none) | 35 | 28 | 7 |
-| total | 333 | 287 | 46 |
+| total | 333 | 288 | 45 |
 
 * The pairing
 
@@ -489,7 +489,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/tenors/resolve= | POST /api/tenors/resolve |
 | POST =/api/tenors/resolve-convention= | POST /api/tenors/resolve-convention |
 | PUT =/api/tenors/tenors= | PUT /api/tenors/tenors |
-| GET =/api/timeline= | none |
+| GET =/api/timeline= | GET /api/timeline |
 | GET =/api/trade-link-types= | GET /api/trade-link-types |
 | GET =/api/trades= | GET /api/trades |
 | POST =/api/trades= | POST /api/trades |
@@ -503,7 +503,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1389 routes: 333 answered by the BFF and 1056 by ores.http.
+1390 routes: 333 answered by the BFF and 1057 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1213,7 +1213,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | composed view | workflow | get | =/api/requests/{id}/changes= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_proposal_routes.cpp:305 | What one request proposes, answered by ores.http at the address and in the shape the BFF answered: the request is read first because its kind decides where its lines are kept, and then the component that owns the kind states them beside the value in force. |
 | composed view | workflow | get | =/api/requests/{id}/checks= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_proposal_routes.cpp:327 | What running a request's lines through the real write now says, answered by ores.http at the address and in the shape the BFF answered: the kind's own component runs its lines again without applying them, and the parts the policy names travel beside the refusal of each line. |
 | resource | workflow | post | =/api/requests/{id}/decision= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_routes.cpp:331 | One request decided at the address and in the shape the BFF answered: approved, refused, held or resumed against the version read, with the part the decider answers for and the reason a hold names. |
-| composed view | workflow | get | =/api/requests/{id}/story= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_story_routes.cpp:338 | One request's whole story answered by ores.http at the address and in the shape the BFF answered: its own versions, the answers given on it, the roles it asked for and what became of them, and the notices the reader was given, ordered as one stream and each source read under its owner's permission. |
+| composed view | workflow | get | =/api/requests/{id}/story= | ores.http | projects/ores.http/workflow/src/routes/workflow/request_story_routes.cpp:70 | One request's whole story answered by ores.http at the address and in the shape the BFF answered: its own versions, the answers given on it, the roles it asked for and what became of them, and the notices the reader was given, ordered as one stream and each source read under its owner's permission. |
 | resource | access | get | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1460 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
 | resource | access | get | =/api/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_write_routes.cpp:345 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | post | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1489 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
@@ -1464,6 +1464,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | put | =/api/tenors/tenors= | bff | projects/ores.web/packages/bff/src/tenors.ts:309 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
 | resource | reference-data | put | =/api/tenors/tenors= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:218 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | composed view | workflow | get | =/api/timeline= | bff | projects/ores.web/packages/bff/src/timeline.ts:61 | One person's, party's or request's story as one stream, each source gated by the permission its owner puts on it and a source that refuses becoming a gap in the answer. |
+| composed view | workflow | get | =/api/timeline= | ores.http | projects/ores.http/workflow/src/routes/workflow/timeline_routes.cpp:119 | One person's, party's or request's story answered by ores.http at the address and in the shape the BFF answered: a request wraps the stream the inbox already serves, a person and a party compose every source their owner gates, and a source that refuses travels as a gap rather than as a hole in the answer. |
 | resource | trading | get | =/api/trade-link-types= | bff | projects/ores.web/packages/bff/src/booking.ts:306 | The link types a person can record between trades, a lookup the server holds. |
 | resource | trading | get | =/api/trade-link-types= | ores.http | projects/ores.http/trading/src/routes/trading/booking_routes.cpp:464 | The booking screens at the address and in the shape the BFF answered: what the form offers, the reasons a deal is a draft, the link types a person records, a link between two trades, and the booking write itself. |
 | resource | trading | get | =/api/trades= | bff | projects/ores.web/packages/bff/src/trades.ts:196 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |

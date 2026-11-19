@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: ED622DDC-DA74-496D-8A32-6B41653E5207
+:END:
+#+title: Task: Group the CDash test cases by component
+#+description: Label each test with its component, list the components at configure, and declare them to CDash as subprojects, so the 36,000 case entries are grouped by component.
+#+type: task
+#+level: s1
+#+filetags: :show_each_catch2_case_on_cdash:sprint_30:v0:
+#+owner: marco
+#+branch: feature/group-cdash-cases-by-component
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A00D828F-FA36-4B54-8FBC-07004823A3EB][Show each Catch2 test case on CDash]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+CDash groups the test cases by component, as subprojects, so a reader finds a component's cases without searching one flat list.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A00D828F-FA36-4B54-8FBC-07004823A3EB][Show each Catch2 test case on CDash]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+- Configure labels every test with its component, the test name without
+  its =.tests= or =.typecheck= suffix, and writes the components to
+  =cdash_subprojects.txt= in the build directory.
+- CTest.cmake reads that file into =CTEST_LABELS_FOR_SUBPROJECTS= after
+  configure, and submits a =Project.xml= that declares each component as a
+  CDash subproject.
+- The case entries =expand_catch2_cases.py= makes keep the suite's
+  labels, so each case joins its component's subproject.
+- No test's =CMakeLists.txt= changes.
+
+* Plan
+
+Follow compass PR #88, with one difference. compass labels each test in its
+registration helper. ORE has no shared helper: 104 test =CMakeLists.txt=
+files each call =add_test=. So =projects/CMakeLists.txt= walks its
+directories after the last =add_subdirectory=, and labels every test it
+finds.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =ores_label_tests_by_component= in =projects/CMakeLists.txt= labels each
+  test and writes =cdash_subprojects.txt=.
+- CTest.cmake sets =CTEST_LABELS_FOR_SUBPROJECTS= and submits
+  =Project.xml= after configure.
+- Proved in a =ctest -S= run of a nested copy of the layout, with the same
+  CMake and CTest.cmake code: configure listed =ores.orgmode= and
+  =ores.web=, =Project.xml= declared both, Test.xml carried both
+  subprojects, the 20 expanded orgmode cases carried =ores.orgmode=, and
+  the two web tests carried =ores.web= beside their =web= label. The first
+  CI submission is the proof that CDash groups them.

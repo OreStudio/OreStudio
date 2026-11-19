@@ -325,12 +325,15 @@ function IrCoverage({ rows }: { readonly rows: readonly IrCurveCoverageRow[] }):
                                                 ? {}
                                                 : { 'data-ir-curve': curve.name })}
                                         >
-                                            <td className={`${cell} font-mono`}>
-                                                {index === 0 ? row.currency_code : ''}
-                                            </td>
-                                            <td className={cell}>
-                                                {index === 0 && (
-                                                    <>
+                                            {index === 0 && (
+                                                <>
+                                                    <td
+                                                        className={`${cell} font-mono`}
+                                                        rowSpan={lines.length}
+                                                    >
+                                                        {row.currency_code}
+                                                    </td>
+                                                    <td className={cell} rowSpan={lines.length}>
                                                         <div>
                                                             {row.source_name === ''
                                                                 ? '—'
@@ -349,9 +352,9 @@ function IrCoverage({ rows }: { readonly rows: readonly IrCurveCoverageRow[] }):
                                                                 </div>
                                                             </div>
                                                         )}
-                                                    </>
-                                                )}
-                                            </td>
+                                                    </td>
+                                                </>
+                                            )}
                                             {curve === undefined ? (
                                                 <>
                                                     <td className={cell} colSpan={5}>

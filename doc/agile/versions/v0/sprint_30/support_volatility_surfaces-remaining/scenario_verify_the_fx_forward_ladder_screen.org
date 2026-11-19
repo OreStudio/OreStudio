@@ -2,13 +2,13 @@
 :ID: 535F4797-2CB5-459B-A0D5-7286537F3EB1
 :END:
 #+title: Test Scenario: Verify the FX forward ladder screen
-#+description: Read a USD pair's forward ladder from two published funding curves, in all four measures, and see every refusal say why.
+#+description: Read a party's published FX forward set, for a USD pair and for a cross, with where each number came from, in all four measures, and see a missing set say why.
 #+type: test_scenario
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+target_dialog: Market data: FX forward ladder
 #+created: 2026-11-09
-#+updated: 2026-11-09
+#+updated: 2026-11-19
 #+environment: bright_faraday
 #+todo: PENDING | PASSED FAILED
 #+startup: inlineimages
@@ -17,15 +17,16 @@ This page documents a test scenario verifying [[id:0CEB75D7-3227-4FDD-A95C-0AD42
 
 * Before you start
 
-These are readiness conditions. The environment is already in this state. The commands are recorded so that it can be brought back to it.
+These are readiness conditions. The environment is already in this state.
 
-- The database is recreated, Acme is provisioned and the fleet is running. =compass services status= reports 25 running and none failed.
-- The calendars =TARGET=, =UnitedStates.Settlement= and =Japan= are rebuilt to 2060 through their *Rebuild* action. Provisioning does not build them.
-- =evidence/fx_forward_ladder_seed.sql= holds the EUR and USD funding ladders of ACME Corporation US Inc and a EUR/USD spot of 1.1650, observed at =2026-11-09 12:00Z=. Run it with =compass sql -u ddl -- -v as_of=2026-11-09T12:00:00Z -f <file>=.
-- Both curves are published at that as-of through the real flow. =henry.jones= raised them with =evidence/fx_forward_ladder_raise.ores=, =mark.reid= approved them with =evidence/fx_forward_ladder_decide.ores=, and =henry.jones= published them with =evidence/fx_forward_ladder_publish.ores=.
-- Only EUR and USD have an Acme funding curve. USD/JPY has no curve on purpose.
-
-Provisioning now builds holiday calendars, so the figures below predate them. On a fresh environment the spot date is 2026-11-12.
+- The database is recreated, Acme is provisioned and the fleet is running.
+  =compass services status= reports every service running and none failed.
+- Provisioning published 39 FX forward sets for each Acme party at its as-of,
+  2026-11-18 at about 23:21. Each set was raised by the market data service and
+  closed by auto-approval, because the Acme tenant does not enforce approvals.
+- ACME Corporation US Inc has no published set of USD/BRL.
+- The figures below are this environment's. On another environment the values
+  differ; check the relations each step states instead.
 
 * Scenario Info
 
@@ -44,108 +45,125 @@ Provisioning now builds holiday calendars, so the figures below predate them. On
 - Open the app at =http://localhost:20602=.
 - Sign in as =henry.jones@acme_corporation= with =Secure-Password-123=.
 - If the app asks for a party, choose ACME Corporation US Inc.
+- Passes when the home page shows Acme Corporation in the header.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
-
+| Status | PENDING |
 
 ** Open the FX forward ladder
 
 - Go to *Market data* and open the *FX forward ladder* card.
 - Confirm the address ends =/market-data/fx-forwards=.
-- Confirm *Pair* lists USD pairs only and defaults to EUR/USD.
-- Confirm *As of* defaults to today, 2026-11-09.
-
-*** Result
-
-| Field  | Value |
-|--------+-------|
-| Status | FAIL |
-
-
-** Read what the ladder uses
-
-- In *What this is built from*, confirm *Spot* reads 1.1650, observed 2026-11-09 12:00.
-- Confirm *Spot date* reads 2026-11-11 and *Pip factor* reads 0.0001.
-- Confirm the EUR funding curve is =EUR-ESTR-LADDER= and the USD funding curve is =USD-SOFR-LADDER=, each published by henry.jones.
-- Confirm the notice says the rates hold no cross-currency basis.
+- Confirm *Pair* lists every pair with a convention, crosses included: USD pairs
+  such as USD/JPY, crosses such as EUR/GBP and AUD/CHF, and the metals such as
+  XAU/USD. Each pair is listed once, in order.
+- Confirm *Pair* defaults to EUR/USD and *As of* defaults to today.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
 | Status | PENDING |
-| Notes  | I can see CAD crosses etc. ; [[file:scenario_verify_the_fx_forward_ladder_screen_step3_20261119_144640.png]] |
 
+** Read what the set is built from
+
+- With EUR/USD, read *What this is built from*.
+- Confirm *Spot* reads about 1.1625, and the line under it says the set reads
+  the market at 18 November 2026, about 23:21.
+- Confirm one spot leg, *EUR/USD spot*, observed at the same time, whose link
+  opens the EUR/USD pair.
+- Confirm *Spot date* reads 2026-11-20 with T+2, and *Convention* reads EUR/USD,
+  version 1, pip 0.0001, calendars TARGET and UnitedStates.Settlement.
+- Confirm the EUR funding curve is =EUR-ESTR= and the USD funding curve is
+  =USD-SOFR-FOMC=, each as of 18 November and published by the market data
+  service, and each a link to its record.
+- Confirm *Method* names covered interest parity, and the notice says the rates
+  hold no cross-currency basis.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Read how the set was approved
+
+- Read *How it was approved*.
+- Confirm it says the set was closed by auto-approval under the tenant rule, and
+  that no person decided it.
+- Confirm *Request* reads Approved, *Raised by* and *Decided by* name the market
+  data service, and the decision's comment says the tenant does not enforce
+  approvals, as tenant_admin set in version 2 of the approvals mode.
+- Confirm *Published by* names the market data service, at about 23:21 on
+  18 November.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Read the ladder rows
 
-- Confirm 15 rows in this order: ON, TN, SP, SN, 1W, 2W, 1M, 2M, 3M, 6M, 9M, 1Y, 18M, 2Y, 5Y.
-- Confirm these rows, rounded as the screen shows them:
-
-| Tenor | Near date  | Value date | Forward rate | Forward points | Swap points |
-|-------+------------+------------+--------------+----------------+-------------|
-| ON    | 2026-11-09 | 2026-11-10 | 1.1649       | -0.75          | 0.75        |
-| TN    | 2026-11-10 | 2026-11-11 | 1.1650       | 0.00           | 0.75        |
-| SP    | 2026-11-11 | 2026-11-11 | 1.1650       | 0.00           | 0.00        |
-| 3M    | 2026-11-11 | 2027-02-11 | 1.1719       | 69.47          | 69.47       |
-| 1Y    | 2026-11-11 | 2027-11-11 | 1.1909       | 258.92         | 258.92      |
-| 2Y    | 2026-11-11 | 2028-11-13 | 1.2092       | 442.29         | 442.29      |
-| 5Y    | 2026-11-11 | 2031-11-11 | 1.2506       | 855.82         | 855.82      |
-
-- Confirm the 1Y discount factors read 0.97889 for EUR and 0.95748 for USD.
-- Confirm the 2Y value date rolls from Saturday 2028-11-11 to Monday 2028-11-13.
+- Confirm 18 rows in this order: ON, TN, SP, SN, 1W, 2W, 1M, 2M, 3M, 6M, 9M, 1Y,
+  18M, 2Y, 3Y, 5Y, 7Y, 10Y.
+- Confirm the columns: tenor, near date, value date, forward rate, forward
+  points, swap points, the EUR discount factor and the USD discount factor.
+- Confirm SP has the spot rate, zero forward points and zero swap points.
+- Confirm TN has zero forward points and the same swap points as ON, and ON has
+  forward points of the opposite sign.
+- Confirm every row from SN onwards has a near date of 2026-11-20, and its
+  forward points equal its swap points.
+- Confirm the forward rate rises with the tenor, as EUR rates are below USD
+  rates, and each discount factor falls with the tenor.
+- Confirm no value date falls on a Saturday or a Sunday. For example, 3M rolls
+  to Monday 2027-02-22.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
 | Status | PENDING |
-
 
 ** Switch the chart between measures
 
-- Choose each *Chart* option in turn: *Forward rate*, *Discount factors*, *Forward points* and *Swap points*.
-- Confirm each title reads the measure followed by "by tenor".
-- Confirm *Discount factors* draws both currencies and each falls with tenor.
-- Confirm *Forward rate* rises with tenor from about 1.165 to about 1.25.
-- Confirm the address gains the =measure= value, and that reloading the page keeps the chart.
+- Under *Chart*, choose each of *Forward rate*, *Discount factors*, *Forward
+  points* and *Swap points* in turn.
+- Confirm the chart title follows the choice, and the chart draws the column of
+  the same name in the ladder: one line for a rate or points, one line per
+  currency for discount factors.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
 | Status | PENDING |
-
 
 ** Change where the ladder starts
 
-- Set *Ladder starts from* to *Today*.
-- Confirm the 1Y near date reads 2026-11-09 and its swap points read 260.43.
-- Confirm the ON, TN, SP and SN rows do not change.
-- Set it to *Tomorrow*.
-- Confirm the 1Y near date reads 2026-11-10 and its swap points read 259.68.
-- Confirm *Forward points* and *Forward rate* of 1Y do not change on either start.
-- Set it back to *Spot*. Confirm the 1Y swap points read 258.92.
+- Under *Ladder starts from*, choose *Today*, then *Tomorrow*, then *Spot*.
+- Confirm *Today* starts the rows at ON and *Tomorrow* starts them at TN, and the
+  forward points then run from that start rather than from spot.
+- Confirm *Spot* gives back the rows of the step before.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
 | Status | PENDING |
-
 
 ** Price a forward-forward
 
-- In *Forward-forward*, choose *Near tenor* 3M and *Far tenor* 6M.
-- Confirm *Near forward rate* reads 1.1719 and *Far forward rate* reads 1.1782.
-- Confirm the 3M x 6M swap points read 62.52.
-- Confirm *Days* reads 89.
-- Choose *Far tenor* 1M, which comes before the near tenor.
-- Confirm the screen reads "Choose a far tenor after the near tenor."
+- In *Forward-forward*, choose a near tenor of 3M and a far tenor of 6M.
+- Confirm *Near forward rate* and *Far forward rate* equal the 3M and 6M forward
+  rates in the ladder.
+- Confirm *3M x 6M swap points* equal the 6M forward points less the 3M forward
+  points, and *Days* reads 87.
+- Choose a far tenor of 1M. Confirm the panel says to choose a far tenor after
+  the near tenor.
 
 *** Result
 
@@ -153,12 +171,15 @@ Provisioning now builds holiday calendars, so the figures below predate them. On
 |--------+-------|
 | Status | PENDING |
 
+** Read a cross pair
 
-** Follow a curve to its record
-
-- Click =EUR-ESTR-LADDER= in *What this is built from*.
-- Confirm *Published curves* opens on that curve.
-- Go back. Confirm the ladder returns with the same pair and settings.
+- Choose EUR/GBP in *Pair*.
+- Confirm two spot legs: *EUR/USD spot, base leg* and *GBP/USD spot, quote leg*,
+  each with its value and observation time.
+- Confirm *Spot* equals the base leg divided by the quote leg, at about 0.885.
+- Confirm the funding curves are =EUR-ESTR= and =GBP-SONIA=, the calendars are
+  TARGET and UnitedKingdom.Settlement, and the ladder's last two columns are the
+  EUR and GBP discount factors.
 
 *** Result
 
@@ -166,45 +187,30 @@ Provisioning now builds holiday calendars, so the figures below predate them. On
 |--------+-------|
 | Status | PENDING |
 
+** See a pair with no set
+
+- Choose USD/BRL in *Pair*.
+- Confirm the screen reads "Your party has no published forward set of USD/BRL
+  at or before the as-of." and shows no ladder.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Move the as-of before publication
 
-- Set *As of* to 2026-11-06.
-- Confirm the screen reads "No curve of EUR is published at or before the as-of."
-- Confirm no ladder rows from 2026-11-09 stay on screen.
-- Set *As of* back to 2026-11-09. Confirm the ladder returns.
+- Choose EUR/USD again, and set *As of* to 2026-11-17.
+- Confirm the screen reads "Your party has no published forward set of EUR/USD
+  at or before the as-of."
+- Set *As of* back to today. Confirm the ladder of the earlier steps returns.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
 | Status | PENDING |
-
-
-** See a pair with no curve
-
-- Choose *Pair* USD/JPY.
-- Confirm the screen reads "No funding curve is configured for JPY."
-- Confirm the refusal is a message on the page, not a blank screen or a generic error.
-
-*** Result
-
-| Field  | Value |
-|--------+-------|
-| Status | PENDING |
-
-
-** Refuse a cross pair
-
-- Change the address so that it ends =/market-data/fx-forwards?pair=EUR/GBP=, and press Enter.
-- Confirm the screen reads "EUR/GBP has no USD leg, and only USD pairs are answered for now."
-
-*** Result
-
-| Field  | Value |
-|--------+-------|
-| Status | PENDING |
-
 
 * Results
 
@@ -212,10 +218,21 @@ Provisioning now builds holiday calendars, so the figures below predate them. On
 |---------------+-------|
 | Status        | PENDING |
 | Completed at  |  |
-| Branch        | feature/build-the-fx-forward-ladder-screen |
+| Branch        |       |
 | Commit        |       |
 | Worktree      | bright_faraday |
 
 * Notes
 
-The rows, refusals and identities above come from the live reply of =POST /api/curves/fx-forward-ladder= on the seeded data. The 1Y forward was checked by hand against F = S x (D_EUR(T) / D_EUR(spot)) / (D_USD(T) / D_USD(spot)). The screen itself is what this scenario tests.
+Rewritten on 2026-11-19 for the published ladder. The first version, of
+2026-11-09, tested the ladder the screen computed itself, which answered USD
+pairs only. Its run failed at *Open the FX forward ladder*, because the pair list
+now offers crosses, as designed
+([[file:scenario_verify_the_fx_forward_ladder_screen_step3_20261119_144640.png]]).
+
+The layout, rows, dates and refusals above were read from the screen on this
+environment, signed in to ACME Corporation UK plc. The spot values of ACME
+Corporation US Inc come from its published sets in the database. ACME Corporation UK plc
+publishes a EUR/GBP set of about 0.704, from legs that disagree with its own
+EUR/USD and GBP/USD sets; that is a defect filed on its own, and the reason this
+scenario uses ACME Corporation US Inc.

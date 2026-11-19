@@ -162,6 +162,12 @@
 \ir ./trading_instrument_barrier_levels_notify_trigger_create.sql
 \ir ./trading_instrument_values_create.sql
 \ir ./trading_instrument_values_notify_trigger_create.sql
+\ir ./trading_cbo_structures_create.sql
+\ir ./trading_cbo_structures_notify_trigger_create.sql
+\ir ./trading_cbo_tranches_create.sql
+\ir ./trading_cbo_tranches_notify_trigger_create.sql
+\ir ./trading_cbo_basket_members_create.sql
+\ir ./trading_cbo_basket_members_notify_trigger_create.sql
 
 -- An underlying is a child of the trade any product that states an
 -- Underlying block states it for.

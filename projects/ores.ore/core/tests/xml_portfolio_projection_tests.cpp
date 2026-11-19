@@ -4488,7 +4488,7 @@ TEST_CASE("a_pairwise_variance_swap_with_a_term_ore_refuses_is_refused",
         mapped(trade("<Value>FX-ECB-EUR-USD</Value>", "2027-01-08", "2")).instrument));
 }
 
-TEST_CASE("a_cbo_that_states_its_structure_inline_is_refused",
+TEST_CASE("a_cbo_that_states_its_structure_inline_holds_it_as_rows",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
@@ -4544,7 +4544,40 @@ TEST_CASE("a_cbo_that_states_its_structure_inline_is_refused",
   </Trade>
 </Portfolio>)"));
     REQUIRE(items.size() == 1);
-    CHECK(std::holds_alternative<std::monostate>(items[0].instrument));
+    const auto check = [](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::credit_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        REQUIRE(data->cbo_instruments.size() == 1);
+        CHECK(data->cbo_instruments[0].tranche_name == "JuniorNote");
+        REQUIRE(data->cbo_structures.size() == 1);
+        const auto& structure = data->cbo_structures[0];
+        CHECK(structure.day_counter == "A360");
+        CHECK(structure.payment_convention == "F");
+        CHECK(structure.currency == "EUR");
+        CHECK(structure.senior_fee == decimal_of("0.01"));
+        CHECK(structure.subordinated_fee == decimal_of("0.02"));
+        CHECK(structure.equity_kicker == decimal_of("0.2"));
+        CHECK(structure.fee_day_counter == "A360");
+        CHECK_FALSE(structure.reinvestment_end_date.has_value());
+        REQUIRE(data->cbo_tranches.size() == 1);
+        CHECK(data->cbo_tranches[0].name == "SeniorNote");
+        CHECK(data->cbo_tranches[0].notional == decimal_of("6000000"));
+        CHECK(data->cbo_tranches[0].ic_ratio == 1.0);
+        REQUIRE(data->legs.size() == 1);
+        CHECK(data->legs[0].leg_group == std::optional<std::string>("tranche"));
+        REQUIRE(data->leg_rates.size() == 1);
+        CHECK(data->leg_rates[0].value == decimal_of("0.01"));
+        REQUIRE(data->cbo_basket_members.size() == 1);
+        const auto& member = data->cbo_basket_members[0];
+        CHECK(member.sub_trade_id == "Bond_1");
+        CHECK(member.security_id == "SECURITY_1");
+        CHECK(member.bond_notional == decimal_of("1000000"));
+        CHECK(member.counterparty == std::optional<std::string>("CPTY_1"));
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "payment_schedule"));
+    };
+    check(items[0]);
+    check(rebuild(items[0]));
 }
 
 TEST_CASE("an_auto_delta_hedged_option_holds_its_hedge_and_its_batches_as_rows",

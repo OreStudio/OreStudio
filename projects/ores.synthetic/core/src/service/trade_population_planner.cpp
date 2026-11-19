@@ -2572,13 +2572,44 @@ build_credit_trade(const domain::trade_generation_scope& scope,
                                            tb::option_position::short_option};
         return batch_of(tb::credit_default_swap_option_builder(conventions, terms).build(), type);
     }
-    if (type == "CBO")
-        // An investment in the junior note of the structure ORE's own example names.
+    if (type == "CBO") {
+        /*
+         * An investment in the junior note of the structure ORE's own example
+         * names, stated inline with the example's fees, tranches and the first
+         * bonds of its basket, so the trade carries its structure whole.
+         */
+        tb::cbo_structure_terms structure{
+            .currency = std::string("USD"),
+            .day_counter = std::string("A365"),
+            .payment_convention = std::string("F"),
+            .senior_fee = money(0.001),
+            .fee_day_counter = std::string("A365"),
+            .subordinated_fee = money(0.005),
+            .equity_kicker = money(0.01),
+            .tranches = {{.name = "SeniorNote",
+                          .notional = money(16224751.80),
+                          .ic_ratio = money(1.0),
+                          .oc_ratio = money(1.0),
+                          .fixed_rate = money(0.04)},
+                         {.name = "JuniorNote",
+                          .notional = money(1802750.20),
+                          .ic_ratio = money(-1.0),
+                          .oc_ratio = money(-1.0),
+                          .fixed_rate = money(0.0)}},
+            .basket = {{.security_id = "ISIN:US15135BAW19", .notional = money(1000000.0)},
+                       {.security_id = "ISIN:US16411QAK76", .notional = money(1000000.0)},
+                       {.security_id = "ISIN:US16411QAL59", .notional = money(1000000.0)}},
+            .start = scope.as_of_date,
+            .end = add_years(scope.as_of_date, 15),
+            .tenor = std::string("3M"),
+            .calendar = std::string("US")};
         return batch_of(tb::cbo_builder({.tranche_name = std::string("JuniorNote"),
                                          .notional = money(entry.notional),
-                                         .structure_id = std::string("Pegasus")})
+                                         .structure_id = std::string("Pegasus"),
+                                         .structure = std::move(structure)})
                             .build(),
                         type);
+    }
     if (type == "IndexCreditDefaultSwapOption") {
         const auto expiry = add_months(scope.as_of_date, 3);
         const tb::index_credit_default_swap_option_terms terms{

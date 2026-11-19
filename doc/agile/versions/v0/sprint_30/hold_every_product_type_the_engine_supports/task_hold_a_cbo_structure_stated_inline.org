@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/hold-a-cbo-structure-stated-inline
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,11 +28,11 @@ is read and written rather than refused.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -51,9 +51,24 @@ is read and written rather than refused.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decided with the user on 2026-11-19: each tranche's =LegData= is held as the
+shared swap leg rows (=swap_leg= with its amounts and rates), keyed by the
+tranche's ordinal, as every other leg in the system is held, rather than as a
+coupon column, so a tranche of any leg kind is read.
+
+- A =cbo_structure= table keyed by the trade holds the structure's scalars:
+  day counter, payment convention, currency, reinvestment end date, senior and
+  subordinated fees, fee day counter and equity kicker.
+- A =cbo_tranche= row per tranche holds its name, notional and IC and OC ratios,
+  in document order; its leg is swap leg rows under the tranche's ordinal.
+- The payment =ScheduleData= is instrument schedule rows.
+- Each =SubTrade= of the =BondBasketData= is a bond issue, as the bond family
+  holds a security, and a =cbo_basket_member= row names the issue, the sub-trade
+  id and the bond notional, in document order.
+- The reader stops refusing an inline structure; the round trip reads a CBO
+  that states ORE's reference structure inline and writes it back.
+- The builder states the rows and the generator books a CBO with its structure
+  inline.
 
 * Measurements
 
@@ -67,7 +82,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.trading.api.tests | 5568 test cases, all pass | =./ores.trading.api.tests= | e2dc8df1e8 |
+| ores.trading.core.tests, on a recreated database | 276 test cases, all pass | =./ores.trading.core.tests= | e2dc8df1e8 |
+| ores.shell.trading.tests | 1738 test cases, all pass | =./ores.shell.trading.tests= | e2dc8df1e8 |
+| ores.ore.core.tests, with the ORE engine | 566 test cases, all pass | =./ores.ore.core.tests= | e2dc8df1e8 |
+| ores.synthetic.core.tests, with the ORE engine | 149 test cases, all pass | =./ores.synthetic.core.tests= | e2dc8df1e8 |
+| Generated trades after two refreshes | no file changed | =ORES_UPDATE_GENERATED_TRADES=1 ./ores.synthetic.core.tests "[generated]"= | e2dc8df1e8 |
 
 * Notes
 
@@ -102,3 +122,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A CBO that states its structure inline is read and written rather than refused.
+The structure's scalars are a =cbo_structures= row; each tranche is a
+=cbo_tranches= row in the structure's order, with its =FixedLegData= as swap leg
+rows under the tranche's ordinal and the =tranche= leg group; the payment
+schedule is instrument schedule rows; each basket bond is a
+=cbo_basket_members= row naming its sub-trade id, security id, notional and the
+counterparty its envelope states. The round trip reads a CBO that states its
+structure inline and checks every row before and after a rebuild. The builder
+states the rows and the generator books ORE's Pegasus structure inline; ORE
+builds the CBO from it and stops at the basket bonds, whose reference data the
+engine run does not hold, which the engine test classifies as market data.
+
+A basket bond stated in full rather than by its security id, and a tranche
+whose coupon is not =FixedLegData=, are still refused with a message; ORE's
+examples state neither.

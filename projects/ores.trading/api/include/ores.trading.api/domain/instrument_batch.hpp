@@ -77,7 +77,10 @@
 #include "ores.trading.api/domain/callable_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument_codec.hpp"
 #include "ores.trading.api/domain/cash_position_instrument_codec.hpp"
+#include "ores.trading.api/domain/cbo_basket_member_codec.hpp"
 #include "ores.trading.api/domain/cbo_instrument_codec.hpp"
+#include "ores.trading.api/domain/cbo_structure_codec.hpp"
+#include "ores.trading.api/domain/cbo_tranche_codec.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent_codec.hpp"
 #include "ores.trading.api/domain/commodity_instrument_codec.hpp"
 #include "ores.trading.api/domain/composite_instrument_codec.hpp"
@@ -484,6 +487,18 @@ struct instrument_batch {
      * @brief The cbo_instrument rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::cbo_instrument> cbo_instruments;
+    /**
+     * @brief The cbo_basket_member rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::cbo_basket_member> cbo_basket_members;
+    /**
+     * @brief The cbo_structure rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::cbo_structure> cbo_structures;
+    /**
+     * @brief The cbo_tranche rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::cbo_tranche> cbo_tranches;
     /**
      * @brief The commodity_basket_constituent rows, keyed by trade id.
      */
@@ -1167,6 +1182,27 @@ inline void append(instrument_batch& batch, cbo_instrument v) {
 }
 
 /**
+ * @brief Adds one cbo_basket_member to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, cbo_basket_member v) {
+    batch.cbo_basket_members.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one cbo_structure to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, cbo_structure v) {
+    batch.cbo_structures.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one cbo_tranche to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, cbo_tranche v) {
+    batch.cbo_tranches.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one commodity_basket_constituent to the array that holds its type.
  */
 inline void append(instrument_batch& batch, commodity_basket_constituent v) {
@@ -1603,6 +1639,9 @@ template <typename T>
         ::ores::utility::codec::field{"cap_floor_instruments",
                                       &instrument_batch::cap_floor_instruments},
         ::ores::utility::codec::field{"cbo_instruments", &instrument_batch::cbo_instruments},
+        ::ores::utility::codec::field{"cbo_basket_members", &instrument_batch::cbo_basket_members},
+        ::ores::utility::codec::field{"cbo_structures", &instrument_batch::cbo_structures},
+        ::ores::utility::codec::field{"cbo_tranches", &instrument_batch::cbo_tranches},
         ::ores::utility::codec::field{"commodity_basket_constituents",
                                       &instrument_batch::commodity_basket_constituents},
         ::ores::utility::codec::field{"credit_basket_constituents",

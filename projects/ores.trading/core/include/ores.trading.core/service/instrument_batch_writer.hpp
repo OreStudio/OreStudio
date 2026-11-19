@@ -57,7 +57,10 @@
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
 #include "ores.trading.core/repository/cash_position_instrument_repository.hpp"
+#include "ores.trading.core/repository/cbo_basket_member_repository.hpp"
 #include "ores.trading.core/repository/cbo_instrument_repository.hpp"
+#include "ores.trading.core/repository/cbo_structure_repository.hpp"
+#include "ores.trading.core/repository/cbo_tranche_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
@@ -370,6 +373,10 @@ void write_instrument_batch(const ores::database::context& ctx,
         ctx, batch.cap_floor_instruments, keys, stamp, claim);
     write_rows<repository::cbo_instrument_repository>(
         ctx, batch.cbo_instruments, keys, stamp, claim);
+    write_rows<repository::cbo_basket_member_repository>(
+        ctx, batch.cbo_basket_members, keys, stamp, claim);
+    write_rows<repository::cbo_structure_repository>(ctx, batch.cbo_structures, keys, stamp, claim);
+    write_rows<repository::cbo_tranche_repository>(ctx, batch.cbo_tranches, keys, stamp, claim);
     write_rows<repository::commodity_basket_constituent_repository>(
         ctx, batch.commodity_basket_constituents, keys, stamp, claim);
     write_rows<repository::credit_basket_constituent_repository>(
@@ -692,6 +699,12 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("cap_floor_instruments");
     if (!batch.cbo_instruments.empty())
         names.emplace_back("cbo_instruments");
+    if (!batch.cbo_basket_members.empty())
+        names.emplace_back("cbo_basket_members");
+    if (!batch.cbo_structures.empty())
+        names.emplace_back("cbo_structures");
+    if (!batch.cbo_tranches.empty())
+        names.emplace_back("cbo_tranches");
     if (!batch.commodity_basket_constituents.empty())
         names.emplace_back("commodity_basket_constituents");
     if (!batch.credit_basket_constituents.empty())

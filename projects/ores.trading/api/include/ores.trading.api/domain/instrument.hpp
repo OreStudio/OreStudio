@@ -25,7 +25,10 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
 #include "ores.trading.api/domain/basket_swap_period.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
+#include "ores.trading.api/domain/cbo_basket_member.hpp"
 #include "ores.trading.api/domain/cbo_instrument.hpp"
+#include "ores.trading.api/domain/cbo_structure.hpp"
+#include "ores.trading.api/domain/cbo_tranche.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
@@ -283,6 +286,14 @@ struct credit_instrument_data {
     std::vector<swap_leg_amount> leg_amounts;
     std::vector<swap_leg_rate> leg_rates;
     std::vector<credit_basket_constituent> constituents;
+    /**
+     * @brief The structure a CBO states inline: its scalars, its tranches in
+     * the structure's order and the bonds of its basket. A CBO that names its
+     * structure by id leaves them empty.
+     */
+    std::vector<cbo_structure> cbo_structures;
+    std::vector<cbo_tranche> cbo_tranches;
+    std::vector<cbo_basket_member> cbo_basket_members;
     std::vector<instrument_strike> strikes;
     std::vector<instrument_schedule> schedules;
     std::vector<instrument_schedule_date> schedule_dates;
@@ -946,6 +957,12 @@ inline void stamp_ids(credit_instrument_data& data,
         constituent.trade_id = trade_id;
         constituent.trade_activity_id = activity_id;
     }
+    for (auto& row : data.cbo_structures)
+        stamp_ids(row, trade_id, activity_id);
+    for (auto& row : data.cbo_tranches)
+        stamp_ids(row, trade_id, activity_id);
+    for (auto& row : data.cbo_basket_members)
+        stamp_ids(row, trade_id, activity_id);
     for_each_credit_fact_array(data, [&](auto& rows) {
         for (auto& fact : rows)
             stamp_ids(fact, trade_id, activity_id);

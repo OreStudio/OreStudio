@@ -464,6 +464,9 @@ generator and the import write it through one path.
 | callable_swap_instrument                    |
 | cap_floor_instrument                        |
 | cbo_instrument                              |
+| cbo_basket_member                           |
+| cbo_structure                               |
+| cbo_tranche                                 |
 | commodity_basket_constituent                |
 | credit_basket_constituent                   |
 | credit_default_swap_instrument              |

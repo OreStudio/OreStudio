@@ -37,6 +37,28 @@ compass-ng generates the code and runs the build-free gates for every environmen
 - CI runs compass check --ratchet from a pinned compass release, and the ported Python CI workflows are removed.
 - Every environment and every external developer installs a pinned compass release with one documented command, and bearings reports a missing or out-of-date binary.
 - The Python gates and generators that compass replaces are deleted, together with their baseline files.
+- The Sprint 30 release notes carry the table in Performance, refreshed against the compass release CI pins.
+
+* Performance
+
+The Python gates against compass-ng on the same commit and machine. The
+measurements are in the Measurements table of
+[[id:684B4233-F5A7-4E16-B6B2-31C2251406B2][Compare compass-ng with the Python gates on main]], on main at =67803175ce=,
+8 cores, with the fleet loading the machine to 24 to 45. Both sides are
+pessimistic by the same load. Copy this table into the Sprint 30 release notes.
+
+| Run | Python gates | compass-ng | Speed-up |
+|-----+--------------+------------+----------|
+| Every build-free gate, whole repository | 26 min 9 s wall, 8 jobs, 89 gates | 66.5 s cold (44.0 s of it clang-format); 4.7 s warm | 24× cold, 330× warm |
+| The 75 gates compass ports, summed | 1,844 s | 66.5 s cold | 28× |
+| Slowest two gates | component-drift 655 s, drift-sweep 567 s | inside the 4.7 s warm run | |
+| A branch with 10 planted violations | 9 min 56 s wall | 8.7 to 10.4 s | about 60× |
+| One file edit | no per-edit check | 0.51 to 0.58 s through the hook | |
+| Violations caught of 10 planted | 10 | 10 | |
+
+The Python figure for the whole repository covers 89 gates, 14 more than
+compass ports, so the first row overstates the speed-up a little; the second
+row compares like with like.
 
 * Tasks
 

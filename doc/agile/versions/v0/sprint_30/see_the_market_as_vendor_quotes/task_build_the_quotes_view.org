@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:109B7D07-EA58-42D4-A304-666B37EEAC6C][Watch the vendors' quotes as a party and as the system tenant]] | PENDING | The product owner runs it; it covers the system tenant's view. |
 
 * PRs
 

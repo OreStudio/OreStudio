@@ -38,9 +38,20 @@ the members of one struct: 220 of the 287 reflected structs the models
 generate have more than nine members, some as many as 59, and they
 compile, because nothing tags them.
 
+* Resolution
+
+Discarded on 2026-11-19 as moot. =083237ca59= ([build] Remove
+reflect-cpp, 2026-11-09) removed reflect-cpp and
+=instrument_payload.cpp= with it. compass's investigation of every
+C1202 from 2026-09-19 to 2026-11-19 found all 81 reflect-cpp errors
+before that commit. Whether the generated field_list codecs that
+replaced reflect-cpp meet a similar limit is being measured by MSVC
+probes in compass's story Keep MSVC within its template limits; a new
+capture follows if they do.
+
 * References
 
-- =projects/ores.trading/api/src/domain/instrument_payload.cpp=
+- =projects/ores.trading/api/src/domain/instrument_payload.cpp= (removed in =083237ca59=)
 - =projects/ores.trading/api/include/ores.trading.api/domain/bond_instrument_data.hpp=
 
 * See also

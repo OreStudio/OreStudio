@@ -75,20 +75,6 @@ TEST_CASE("different_data_never_share_a_token", "[domain][tick_subjects]") {
     CHECK(subject_token("a%b") != subject_token("a b"));
 }
 
-TEST_CASE("a_consumer_reads_a_datum_under_its_encoded_oresmd_uri", "[domain][tick_subjects]") {
-    const std::string uri = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
-    const auto subject = ores::marketdata::domain::market_tick_subject("t", "p", uri);
-    CHECK(subject.starts_with(std::string(ores::marketdata::messaging::market_tick::nats_subject) +
-                              ".t.p."));
-    CHECK(subject.ends_with("." + ores::marketdata::domain::subject_token(uri)));
-    CHECK(subject.find('/') == std::string::npos);
-}
-
-TEST_CASE("a_party_reads_all_its_data_under_one_wildcard", "[domain][tick_subjects]") {
-    CHECK(ores::marketdata::domain::market_tick_subject_all("t", "p") ==
-          std::string(ores::marketdata::messaging::market_tick::nats_subject) + ".t.p.>");
-}
-
 namespace {
 
 const std::string tick_subjects_feed = "0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0";

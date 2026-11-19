@@ -38,10 +38,10 @@ namespace ores::marketdata::domain {
  * @brief The subjects a live market_tick travels on.
  *
  * A producer publishes on "synthetic.v1.ops.tick.<source>", or under the sandbox
- * base, which the ingest loop never subscribes to. The ingest loop
- * republishes each tick to every consumer the source's feed bindings name, on
- * the market_tick subject extended with the consumer and the datum's oresmd
- * URI, encoded as one subject token.
+ * base, which the ingest loop never subscribes to. The ingest loop publishes each
+ * tick once on the market_tick subject of the source's feed, feed_tick_subject(),
+ * which names the provider, the feed, the instrument type, the series and the
+ * coordinate.
  *
  * These name the base of each family, not a subject a producer uses and not
  * the wildcard a reader wants. A subscription passes the relative wildcard,
@@ -128,29 +128,6 @@ inline std::optional<std::string> subject_token_text(std::string_view token) {
         i += 2;
     }
     return text;
-}
-
-/// The subject that covers every datum a party reads in one tenant.
-inline std::string market_tick_subject_all(std::string_view tenant_id, std::string_view party_id) {
-    std::string subject(messaging::market_tick::nats_subject);
-    for (const auto part : {tenant_id, party_id})
-        subject.append(".").append(part);
-    return subject.append(".>");
-}
-
-/**
- * @brief The subject a consumer reads one datum's ticks on:
- * "marketdata.v1.ops.market_tick.<tenant>.<party>.<token>", where the token is
- * the datum's canonical oresmd URI as one subject token. Every valid datum has
- * a URI, so every valid quote has a subject, with or without an ORE key.
- */
-inline std::string market_tick_subject(std::string_view tenant_id,
-                                       std::string_view party_id,
-                                       std::string_view oresmd_uri) {
-    std::string subject(messaging::market_tick::nats_subject);
-    for (const auto part : {tenant_id, party_id})
-        subject.append(".").append(part);
-    return subject.append(".").append(subject_token(oresmd_uri));
 }
 
 /// The coordinate token of a series, which has no coordinates.

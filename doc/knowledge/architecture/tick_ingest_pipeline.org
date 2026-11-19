@@ -144,9 +144,7 @@ or to one datum. A chart subscribes to the series that it shows, and the broker
 sends nothing else.
 
 The ingest builds this subject with =feed_tick_subject()= and publishes each tick
-on it once. It still publishes one copy for each routed party as well, on
-=marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=, with one token for the
-whole datum URI, until the consumers move to the feed subject.
+on it once.
 
 The ingress subject is =marketdata.v1.ingress.<adapter>.<id token>=.
 
@@ -525,9 +523,7 @@ This page states the design. At commit =0a63e9a679= (2026-11-18) the ingest
 
 - It has no lanes, no conflation and no recent window. It takes each batch, stores
   it and publishes every accepted tick that is not too old.
-- It publishes each tick once on the feed's subject, and also a copy for each
-  routed party, on =marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=. No
-  consumer reads the copies, and they go next.
+- It publishes each tick once on the feed's subject, and no copy for any party.
 - It publishes the ticks of a feed that no route names on the feed's subject, and
   stores none of them.
 - The history read answers from the store only.

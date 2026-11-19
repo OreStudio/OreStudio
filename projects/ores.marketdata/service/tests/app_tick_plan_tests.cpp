@@ -132,15 +132,8 @@ TEST_CASE("a_tick_from_a_source_with_several_consumers_has_one_target_each", "[a
     REQUIRE(targets.size() == 2);
     CHECK(targets[0].owner == consumers[0]);
     CHECK(targets[1].owner == consumers[1]);
-    const auto token = ores::marketdata::domain::subject_token(app_tick_plan_eur_usd_spot);
-    CHECK(targets[0].subject ==
-          "marketdata.v1.ops.market_tick.11111111-1111-1111-1111-111111111111."
-          "22222222-2222-2222-2222-222222222222." +
-              token);
-    CHECK(targets[1].subject ==
-          "marketdata.v1.ops.market_tick.33333333-3333-3333-3333-333333333333."
-          "44444444-4444-4444-4444-444444444444." +
-              token);
+    CHECK(targets[0].party_text == "22222222-2222-2222-2222-222222222222");
+    CHECK(targets[1].party_text == "44444444-4444-4444-4444-444444444444");
 }
 
 TEST_CASE("a_uri_is_named_once_with_its_canonical_spelling_and_the_uri_of_its_series",

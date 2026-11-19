@@ -69,9 +69,9 @@ namespace ores::marketdata::service::app {
  * names its datum by its oresmd quote URI and its producer by its source; it
  * carries no owner. refresh() caches the routes by source, and each route of
  * the tick's source is one consumer. The tick is stored once, as one row of the
- * tick table on the stream its provider and series URI name, published once on
- * feed_tick_subject() for the source's feed, and republished on
- * market_tick_subject() for each consumer and the datum's canonical oresmd URI.
+ * tick table on the stream its provider and series URI name, and published once
+ * on feed_tick_subject() for the source's feed. Each consumer watches that subject,
+ * and the meter counts one delivery for each of them.
  * A tick of a feed that no route names is published on its feed subject and not
  * stored. A tick from a source the catalogue does not name is dropped, with one
  * warning per source, and so is a tick whose URI names no datum or whose value is

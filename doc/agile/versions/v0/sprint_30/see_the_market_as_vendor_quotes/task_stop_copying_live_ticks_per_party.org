@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:ticks:routing:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/stop-copying-live-ticks-per-party
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ The ingest publishes each live tick once, per vendor, and the per-party copy and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

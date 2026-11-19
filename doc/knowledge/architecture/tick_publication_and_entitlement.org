@@ -2,7 +2,7 @@
 :ID: 4DB1ED0C-4BEA-4164-9129-5731AE559AE9
 :END:
 #+title: A source tick is published once and entitled when it is watched
-#+description: The target state of the live path: the ingest publishes each accepted tick once, on the subject of the feed that carries it, and a party reaches a feed through its route and its subscription, which are checked where a person or a service starts to watch.
+#+description: The live path: the ingest publishes each accepted tick once, on the subject of the feed that carries it, and a party reaches a feed through its route and its subscription, which are checked where a person or a service starts to watch.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:ticks:routing:entitlement:
@@ -11,7 +11,7 @@
 
 * Summary
 
-This page states the target state of the live path. It is the live half of
+This page states the live path. It is the live half of
 [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]. The ingest
 publishes each accepted tick once, on the subject of the feed that carries it.
 The subject names the provider and the feed, and no tenant and no party. A party
@@ -19,24 +19,19 @@ reaches a feed through its route, which picks the feed, and its subscription,
 which grants the right. The check is made where a watch starts, because the
 broker does not check subjects. The system tenant watches every feed.
 
-Today the ingest publishes each tick once on its feed's subject and also a copy
-for each routed party, which every consumer still reads. The story
-[[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] moves the live path to this target.
+The story [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] built it. Until then the
+ingest published a copy of each tick for each routed party.
 
 * Detail
 
-** Today
+** What it replaced
 
-The ingest publishes each accepted tick once on its feed's subject
-(=feed_tick_subject()=). The shell's stream watch reads it: it asks
-=list_watchable_feeds= which feeds the party may show, and watches those. The
-ingest also turns each route
-into a consumer, and for each accepted tick it publishes one copy for each
-consumer, on
-=marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=, where the token is the
-whole oresmd URI of the datum (=tick_plan.cpp=, =make_delivery=). The copies cost
-one publish for each party, so the live path grows with the parties and not with
-the market. No consumer reads the copies any more, and they go next.
+The ingest used to publish one copy of each tick for each routed party, on
+=marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=, where the token was the
+whole oresmd URI of the datum. The copies cost one publish for each party, so the
+live path grew with the parties and not with the market, and no wildcard covered
+one series. The copies and the subject are gone. A client that watched a party's
+subtree, such as Hedgr, watches the feed subjects instead.
 
 ** The subject
 
@@ -114,16 +109,15 @@ It learns of the change from the route and subscription events,
 =marketdata.v1.events.routes.>= and =marketdata.v1.events.subscriptions.>=.
 
 Checking the subjects on the broker itself needs an account and permissions for
-each client. That is a separate change, and this target does not need it.
+each client. That is a separate change, and the live path does not need it.
 
 ** Metering
 
-Billing counts what a party is entitled to receive, as it does today. The ingest
-already reads the routes to build the copies. In the target it keeps reading
-them, and for each tick it publishes it adds one to the count of every route that
-picks the tick's feed at that moment. So the count for a party, a provider and an
-item is the same as the count of the copies the party received before, and the
-bill does not change when the copy is removed
+Billing counts what a party is entitled to receive. The ingest reads the routes,
+and for each tick it publishes it adds one to the count of every route that picks
+the tick's feed at that moment. So the count for a party, a provider and an item
+is the same as the count of the copies the party received before, and the bill
+did not change when the copies went
 ([[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]]).
 
 ** History
@@ -137,4 +131,4 @@ tenant reads every provider.
 - [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] — the stored half of the same rule.
 - [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — the pipeline that publishes the tick.
 - [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
-- [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] — the story that moves the live path to this target.
+- [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] — the story that built the live path.

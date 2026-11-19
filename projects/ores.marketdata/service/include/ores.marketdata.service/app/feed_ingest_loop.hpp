@@ -384,6 +384,8 @@ private:
     drop_oldest_queue<messaging::market_tick> queue_{queue_capacity};
     store_backoff store_backoff_;
     std::atomic<std::uint64_t> stale_dropped_{0};
+    /// Ticks that aged out before they were published. A routed one stays in the store as
+    /// history; one of a feed that no route names is gone, because it is never stored.
     std::atomic<std::uint64_t> late_unpublished_{0};
     std::atomic<std::uint64_t> store_unavailable_{0};
     std::atomic<std::uint64_t> shutdown_dropped_{0};

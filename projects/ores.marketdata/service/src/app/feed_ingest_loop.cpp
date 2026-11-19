@@ -611,6 +611,16 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
         }
     }
 
+    const auto publish_on_feed = [this](const std::string& subject,
+                                        const std::vector<std::byte>& payload) {
+        try {
+            nats_.publish(subject, payload);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to publish a tick on '" << subject << "': " << e.what();
+        }
+    };
+
     std::vector<std::vector<std::byte>> payloads(ticks.size());
     // A tick is published on its feed's subject once, whatever the number of its targets.
     std::vector<bool> on_feed(ticks.size(), false);
@@ -657,13 +667,7 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
             payload = ores::nats::default_wire_codec().encode(tick);
         if (!on_feed[it.tick_index]) {
             on_feed[it.tick_index] = true;
-            const auto& subject = it.plan->delivery->feed_subject;
-            try {
-                nats_.publish(subject, payload);
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Failed to publish a tick on '" << subject << "': " << e.what();
-            }
+            publish_on_feed(it.plan->delivery->feed_subject, payload);
         }
         try {
             nats_.publish(it.target->subject, payload);
@@ -686,13 +690,8 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
             late_unpublished_.fetch_add(1, std::memory_order_relaxed);
             continue;
         }
-        const auto& subject = plan->delivery->feed_subject;
-        try {
-            nats_.publish(subject, ores::nats::default_wire_codec().encode(tick));
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to publish a tick on '" << subject << "': " << e.what();
-        }
+        publish_on_feed(plan->delivery->feed_subject,
+                        ores::nats::default_wire_codec().encode(tick));
     }
 
     if (meter_ && !delivered.empty()) {

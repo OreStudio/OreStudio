@@ -1547,3 +1547,27 @@ TEST_CASE("a_tick_of_a_feed_that_no_route_names_is_published_on_its_feed_and_not
     const auto series_uri = service::app::name_datum(quote_uri).value()->series_uri;
     CHECK(tick_rows_of(boost::uuids::to_string(datum::stream_id("ore", series_uri))) == "0");
 }
+
+TEST_CASE("a_tick_of_a_feed_that_no_route_names_is_not_published_once_it_has_aged_out",
+          "[app][feed_ingest_loop]") {
+    using namespace ores::marketdata;
+    app_feed_ingest_loop_fixture f;
+    const auto source = other_prefix + run_tag();
+    const auto feed = boost::uuids::to_string(f.catalogue_feed(source).id);
+    f.connect();
+
+    std::atomic<std::size_t> on_feed{0};
+    const auto feed_sub =
+        f.nats.subscribe(std::string(messaging::market_tick::nats_subject) + ".ore." + feed + ".>",
+                         [&](ores::nats::message) { ++on_feed; });
+
+    feed_ingest_loop loop(f.nats, f.h.context());
+    loop.refresh();
+    // Older than the age limit of any service, the end of day one included.
+    auto tick = tick_from(source, app_feed_ingest_loop_eur_usd_spot());
+    tick.observation_time -= std::chrono::days{30};
+    REQUIRE_FALSE(loop.handle_tick(tick).has_value());
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    CHECK(on_feed == 0);
+}

@@ -89,7 +89,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The late counter now counts two kinds of tick | feed_ingest_loop.hpp | Accept | Kept one counter and stated on it that a routed late tick stays in the store and an unrouted one is gone. |
+| 2 | The feed publish is written twice | feed_ingest_loop.cpp | Accept | One publish_on_feed in announce() for both paths. |
+| 3 | The unrouted loop walks the batch again | feed_ingest_loop.cpp | Decline | One pass over the batch's plans; no cost seen at today's volume. |
+| 4 | Two feeds could share a name | feed_ingest_loop.cpp | Decline | The catalogue has a unique index on the feed name, feeds_name_uniq_idx. |
+| 5 | No test of an aged-out unrouted tick | app_feed_ingest_loop_tests.cpp | Accept | Added; with the age gate removed the test fails, so it detects the defect. |
+| 6 | Old names in docs or dashboards | - | Decline | A search finds no unbound_source and no old log text left. |
 
 * Result
 

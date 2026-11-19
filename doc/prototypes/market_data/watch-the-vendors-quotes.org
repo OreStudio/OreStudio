@@ -42,8 +42,8 @@ Switch with the bar at the foot, or =?variant=.
 | Variant | Name                    | The idiom |
 |---------+-------------------------+-----------|
 | =a=     | A vendor filter         | The vendor is a filter like any other: a multi-select in the filter bar. Each row is one vendor's quote of one datum, with a vendor column, so more vendors means more rows, never more columns, and the rows of one datum sit together. |
-| =b=     | Monitor and all quotes  | A quote monitor of one vendor, chosen in a plain drop-down. The picked row opens an /All quotes/ panel: every vendor's quote of that datum, its distance to the mid, the spread and the age, with each vendor's last hour drawn. The idiom of a terminal's all-quotes page. Recommended. |
-| =c=     | A source rail           | The vendors listed once on the left, with their health, and /All vendors/ at the top. One vendor is its monitor; all vendors is variant a's rows. The picked row opens variant b's /All quotes/ panel. |
+| =b=     | Monitor and all quotes  | A quote monitor of one vendor, chosen in a plain drop-down. The picked row opens an /All quotes/ panel: every vendor's quote of that datum, its distance to the mid, the spread and the age, with each vendor's last hour drawn. The idiom of a terminal's all-quotes page. |
+| =c=     | A source rail           | The vendors listed once on the left, with their health, and /All vendors/ at the top. One vendor is its monitor; all vendors is variant a's rows. The picked row opens variant b's /All quotes/ panel. Signed off. |
 
 =?layout=datum|series= groups the rows in each variant; =?pick=0= opens the first
 datum's quotes.
@@ -78,8 +78,21 @@ keep them apart.
 
 ** The verdict
 
-Awaiting the product owner's sign-off. The sign-off, or the changes asked, is
-recorded here before the view is built.
+Signed off by the product owner on 2026-11-19: variant C, the source rail. The
+vendors are listed once on the left with their health, and /All vendors/ at the
+top; one vendor is its monitor, all vendors is one row for each vendor's quote of
+a datum; the picked row opens the /All quotes/ panel. Every datum and by series
+stay as the two layouts, and the asset class filter is the asset class codes
+table.
+
+The rounds before it, recorded so the reasons stay:
+
+- Flat or grouped by series: both, as layouts of one screen.
+- A separate across-vendors layout: replaced, because the vendors are a choice,
+  not a layout.
+- Vendor cards that were both the health and a toggle that changed the columns:
+  replaced, because the two jobs confused each other; the health became a status,
+  and the choice became the rail.
 
 * See also
 

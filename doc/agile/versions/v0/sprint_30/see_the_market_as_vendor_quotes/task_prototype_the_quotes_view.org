@@ -26,11 +26,11 @@ The product owner signs off the quotes view before it is built.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | The product owner: the sign-off of the prototype. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance

@@ -47,33 +47,34 @@ the same rows.
 * Steps
 
 1. *Open the quotes.* The person opens *Market data*, then *Quotes*. The system
-   asks which feeds the session may watch for display, and shows them as the
-   vendor list: the provider and the feed. A party with no subscription sees an
-   empty list and a line that says so.
-2. *Choose the vendors.* The person picks one vendor or several. The system
-   watches the live ticks of the picked feeds and fills one row for each datum
-   they quote: the asset class, the instrument type, the series and the point
-   within the series. With one vendor, the row shows the value, the change from
-   the datum's previous tick, the time and the age. With several, it shows one
-   value for each picked vendor, the spread between them and the age of the
-   newest quote, so GBP/USD reads as Bloomberg and Tradeweb quote it side by
-   side. A cell updates in place when its vendor's datum ticks again, and
-   briefly marks the change.
+   asks which feeds the session may watch for display, and lists them as the
+   sources on the left: each vendor once, with a dot and the age of its last
+   tick, and /All vendors/ at the top. A party with no subscription sees an empty
+   list and a line that says why.
+2. *Choose a source.* The person picks one vendor, or /All vendors/. The system
+   watches the live ticks of the chosen feeds and fills the table: for one
+   vendor, one row for each datum it quotes, with the value, the change from the
+   previous tick, the time and the age; for all vendors, one row for each
+   vendor's quote of each datum, with a vendor column, so the vendors' GBP/USD
+   sit together. A cell updates in place when it ticks again, and briefly marks
+   the change.
 3. *Lay it out.* The person switches between two layouts of the same rows:
    every datum, or grouped by series, a series opening into its points.
 4. *Narrow it.* The person narrows by asset class, from the asset class codes
-   table, or by instrument type within it, or types
-   part of a series to find it. The screen filters the rows it holds, with no
-   call. Narrowing to one series is the exception: the system then asks the
-   broker for that series alone.
-5. *Read one datum.* The person selects a row. The system reads its ticks of
-   the last hour from the store in one call for each picked vendor and draws one
-   line for each, then extends them with each live tick. The rows above keep ticking.
-6. *Notice a silent feed.* A row whose age grows marks itself stale. A feed with
-   no tick for a while shows its age in the vendor list, once it has ticked. The person sees that a
-   vendor stopped without leaving the screen.
+   table, or by instrument type within it, or types part of a series to find it.
+   The screen filters the rows it holds, with no call. Narrowing to one series is
+   the exception: the system then asks the broker for that series alone.
+5. *Compare the vendors on one datum.* The person picks a row. The /All quotes/
+   panel lists every vendor the session may watch that quotes the datum: its
+   value, its distance to the mid, the change, the time and the age, then the mid
+   and the spread. Below, each vendor's last hour is drawn: one history read for
+   each vendor, extended with each live tick. The rows above keep ticking.
+6. *Notice a silent feed.* A source whose last tick grows old turns its dot
+   amber in the list, once it has ticked, and its rows fade. The person sees that
+   a vendor stopped without leaving the screen.
 7. *Pause.* The person pauses the view to read it. The screen stops updating the
-   rows and keeps watching, and resumes from the newest values. No call is made.
+   values and keeps counting the ages, and resumes from the newest values. No
+   call is made.
 
 When a route or a subscription of the party changes while the screen is open, the
 system asks again which feeds the session may watch: a vendor that is no longer
@@ -83,20 +84,21 @@ The journey carries no server state. Every step is a read or a watch.
 
 * Screens and wireframes
 
-One screen. The vendor and the filters sit at the top, the ticking rows in the
-middle, and the selected series' line at the bottom.
+One screen. The sources sit on the left; the filters and the layout at the top;
+the ticking rows in the middle; and the /All quotes/ panel of the picked row at
+the bottom.
 
-#+caption: Quotes: the vendors the party may watch, one row for each datum a vendor quotes, updated in place as it ticks, and one series drawn from its history and its live ticks.
+#+caption: Quotes: the sources the session may watch on the left, one row for each datum the chosen source quotes, updated in place as it ticks, and every vendor's quote of the picked row with its last hour.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_watch-the-vendors-quotes.png]]
 
 * Prototype
 
 A static page at =doc/prototypes/market_data/watch-the-vendors-quotes/index.html=: mock data only, no backend,
-no build step and no session. It argues that every asset class reads as rows of one ticking table, and asks
-whether a row is a datum or a series.
+no build step and no session. It argues that every asset class reads as rows of one ticking table, chosen by
+source on a rail and compared one datum at a time. Signed off as variant C on 2026-11-19.
 
-- Variants :: a every datum, b by series
+- Variants :: a a vendor filter, b a monitor and all quotes, c a source rail (signed off)
 - States :: a party, the system tenant, no subscription, a silent vendor
 - Source :: =doc/prototypes/market_data/watch-the-vendors-quotes/index.html=
 - Open :: =/OreStudio/doc/prototypes/market_data/watch-the-vendors-quotes/= once the site is built, or the
@@ -122,11 +124,11 @@ oresmd URI, read by the codec; the schema the client needs to split it is
 |------+-----------+---------+--------|
 | Open the quotes | Ask which feeds the session may watch | =marketdata.v1.ops.list_watchable_feeds= | exists |
 | Open the quotes | Read the feeds' names | =marketdata.v1.feeds.list= | exists |
-| Choose the vendors | Watch a feed's ticks | =marketdata.v1.ops.market_tick.<provider>.<feed>.>= | exists |
-| Choose the vendors | Carry the watched ticks to the browser | none | missing |
-| Choose the vendors | Split a URI into its type, series and point | =marketdata.v1.ops.describe_oresmd_schema= | exists |
+| Choose a source | Watch a feed's ticks | =marketdata.v1.ops.market_tick.<provider>.<feed>.>= | exists |
+| Choose a source | Carry the watched ticks to the browser | none | missing |
+| Choose a source | Split a URI into its type, series and point | =marketdata.v1.ops.describe_oresmd_schema= | exists |
 | Narrow it | Watch one series | =marketdata.v1.ops.market_tick.<provider>.<feed>.<type>.<series>.*= | exists |
-| Read one datum | Read its recent ticks, for each picked vendor | =marketdata.v1.ops.get_provider_ticks= | exists |
+| Compare the vendors on one datum | Read its recent ticks, for each vendor | =marketdata.v1.ops.get_provider_ticks= | exists |
 | A route or subscription changes | Learn of the change | =marketdata.v1.events.routes.>=, =marketdata.v1.events.subscriptions.>= | exists |
 
 Switching the layout, narrowing by class or text and pausing are done on the

@@ -36,6 +36,7 @@ the provenance is what tells them apart.
 | [[id:FBD32402-C71F-4730-A3D2-70BA1D5F3868][Maintain the curve blueprints]] | trader, quant | The recipes as one record each: list, open, add, change, copy, what each feeds, and its end |
 | [[id:62728AF9-01AD-4FBF-B022-83DCD64204A9][Check that a curve blueprint builds]] | trader, quant | The recipe's own checks, the pillars the market cannot fill, and the curve they produce |
 | [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][Author a surface's framework]] | trader, quant | The surface's axes, quoting convention and model |
+| [[id:E01E9FB6-AB3D-44A4-B852-6A0CB23775F3][Watch the vendors' quotes]] | anyone who watches the market; the system tenant | Each vendor's quotes as they tick, any asset class, through the party's subscriptions; every vendor for the system tenant |
 | [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] | trader, operations | The raw quotes, and the fallbacks for the ones that fail |
 | [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] | trader | A candidate curve from the day's market |
 | [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] | trader | A candidate surface from the day's market |

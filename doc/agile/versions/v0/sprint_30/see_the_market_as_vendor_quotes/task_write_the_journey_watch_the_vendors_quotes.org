@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :web:ux:journeys:marketdata:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-journey-watch-the-vendors-quotes
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ The quotes view is designed from the person's goal: what someone watching the ma
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,16 @@ The quotes view is designed from the person's goal: what someone watching the ma
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Catalogue (J08).* One journey, /Watch the vendors' quotes/, as the product
+   owner set it out on 2026-11-18: the market as the vendors quote it, the same
+   view from any party, through the subscription, every vendor for the system
+   tenant, not specific to an asset class. The existing /Watch the market and
+   clear its exceptions/ was checked first (J06): it watches a party's scope in
+   order to clear exceptions, so it stays, and the two link.
+2. Write the journey with =compass add user_journey= in the market data group,
+   with a salt wireframe rendered beside it, and add it to the group page.
+3. Check every subject in the coverage table against the generated protocol
+   headers (X01).
 
 * Measurements
 

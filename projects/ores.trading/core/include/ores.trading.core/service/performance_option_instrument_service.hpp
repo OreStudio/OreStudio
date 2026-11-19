@@ -1,0 +1,225 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_SERVICE_PERFORMANCE_OPTION_INSTRUMENT_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_PERFORMANCE_OPTION_INSTRUMENT_SERVICE_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/performance_option_instrument.hpp"
+#include "ores.trading.api/messaging/performance_option_instrument_protocol.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/performance_option_instrument_repository.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace ores::trading::service {
+
+/**
+ * @brief Service for managing performance option instruments.
+ *
+ * Provides a higher-level interface for performance option instrument operations,
+ * wrapping the underlying repository.
+ */
+class ORES_TRADING_CORE_EXPORT performance_option_instrument_service {
+private:
+    inline static std::string_view logger_name =
+        "ores.trading.service.performance_option_instrument_service";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    /**
+     * @brief Constructs a performance_option_instrument_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
+    explicit performance_option_instrument_service(const context& ctx);
+
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    ::ores::trading::messaging::list_performance_option_instruments_response
+    list_performance_option_instruments(
+        const ::ores::trading::messaging::list_performance_option_instruments_request& request);
+    ::ores::trading::messaging::get_performance_option_instrument_response
+    get_performance_option_instrument(
+        const ::ores::trading::messaging::get_performance_option_instrument_request& request);
+    ::ores::trading::messaging::get_many_performance_option_instruments_response
+    get_many_performance_option_instruments(
+        const ::ores::trading::messaging::get_many_performance_option_instruments_request& request);
+    ::ores::trading::messaging::put_performance_option_instrument_response
+    put_performance_option_instrument(
+        const ::ores::trading::messaging::put_performance_option_instrument_request& request);
+    ::ores::trading::messaging::put_many_performance_option_instruments_response
+    put_many_performance_option_instruments(
+        const ::ores::trading::messaging::put_many_performance_option_instruments_request& request);
+    ::ores::trading::messaging::delete_performance_option_instrument_response
+    delete_performance_option_instrument(
+        const ::ores::trading::messaging::delete_performance_option_instrument_request& request);
+    ::ores::trading::messaging::delete_many_performance_option_instruments_response
+    delete_many_performance_option_instruments(
+        const ::ores::trading::messaging::delete_many_performance_option_instruments_request&
+            request);
+    ::ores::trading::messaging::list_performance_option_instrument_versions_response
+    list_performance_option_instrument_versions(
+        const ::ores::trading::messaging::list_performance_option_instrument_versions_request&
+            request);
+    ::ores::trading::messaging::get_performance_option_instrument_version_response
+    get_performance_option_instrument_version(
+        const ::ores::trading::messaging::get_performance_option_instrument_version_request&
+            request);
+    /**@}*/
+
+    /**
+     * @brief Lists performance option instruments with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of performance option instruments for the requested page.
+     */
+    std::vector<domain::performance_option_instrument>
+    list_performance_option_instruments(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active performance option instruments.
+     *
+     * @return Total number of active performance option instruments.
+     */
+    std::uint32_t count_performance_option_instruments();
+
+
+    /**
+     * @brief Retrieves a single performance option instrument as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The performance option instrument at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::performance_option_instrument>
+    get_performance_option_instrument_at_version(const boost::uuids::uuid& trade_id,
+                                                 std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single performance option instrument by its primary key.
+     *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
+     * @return The performance option instrument if found, std::nullopt otherwise.
+     */
+    std::optional<domain::performance_option_instrument>
+    get_performance_option_instrument(const boost::uuids::uuid& trade_id);
+
+    /**
+     * @brief Retrieves a batch of performance option instruments by primary key.
+     */
+    std::vector<domain::performance_option_instrument>
+    get_performance_option_instruments(const std::vector<std::string>& trade_ids);
+
+    /**
+     * @brief Saves a performance option instrument (creates or updates).
+     *
+     * @param performance_option_instrument The performance option instrument to save.
+     * @throws std::exception on failure.
+     */
+    void save_performance_option_instrument(
+        const domain::performance_option_instrument& performance_option_instrument);
+
+    /**
+     * @brief Saves a batch of performance option instruments.
+     *
+     * @param performance_option_instruments The performance option instruments to save.
+     * @throws std::exception on failure.
+     */
+    void save_performance_option_instruments(
+        const std::vector<domain::performance_option_instrument>& performance_option_instruments);
+
+    /**
+     * @brief Deletes a performance option instrument by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_performance_option_instrument(const boost::uuids::uuid& trade_id);
+
+    /**
+     * @brief Deletes performance option instruments by their primary keys.
+     */
+    void delete_performance_option_instruments(const std::vector<std::string>& trade_ids);
+
+    /**
+     * @brief Retrieves all historical versions of a performance option instrument.
+     *
+     * Addressed by the entity's key, which is its storage key.
+     */
+    std::vector<domain::performance_option_instrument>
+    get_performance_option_instrument_history(const std::string& trade_id);
+
+private:
+    context ctx_;
+    repository::performance_option_instrument_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * The caller reads the current row, so a batch reads every row it names
+     * in one query rather than one query per change.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param current The row the change names as it is now, or empty.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::performance_option_instrument_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   const std::vector<domain::performance_option_instrument>& current,
+                   domain::performance_option_instrument& out);
+};
+
+}
+
+#endif

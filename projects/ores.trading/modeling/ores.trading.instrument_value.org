@@ -55,7 +55,8 @@ The trade this list belongs to.
 
 Which list of the product states the value: =initial_price= for a basket
 member's =InitialPrice=, =knock_out_level= for a =KnockOutLevel=,
-=fixed_trigger_level= for a =FixedTriggerLevel=.
+=fixed_trigger_level= for a =FixedTriggerLevel=, =strike_price= for a
+=StrikePrice= and =accumulation_factor= for a =Factor= of =AccumulationFactors=.
 
 #+begin_src cpp :name generator
 std::string("initial_price")
@@ -162,7 +163,7 @@ is immutable.
 
 | expression |
 |---|
-| "value_role" in ('initial_price', 'knock_out_level', 'fixed_trigger_level') |
+| "value_role" in ('initial_price', 'knock_out_level', 'fixed_trigger_level', 'strike_price', 'accumulation_factor') |
 | "sequence_number" >= 1 |
 
 ** Indexes

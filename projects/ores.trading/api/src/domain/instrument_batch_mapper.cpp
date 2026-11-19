@@ -19,6 +19,7 @@
  */
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -222,18 +223,76 @@ inline constexpr auto fx_batch_child_arrays = std::make_tuple(
     std::pair{&fx_instrument_data::values, &instrument_batch::instrument_values});
 
 /**
+ * The multi-asset family's arrays paired with the batch columns they land in,
+ * in the family's product order, then its child arrays.
+ */
+inline constexpr auto multi_asset_batch_arrays =
+    std::make_tuple(std::pair{&multi_asset_instrument_data::autocallables,
+                              &instrument_batch::autocallable_instruments},
+                    std::pair{&multi_asset_instrument_data::double_digital_options,
+                              &instrument_batch::double_digital_option_instruments},
+                    std::pair{&multi_asset_instrument_data::european_option_barriers,
+                              &instrument_batch::european_option_barrier_instruments},
+                    std::pair{&multi_asset_instrument_data::performance_options,
+                              &instrument_batch::performance_option_instruments});
+
+inline constexpr auto multi_asset_batch_child_arrays = std::make_tuple(
+    std::pair{&multi_asset_instrument_data::option_premiums,
+              &instrument_batch::instrument_option_premiums},
+    std::pair{&multi_asset_instrument_data::schedules, &instrument_batch::instrument_schedules},
+    std::pair{&multi_asset_instrument_data::schedule_dates,
+              &instrument_batch::instrument_schedule_dates},
+    std::pair{&multi_asset_instrument_data::instrument_underlyings,
+              &instrument_batch::instrument_underlyings},
+    std::pair{&multi_asset_instrument_data::values, &instrument_batch::instrument_values});
+
+/**
  * A family carrier whose parts are typed arrays rather than alternatives. Each
  * array, product or child, is a part in its own right, so every one of them
  * reaches the batch; a carrier that states none leaves the batch alone.
  */
-void append_fx_arrays(instrument_batch& batch, const fx_instrument_data& carrier) {
+template <typename Carrier, typename Arrays, typename Children>
+void append_arrays(instrument_batch& batch,
+                   const Carrier& carrier,
+                   const Arrays& arrays,
+                   const Children& children) {
     const auto append_one = [&](const auto& columns) {
         const auto& rows = carrier.*(columns.first);
         auto& column = batch.*(columns.second);
         column.insert(column.end(), rows.begin(), rows.end());
     };
     std::apply([&](const auto... columns) { (append_one(columns), ...); },
-               std::tuple_cat(fx_batch_arrays, fx_batch_child_arrays));
+               std::tuple_cat(arrays, children));
+}
+
+/**
+ * The carrier an array family states for the trade: the first product array
+ * that holds the trade decides, and the child arrays bring every row of it.
+ * Nothing when no product array holds the trade.
+ */
+template <typename Carrier, typename Arrays, typename Children>
+std::optional<Carrier> take_arrays(const instrument_batch& batch,
+                                   boost::uuids::uuid trade_id,
+                                   const Arrays& arrays,
+                                   const Children& children) {
+    Carrier carrier;
+    bool matched = false;
+    const auto take_one = [&](const auto& columns) {
+        if (matched)
+            return;
+        if (const auto* row = find(batch.*(columns.second), trade_id)) {
+            (carrier.*(columns.first)).push_back(*row);
+            matched = true;
+        }
+    };
+    std::apply([&](const auto... columns) { (take_one(columns), ...); }, arrays);
+    if (!matched)
+        return std::nullopt;
+    const auto take_children = [&](const auto& columns) {
+        carrier.*(columns.first) = find_all(batch.*(columns.second), trade_id);
+    };
+    std::apply([&](const auto... columns) { (take_children(columns), ...); }, children);
+    return carrier;
 }
 
 }
@@ -299,7 +358,9 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                     v.tranche_notionals.begin(),
                     v.tranche_notionals.end());
             } else if constexpr (std::is_same_v<T, fx_instrument_data>) {
-                append_fx_arrays(batch, v);
+                append_arrays(batch, v, fx_batch_arrays, fx_batch_child_arrays);
+            } else if constexpr (std::is_same_v<T, multi_asset_instrument_data>) {
+                append_arrays(batch, v, multi_asset_batch_arrays, multi_asset_batch_child_arrays);
             } else if constexpr (std::is_same_v<T, equity_instrument_data>) {
                 append_variant(batch, v.instrument);
                 batch.equity_position_option_underlyings.insert(
@@ -465,28 +526,12 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
     // The FX carrier states one array per product, so the join fills the one
     // array that holds the trade rather than an alternative of a variant. The
     // first row that matches decides, as the variant's alternative did.
-    fx_instrument_data fx;
-    bool matched = false;
-    const auto take_one = [&](const auto& columns) {
-        if (matched)
-            return;
-        const auto& column = batch.*(columns.second);
-        if (const auto* row = find(column, trade_id)) {
-            (fx.*(columns.first)).push_back(*row);
-            matched = true;
-        }
-    };
-    std::apply([&](const auto... columns) { (take_one(columns), ...); }, fx_batch_arrays);
-    if (matched) {
-        const auto take_children = [&](const auto& columns) {
-            const auto& column = batch.*(columns.second);
-            auto& rows = fx.*(columns.first);
-            rows = find_all(column, trade_id);
-        };
-        std::apply([&](const auto... columns) { (take_children(columns), ...); },
-                   fx_batch_child_arrays);
-        return fx;
-    }
+    if (auto fx = take_arrays<fx_instrument_data>(
+            batch, trade_id, fx_batch_arrays, fx_batch_child_arrays))
+        return std::move(*fx);
+    if (auto multi_asset = take_arrays<multi_asset_instrument_data>(
+            batch, trade_id, multi_asset_batch_arrays, multi_asset_batch_child_arrays))
+        return std::move(*multi_asset);
 
     if (const auto* v = find(batch.equity_option_instruments, trade_id))
         return as_equity(batch, *v, trade_id);

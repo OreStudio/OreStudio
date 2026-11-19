@@ -29,6 +29,7 @@
 #include "ores.trading.api/builders/entry_reset_option_builders.hpp"
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
+#include "ores.trading.api/builders/multi_asset_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/builders/scripted_builders.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"

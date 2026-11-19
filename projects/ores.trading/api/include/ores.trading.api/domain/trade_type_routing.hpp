@@ -37,11 +37,13 @@ namespace ores::trading::domain {
  * catalogue routes at least one trade type to.
  */
 enum class instrument_table {
+    autocallable_instrument,
     bond_instrument,
     cash_position_instrument,
     commodity_instrument,
     composite_instrument,
     credit_instrument,
+    double_digital_option_instrument,
     equity_accumulator_instrument,
     equity_asian_option_instrument,
     equity_barrier_option_instrument,
@@ -59,6 +61,7 @@ enum class instrument_table {
     equity_swap_instrument,
     equity_variance_swap_instrument,
     equity_window_barrier_option_instrument,
+    european_option_barrier_instrument,
     fx_accumulator_instrument,
     fx_asian_forward_instrument,
     fx_asian_option_instrument,
@@ -75,6 +78,7 @@ enum class instrument_table {
     fx_variance_swap_instrument,
     fx_window_barrier_option_instrument,
     fx_worst_of_basket_swap_instrument,
+    performance_option_instrument,
     rate_instrument,
     scripted_instrument
 };
@@ -316,13 +320,13 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "ScriptedTrade")
         return instrument_table::scripted_instrument;
     if (trade_type == "Autocallable_01")
-        return instrument_table::scripted_instrument;
+        return instrument_table::autocallable_instrument;
     if (trade_type == "DoubleDigitalOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::double_digital_option_instrument;
     if (trade_type == "EuropeanOptionBarrier")
-        return instrument_table::scripted_instrument;
+        return instrument_table::european_option_barrier_instrument;
     if (trade_type == "PerformanceOption_01")
-        return instrument_table::scripted_instrument;
+        return instrument_table::performance_option_instrument;
     return std::nullopt;
 }
 

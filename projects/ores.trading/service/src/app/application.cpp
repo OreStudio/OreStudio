@@ -30,6 +30,7 @@
 #include "ores.trading.service/app/application_exception.hpp"
 #include "ores.trading.service/messaging/activity_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/ascot_event_registrar.hpp"
+#include "ores.trading.service/messaging/autocallable_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/balance_guaranteed_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/balance_guaranteed_swap_tranche_event_registrar.hpp"
 #include "ores.trading.service/messaging/balance_guaranteed_swap_tranche_notional_event_registrar.hpp"
@@ -63,6 +64,7 @@
 #include "ores.trading.service/messaging/credit_default_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_linked_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/double_digital_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_asian_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_barrier_option_instrument_event_registrar.hpp"
@@ -81,6 +83,7 @@
 #include "ores.trading.service/messaging/equity_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_window_barrier_option_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/european_option_barrier_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/flexi_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/flexi_swap_lower_notional_event_registrar.hpp"
 #include "ores.trading.service/messaging/fpml_event_type_event_registrar.hpp"
@@ -115,6 +118,7 @@
 #include "ores.trading.service/messaging/knock_out_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/lifecycle_event_event_registrar.hpp"
 #include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
+#include "ores.trading.service/messaging/performance_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/product_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/range_bound_event_registrar.hpp"
 #include "ores.trading.service/messaging/rate_instrument_event_registrar.hpp"
@@ -261,6 +265,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         register_fx_window_barrier_option_instrument_event_mapping(event_source, event_bus, nats);
     auto fx_worst_of_basket_swap_instrument_sub = ores::trading::service::messaging::
         register_fx_worst_of_basket_swap_instrument_event_mapping(event_source, event_bus, nats);
+    auto autocallable_instrument_sub =
+        ores::trading::service::messaging::register_autocallable_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto double_digital_option_instrument_sub =
+        ores::trading::service::messaging::register_double_digital_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto european_option_barrier_instrument_sub = ores::trading::service::messaging::
+        register_european_option_barrier_instrument_event_mapping(event_source, event_bus, nats);
+    auto performance_option_instrument_sub =
+        ores::trading::service::messaging::register_performance_option_instrument_event_mapping(
+            event_source, event_bus, nats);
     auto equity_forward_instrument_sub =
         ores::trading::service::messaging::register_equity_forward_instrument_event_mapping(
             event_source, event_bus, nats);

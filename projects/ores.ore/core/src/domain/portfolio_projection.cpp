@@ -123,6 +123,7 @@ auto instrument_projections() -> const std::vector<instrument_projection>& {
         {"credit", &read_credit_instrument, &write_credit_instrument},
         {"equity", &read_equity_instrument, &write_equity_instrument},
         {"commodity", &read_commodity_instrument, &write_commodity_instrument},
+        {"multi_asset", &read_multi_asset_instrument, &write_multi_asset_instrument},
         {"scripted", &read_scripted_instrument, &write_scripted_instrument},
         {"composite", &read_composite_instrument, &write_composite_instrument},
     };

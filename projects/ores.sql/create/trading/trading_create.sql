@@ -435,6 +435,14 @@
 \ir ./trading_fx_window_barrier_option_instruments_notify_trigger_create.sql
 \ir ./trading_fx_worst_of_basket_swap_instruments_create.sql
 \ir ./trading_fx_worst_of_basket_swap_instruments_notify_trigger_create.sql
+\ir ./trading_autocallable_instruments_create.sql
+\ir ./trading_autocallable_instruments_notify_trigger_create.sql
+\ir ./trading_double_digital_option_instruments_create.sql
+\ir ./trading_double_digital_option_instruments_notify_trigger_create.sql
+\ir ./trading_european_option_barrier_instruments_create.sql
+\ir ./trading_european_option_barrier_instruments_notify_trigger_create.sql
+\ir ./trading_performance_option_instruments_create.sql
+\ir ./trading_performance_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_generic_barrier_option_instruments_create.sql
 \ir ./trading_equity_generic_barrier_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_variance_swap_instruments_create.sql

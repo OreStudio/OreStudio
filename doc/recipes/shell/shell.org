@@ -2256,3 +2256,19 @@ tangled into the runnable script library
 * Fx Worst Of Basket Swap Instruments
 
 - [[id:8C2CF700-CFA2-5795-933A-DDBFBA2F4753][How do I run the fx_worst_of_basket_swap_instruments commands from the shell?]]
+
+* Autocallable Instruments
+
+- [[id:520CA20F-F3A4-5FDE-9F82-84ADD82C295E][How do I run the autocallable_instruments commands from the shell?]]
+
+* Double Digital Option Instruments
+
+- [[id:8DD80372-03A2-5733-B06B-C8F20E03BA13][How do I run the double_digital_option_instruments commands from the shell?]]
+
+* European Option Barrier Instruments
+
+- [[id:8FE9C352-3854-5D62-BC87-3A42A77C0E9E][How do I run the european_option_barrier_instruments commands from the shell?]]
+
+* Performance Option Instruments
+
+- [[id:726AA31A-FF0A-5D43-BEB8-DFBF6AA7C7D1][How do I run the performance_option_instruments commands from the shell?]]

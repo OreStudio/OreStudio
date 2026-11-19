@@ -45,6 +45,7 @@
 #include "ores.trading.core/repository/swap_leg_rate_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
+#include "ores.trading.core/service/autocallable_instrument_service.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
@@ -56,6 +57,7 @@
 #include "ores.trading.core/service/credit_default_swap_instrument_service.hpp"
 #include "ores.trading.core/service/credit_instrument_service.hpp"
 #include "ores.trading.core/service/credit_linked_swap_instrument_service.hpp"
+#include "ores.trading.core/service/double_digital_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_accumulator_instrument_service.hpp"
 #include "ores.trading.core/service/equity_asian_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_barrier_option_instrument_service.hpp"
@@ -73,6 +75,7 @@
 #include "ores.trading.core/service/equity_swap_instrument_service.hpp"
 #include "ores.trading.core/service/equity_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/equity_window_barrier_option_instrument_service.hpp"
+#include "ores.trading.core/service/european_option_barrier_instrument_service.hpp"
 #include "ores.trading.core/service/flexi_swap_instrument_service.hpp"
 #include "ores.trading.core/service/fra_instrument_service.hpp"
 #include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
@@ -95,6 +98,7 @@
 #include "ores.trading.core/service/index_credit_default_swap_option_instrument_service.hpp"
 #include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
 #include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
+#include "ores.trading.core/service/performance_option_instrument_service.hpp"
 #include "ores.trading.core/service/rate_digital_option_instrument_service.hpp"
 #include "ores.trading.core/service/rate_instrument_service.hpp"
 #include "ores.trading.core/service/risk_participation_agreement_instrument_service.hpp"
@@ -155,7 +159,8 @@ void populate_instruments_for_trades(const Ctx& ctx,
         eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids,
         eq_acc_ids, eq_pos_ids, eq_cash_ids, eq_pvs_ids, fxaso_ids, fxpvs_ids, eq_bo_ids, fxbo_ids,
         eq_bvs_ids, eq_fva_ids, fxbvs_ids, fxfva_ids, eq_beo_ids, eq_sro_ids, fxbeo_ids, fxsro_ids,
-        eq_wbo_ids, eq_gbo_ids, fxwbo_ids, fxwob_ids;
+        eq_wbo_ids, eq_gbo_ids, fxwbo_ids, fxwob_ids, ma_aci_ids, ma_ddo_ids, ma_eob_ids,
+        ma_poi_ids;
     std::vector<std::string> all_ids;
 
     for (const auto& item : items) {
@@ -286,6 +291,18 @@ void populate_instruments_for_trades(const Ctx& ctx,
                 break;
             case instrument_table::fx_worst_of_basket_swap_instrument:
                 fxwob_ids.push_back(id);
+                break;
+            case instrument_table::autocallable_instrument:
+                ma_aci_ids.push_back(id);
+                break;
+            case instrument_table::double_digital_option_instrument:
+                ma_ddo_ids.push_back(id);
+                break;
+            case instrument_table::european_option_barrier_instrument:
+                ma_eob_ids.push_back(id);
+                break;
+            case instrument_table::performance_option_instrument:
+                ma_poi_ids.push_back(id);
                 break;
             case instrument_table::rate_instrument:
                 rate_ids.push_back(id);
@@ -682,6 +699,26 @@ void populate_instruments_for_trades(const Ctx& ctx,
         service::fx_worst_of_basket_swap_instrument_service svc(ctx);
         auto rows = svc.get_fx_worst_of_basket_swap_instruments(fxwob_ids);
         take(rows, batch.fx_worst_of_basket_swap_instruments);
+    }
+    if (!ma_aci_ids.empty()) {
+        service::autocallable_instrument_service svc(ctx);
+        auto rows = svc.get_autocallable_instruments(ma_aci_ids);
+        take(rows, batch.autocallable_instruments);
+    }
+    if (!ma_ddo_ids.empty()) {
+        service::double_digital_option_instrument_service svc(ctx);
+        auto rows = svc.get_double_digital_option_instruments(ma_ddo_ids);
+        take(rows, batch.double_digital_option_instruments);
+    }
+    if (!ma_eob_ids.empty()) {
+        service::european_option_barrier_instrument_service svc(ctx);
+        auto rows = svc.get_european_option_barrier_instruments(ma_eob_ids);
+        take(rows, batch.european_option_barrier_instruments);
+    }
+    if (!ma_poi_ids.empty()) {
+        service::performance_option_instrument_service svc(ctx);
+        auto rows = svc.get_performance_option_instruments(ma_poi_ids);
+        take(rows, batch.performance_option_instruments);
     }
 
     // The equity family.

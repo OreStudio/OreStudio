@@ -3701,7 +3701,7 @@ TEST_CASE("the_variance_swaps_and_the_forward_volatility_agreements_hold_their_t
     check_equity_fva(rebuild(items[4]));
 }
 
-TEST_CASE("a_european_option_barrier_and_an_fx_worst_of_hold_their_terms_as_rows",
+TEST_CASE("the_multi_asset_products_and_an_fx_worst_of_hold_their_terms_as_rows",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
@@ -3725,7 +3725,57 @@ TEST_CASE("a_european_option_barrier_and_an_fx_worst_of_hold_their_terms_as_rows
       <BarrierStyle>European</BarrierStyle>
       <SettlementDate>2023-02-02</SettlementDate>
       <PayCcy>USD</PayCcy>
+      <Premiums><Premium><Amount>100</Amount><Currency>USD</Currency><PayDate>2022-02-02</PayDate></Premium></Premiums>
     </EuropeanOptionBarrierData>
+  </Trade>
+  <Trade id="AUTOCALL">
+    <TradeType>Autocallable_01</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <Autocallable01Data>
+      <NotionalAmount>1000000</NotionalAmount>
+      <DeterminationLevel>0.7</DeterminationLevel>
+      <TriggerLevel>1.0</TriggerLevel>
+      <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name></Underlying>
+      <Position>Long</Position>
+      <PayCcy>EUR</PayCcy>
+      <FixingDates>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2027-01-04</StartDate><EndDate>2029-01-04</EndDate><Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar><Convention>F</Convention><Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </FixingDates>
+      <SettlementDates>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2027-02-04</StartDate><EndDate>2029-02-04</EndDate><Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar><Convention>F</Convention><Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </SettlementDates>
+      <AccumulationFactors><Factor>0.05</Factor><Factor>0.1</Factor><Factor>0.15</Factor></AccumulationFactors>
+      <Cap>0.15</Cap>
+    </Autocallable01Data>
+  </Trade>
+  <Trade id="PERFORMANCE">
+    <TradeType>PerformanceOption_01</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <PerformanceOption01Data>
+      <NotionalAmount>1000000</NotionalAmount>
+      <ParticipationRate>1.0</ParticipationRate>
+      <ValuationDate>2029-10-31</ValuationDate>
+      <SettlementDate>2029-12-31</SettlementDate>
+      <Underlyings>
+        <Underlying><Type>Commodity</Type><Name>NYMEX:CL</Name></Underlying>
+        <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name></Underlying>
+      </Underlyings>
+      <StrikePrices><StrikePrice>0.9</StrikePrice><StrikePrice>1.0</StrikePrice><StrikePrice>1.1</StrikePrice></StrikePrices>
+      <Strike>0.9</Strike>
+      <StrikeIncluded>true</StrikeIncluded>
+      <Position>Short</Position>
+      <PayCcy>GBP</PayCcy>
+    </PerformanceOption01Data>
   </Trade>
   <Trade id="SCRIPTED_WOBS_FX">
     <TradeType>FxWorstOfBasketSwap</TradeType>
@@ -3776,21 +3826,72 @@ TEST_CASE("a_european_option_barrier_and_an_fx_worst_of_hold_their_terms_as_rows
     </FxWorstOfBasketSwapData>
   </Trade>
 </Portfolio>)");
-    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
-                             std::string_view name) -> std::string {
-        for (const auto& p : data.parameters)
-            if (p.name == name)
-                return p.value.value_or("");
-        return "<absent>";
+    const auto multi_asset_of = [](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::multi_asset_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        return data;
+    };
+    const auto values_in = [](const auto& data, std::string_view role) {
+        std::vector<ores::utility::decimal::decimal> out;
+        for (const auto& v : data.values)
+            if (v.value_role == role)
+                out.push_back(v.value);
+        return out;
     };
     const auto check_barrier = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
-        REQUIRE(data != nullptr);
-        CHECK(value_of(*data, "BarrierStyle") == "European");
-        CHECK(value_of(*data, "BarrierLevel") == "0.98");
+        const auto* data = multi_asset_of(item);
+        REQUIRE(data->european_option_barriers.size() == 1);
+        const auto& row = data->european_option_barriers[0];
+        CHECK(row.quantity == 1000000.0);
+        CHECK(row.option_type == "Call");
+        CHECK(row.long_short == "Long");
+        CHECK(row.strike == decimal_of("1.08"));
+        CHECK(row.premium_currency == "USD");
+        CHECK(row.option_expiry == std::chrono::year{2023} / 1 / 31);
+        CHECK(row.barrier_level == decimal_of("0.98"));
+        CHECK(row.barrier_type == "DownAndOut");
+        CHECK(row.barrier_style == "European");
+        CHECK(row.settlement_date == std::chrono::year{2023} / 2 / 2);
+        REQUIRE(data->option_premiums.size() == 1);
+        CHECK(data->option_premiums[0].amount == decimal_of("100"));
         REQUIRE(data->instrument_underlyings.size() == 2);
         CHECK(data->instrument_underlyings[0].underlying_role == "optionunderlying");
         CHECK(data->instrument_underlyings[1].underlying_role == "barrierunderlying");
+        CHECK(data->instrument_underlyings[1].underlying_type == "FX");
+    };
+    const auto check_autocallable = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = multi_asset_of(item);
+        REQUIRE(data->autocallables.size() == 1);
+        const auto& row = data->autocallables[0];
+        CHECK(row.notional_amount == decimal_of("1000000"));
+        CHECK(row.determination_level == decimal_of("0.7"));
+        CHECK(row.trigger_level == decimal_of("1.0"));
+        CHECK(row.long_short == "Long");
+        CHECK(row.pay_currency == "EUR");
+        CHECK(row.cap == decimal_of("0.15"));
+        CHECK(values_in(*data, "accumulation_factor") ==
+              std::vector{decimal_of("0.05"), decimal_of("0.1"), decimal_of("0.15")});
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "fixing_schedule"));
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "settlement_schedule"));
+        REQUIRE(data->instrument_underlyings.size() == 1);
+        CHECK(data->instrument_underlyings[0].underlying_type == "Equity");
+    };
+    const auto check_performance = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = multi_asset_of(item);
+        REQUIRE(data->performance_options.size() == 1);
+        const auto& row = data->performance_options[0];
+        CHECK(row.participation_rate == 1.0);
+        CHECK(row.valuation_date == std::chrono::year{2029} / 10 / 31);
+        CHECK(row.strike == decimal_of("0.9"));
+        CHECK(row.strike_included == std::optional(true));
+        CHECK(row.long_short == "Short");
+        CHECK(values_in(*data, "strike_price") ==
+              std::vector{decimal_of("0.9"), decimal_of("1.0"), decimal_of("1.1")});
+        REQUIRE(data->instrument_underlyings.size() == 2);
+        CHECK(data->instrument_underlyings[0].underlying_type == "Commodity");
+        CHECK(data->instrument_underlyings[1].underlying_type == "Equity");
+        CHECK(data->instrument_underlyings[1].sequence_number == 2);
     };
     const auto check_worst_of = [](const ores::ore::xml::trade_import_item& item) {
         const auto* data = std::get_if<ores::trading::domain::fx_instrument_data>(&item.instrument);
@@ -3835,11 +3936,15 @@ TEST_CASE("a_european_option_barrier_and_an_fx_worst_of_hold_their_terms_as_rows
     };
 
     const auto items = portfolio_projection::map(document);
-    REQUIRE(items.size() == 2);
+    REQUIRE(items.size() == 4);
     check_barrier(items[0]);
     check_barrier(rebuild(items[0]));
-    check_worst_of(items[1]);
-    check_worst_of(rebuild(items[1]));
+    check_autocallable(items[1]);
+    check_autocallable(rebuild(items[1]));
+    check_performance(items[2]);
+    check_performance(rebuild(items[2]));
+    check_worst_of(items[3]);
+    check_worst_of(rebuild(items[3]));
 }
 
 TEST_CASE("an_option_on_an_equity_future_and_on_a_bond_future_hold_their_terms_as_rows",
@@ -5093,11 +5198,19 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     CHECK(scripted->parameters.empty());
     CHECK(scripted->parameter_values.empty());
 
-    // A product ORE reads through a class of its own states its terms as
-    // parameters, and its underlyings as rows carrying the type the flat table
-    // has no parameter for.
-    const auto* double_digital = scripted_data_of(items[1].instrument);
+    // A product whose underlyings each trade names is held in the multi-asset
+    // family: its terms are columns, and each underlying row keeps its own type,
+    // here an FX rate and a commodity in the one trade.
+    const auto* double_digital =
+        std::get_if<ores::trading::domain::multi_asset_instrument_data>(&items[1].instrument);
     REQUIRE(double_digital != nullptr);
+    REQUIRE(double_digital->double_digital_options.size() == 1);
+    const auto& digital_row = double_digital->double_digital_options[0];
+    CHECK(digital_row.long_short == "Long");
+    CHECK(digital_row.binary_payout == decimal_of("1000000"));
+    CHECK(digital_row.binary_level_2 == decimal_of("0.009"));
+    CHECK(digital_row.type_1 == "Call");
+    CHECK(digital_row.expiry == std::chrono::year{2027} / 7 / 24);
     REQUIRE(double_digital->instrument_underlyings.size() == 2);
     const auto& first_underlying = double_digital->instrument_underlyings[0];
     const auto& second_underlying = double_digital->instrument_underlyings[1];
@@ -5108,29 +5221,12 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     CHECK(second_underlying.underlying_type == "Commodity");
     CHECK(second_underlying.name == "oresmd://commodity/NYMEX:CL?type=fixing&index=commodity");
 
-    const auto parameter_named = [](const ores::trading::domain::scripted_instrument_data& data,
-                                    std::string_view name) {
-        const auto found = std::ranges::find_if(
-            data.parameters, [&](const auto& parameter) { return parameter.name == name; });
-        return found == data.parameters.end() ? nullptr : &*found;
-    };
-    const auto* position = parameter_named(*double_digital, "Position");
-    REQUIRE(position != nullptr);
-    CHECK(position->declared_type == "enumeration");
-    CHECK(position->value == std::optional<std::string>("Long"));
-    const auto* payout = parameter_named(*double_digital, "BinaryPayout");
-    REQUIRE(payout != nullptr);
-    CHECK(payout->declared_type == "decimal");
-    CHECK(payout->value == std::optional<std::string>("1000000"));
-
     const auto double_digital_round = rebuild(items[1]);
-    const auto* double_digital_again = scripted_data_of(double_digital_round.instrument);
+    const auto* double_digital_again =
+        std::get_if<ores::trading::domain::multi_asset_instrument_data>(
+            &double_digital_round.instrument);
     REQUIRE(double_digital_again != nullptr);
-    CHECK(double_digital_again->parameters.size() == double_digital->parameters.size());
-    for (std::size_t i = 0; i < double_digital->parameters.size(); ++i) {
-        CHECK(double_digital_again->parameters[i].name == double_digital->parameters[i].name);
-        CHECK(double_digital_again->parameters[i].value == double_digital->parameters[i].value);
-    }
+    CHECK(double_digital_again->double_digital_options == double_digital->double_digital_options);
     REQUIRE(double_digital_again->instrument_underlyings.size() == 2);
     for (std::size_t i = 0; i < 2; ++i) {
         CHECK(double_digital_again->instrument_underlyings[i].name ==
@@ -5401,42 +5497,6 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
         parameter.value = std::move(value);
         data.parameters.push_back(std::move(parameter));
     };
-    const auto add_list = [](ores::trading::domain::scripted_instrument_data& data,
-                             std::string name,
-                             std::string declared_type,
-                             const std::vector<std::string>& values) {
-        ores::trading::domain::scripted_parameter parameter;
-        parameter.sequence_number = static_cast<int>(data.parameters.size()) + 1;
-        parameter.name = std::move(name);
-        parameter.declared_type = std::move(declared_type);
-        parameter.shape = "vector";
-        const auto parameter_sequence_number = parameter.sequence_number;
-        data.parameters.push_back(std::move(parameter));
-
-        int sequence_number = 0;
-        for (const auto& value : values) {
-            ores::trading::domain::scripted_parameter_value member;
-            member.parameter_sequence_number = parameter_sequence_number;
-            member.sequence_number = ++sequence_number;
-            member.value = value;
-            data.parameter_values.push_back(std::move(member));
-        }
-    };
-    const auto add_underlying = [](ores::trading::domain::scripted_instrument_data& data,
-                                   std::string role,
-                                   std::string underlying_type,
-                                   std::string address) {
-        ores::trading::domain::instrument_underlying underlying;
-        underlying.underlying_role = std::move(role);
-        int sequence_number = 0;
-        for (const auto& row : data.instrument_underlyings)
-            if (row.underlying_role == underlying.underlying_role)
-                ++sequence_number;
-        underlying.sequence_number = ++sequence_number;
-        underlying.underlying_type = std::move(underlying_type);
-        underlying.name = std::move(address);
-        data.instrument_underlyings.push_back(std::move(underlying));
-    };
 
     const auto rebuilt_data = [&](ores::trading::domain::scripted_instrument_data data) {
         ores::ore::xml::trade_import_item item;
@@ -5472,101 +5532,6 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
     const auto body_only_again = rebuilt_data(std::move(body_only));
     CHECK(body_only_again.instrument.script_body == "Payoff = 1;");
     CHECK(body_only_again.instrument.script_npv.empty());
-
-    auto digital = scripted_data("DoubleDigitalOption", "DoubleDigitalOption");
-    add_parameter(digital, "Expiry", "text", "2029-10-31");
-    add_parameter(digital, "Settlement", "text", "2029-12-31");
-    add_parameter(digital, "BinaryPayout", "decimal", "1000000");
-    add_parameter(digital, "BinaryLevel1", "decimal", "1.05");
-    add_parameter(digital, "BinaryLevel2", "decimal", "1.2");
-    add_parameter(digital, "Type1", "text", "Equity");
-    add_parameter(digital, "Type2", "text", "Equity");
-    add_parameter(digital, "Position", "enumeration", "Long");
-    add_parameter(digital, "PayCcy", "enumeration", "GBP");
-    add_underlying(digital, "underlying1", "Equity", equity_address_of("GB0005405286"));
-    add_underlying(digital, "underlying2", "Equity", equity_address_of("US0378331005"));
-    const auto digital_again = rebuilt_data(std::move(digital));
-    CHECK(digital_again.instrument.script_name == "DoubleDigitalOption");
-    REQUIRE(digital_again.parameters.size() == 9);
-    CHECK(digital_again.parameters[4].name == "BinaryLevel2");
-    CHECK(digital_again.parameters[4].value == std::optional<std::string>("1.2"));
-    CHECK(digital_again.parameters[7].name == "Position");
-    CHECK(digital_again.parameters[7].value == std::optional<std::string>("Long"));
-    REQUIRE(digital_again.instrument_underlyings.size() == 2);
-    CHECK(digital_again.instrument_underlyings[0].underlying_role == "underlying1");
-    CHECK(digital_again.instrument_underlyings[1].name == equity_address_of("US0378331005"));
-
-    auto performance = scripted_data("PerformanceOption_01", "PerformanceOption_01");
-    add_parameter(performance, "NotionalAmount", "decimal", "1000000");
-    add_parameter(performance, "ParticipationRate", "decimal", "1.0");
-    add_parameter(performance, "ValuationDate", "text", "2029-10-31");
-    add_parameter(performance, "SettlementDate", "text", "2029-12-31");
-    add_list(performance, "StrikePrices", "decimal", {"0.9", "1.0", "1.1"});
-    add_parameter(performance, "Strike", "decimal", "0.9");
-    add_parameter(performance, "Position", "enumeration", "Long");
-    add_parameter(performance, "PayCcy", "enumeration", "GBP");
-    add_underlying(performance, "underlying", "Commodity", commodity_address_of("NYMEX:CL"));
-    add_underlying(performance, "underlying", "Commodity", commodity_address_of("ICE:B"));
-    const auto performance_again = rebuilt_data(std::move(performance));
-    CHECK(performance_again.instrument.script_name == "PerformanceOption_01");
-    const auto prices =
-        std::ranges::find_if(performance_again.parameters, [](const auto& parameter) {
-            return parameter.name == "StrikePrices";
-        });
-    REQUIRE(prices != performance_again.parameters.end());
-    CHECK(prices->shape == "vector");
-    REQUIRE(performance_again.parameter_values.size() == 3);
-    CHECK(performance_again.parameter_values[2].value == "1.1");
-    REQUIRE(performance_again.instrument_underlyings.size() == 2);
-    CHECK(performance_again.instrument_underlyings[1].underlying_role == "underlying");
-    CHECK(performance_again.instrument_underlyings[1].sequence_number == 2);
-
-    auto note = scripted_data("Autocallable_01", "Autocallable_01");
-    add_parameter(note, "NotionalAmount", "decimal", "1000000");
-    add_parameter(note, "DeterminationLevel", "decimal", "0.7");
-    add_parameter(note, "TriggerLevel", "decimal", "1.0");
-    add_parameter(note, "Position", "enumeration", "Long");
-    add_parameter(note, "PayCcy", "enumeration", "EUR");
-    {
-        ores::trading::domain::scripted_parameter fixings;
-        fixings.sequence_number = static_cast<int>(note.parameters.size()) + 1;
-        fixings.name = "FixingDates";
-        fixings.declared_type = "Event";
-        fixings.shape = "schedule";
-        note.parameters.push_back(fixings);
-        ores::trading::domain::instrument_schedule rules;
-        rules.owner_role = "scripted";
-        rules.owner_number = fixings.sequence_number;
-        rules.schedule_role = "event";
-        rules.sequence_number = 1;
-        rules.schedule_kind = "rules";
-        rules.start_date = std::chrono::year{2027} / 1 / 4;
-        rules.end_date = std::chrono::year{2029} / 1 / 4;
-        rules.tenor = "1Y";
-        rules.calendar = "TARGET";
-        rules.convention = "F";
-        rules.rule = "Forward";
-        note.schedules.push_back(rules);
-    }
-    add_list(note, "AccumulationFactors", "decimal", {"0.05", "0.1", "0.15"});
-    add_parameter(note, "Cap", "decimal", "0.15");
-    add_underlying(note, "underlying", "Equity", equity_address_of("RIC:.SPX"));
-    const auto note_again = rebuilt_data(std::move(note));
-    CHECK(note_again.instrument.script_name == "Autocallable_01");
-    const auto named = [&](const char* name) {
-        return std::ranges::find_if(note_again.parameters,
-                                    [&](const auto& parameter) { return parameter.name == name; });
-    };
-    REQUIRE(named("NotionalAmount") != note_again.parameters.end());
-    CHECK(named("NotionalAmount")->value == std::optional<std::string>("1000000"));
-    REQUIRE(named("FixingDates") != note_again.parameters.end());
-    CHECK(named("FixingDates")->shape == "schedule");
-    REQUIRE(note_again.schedules.size() == 1);
-    CHECK(note_again.schedules[0].tenor == "1Y");
-    REQUIRE(named("AccumulationFactors") != note_again.parameters.end());
-    CHECK(note_again.parameter_values.size() == 3);
-    REQUIRE(named("Cap") != note_again.parameters.end());
-    REQUIRE(note_again.instrument_underlyings.size() == 1);
 }
 
 TEST_CASE("a_named_product_names_its_index_variable_by_address",

@@ -1626,6 +1626,18 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_worst_of_basket_swap_instruments:read', 'View FX worst-of basket swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_worst_of_basket_swap_instruments:write', 'Create and modify FX worst-of basket swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_worst_of_basket_swap_instruments:delete', 'Delete FX worst-of basket swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::autocallable_instruments:read', 'View autocallable instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::autocallable_instruments:write', 'Create and modify autocallable instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::autocallable_instruments:delete', 'Delete autocallable instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::double_digital_option_instruments:read', 'View double digital option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::double_digital_option_instruments:write', 'Create and modify double digital option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::double_digital_option_instruments:delete', 'Delete double digital option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::european_option_barrier_instruments:read', 'View European option barrier instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::european_option_barrier_instruments:write', 'Create and modify European option barrier instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::european_option_barrier_instruments:delete', 'Delete European option barrier instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::performance_option_instruments:read', 'View performance option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::performance_option_instruments:write', 'Create and modify performance option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::performance_option_instruments:delete', 'Delete performance option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_generic_barrier_option_instruments:read', 'View equity generic barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_generic_barrier_option_instruments:write', 'Create and modify equity generic barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_generic_barrier_option_instruments:delete', 'Delete equity generic barrier option instruments');

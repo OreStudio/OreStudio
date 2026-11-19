@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 6898220F-A217-4848-A796-B5D17F1CDE65
+:END:
+#+title: Story: Compare curves within a currency, and across currencies like for like
+#+description: The curve analytics lists every curve of every currency in one flat picker. A person picks a currency first, compares within it by default, and compares across currencies only overnight against overnight, with words that say what that comparison shows.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:curves:web:sprint_30:v0:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-19                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0B48074A-FBFA-4467-964A-CDB9AF23794F][Pick a currency, then compare like for like]] | STARTED | 2026-11-19 | | Choose a currency before a curve, offer the same currency's curves beside it, offer other currencies' overnight curves only behind an explicit choice, and state what a cross-currency pair shows. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -2,7 +2,7 @@
 :ID: E01E9FB6-AB3D-44A4-B852-6A0CB23775F3
 :END:
 #+title: User Journey: Watch the vendors' quotes
-#+description: A person watches the quotes each vendor sends as they tick, for any asset class, through the feeds their party subscribes to; the system tenant watches every vendor.
+#+description: A person watches the quotes each vendor sends as they tick, for any asset class, on the feeds their party may watch for display; the system tenant watches every vendor.
 #+type: user_journey
 #+level: cross
 #+filetags: :user_journey:marketdata:
@@ -10,7 +10,7 @@
 #+updated: 2026-11-19
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person watches the quotes each vendor sends as they tick, for any asset class, through the feeds their party subscribes to; the system tenant watches every vendor.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person watches the quotes each vendor sends as they tick, for any asset class, on the feeds their party may watch for display; the system tenant watches every vendor.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -57,16 +57,17 @@ the same rows.
    the age. A row updates in place when its datum ticks again, and briefly marks
    the change.
 3. *Narrow it.* The person narrows by asset class or instrument type, or types
-   part of a series to find it. The system filters the rows it holds. Narrowing
-   to one series asks the broker for that series alone.
+   part of a series to find it. The screen filters the rows it holds, with no
+   call. Narrowing to one series is the exception: the system then asks the
+   broker for that series alone.
 4. *Read one series.* The person selects a row. The system reads the series'
    ticks of the last hour from the store in one call and draws them as a line,
    then extends the line with each live tick. The rows above keep ticking.
 5. *Notice a silent feed.* A row whose age grows marks itself stale. A feed with
-   no tick for a while shows its age in the vendor list. The person sees that a
+   no tick for a while shows its age in the vendor list, once it has ticked. The person sees that a
    vendor stopped without leaving the screen.
-6. *Pause.* The person pauses the view to read it. The system stops updating the
-   rows and keeps watching, and resumes from the newest values.
+6. *Pause.* The person pauses the view to read it. The screen stops updating the
+   rows and keeps watching, and resumes from the newest values. No call is made.
 
 When a route or a subscription of the party changes while the screen is open, the
 system asks again which feeds the session may watch: a vendor that is no longer
@@ -105,12 +106,13 @@ oresmd URI, read by the codec; the schema the client needs to split it is
 | Open the quotes | Read the feeds' names | =marketdata.v1.feeds.list= | exists |
 | Choose a vendor | Watch a feed's ticks | =marketdata.v1.ops.market_tick.<provider>.<feed>.>= | exists |
 | Choose a vendor | Carry the watched ticks to the browser | none | missing |
-| Narrow it | Split a URI into its type, series and point | =marketdata.v1.ops.describe_oresmd_schema= | exists |
+| Choose a vendor | Split a URI into its type, series and point | =marketdata.v1.ops.describe_oresmd_schema= | exists |
 | Narrow it | Watch one series | =marketdata.v1.ops.market_tick.<provider>.<feed>.<type>.<series>.*= | exists |
 | Read one series | Read the series' recent ticks | =marketdata.v1.ops.get_provider_ticks= | exists |
 | A route or subscription changes | Learn of the change | =marketdata.v1.events.routes.>=, =marketdata.v1.events.subscriptions.>= | exists |
 
-The live subject and the two operations are in
+Narrowing by class or text and pausing are done on the screen and need no
+operation. The live subject and the two operations are in
 [[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]].
 
 * What is missing

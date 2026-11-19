@@ -333,7 +333,7 @@ Lines added (green) and deleted (red) per day. Building work produces mostly add
 
 ## PR Cycle Time
 
-Hours from PR open to merge, one dot per PR for every PR merged in the sprint, on a log scale, with the median and the upper quartile as lines. High dots indicate review bottlenecks.
+Time from PR open to merge, one dot per PR for every PR merged in the sprint, on a log scale, with the median and the upper quartile as lines. High dots indicate review bottlenecks.
 
 ![pr_cycle.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/doc/agile/versions/v0/sprint_29/pr_cycle.png)
 

@@ -2044,7 +2044,7 @@ def _sc_get_merged_prs(start, end):
         if not start <= merged_dt.date() <= end:
             continue
         created_dt = datetime.datetime.fromisoformat(pr["createdAt"].replace("Z", "+00:00"))
-        cycle_hours = round((merged_dt - created_dt).total_seconds() / 3600, 2)
+        cycle_hours = round((merged_dt - created_dt).total_seconds() / 3600, 4)
         prs.append({
             "number": pr["number"],
             "title": (pr.get("title") or "")[:60],

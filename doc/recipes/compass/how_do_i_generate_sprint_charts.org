@@ -55,7 +55,7 @@ How do I generate the sprint health charts (PRs & Commits, Line Churn, PR Cycle 
    |------+----------|
    | =prs_commits.png= | Dual-axis bar: PRs and commits per day |
    | =line_churn.png= | Bars: lines added (green) and deleted (red) per day |
-   | =pr_cycle.png= | Hours from PR open to merge (only when PR data available) |
+   | =pr_cycle.png= | Time from PR open to merge (only when PR data available) |
    | =stories_done.png= | Cumulative stories DONE per day (only when story data available) |
 
    Commit these PNGs into the sprint directory; every sprint (01–18)

@@ -86,7 +86,7 @@ mostly additions; refactoring produces a mix.
 
 ,** PR Cycle Time
 
-Hours from PR open to merge, one dot per PR for every PR merged in
+Time from PR open to merge, one dot per PR for every PR merged in
 the sprint, on a log scale, with the median and the upper quartile as
 lines. High dots indicate review bottlenecks.
 

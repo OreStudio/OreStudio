@@ -172,6 +172,7 @@ grant execute on function ores_iam_purge_tenant_fn(uuid) to :rw_role;
 -- Called after ores_iam_purge_tenant_fn to remove the tenant record itself.
 -- Must be called separately since we need to disable/enable the delete rule.
 --
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_hard_delete_tenants_fn(
     p_tenant_ids uuid[]
 ) returns integer as $$

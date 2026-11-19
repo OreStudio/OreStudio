@@ -180,15 +180,32 @@ public:
     // -------------------------------------------------------------------------
 
     /**
+     * @brief The wait a publish allows for its acknowledgement when the caller
+     *        names none.
+     *
+     * Long enough for a healthy store, short enough that a caller which shares
+     * its thread notices a store that is not healthy.
+     */
+    inline static constexpr std::chrono::milliseconds default_js_publish_ack_wait{5000};
+
+    /**
      * @brief Publish a message to a JetStream stream.
      *
      * The target subject must be covered by a stream configured on the
-     * NATS server. Blocks until the server acknowledges receipt.
+     * NATS server. Blocks until the server acknowledges receipt, or for
+     * @p ack_wait if it never does.
      * Throws on failure.
+     *
+     * A caller that shares its thread with work it must not delay bounds
+     * @p ack_wait: the server withholds the acknowledgement while it cannot
+     * store the message, so an unacknowledged publish holds the thread for the
+     * whole wait and then throws. A short wait turns an ailing store into a
+     * quick failure the caller can retry, rather than a stall.
      */
     void js_publish(std::string_view subject,
                     std::span<const std::byte> data,
-                    std::unordered_map<std::string, std::string> headers = {});
+                    std::unordered_map<std::string, std::string> headers = {},
+                    std::chrono::milliseconds ack_wait = default_js_publish_ack_wait);
 
     /**
      * @brief Queue-group push-subscribe to a JetStream subject.

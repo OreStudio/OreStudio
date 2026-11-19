@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :build:compilation:headers:database:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/split-the-context-into-its-two-parts
+#+pr: 4826
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -26,12 +26,12 @@ The context carries the connection part and the per-request identity part in one
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
 
 * Acceptance
 
@@ -41,9 +41,45 @@ The context carries the connection part and the per-request identity part in one
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The measurements changed the shape of this task before it started. At the
+commit this branch was cut from, =context.hpp= costs 1.75 s to parse, an identity
+only probe 1.64 s and =pq/options.hpp= 1.47 s, so the connection part the task
+was to move out of the header is worth about a tenth of a second. The 6.6 s the
+analysis recorded was taken before =context.hpp= shed libpq, the pool and the
+codec chain. What is left is the identity: =tenant_id= is a decimal, and the
+decimal brings the arithmetic of the standard library with it.
+
+So the split has to put both parts out of the header, not just the connection
+part, or it moves nothing:
+
+- =domain/connection.hpp= holds the connection part: the options, the open
+  policy and the pool. It is what changes when a deployment changes, and every
+  context in a process shares one.
+- =context= keeps the identity and a =std::shared_ptr<connection>=, and both its
+  members are behind a =struct impl= declared here and defined in the
+  translation unit. The header names =tenant_id= through a new
+  =ores.utility/uuid/tenant_id_fwd.hpp= and the options and the policy through
+  forward declarations.
+- The constructors keep their signatures, except that the open-policy default
+  becomes two overloads, because a default argument of a type the header does
+  not define is not expressible. Nothing else in the API changes, so 2566
+  headers that include =context.hpp= and the sources that call it compile
+  unchanged.
+- A copy that narrows the request (==with_tenant=, =with_party=, =with_roles=,
+  =with_transaction=) copies the identity and shares the connection, which is
+  what every copy does today. Copies become cheaper: a shared pointer increment
+  instead of six strings and two vectors.
+
+The cost is one allocation per context construction and one more indirection per
+accessor. The gain is that a translation unit that includes =context.hpp= stops
+parsing =tenant_id.hpp=, =<chrono>=, =pq/options.hpp= and the decimal behind
+them, and that a change to the identity or the connection no longer touches the
+class layout the 376 objects that read the header depend on.
+
+Services therefore keep storing a =context= by value. The question the analysis
+left open, whether a service stores a =shared_ptr<context>=, a pimpl or the
+value, is answered by making the value cheap: the pointer options differed only
+in what they made the header stop parsing.
 
 * Measurements
 
@@ -57,9 +93,42 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Parse cost of the context header, five runs, the old header and the new one in one invocation | 2.29 s before, 2.08 s after at load 21; 4.02 s and 3.92 s at load 30 | =python3 evidence/header_cost.py headers --build-dir build/output/linux-clang-release-ninja --runs 5 --header ...=, raw output in =evidence/header_cost_context_ab_2026-11-17.txt= and =evidence/header_cost_context_2026-11-17.txt= | e0a0297962 |
+| The floor the header sits on, same instrument | =<boost/uuid/uuid.hpp>= 2.40 s, =<format>= 1.24 s, =<memory>= 0.76 s, =<string>= 0.58 s | as above | e0a0297962 |
+| Reach after the split, objects and targets | =context.hpp= 376/68, =connection.hpp= 1/1, =context_fwd.hpp= 363/61, =tenant_id_fwd.hpp= 376/68, =tenant_id.hpp= 837/156, over 939 objects and 224 targets | =evidence/reach_context_2026-11-17.txt= | e0a0297962 |
+| Build | 690 steps, 0 failures, 1 h 06 min 51 s at =-j6= | =compass build -j 6 -k 0= | e0a0297962 |
+| Suites the change reaches | 5 of 5 pass: database, refdata.api and iam.core in one run, trading.core and refdata.core in 104 s on a database recreated from scratch | =compass test run --preset linux-clang-release-ninja -- -j 4 -R "ores.database.tests\|ores.refdata.api.tests\|ores.iam.core.tests\|ores.trading.core.tests\|ores.refdata.core.tests"= | e0a0297962 |
+| Local checks | format, lint and cmake-sources pass | =compass check --only format --only lint --only cmake-sources= | e0a0297962 |
 
 * Notes
+
+The parse win this task was going to claim does not exist, and the numbers are
+why. The context header costs 2.29 s before the split and 2.08 s after it at
+load 21, and 4.02 s against 3.92 s at load 30, so the difference is between 2%
+and 9% and inside the noise of a loaded box. Parsing =<boost/uuid/uuid.hpp>=
+alone costs more than the whole header, because the context's API returns
+=std::optional<boost::uuids::uuid>= and a =std::optional= needs its argument
+complete. The header was at the floor of the types it names; the connection part
+and the identity were never what the 2 s was.
+
+The premise was stale in the same way. The analysis recorded 6.6 s for this
+header, before it shed libpq, the pool and the codec chain; what was left for
+this task was a tenth of a second, and the split then had to hide the identity
+too, because =tenant_id= is a decimal.
+
+What the split does buy is the design it names. Two lifetimes are now two types:
+a =connection= is the database, a =context= is who the request acts for plus a
+shared connection. A copy shares the connection and copies the identity, which
+is what a copy did before, except that the copy itself is a shared pointer
+increment rather than six strings and two vectors, and the class layout the 376
+objects depend on no longer contains either part's fields.
+
+A lesson about the instruments. A standalone-header scan over the union of the
+build's include paths reported 226 headers broken, and the build disproved it:
+the union has the include paths of the targets that were sampled, and a header
+from a component those targets do not include cannot resolve its own includes.
+The one real breakage was =handler_helpers.hpp= taking =tenant_id= through the
+context header, which the build found in its first minutes.
 
 * Test Scenarios
 
@@ -76,12 +145,34 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4826][#4826]] | [database] Split the context into its connection and request parts |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A moved-from context is a null one, where before the split it held empty strings | =context.hpp= | Fixed | The context declares copy operations only, so a move is a copy and a moved-from context stays valid. A copy is a shared pointer increment, so nothing is lost. |
+| 2 | =connection::set_pool_size= writes =size_= without the lock that =pool()= reads it under | =connection.cpp= | Fixed | It takes the mutex. The old code raced the same way, so this is a fix the split made cheap rather than a new defect. |
+| 3 | =impl::tenant_id= is initialised twice | =context.cpp= | Fixed | The member initialiser is gone. |
+| 4 | The four constructors assign the identity in their bodies | =context.cpp= | Fixed | One =impl= constructor takes the whole identity and the four delegate to it. |
+| 5 | The allocation in =with_*= is not a pointer increment | none | No change | A plain copy is the increment; a narrowing copy still allocates and copies the identity, which is what it cost before plus one allocation. The record says so. |
+| 6 | The case for merging is the encapsulation, not the build time | none | Agreed | That is what =* Result= says. |
 
 * Result
+
+The context is two types. =domain/connection.hpp= holds the connection part, the
+options, the open policy and the pool; the context holds the identity and a
+shared connection, both behind an implementation defined in its translation
+unit. =domain/context_fwd.hpp= is unchanged and the API is unchanged, so the
+2566 headers that include the context header and the sources that call it
+compile as they did.
+
+The build is clean in 690 steps, the five suites the change reaches pass, and the
+local checks pass. The only source the build had to be told about was
+=handler_helpers.hpp=, which used =tenant_id= through the context header.
+
+The measured effect is not the one the task set out to find. The header is at
+the floor of the types its own API names, =boost::uuids::uuid= chief among them,
+so splitting the parts buys the design and about 5% of one header's parse time,
+not a compile win. The record says so plainly rather than claiming the 6.6 s the
+analysis measured on a tree that no longer exists.

@@ -1443,6 +1443,13 @@ const fr: SourceCatalogue = {
         optional: 'Facultatif',
         required: 'Obligatoire',
         coordinate: 'Coordonnée',
+        familyStated: "Famille {family} : sa forme marque les champs qu'elle exige et interdit.",
+        familyUnstated:
+            "Famille {family} : aucune forme ne la décrit encore, donc l'écriture ne l'y soumet pas.",
+        familyUnreachable:
+            "La forme de cette famille exige {fields}, que ce type d'URL n'écrit pas.",
+        shapeRequires: 'Exigé par la famille',
+        shapeForbids: 'Interdit par la famille',
         preview: 'URL',
         kinds: {
             quote: 'Cotation',
@@ -5095,7 +5102,9 @@ const fr: SourceCatalogue = {
                 currency: 'Devise',
                 source: 'Source',
                 window: 'Fenêtre (jours)',
-                bootstrap: "Configuration d'amorçage",
+                curves: 'Courbes',
+                discountsOff: 'actualise sur {curve}',
+                neverPublished: 'jamais publiée',
                 published: 'Dernière publiée',
                 stateHeader: 'État',
                 empty: 'Aucune devise ne tient de courbe de taux.',
@@ -5392,6 +5401,37 @@ const fr: SourceCatalogue = {
                 cross: 'Croisé',
             },
             configure: 'Configurer dans Connectivity',
+        },
+        identityShapes: {
+            title: "Formes d'identité",
+            lead: "Les champs que chaque famille de séries de marché exige et interdit. L'écriture refuse une série dont l'identité enfreint la forme de sa famille.",
+            add: 'Ajouter une ligne',
+            none: "Aucune famille n'indique encore de forme.",
+            field: 'Champ',
+            requirement: 'Exigence',
+            description: 'Pourquoi',
+            owner: 'Propriétaire',
+            shared: 'Partagée',
+            own: 'Propre',
+            history: 'Historique',
+            edit: 'Modifier',
+            remove: 'Retirer',
+            version: 'Version',
+            changedBy: 'Modifié par',
+            reason: 'Motif',
+            recorded: 'Enregistré',
+            assetClass: "Classe d'actifs",
+            seriesSubclass: 'Sous-classe de série',
+            indexFamily: "Famille d'indice (vide sauf pour un fixing)",
+            addTitle: 'Ajouter une ligne de forme',
+            editTitle: 'Modifier {field} de {family}',
+            removeTitle: 'Retirer {field} de {family}',
+            removeLead:
+                "La famille n'exige ni n'interdit plus ce champ. Les identités écrites ensuite n'y sont plus soumises.",
+            requirements: {
+                required: 'Exigé',
+                forbidden: 'Interdit',
+            },
         },
         connectivity: {
             title: 'Connectivité',
@@ -5822,6 +5862,27 @@ const fr: SourceCatalogue = {
         },
 
         curveAnalytics: {
+            teaches: {
+                title: 'Ce que les deux courbes enseignent',
+                lead: "{funding} et {projection} répondent à des questions différentes. L'une dit ce que rapporte un dépôt garanti au jour le jour ; l'autre dit ce que le marché attend d'un taux à terme {tenor}.",
+                underlying: {
+                    title: 'Sous-jacent',
+                    body: '{funding} fait la moyenne des transactions au jour le jour. {projection} est un taux à terme coté, comme un IBOR, il porte donc le crédit et la liquidité des banques qui le cotent.',
+                },
+                fixing: {
+                    title: 'Comment il se fixe',
+                    body: "Un taux au jour le jour se fixe à rebours : chaque jour est connu après le jour. Un taux à terme coté se fixe en avance : le taux {tenor} est fixé aujourd'hui pour une période qui commence aujourd'hui. Un taux à terme composé à partir des fixings au jour le jour, non.",
+                },
+                use: {
+                    title: 'À quoi il sert',
+                    body: '{funding} actualise : il donne la valeur présente des flux. {projection} projette : il prévoit le taux que paie une jambe variable.',
+                },
+                shape: {
+                    title: 'Pourquoi la forme diffère',
+                    body: "L'écart n'est pas seulement une anticipation. Une courbe à terme ajoute une prime de terme et le crédit de son panel ; une courbe au jour le jour composée, non.",
+                },
+                lesson: "Aucune courbe n'est le taux. Lisez les deux ensemble : laquelle actualise, laquelle projette, et de quoi est fait l'écart.",
+            },
             title: 'Analyse de courbe',
             lead: "Les conventions d'une courbe, les piliers cotés par le marché et ce que le bootstrap en fait.",
             curve: 'Courbe',

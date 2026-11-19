@@ -15,16 +15,20 @@ Image architecture
 ------------------
 Instead of building N near-identical ~2.5 GB images (one per service,
 differing only in the entrypoint symlink), the runtime role uses a
-base + overlay model::
+base + libraries + service model::
 
-    ores-service-base (once, ~1.5 GB on wire)
-        Common shared libraries (ldd intersection across all services),
-        the healthcheck probe, and empty log/run/storage directories.
+    ores-service-base (once, tens of MB on wire)
+        The healthcheck probe and empty log/run/storage directories.
         Built from docker/service-base.Dockerfile.
 
-    Per-service overlays (N images, ~MB each on wire)
-        Just the service binary, its service-specific extra shared libs
-        (if any), and an entrypoint symlink.  FROM ores-service-base.
+    ores-service-libs (once, every library a service loads)
+        Every shared library any service needs, so a library that eleven
+        services load is transferred once.  Built from
+        docker/service-libs.Dockerfile.
+
+    Per-service images (N images, a few MB each on wire)
+        Just the service binary, its build record and an entrypoint
+        symlink.  FROM ores-service-libs.
         Built from docker/service-runtime.Dockerfile.
 
 Binaries are stripped on the host (by stage-runtime.sh) BEFORE podman
@@ -32,8 +36,8 @@ sees them — no in-container strip stage, no redundant COPY of
 unstripped data into the build context.
 
 Transfer: an image is copied with the standard `podman image scp IMAGE
-HOST::`, which writes no staging file; per-service overlays are scp'd as raw
-files and built remotely on top of the already-loaded base.  Nothing a deploy
+HOST::`, which writes no staging file; per-service images are scp'd as raw
+files and built remotely on top of the already-loaded library image.  Nothing a deploy
 writes on this machine is shared with a deploy to another host, so several
 hosts can be deployed at the same time: name them all, as in
 `compass env deploy newton laptop simba --role compute`.
@@ -64,6 +68,8 @@ DEFAULT_REMOTE_DB_PORT = "5433"
 IMAGE_NATS = "localhost/ores-nats"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 IMAGE_BASE = "localhost/ores-service-base"
+IMAGE_LIBS = "localhost/ores-service-libs"
+IMAGE_WEB = "localhost/ores-web"
 
 _COMPUTE_REQUIRED = (
     "ORES_COMPUTE_TENANT_ID",
@@ -172,6 +178,14 @@ def _version_tag(project_root: Path) -> str:
         cwd=project_root, capture_output=True, text=True)
     commit = result.stdout.strip() if result.returncode == 0 else "unknown"
     return f"{version}-{commit}"
+
+
+def _web_services(project_root: Path) -> list:
+    """Enabled services that run on Node, and therefore ship their own image
+    rather than a binary. Delegates to image_build for the same reason the
+    compiled list does."""
+    import image_build  # noqa: PLC0415
+    return image_build.web_services(project_root)
 
 
 def _runtime_services(project_root: Path) -> list:
@@ -349,29 +363,34 @@ def _write_compute_env(project_root, profile_env, label, remote_root, host):
 def _stream_images(project_root, host, images):
     """Transfer images to the remote host.
 
-    Two-phase strategy (base + overlay model):
-    1. Base image: save → gzip → scp → remote load (once, large).
-    2. Per-service overlays: scp staging dirs + build remotely on top of
-       the already-loaded base (each overlay is just the binary — a few
+    Two-phase strategy (base + libraries + service model):
+    1. Base and library images: save → gzip → scp → remote load (once).
+    2. Per-service images: scp staging dirs + build remotely on top of
+       the already-loaded library image (each is just the binary — a few
        MB — not a full image tarball).
     """
     remote_tmp = f"/tmp/ores-deploy-{host}"
 
-    # Separate the base image from per-service overlays and standalone
-    # images (NATS, compute-wrapper — not part of the overlay system).
+    # Separate the base and library images from the per-service images and
+    # the standalone ones (NATS, compute-wrapper — not part of the model).
     base_images = [i for i in images if "ores-service-base" in i]
+    libs_images = [i for i in images if "ores-service-libs" in i]
     nats_images = [i for i in images if "ores-nats" in i]
     compute_images = [i for i in images if "ores-compute-wrapper" in i]
-    # Everything else is a per-service overlay (localhost/<service_name>).
+    # The web image is standalone: it carries its own Node runtime, so it is
+    # transferred whole rather than built on the host.
+    web_images = [i for i in images if "ores-web" in i]
+    # Everything else is a per-service image (localhost/<service_name>).
     overlay_images = [i for i in images
-                      if i not in base_images + nats_images + compute_images]
+                      if i not in base_images + libs_images
+                      + nats_images + compute_images + web_images]
 
-    # -- Phase 1: Transfer base image (once) ------------------------------
-    for img in base_images:
+    # -- Phase 1: Transfer base and library images (once) -----------------
+    for img in base_images + libs_images:
         _transfer_one_image(project_root, host, img)
 
     # -- Phase 2: Transfer standalone images (NATS, compute) --------------
-    for img in nats_images + compute_images:
+    for img in nats_images + compute_images + web_images:
         _transfer_one_image(project_root, host, img)
 
     # -- Phase 3: Remote-build per-service overlays -----------------------
@@ -422,6 +441,33 @@ def _stream_images(project_root, host, images):
         # Clean up the remote staging area.
         _ssh(host, f"rm -rf {shlex.quote(remote_build_context)}", check=True)
 
+
+
+def _pull_images(project_root, host, registry, tag, names):
+    """Pull the published images on the remote host.
+
+    Each image is re-tagged under the local name remote-run.sh resolves, so
+    a pull deploy and a transfer deploy run the same remote script. The
+    registry holds one tag per commit, so a pull either gets the exact
+    build this checkout produced or fails; --image-tag selects a moving tag
+    such as main instead.
+    """
+    lines = [
+        "set -euo pipefail",
+        'export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"',
+        'echo "=== Pulling images from ${REGISTRY} ==="',
+    ]
+    for name in names:
+        lines += [
+            f'echo "  {name}"',
+            f'podman pull "${{REGISTRY}}/{name}:${{TAG}}"',
+            f'podman tag "${{REGISTRY}}/{name}:${{TAG}}" "localhost/{name}:${{TAG}}"',
+            f'podman tag "${{REGISTRY}}/{name}:${{TAG}}" "localhost/{name}:local"',
+        ]
+    lines.append('echo "  pull complete."')
+    _remote_script(host, "\n".join(lines) + "\n",
+                   {"REGISTRY": registry, "TAG": tag,
+                    "PULLED_NAMES": " ".join(names)})
 
 def _transfer_one_image(project_root, host, img):
     """Copy a single image to the remote host with the standard podman command.
@@ -523,9 +569,9 @@ def _transfer_compute(project_root, host, remote_root, env_path, keys_stage):
     _scp(project_root, host, env_path, f"{remote_env_dir}/compute.env")
 
 
-def _deploy_runtime(project_root, host, profile_env, remote_root):
+def _deploy_runtime(project_root, host, profile_env, remote_root, tag=None):
     label = _label(profile_env, project_root)
-    tag = _version_tag(project_root)
+    tag = tag or _version_tag(project_root)
     services = _runtime_services(project_root)
     print(f"=== Deploying runtime to {host} (label '{label}', tag '{tag}') ===")
     print(f"  Services: {len(services)}")
@@ -535,11 +581,12 @@ def _deploy_runtime(project_root, host, profile_env, remote_root):
         encoding="utf-8")
     _remote_script(host, script,
                    {"REMOTE_ROOT": remote_root, "ROLE": "runtime",
-                    "IMAGE_TAG": tag, "SERVICES": services_arg})
+                    "IMAGE_TAG": tag, "SERVICES": services_arg,
+                    "WEB_ENABLED": "1" if _web_services(project_root) else "0"})
 
 
-def _deploy_compute(project_root, host, remote_root, label):
-    tag = _version_tag(project_root)
+def _deploy_compute(project_root, host, remote_root, label, tag=None):
+    tag = tag or _version_tag(project_root)
     print(f"=== Deploying compute node to {host} (label '{label}', "
           f"tag '{tag}') ===")
     script = (project_root / "docker" / "remote-run.sh").read_text(
@@ -706,6 +753,15 @@ def _cmd_deploy(argv, project_root):
                     help="Stop the remote containers instead of deploying")
     ap.add_argument("--purge", action="store_true",
                     help="With --stop: also remove the staged certs volume")
+    ap.add_argument("--pull", action="store_true",
+                    help="Pull the published images on the host instead of "
+                         "transferring the local ones")
+    ap.add_argument("--registry", type=str, default="ghcr.io/orestudio",
+                    help="Registry prefix the images are published to "
+                         "(with --pull; default: ghcr.io/orestudio)")
+    ap.add_argument("--image-tag", type=str, default=None,
+                    help="Tag to pull (with --pull; default: the version "
+                         "and commit this checkout would publish)")
     ap.add_argument("--setup-host", action="store_true",
                     help="One-time remote host prep (podman present, "
                          "linger, dbus.socket) and exit")
@@ -769,9 +825,11 @@ def _cmd_deploy(argv, project_root):
     _preflight(project_root, profile_path, args.role, profile_env)
     _require_podman(remote_host)
 
-    # Image build is a separate step — require it to have been run first.
+    # A transfer deploy needs the images built locally; a pull deploy fetches
+    # them from the registry instead.
     import image_build  # noqa: PLC0415
-    if not image_build.check_images_exist(project_root, args.role):
+    if not args.pull and not image_build.check_images_exist(project_root,
+                                                            args.role):
         return 1
 
     if args.role == "compute":
@@ -781,26 +839,37 @@ def _cmd_deploy(argv, project_root):
                 f"compute role requires {', '.join(missing)} in "
                 f"{profile_path} — add them (from the serving "
                 "environment's checkout) and re-run")
-        tag = _version_tag(project_root)
+        tag = args.image_tag or _version_tag(project_root)
         label = _compute_label(profile_env, project_root)
-        _stream_images(project_root, remote_host,
-                       [f"{IMAGE_COMPUTE}:{tag}"])
+        if args.pull:
+            _pull_images(project_root, remote_host, args.registry, tag,
+                         ["ores-compute-wrapper"])
+        else:
+            _stream_images(project_root, remote_host,
+                           [f"{IMAGE_COMPUTE}:{tag}"])
         env_path, keys_stage = _write_compute_env(
             project_root, profile_env, label, remote_root, remote_host)
         _transfer_compute(project_root, remote_host, remote_root, env_path,
                           keys_stage)
-        _deploy_compute(project_root, remote_host, remote_root, label)
+        _deploy_compute(project_root, remote_host, remote_root, label, tag)
         return 0
 
-    tag = _version_tag(project_root)
-    svc_images = [f"localhost/{s}:{tag}"
-                  for s in _runtime_services(project_root)]
-    _stream_images(project_root, remote_host,
-                   [f"{IMAGE_BASE}:{tag}", *svc_images,
-                    f"{IMAGE_NATS}:{tag}"])
+    tag = args.image_tag or _version_tag(project_root)
+    if args.pull:
+        pulled = ["ores-service-base", "ores-service-libs", "ores-nats"]
+        pulled += _runtime_services(project_root)
+        if _web_services(project_root):
+            pulled.append("ores-web")
+        _pull_images(project_root, remote_host, args.registry, tag, pulled)
+    else:
+        svc_images = [f"localhost/{s}:{tag}"
+                      for s in _runtime_services(project_root)]
+        _stream_images(project_root, remote_host,
+                       [f"{IMAGE_BASE}:{tag}", f"{IMAGE_LIBS}:{tag}",
+                        *svc_images, f"{IMAGE_NATS}:{tag}"])
     _transfer_runtime(project_root, remote_host, remote_root,
                       profile_path, _label(profile_env, project_root))
-    _deploy_runtime(project_root, remote_host, profile_env, remote_root)
+    _deploy_runtime(project_root, remote_host, profile_env, remote_root, tag)
     return 0
 
 

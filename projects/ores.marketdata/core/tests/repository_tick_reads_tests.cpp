@@ -63,7 +63,10 @@ int repository_tick_reads_number_of(const ores::database::context& owner,
 /// run on its stream and the reads see only what the test wrote.
 ores::marketdata::domain::market_series
 repository_tick_reads_unique_series(ores::marketdata::domain::market_series s) {
-    s.oresmd_uri = "oresmd://generic/test-" + boost::uuids::to_string(s.id) + "?type=fixing";
+    auto name = boost::uuids::to_string(s.id);
+    std::erase(name, '-');
+    s.oresmd_uri = "oresmd://ir/EUR?type=fixing&index=ibor&name=T" + name;
+    s.series_subclass = "index_fixing";
     return s;
 }
 

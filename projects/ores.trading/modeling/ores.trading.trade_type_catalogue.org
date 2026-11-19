@@ -59,7 +59,7 @@ absent: it is a placeholder, not a product.
 | code | name | family | construction | markets | has_options | has_extension | instrument |
 |------+------+--------+--------------+---------+-------------+---------------+------------|
 | CompositeTrade | Composite Trade |   | container |  | false | false | composite_instrument |
-| RateDigitalOption | Rate Digital Option | option | native | interest_rates! | true | false | scripted_instrument |
+| RateDigitalOption | Rate Digital Option | option | native | interest_rates! | true | false | rate_instrument |
 | SwaptionStraddle | Swaption Straddle |   | native | interest_rates! | true | false | rate_instrument |
 | ForwardVolatilityAgreement | Forward Volatility Agreement |   | native | interest_rates! | true | false |  |
 | Swap | Interest Rate Swap | swap | native | interest_rates! | false | false | rate_instrument |
@@ -73,7 +73,7 @@ absent: it is a placeholder, not a product.
 | KnockOutSwap | Knock-Out Swap | swap | scripted | interest_rates! | false | true | rate_instrument |
 | RiskParticipationAgreement | Risk Participation Agreement |   | native | credit! | false | true | credit_instrument |
 | InflationSwap | Inflation Swap |   | native | inflation!,interest_rates | false | true | rate_instrument |
-| FxForwardVolatilityAgreement | FX Forward Volatility Agreement |   | scripted | fx! | true | false | scripted_instrument |
+| FxForwardVolatilityAgreement | FX Forward Volatility Agreement |   | scripted | fx! | true | false | fx_forward_volatility_agreement_instrument |
 | FxForward | FX Forward | forward | native | fx! | false | false | fx_forward_instrument |
 | FxSwap | FX Swap | swap | native | fx! | false | false | fx_forward_instrument |
 | FxOption | FX Option | option | native | fx! | true | false | fx_vanilla_option_instrument |
@@ -83,7 +83,7 @@ absent: it is a placeholder, not a product.
 | FxBarrierOption | FX Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
 | FxDoubleBarrierOption | FX Double Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
 | FxEuropeanBarrierOption | FX European Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
-| FxWindowBarrierOption | FX Window Barrier Option | option | scripted | fx! | true | false | scripted_instrument |
+| FxWindowBarrierOption | FX Window Barrier Option | option | scripted | fx! | true | false | fx_window_barrier_option_instrument |
 | FxGenericBarrierOption | FX Generic Barrier Option | option | scripted | fx! | true | false | fx_barrier_option_instrument |
 | FxKIKOBarrierOption | FX Knock-In Knock-Out Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
 | FxTouchOption | FX Touch Option | option | native | fx! | true | false | fx_digital_option_instrument |
@@ -91,22 +91,22 @@ absent: it is a placeholder, not a product.
 | FxDigitalBarrierOption | FX Digital Barrier Option | option | native | fx! | true | false | fx_digital_option_instrument |
 | FxVarianceSwap | FX Variance Swap | swap | native | fx! | false | false | fx_variance_swap_instrument |
 | FxPairwiseVarianceSwap | FX Pairwise Variance Swap |   | native | fx! | false | false | fx_pairwise_variance_swap_instrument |
-| FxBasketVarianceSwap | FX Basket Variance Swap |   | scripted | fx! | false | false | scripted_instrument |
+| FxBasketVarianceSwap | FX Basket Variance Swap |   | scripted | fx! | false | false | fx_basket_variance_swap_instrument |
 | FxAccumulator | FX Accumulator | forward | scripted | fx! | false | false | fx_accumulator_instrument |
 | FxTaRF | FX Target Redemption Forward | forward | scripted | fx! | false | false | fx_asian_forward_instrument |
-| FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false | scripted_instrument |
-| FxBestEntryOption | FX Best Entry Option | option | scripted | fx! | true | false | scripted_instrument |
-| FxBasketOption | FX Basket Option | option | scripted | fx! | true | false | scripted_instrument |
-| FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false | scripted_instrument |
-| FxStrikeResettableOption | FX Strike Resettable Option | option | scripted | fx! | true | false | scripted_instrument |
+| FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false | fx_worst_of_basket_swap_instrument |
+| FxBestEntryOption | FX Best Entry Option | option | scripted | fx! | true | false | fx_best_entry_option_instrument |
+| FxBasketOption | FX Basket Option | option | scripted | fx! | true | false | fx_basket_option_instrument |
+| FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false | fx_basket_option_instrument |
+| FxStrikeResettableOption | FX Strike Resettable Option | option | scripted | fx! | true | false | fx_strike_resettable_option_instrument |
 | CreditDefaultSwap | Credit Default Swap | swap | native | credit! | false | false | credit_instrument |
 | CreditDefaultSwapOption | Credit Default Swap Option |   | native | credit! | false | true | credit_instrument |
 | IndexCreditDefaultSwap | Index Credit Default Swap | swap | native | credit! | false | true | credit_instrument |
 | IndexCreditDefaultSwapOption | Index Credit Default Swap Option | option | native | credit! | false | false | credit_instrument |
 | SyntheticCDO | Synthetic CDO |   | native | credit! | false | false | credit_instrument |
 | CreditLinkedSwap | Credit Linked Swap | swap | native | credit! | false | false | credit_instrument |
-| CBO | Collateralised Bond Obligation |   | native | credit! | false | false | scripted_instrument |
-| BondFutureOption | Bond Future Option |   | native | bond! | true | false | scripted_instrument |
+| CBO | Collateralised Bond Obligation |   | native | credit! | false | false | credit_instrument |
+| BondFutureOption | Bond Future Option |   | native | bond! | true | false | bond_instrument |
 | Bond | Fixed Income Bond | security | native | bond! | false | false | bond_instrument |
 | ForwardBond | Forward Bond | forward | native | bond! | false | false | bond_instrument |
 | BondFuture | Bond Future | future | native | bond! | false | true | bond_instrument |
@@ -118,15 +118,15 @@ absent: it is a placeholder, not a product.
 | ConvertibleBond | Convertible Bond | security | native | bond!,equity | false | false | bond_instrument |
 | Ascot | Asset Swapped Convertible Option Transaction | option | native | bond!,equity | false | true | bond_instrument |
 | EquityAutoDeltaHedgedOption | Equity Auto Delta Hedged Option | option | native | equity! | true | false | equity_position_instrument |
-| EquityForwardVolatilityAgreement | Equity Forward Volatility Agreement |   | scripted | equity! | true | false | scripted_instrument |
+| EquityForwardVolatilityAgreement | Equity Forward Volatility Agreement |   | scripted | equity! | true | false | equity_forward_volatility_agreement_instrument |
 | EquityOption | Equity Option | option | native | equity! | true | false | equity_option_instrument |
 | EquityFutureOption | Equity Future Option | option | native | equity! | true | false | equity_option_instrument |
 | EquityAsianOption | Equity Asian Option | option | native | equity! | true | true | equity_asian_option_instrument |
 | EquityBarrierOption | Equity Barrier Option | option | native | equity! | true | false | equity_barrier_option_instrument |
 | EquityDoubleBarrierOption | Equity Double Barrier Option | option | native | equity! | true | false | equity_barrier_option_instrument |
 | EquityEuropeanBarrierOption | Equity European Barrier Option | option | native | equity! | true | false | equity_barrier_option_instrument |
-| EquityWindowBarrierOption | Equity Window Barrier Option | option | scripted | equity! | true | false | scripted_instrument |
-| EquityGenericBarrierOption | Equity Generic Barrier Option | option | scripted | equity! | true | false | scripted_instrument |
+| EquityWindowBarrierOption | Equity Window Barrier Option | option | scripted | equity! | true | false | equity_window_barrier_option_instrument |
+| EquityGenericBarrierOption | Equity Generic Barrier Option | option | scripted | equity! | true | false | equity_generic_barrier_option_instrument |
 | EquityTouchOption | Equity Touch Option | option | native | equity! | true | false | equity_digital_option_instrument |
 | EquityDoubleTouchOption | Equity Double Touch Option | option | native | equity! | true | false | equity_digital_option_instrument |
 | EquityDigitalOption | Equity Digital Option | option | native | equity! | true | false | equity_digital_option_instrument |
@@ -134,16 +134,16 @@ absent: it is a placeholder, not a product.
 | EquitySwap | Equity Swap | swap | native | equity!,interest_rates | false | false | equity_swap_instrument |
 | EquityVarianceSwap | Equity Variance Swap | swap | native | equity! | false | true | equity_variance_swap_instrument |
 | EquityPairwiseVarianceSwap | Equity Pairwise Variance Swap |   | native | equity! | false | false | equity_pairwise_variance_swap_instrument |
-| EquityBasketVarianceSwap | Equity Basket Variance Swap |   | scripted | equity! | false | false | scripted_instrument |
+| EquityBasketVarianceSwap | Equity Basket Variance Swap |   | scripted | equity! | false | false | equity_basket_variance_swap_instrument |
 | EquityCliquetOption | Equity Cliquet Option | option | native | equity! | true | true | equity_option_instrument |
 | EquityAccumulator | Equity Accumulator | forward | scripted | equity! | false | true | equity_accumulator_instrument |
 | EquityTaRF | Equity Target Redemption Forward | forward | scripted | equity! | false | false | equity_accumulator_instrument |
 | EquityWorstOfBasketSwap | Equity Worst-Of Basket Swap | swap | scripted | equity! | false | false | equity_swap_instrument |
-| EquityBestEntryOption | Equity Best Entry Option | option | scripted | equity! | true | false | scripted_instrument |
-| EquityBasketOption | Equity Basket Option | option | scripted | equity! | true | false | scripted_instrument |
-| EquityRainbowOption | Equity Rainbow Option | option | scripted | equity! | true | false | scripted_instrument |
+| EquityBestEntryOption | Equity Best Entry Option | option | scripted | equity! | true | false | equity_best_entry_option_instrument |
+| EquityBasketOption | Equity Basket Option | option | scripted | equity! | true | false | equity_basket_option_instrument |
+| EquityRainbowOption | Equity Rainbow Option | option | scripted | equity! | true | false | equity_basket_option_instrument |
 | EquityOutperformanceOption | Equity Outperformance Option | option | native | equity! | true | false | equity_option_instrument |
-| EquityStrikeResettableOption | Equity Strike Resettable Option | option | scripted | equity! | true | false | scripted_instrument |
+| EquityStrikeResettableOption | Equity Strike Resettable Option | option | scripted | equity! | true | false | equity_strike_resettable_option_instrument |
 | TotalReturnSwap | Total Return Swap | swap | native | equity! | false | false | composite_instrument |
 | ContractForDifference | Contract for Difference |   | native | equity! | false | false | composite_instrument |
 | EquityPosition | Equity Position | position | native | equity! | false | false | equity_position_instrument |
@@ -175,10 +175,10 @@ absent: it is a placeholder, not a product.
 | CommodityPosition | Commodity Position | position | native | commodity! | false | false | commodity_instrument |
 | CashPosition | Cash Position | position | native | equity! | false | false | cash_position_instrument |
 | ScriptedTrade | Scripted Trade (ORE generic payoff engine) |   | script |  | false | false | scripted_instrument |
-| Autocallable_01 | Autocallable (variant 01) |   | scripted |  | false | false | scripted_instrument |
-| DoubleDigitalOption | Double Digital Option | option | scripted |  | false | false | scripted_instrument |
-| EuropeanOptionBarrier | European Option with Barrier | option | scripted |  | false | false | scripted_instrument |
-| PerformanceOption_01 | Performance Option (variant 01) |   | scripted |  | false | false | scripted_instrument |
+| Autocallable_01 | Autocallable (variant 01) |   | scripted |  | false | false | autocallable_instrument |
+| DoubleDigitalOption | Double Digital Option | option | scripted |  | false | false | double_digital_option_instrument |
+| EuropeanOptionBarrier | European Option with Barrier | option | scripted |  | false | false | european_option_barrier_instrument |
+| PerformanceOption_01 | Performance Option (variant 01) |   | scripted |  | false | false | performance_option_instrument |
 
 * Unsupported trade types
 
@@ -203,10 +203,154 @@ script that books each such product in its scripted form, so the two forms can
 be booked on the same terms and compared. A product absent from it has no
 library script in ORE, and is held in its own form only.
 
-| code                       | script               |
-|----------------------------+----------------------|
-| EquityPairwiseVarianceSwap | PairwiseVarianceSwap |
-| FxPairwiseVarianceSwap     | PairwiseVarianceSwap |
+| code                             | script                     |
+|----------------------------------+----------------------------|
+| EquityBasketOption               | VanillaBasketOption        |
+| EquityBasketVarianceSwap         | BasketVarianceSwap         |
+| EquityBestEntryOption            | BestEntryOption            |
+| EquityForwardVolatilityAgreement | ForwardVolatilityAgreement |
+| EquityGenericBarrierOption       | GenericBarrierOption       |
+| EquityPairwiseVarianceSwap       | PairwiseVarianceSwap       |
+| EquityRainbowOption              | MaxRainbowOption           |
+| EquityWindowBarrierOption        | WindowBarrierOption        |
+| FxBasketOption                   | VanillaBasketOption        |
+| FxBasketVarianceSwap             | BasketVarianceSwap         |
+| FxBestEntryOption                | BestEntryOption            |
+| FxForwardVolatilityAgreement     | ForwardVolatilityAgreement |
+| FxGenericBarrierOption           | GenericBarrierOption       |
+| FxPairwiseVarianceSwap           | PairwiseVarianceSwap       |
+| FxRainbowOption                  | MaxRainbowOption           |
+| FxWindowBarrierOption            | WindowBarrierOption        |
+| FxWorstOfBasketSwap              | WorstOfBasketSwap          |
+
+* Scripted twin recipes
+
+The generator books each product of the =Scripted forms= table twice: its own
+element, and a generic =ScriptedTrade= over the library script, on the same
+terms. This table states, for each such product, where each input of the script
+takes its value from in the native trade's rows, so the twin is read from the
+native trade rather than drawn again. The generator script
+=projects/ores.sql/utility/generate_script_twins.py= turns it into the seed of
+the script twin inputs table and the table the trade generator compiles in, and
+refuses a recipe that misses an input of its script.
+
+A source is =product.<column>= for a column of the native product row,
+=<rows>[<role>].<column>= for a column of the shared rows under a role,
+=<rows>.<column>= for a column of the shared rows, or
+=instrument_schedules[<role>]= for the whole schedule under a role, which an
+Event input reads as its rules or as its dates; =a or b= takes =b= when =a=
+holds no value, and a quoted ='text'= is a literal. =sign= turns =Long=, =Call=
+or =true= into =1= and =Short=, =Put= or =false= into =-1=; =flag= turns =true=
+into =1= and =false= into =0=.
+
+| code                             | input                  | source                                                                             | transform |
+|----------------------------------+------------------------+------------------------------------------------------------------------------------+-----------|
+| EquityBasketOption               | Underlyings            | instrument_underlyings[underlying].name                                            |           |
+| EquityBasketOption               | Weights                | instrument_underlyings[underlying].weight                                          |           |
+| EquityBasketOption               | Expiry                 | instrument_schedule_dates[exercise_dates].schedule_date                            |           |
+| EquityBasketOption               | PutCall                | instrument_options.option_type                                                     | sign      |
+| EquityBasketOption               | Strike                 | product.strike                                                                     |           |
+| EquityBasketOption               | LongShort              | instrument_options.long_short                                                      | sign      |
+| EquityBasketOption               | Notional               | product.notional                                                                   |           |
+| EquityBasketOption               | Settlement             | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date |           |
+| EquityBasketOption               | PayCcy                 | product.currency                                                                   |           |
+| EquityBasketVarianceSwap         | Notional               | product.notional                                                                   |           |
+| EquityBasketVarianceSwap         | Strike                 | product.strike                                                                     |           |
+| EquityBasketVarianceSwap         | Cap                    | product.cap or '0'                                                                 |           |
+| EquityBasketVarianceSwap         | Floor                  | product.floor or '0'                                                               |           |
+| EquityBasketVarianceSwap         | Underlyings            | instrument_underlyings[underlying].name                                            |           |
+| EquityBasketVarianceSwap         | Weights                | instrument_underlyings[underlying].weight                                          |           |
+| EquityBasketVarianceSwap         | ValuationSchedule      | instrument_schedules[valuation_schedule]                                           |           |
+| EquityBasketVarianceSwap         | SquaredPayoff          | product.squared_payoff                                                             | flag      |
+| EquityBasketVarianceSwap         | LongShort              | product.long_short                                                                 | sign      |
+| EquityBasketVarianceSwap         | SettlementDate         | product.settlement_date                                                            |           |
+| EquityBasketVarianceSwap         | PayCcy                 | product.currency                                                                   |           |
+| EquityBestEntryOption            | Underlying             | instrument_underlyings[underlying].name                                            |           |
+| EquityBestEntryOption            | StrikeDate             | product.strike_date                                                                |           |
+| EquityBestEntryOption            | ResetMinimum           | product.reset_minimum                                                              |           |
+| EquityBestEntryOption            | StrikeObservationDates | instrument_schedules[strike_observation_schedule]                                  |           |
+| EquityBestEntryOption            | TriggerLevel           | product.trigger_level                                                              |           |
+| EquityBestEntryOption            | ExpiryDate             | product.expiry_date                                                                |           |
+| EquityBestEntryOption            | Strike                 | product.strike                                                                     |           |
+| EquityBestEntryOption            | LongShort              | product.long_short                                                                 | sign      |
+| EquityBestEntryOption            | Notional               | product.notional                                                                   |           |
+| EquityBestEntryOption            | Multiplier             | product.multiplier                                                                 |           |
+| EquityBestEntryOption            | Cap                    | product.cap                                                                        |           |
+| EquityBestEntryOption            | SettlementDate         | product.settlement_date                                                            |           |
+| EquityBestEntryOption            | Currency               | product.currency                                                                   |           |
+| EquityBestEntryOption            | PremiumDate            | product.premium_date                                                               |           |
+| EquityBestEntryOption            | Premium                | product.premium                                                                    |           |
+| EquityForwardVolatilityAgreement | FvaDate                | product.fva_date                                                                   |           |
+| EquityForwardVolatilityAgreement | PremiumDate            | product.premium_date                                                               |           |
+| EquityForwardVolatilityAgreement | OptionExpiry           | product.option_expiry                                                              |           |
+| EquityForwardVolatilityAgreement | Quantity               | product.quantity                                                                   |           |
+| EquityForwardVolatilityAgreement | ImpliedVolStrike       | product.implied_vol_strike                                                         |           |
+| EquityForwardVolatilityAgreement | Underlying             | instrument_underlyings[underlying].name                                            |           |
+| EquityForwardVolatilityAgreement | LongShort              | product.long_short                                                                 | sign      |
+| EquityForwardVolatilityAgreement | SettlementDate         | product.settlement_date                                                            |           |
+| EquityForwardVolatilityAgreement | PayCcy                 | product.pay_currency                                                               |           |
+| EquityRainbowOption              | Underlyings            | instrument_underlyings[underlying].name                                            |           |
+| EquityRainbowOption              | Weights                | instrument_underlyings[underlying].weight                                          |           |
+| EquityRainbowOption              | Expiry                 | instrument_schedule_dates[exercise_dates].schedule_date                            |           |
+| EquityRainbowOption              | PutCall                | instrument_options.option_type                                                     | sign      |
+| EquityRainbowOption              | Strike                 | product.strike                                                                     |           |
+| EquityRainbowOption              | LongShort              | instrument_options.long_short                                                      | sign      |
+| EquityRainbowOption              | Notional               | product.notional                                                                   |           |
+| EquityRainbowOption              | Settlement             | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date |           |
+| EquityRainbowOption              | PayCcy                 | product.currency                                                                   |           |
+| FxBasketOption                   | Underlyings            | instrument_underlyings[underlying].name                                            |           |
+| FxBasketOption                   | Weights                | instrument_underlyings[underlying].weight                                          |           |
+| FxBasketOption                   | Expiry                 | instrument_schedule_dates[exercise_dates].schedule_date                            |           |
+| FxBasketOption                   | PutCall                | instrument_options.option_type                                                     | sign      |
+| FxBasketOption                   | Strike                 | product.strike                                                                     |           |
+| FxBasketOption                   | LongShort              | instrument_options.long_short                                                      | sign      |
+| FxBasketOption                   | Notional               | product.notional                                                                   |           |
+| FxBasketOption                   | Settlement             | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date |           |
+| FxBasketOption                   | PayCcy                 | product.currency                                                                   |           |
+| FxBasketVarianceSwap             | Notional               | product.notional                                                                   |           |
+| FxBasketVarianceSwap             | Strike                 | product.strike                                                                     |           |
+| FxBasketVarianceSwap             | Cap                    | product.cap or '0'                                                                 |           |
+| FxBasketVarianceSwap             | Floor                  | product.floor or '0'                                                               |           |
+| FxBasketVarianceSwap             | Underlyings            | instrument_underlyings[underlying].name                                            |           |
+| FxBasketVarianceSwap             | Weights                | instrument_underlyings[underlying].weight                                          |           |
+| FxBasketVarianceSwap             | ValuationSchedule      | instrument_schedules[valuation_schedule]                                           |           |
+| FxBasketVarianceSwap             | SquaredPayoff          | product.squared_payoff                                                             | flag      |
+| FxBasketVarianceSwap             | LongShort              | product.long_short                                                                 | sign      |
+| FxBasketVarianceSwap             | SettlementDate         | product.settlement_date                                                            |           |
+| FxBasketVarianceSwap             | PayCcy                 | product.currency                                                                   |           |
+| FxBestEntryOption                | Underlying             | instrument_underlyings[underlying].name                                            |           |
+| FxBestEntryOption                | StrikeDate             | product.strike_date                                                                |           |
+| FxBestEntryOption                | ResetMinimum           | product.reset_minimum                                                              |           |
+| FxBestEntryOption                | StrikeObservationDates | instrument_schedules[strike_observation_schedule]                                  |           |
+| FxBestEntryOption                | TriggerLevel           | product.trigger_level                                                              |           |
+| FxBestEntryOption                | ExpiryDate             | product.expiry_date                                                                |           |
+| FxBestEntryOption                | Strike                 | product.strike                                                                     |           |
+| FxBestEntryOption                | LongShort              | product.long_short                                                                 | sign      |
+| FxBestEntryOption                | Notional               | product.notional                                                                   |           |
+| FxBestEntryOption                | Multiplier             | product.multiplier                                                                 |           |
+| FxBestEntryOption                | Cap                    | product.cap                                                                        |           |
+| FxBestEntryOption                | SettlementDate         | product.settlement_date                                                            |           |
+| FxBestEntryOption                | Currency               | product.currency                                                                   |           |
+| FxBestEntryOption                | PremiumDate            | product.premium_date                                                               |           |
+| FxBestEntryOption                | Premium                | product.premium                                                                    |           |
+| FxForwardVolatilityAgreement     | FvaDate                | product.fva_date                                                                   |           |
+| FxForwardVolatilityAgreement     | PremiumDate            | product.premium_date                                                               |           |
+| FxForwardVolatilityAgreement     | OptionExpiry           | product.option_expiry                                                              |           |
+| FxForwardVolatilityAgreement     | Quantity               | product.quantity                                                                   |           |
+| FxForwardVolatilityAgreement     | ImpliedVolStrike       | product.implied_vol_strike                                                         |           |
+| FxForwardVolatilityAgreement     | Underlying             | instrument_underlyings[underlying].name                                            |           |
+| FxForwardVolatilityAgreement     | LongShort              | product.long_short                                                                 | sign      |
+| FxForwardVolatilityAgreement     | SettlementDate         | product.settlement_date                                                            |           |
+| FxForwardVolatilityAgreement     | PayCcy                 | product.pay_currency                                                               |           |
+| FxRainbowOption                  | Underlyings            | instrument_underlyings[underlying].name                                            |           |
+| FxRainbowOption                  | Weights                | instrument_underlyings[underlying].weight                                          |           |
+| FxRainbowOption                  | Expiry                 | instrument_schedule_dates[exercise_dates].schedule_date                            |           |
+| FxRainbowOption                  | PutCall                | instrument_options.option_type                                                     | sign      |
+| FxRainbowOption                  | Strike                 | product.strike                                                                     |           |
+| FxRainbowOption                  | LongShort              | instrument_options.long_short                                                      | sign      |
+| FxRainbowOption                  | Notional               | product.notional                                                                   |           |
+| FxRainbowOption                  | Settlement             | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date |           |
+| FxRainbowOption                  | PayCcy                 | product.currency                                                                   |           |
 
 * Classes
 
@@ -448,6 +592,10 @@ generator and the import write it through one path.
 | callable_swap_call_date                     |
 | callable_swap_instrument                    |
 | cap_floor_instrument                        |
+| cbo_instrument                              |
+| cbo_basket_member                           |
+| cbo_structure                               |
+| cbo_tranche                                 |
 | commodity_basket_constituent                |
 | credit_basket_constituent                   |
 | credit_default_swap_instrument              |
@@ -472,8 +620,10 @@ generator and the import write it through one path.
 | instrument_schedule_date                    |
 | instrument_strike                           |
 | instrument_underlying                       |
+| instrument_value                            |
 | knock_out_swap_instrument                   |
 | range_bound                                 |
+| rate_digital_option_instrument              |
 | risk_participation_agreement_instrument     |
 | swap_leg                                    |
 | swap_leg_amount                             |
@@ -517,11 +667,19 @@ hold no row for the trade and read as empty.
 | credit_instrument                | index_credit_default_swap_instrument |
 | credit_instrument                | index_credit_default_swap_option_instrument |
 | credit_instrument                | risk_participation_agreement_instrument |
+| credit_instrument                | cbo_instrument                     |
 | credit_instrument                | synthetic_cdo_instrument           |
 | cash_position_instrument         | cash_position_instrument           |
 | equity_accumulator_instrument    | equity_accumulator_instrument      |
 | equity_asian_option_instrument   | equity_asian_option_instrument     |
 | equity_barrier_option_instrument | equity_barrier_option_instrument   |
+| equity_basket_option_instrument  | equity_basket_option_instrument    |
+| equity_basket_variance_swap_instrument | equity_basket_variance_swap_instrument |
+| equity_forward_volatility_agreement_instrument | equity_forward_volatility_agreement_instrument |
+| equity_best_entry_option_instrument | equity_best_entry_option_instrument |
+| equity_strike_resettable_option_instrument | equity_strike_resettable_option_instrument |
+| equity_window_barrier_option_instrument | equity_window_barrier_option_instrument |
+| equity_generic_barrier_option_instrument | equity_generic_barrier_option_instrument |
 | equity_digital_option_instrument | equity_digital_option_instrument   |
 | equity_forward_instrument        | equity_forward_instrument          |
 | equity_option_instrument         | equity_option_instrument           |
@@ -533,6 +691,17 @@ hold no row for the trade and read as empty.
 | fx_asian_forward_instrument      | fx_asian_forward_instrument        |
 | fx_asian_option_instrument       | fx_asian_option_instrument         |
 | fx_barrier_option_instrument     | fx_barrier_option_instrument       |
+| fx_basket_option_instrument      | fx_basket_option_instrument        |
+| fx_basket_variance_swap_instrument | fx_basket_variance_swap_instrument |
+| fx_forward_volatility_agreement_instrument | fx_forward_volatility_agreement_instrument |
+| fx_best_entry_option_instrument | fx_best_entry_option_instrument |
+| fx_strike_resettable_option_instrument | fx_strike_resettable_option_instrument |
+| fx_window_barrier_option_instrument | fx_window_barrier_option_instrument |
+| fx_worst_of_basket_swap_instrument | fx_worst_of_basket_swap_instrument |
+| autocallable_instrument | autocallable_instrument |
+| double_digital_option_instrument | double_digital_option_instrument |
+| european_option_barrier_instrument | european_option_barrier_instrument |
+| performance_option_instrument | performance_option_instrument |
 | fx_digital_option_instrument     | fx_digital_option_instrument       |
 | fx_forward_instrument            | fx_forward_instrument              |
 | fx_vanilla_option_instrument     | fx_vanilla_option_instrument       |
@@ -544,6 +713,7 @@ hold no row for the trade and read as empty.
 | rate_instrument                  | cap_floor_instrument               |
 | rate_instrument                  | fra_instrument                     |
 | rate_instrument                  | inflation_swap_instrument          |
+| rate_instrument                  | rate_digital_option_instrument     |
 | rate_instrument                  | knock_out_swap_instrument          |
 | rate_instrument                  | swaption_instrument                |
 | rate_instrument                  | vanilla_swap_instrument            |

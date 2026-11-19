@@ -164,6 +164,7 @@ The staged image, base64-encoded as the live column carries it.
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: image
 :entity_plural_short:   images
 :entity_singular_words: asset image

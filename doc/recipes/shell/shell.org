@@ -2176,3 +2176,99 @@ tangled into the runnable script library
 * Series Identity Shapes
 
 - [[id:424D435E-B5A9-5042-8D95-615970844601][How do I run the series_identity_shapes commands from the shell?]]
+
+* Cash Position Instruments
+
+- [[id:1DE55EAC-4CAF-5317-A3DD-74BF926C8D93][How do I run the cash_position_instruments commands from the shell?]]
+
+* Cbo Instruments
+
+- [[id:6CEF2BC7-BFC1-5452-9212-87689618C81D][How do I run the cbo_instruments commands from the shell?]]
+
+* Equity Pairwise Variance Swap Instruments
+
+- [[id:603779D2-32E3-51C1-ADB0-C194B62A30A7][How do I run the equity_pairwise_variance_swap_instruments commands from the shell?]]
+
+* Fx Asian Option Instruments
+
+- [[id:2356A572-92CA-569B-99E8-74F59786F296][How do I run the fx_asian_option_instruments commands from the shell?]]
+
+* Fx Pairwise Variance Swap Instruments
+
+- [[id:D385D2DE-92AA-5A4E-BB8E-8A3C9D5BD461][How do I run the fx_pairwise_variance_swap_instruments commands from the shell?]]
+
+* Rate Digital Option Instruments
+
+- [[id:2FF607F2-5F32-5E47-BED2-F33C8F9FC6A2][How do I run the rate_digital_option_instruments commands from the shell?]]
+
+* Equity Basket Option Instruments
+
+- [[id:74D08CD6-E26F-5A4B-AA15-223F6B6584F3][How do I run the equity_basket_option_instruments commands from the shell?]]
+
+* Fx Basket Option Instruments
+
+- [[id:288E17A3-EA62-5365-9CA6-BA451FF7D399][How do I run the fx_basket_option_instruments commands from the shell?]]
+
+* Equity Basket Variance Swap Instruments
+
+- [[id:F7370D75-4466-5DE9-A816-70218B591CA7][How do I run the equity_basket_variance_swap_instruments commands from the shell?]]
+
+* Equity Forward Volatility Agreement Instruments
+
+- [[id:1CE63C7A-9E23-5D04-A199-0E73A9C26745][How do I run the equity_forward_volatility_agreement_instruments commands from the shell?]]
+
+* Fx Basket Variance Swap Instruments
+
+- [[id:B16256C1-EBE5-54F1-B335-9B128BE55856][How do I run the fx_basket_variance_swap_instruments commands from the shell?]]
+
+* Fx Forward Volatility Agreement Instruments
+
+- [[id:B18C02EB-595E-5975-9EB2-A9DA996A2D44][How do I run the fx_forward_volatility_agreement_instruments commands from the shell?]]
+
+* Equity Best Entry Option Instruments
+
+- [[id:1C45C5D4-601A-52FD-8B60-E1CB6ECC22D2][How do I run the equity_best_entry_option_instruments commands from the shell?]]
+
+* Equity Strike Resettable Option Instruments
+
+- [[id:6FCE1EC2-9150-5D8C-9388-8C71996179D3][How do I run the equity_strike_resettable_option_instruments commands from the shell?]]
+
+* Fx Best Entry Option Instruments
+
+- [[id:C9F361F4-4B6D-5762-8C8B-3CDABD840D66][How do I run the fx_best_entry_option_instruments commands from the shell?]]
+
+* Fx Strike Resettable Option Instruments
+
+- [[id:F4EE987B-5A08-5384-AE4A-7711CF459104][How do I run the fx_strike_resettable_option_instruments commands from the shell?]]
+
+* Equity Generic Barrier Option Instruments
+
+- [[id:1FBB587D-914E-5407-B360-A4CEEDB80889][How do I run the equity_generic_barrier_option_instruments commands from the shell?]]
+
+* Equity Window Barrier Option Instruments
+
+- [[id:38C33174-247C-5171-8C95-758107F8955F][How do I run the equity_window_barrier_option_instruments commands from the shell?]]
+
+* Fx Window Barrier Option Instruments
+
+- [[id:2D04D8E7-92B7-55F7-9336-F4F766747496][How do I run the fx_window_barrier_option_instruments commands from the shell?]]
+
+* Fx Worst Of Basket Swap Instruments
+
+- [[id:8C2CF700-CFA2-5795-933A-DDBFBA2F4753][How do I run the fx_worst_of_basket_swap_instruments commands from the shell?]]
+
+* Autocallable Instruments
+
+- [[id:520CA20F-F3A4-5FDE-9F82-84ADD82C295E][How do I run the autocallable_instruments commands from the shell?]]
+
+* Double Digital Option Instruments
+
+- [[id:8DD80372-03A2-5733-B06B-C8F20E03BA13][How do I run the double_digital_option_instruments commands from the shell?]]
+
+* European Option Barrier Instruments
+
+- [[id:8FE9C352-3854-5D62-BC87-3A42A77C0E9E][How do I run the european_option_barrier_instruments commands from the shell?]]
+
+* Performance Option Instruments
+
+- [[id:726AA31A-FF0A-5D43-BEB8-DFBF6AA7C7D1][How do I run the performance_option_instruments commands from the shell?]]

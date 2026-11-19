@@ -391,9 +391,30 @@ TEST_CASE("ores::marketdata::messaging::get_series_ticks_request", "[codec][roun
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_series_ticks_request>();
 }
 
+TEST_CASE("ores::marketdata::messaging::get_provider_ticks_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_provider_ticks_request>();
+}
+
 TEST_CASE("ores::marketdata::messaging::get_series_ticks_response",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_series_ticks_response>();
+}
+
+TEST_CASE("ores::marketdata::messaging::watchable_feed", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::watchable_feed>();
+}
+
+TEST_CASE("ores::marketdata::messaging::list_watchable_feeds_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::marketdata::messaging::list_watchable_feeds_request>();
+}
+
+TEST_CASE("ores::marketdata::messaging::list_watchable_feeds_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::marketdata::messaging::list_watchable_feeds_response>();
 }
 
 TEST_CASE("ores::marketdata::messaging::store_market_state_request",

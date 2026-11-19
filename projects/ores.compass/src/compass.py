@@ -2590,6 +2590,24 @@ def cmd_check(argv):
     return subprocess.run([sys.executable, str(script), *argv]).returncode
 
 
+COMPASS_NG_VERBS = ("generate", "gen", "diff", "hook", "gc", "config")
+
+
+def cmd_compass_ng(argv):
+    """compass generate|diff|hook|gc|config — run the verb in compass-ng.
+
+    compass-ng is the C++ compass, installed once per machine as
+    ~/.local/bin/compass-ng. These verbs are its own, so they forward to it
+    over this checkout rather than living in two tools.
+    """
+    exe = shutil.which("compass-ng")
+    if exe is None:
+        print("❌  compass-ng is not on the PATH. Install it from the compass "
+              "repository with build/scripts/install_compass.sh.", file=sys.stderr)
+        return 2
+    return subprocess.run([exe, "-C", str(PROJECT_ROOT), *argv]).returncode
+
+
 def cmd_lint(argv):
     """compass lint — validate filetags across all .org files."""
     ap = argparse.ArgumentParser(
@@ -5681,6 +5699,62 @@ def _claude_refresh_warnings():
         print()
 
 
+COMPASS_NG_PIN = Path("build/scripts/compass_ng.pin")
+COMPASS_NG_INSTALL = "build/scripts/install_compass.sh, run from a compass checkout"
+
+
+def _version_fields(text):
+    return dict(re.findall(r"^(commit|committed): (\S+)", text, re.M))
+
+
+def _committed_at(fields):
+    from datetime import datetime
+    return datetime.fromisoformat(fields["committed"])
+
+
+def compass_ng_problem(root=None):
+    """Why this machine's compass-ng does not meet the pin, or None when it does.
+
+    The pin names the build ORE Studio needs. An installed build committed at or
+    after it meets it; commit times order the builds without the compass history.
+    """
+    root = Path(root or PROJECT_ROOT)
+    pin_path = root / COMPASS_NG_PIN
+    if not pin_path.is_file():
+        return None
+    pin = _version_fields(pin_path.read_text())
+    try:
+        wanted = _committed_at(pin)
+    except (KeyError, ValueError):
+        return f"{COMPASS_NG_PIN} does not state a commit and a commit time"
+    exe = shutil.which("compass-ng")
+    if exe is None:
+        return "compass-ng is not installed"
+    try:
+        out = subprocess.run([exe, "--version"], capture_output=True, text=True,
+                             timeout=10).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return "compass-ng does not answer --version"
+    installed = _version_fields(out)
+    try:
+        built = _committed_at(installed)
+    except (KeyError, ValueError):
+        return "compass-ng does not state when its build was committed"
+    if built < wanted:
+        return (f"compass-ng {installed.get('commit', 'unknown')[:7]} is older than the "
+                f"{pin.get('commit', 'unknown')[:7]} ORE Studio needs")
+    return None
+
+
+def _compass_ng_warning():
+    problem = compass_ng_problem()
+    if problem:
+        print_instruction(INSTRUCTION_MANDATORY,
+                          f"{problem}; install the pinned build, as How do I install and "
+                          "update compass-ng? says:", COMPASS_NG_INSTALL)
+        print()
+
+
 def _claude_project_slug(path):
     """Mirror Claude Code's ~/.claude/projects/<slug> naming: every
     non-alphanumeric character in the absolute path becomes a dash."""
@@ -5800,6 +5874,7 @@ def cmd_bearings(argv):
     print(f"  Your name is: {identity}\n")
 
     _claude_refresh_warnings()
+    _compass_ng_warning()
 
     # ── LLM entry point ─────────────────────────────────────────────────────
     _bearings_section("🤖", "If you are an LLM, read this first",
@@ -7837,18 +7912,19 @@ def _read_env_map() -> dict:
 
 
 def cmd_image(argv):
-    """compass image build — Build container images (base + overlays)."""
+    """compass image — stage, build and publish the container images."""
     import image_build
-    # argv[0] is "build" — the subcommand; pass the rest through.
-    if argv and argv[0] == "build":
-        # The staging script and podman read ORES_PRESET and the rest of
-        # .env from the process environment, so export it the way the
-        # shell pillar does. A missing preset would stage the wrong build.
+    # argv[0] is the subcommand; pass the rest through.
+    if argv and argv[0] in ("build", "stage", "publish"):
+        # The staging script and the container engine read ORES_PRESET and
+        # the rest of .env from the process environment, so export it the
+        # way the shell pillar does. A missing preset would stage the wrong
+        # build.
         os.environ.update(_read_env_map())
-        return image_build.run(argv[1:], PROJECT_ROOT)
+        # run() reads the subcommand off the front and dispatches on it.
+        return image_build.run(argv, PROJECT_ROOT)
     # Unknown subcommand or bare "compass image".
-    print("usage: compass image build [--base-only|--overlays-only|--nats|--compute]",
-          file=sys.stderr)
+    print("usage: compass image {build,stage,publish} [options]", file=sys.stderr)
     return 2
 
 
@@ -8200,6 +8276,8 @@ def main():
         sys.exit(cmd_lint(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "check":
         sys.exit(cmd_check(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] in COMPASS_NG_VERBS:
+        sys.exit(cmd_compass_ng(sys.argv[1:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "codegen":
         sys.exit(cmd_codegen(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
@@ -8248,6 +8326,7 @@ def main():
         "  Test:      test\n"
         "  Build:     build\n"
         "  Codegen:   codegen generate | codegen regenerate | codegen entity\n"
+        "  compass-ng: generate | diff | hook | gc | config\n"
         "  Site:      site\n"
         "  Operate:   services, claude, open-as\n"
         "  Shell:     shell\n"

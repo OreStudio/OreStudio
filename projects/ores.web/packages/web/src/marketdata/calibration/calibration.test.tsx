@@ -133,6 +133,26 @@ const usdCurve: IrCurveCoverageRow = {
     published_state: 'published',
     gap: '',
     gap_reason: '',
+    curves: [
+        {
+            bootstrap_config_id: '55555555-5555-4555-8555-555555555555',
+            name: 'USD SOFR curve',
+            role: 'FUNDING',
+            index_tenor: '',
+            discount_curve_name: '',
+            published_as_of: AS_OF,
+            published_state: 'published',
+        },
+        {
+            bootstrap_config_id: '77777777-7777-4777-8777-777777777777',
+            name: 'USD-LIBOR-3M',
+            role: 'PROJECTION',
+            index_tenor: '3M',
+            discount_curve_name: 'USD SOFR curve',
+            published_as_of: '',
+            published_state: '',
+        },
+    ],
 };
 
 const jpyCurve: IrCurveCoverageRow = {
@@ -147,6 +167,7 @@ const jpyCurve: IrCurveCoverageRow = {
     published_state: '',
     gap: 'no_feed',
     gap_reason: 'No synthetic feed holds this currency.',
+    curves: [],
 };
 
 function calibration(over: Partial<Calibration> = {}): Calibration {
@@ -297,6 +318,19 @@ describe('the interest rates coverage', () => {
         expect(html).toContain('title="2026-11-01 10:00:00.000000Z"');
         expect(html).toContain('<th class="py-2 text-right">Window (days)</th>');
         expect(html).toContain('>90<');
+    });
+
+    it('lists every curve of a currency with its role, and a projection with its tenor and discount curve', () => {
+        const html = render('/market-data/calibration/interest_rates', irCalibration());
+        expect(html.match(/data-ir-curve=/g)).toHaveLength(2);
+        expect(html).toContain(
+            'href="/market-data/curve-analytics?curve=77777777-7777-4777-8777-777777777777"',
+        );
+        expect(html).toContain('>Funding</span>');
+        expect(html).toContain('>Projection</span>');
+        expect(html).toContain('discounts off USD SOFR curve');
+        expect(html).toContain('never published');
+        expect(html).toContain('<th class="py-2">Curves</th>');
     });
 
     it('states a gap with its word and the recorded reason', () => {

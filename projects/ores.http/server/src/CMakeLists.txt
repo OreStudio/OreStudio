@@ -55,6 +55,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.http.api.lib
         ores.http.assets.lib
+        ores.http.compute.lib
         ores.http.core.lib
         ores.http.iam.lib
         ores.http.refdata.lib
@@ -62,6 +63,7 @@ target_link_libraries(${lib_target_name}
         ores.http.marketdata.lib
         ores.http.reporting.lib
         ores.http.trading.lib
+        ores.http.workflow.lib
         ores.eventing.core.lib
         ores.iam.client.lib
         ores.nats.lib

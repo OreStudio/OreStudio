@@ -230,11 +230,17 @@ def _create_sql(tmp_path, model):
 def test_a_routed_table_checks_exactly_the_codes_routed_to_it(tmp_path):
     sql = _create_sql(tmp_path, TRADING / "ores.trading.rate_instruments.org")
 
-    assert (
-        "\"trade_type_code\" in ('Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', "
-        "'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', "
-        "'KnockOutSwap', 'InflationSwap')" in sql
-    )
+    # The expected list comes from the catalogue, so a type routed to the table
+    # is a type the check admits, and the check admits nothing else.
+    catalogue = load_org_trade_type_catalogue_model(CATALOGUE)["trade_type_catalogue"]
+    codes = [
+        code
+        for entry in catalogue["instruments"]
+        if entry["name"] == "rate_instrument"
+        for code in entry["codes"]
+    ]
+    assert codes, "the catalogue routed no code to the rates table"
+    assert f"\"trade_type_code\" in ({', '.join(repr(code) for code in codes)})" in sql
 
 
 def test_no_two_routed_tables_accept_the_same_code():

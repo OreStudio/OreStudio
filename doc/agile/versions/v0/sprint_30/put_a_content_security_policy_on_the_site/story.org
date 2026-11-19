@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: C5CD23A5-4F84-4D3A-AF9C-370FD08A7B8E
+:END:
+#+title: Story: Put a content security policy on the site
+#+description: The BFF serves the browser bundle with no Content-Security-Policy, so a script injected into a page can run with the session's authority. Caddy states HSTS, X-Content-Type-Options, X-Frame-Options and a referrer policy, but nothing restricts where a script, style or connection may come from.
+#+type: story
+#+level: s2
+#+filetags: :web:security:csp:sprint_30:v0:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The site states a Content-Security-Policy on every page it serves, so a script
+that reaches a page without being part of the bundle cannot run, and a page
+cannot load from or talk to a host the policy does not name. The policy is the
+BFF's, so it holds on any host the service runs on, not only behind the proxy.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Nothing. The site answers with HSTS, X-Content-Type-Options, X-Frame-Options and a referrer policy, and with no content security policy. |
+| Waiting on    | Nothing.                               |
+| Next          | Implement the policy in the BFF.       |
+| Last touched  | 2026-11-18                               |
+
+* Acceptance
+
+- Every response that carries a page states a =Content-Security-Policy= whose
+  =default-src= is ='self'=, and which names no host outside the environment.
+- The bundle runs under the policy with no =unsafe-inline= for scripts: the
+  theme script =index.html= inlines is allowed by the hash the build writes,
+  taken from the final page rather than from the source.
+- =style-src= allows what the bundle uses, which today includes inline styles
+  from the component library.
+- =connect-src= reaches the BFF and the NATS monitor the shell reads, and
+  nothing else.
+- =object-src 'none'=, =base-uri 'none'= and =frame-ancestors 'none'= are
+  stated. The proxy keeps =X-Frame-Options= until the policy is enforced, and
+  the policy is stated as a header rather than a meta tag, where
+  =frame-ancestors= and the report-only mode are ignored.
+- The policy is stricter in a built site than under the development server,
+  which needs inline scripts and a websocket, and no test relies on the
+  development policy.
+- A violation is visible: the policy is served in report-only mode for one
+  release before it is enforced, with a =report-to= endpoint that accepts the
+  reports, and the reports are read.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B1CCF799-5B9D-4AE2-A69C-AD87009AAE97][Scaffold story: Put a content security policy on the site]] | DONE | 2026-11-18 | 2026-11-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:986AABE6-7898-4202-A240-427B462AD114][Implement Put a content security policy on the site]] | BACKLOG | | | Initial task for: Put a content security policy on the site |
+
+* Decisions
+
+- *The BFF states the policy, not the proxy.* Caddy is one deployment of the
+  site; a policy written in =build/scripts/expose-web.sh= would be absent from
+  every other host and from the development server.
+- *Hashes before nonces.* The page has one inline script and it is the same one
+  on every load, so its hash is fixed at build time and needs no per-request
+  plumbing. A nonce would make every response uncacheable.
+- *Report-only first.* A policy written against a bundle that grows can break a
+  screen nobody tested; one release of =Content-Security-Policy-Report-Only=
+  with a report path settles the rules before they are enforced.
+
+* Out of scope
+
+- The CSP of the QA route, which already states =default-src 'none'; sandbox=.
+- Subresource integrity for anything the site does not serve itself.
+- A reporting collector; the first release may log the reports instead.

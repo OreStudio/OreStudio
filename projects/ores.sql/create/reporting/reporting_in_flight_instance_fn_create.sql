@@ -33,6 +33,12 @@
  * definition and no filter by state, so a caller that wanted this answer
  * through it would have to page the whole tenant and filter in C++. The
  * question is asked on every trigger, so it is asked here instead.
+ *
+ * The state rows belong to the system tenant, which the guard on the instance
+ * table already requires, so they are joined by id and read as the system's.
+ * Joining them to the instance's own tenant matched nothing, and an instance
+ * whose state cannot be read is indistinguishable from one that has finished:
+ * every trigger then saw an idle definition and admitted another run.
  */
 
 create or replace function ores_reporting_in_flight_instance_fn(
@@ -43,8 +49,8 @@ returns uuid as $$
     select i.id
     from ores_reporting_report_instances_tbl i
     join ores_dq_fsm_states_tbl s
-      on s.tenant_id = i.tenant_id
-     and s.id = i.fsm_state_id
+      on s.id = i.fsm_state_id
+     and s.tenant_id = ores_utility_system_tenant_id_fn()
      and s.valid_to = ores_utility_infinity_timestamp_fn()
     where i.tenant_id = p_tenant_id
       and i.definition_id = p_definition_id

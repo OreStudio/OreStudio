@@ -82,10 +82,12 @@ std::string("G11")
 :PROPERTIES:
 :tablename: ores_refdata_currency_currency_groups_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :name_singular_short: currency_group
 :name_short:          currency_groups
 :name_singular_words: currency group

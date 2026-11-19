@@ -722,6 +722,17 @@ describe('synthetic calibration', () => {
                 published_state: 'published',
                 gap: 'stale_publish',
                 gap_reason: 'The latest curve was published more than 30 minutes ago.',
+                curves: [
+                    {
+                        bootstrap_config_id: OTHER,
+                        name: 'USD-SOFR',
+                        role: 'FUNDING',
+                        index_tenor: '',
+                        discount_curve_name: '',
+                        published_as_of: '2026-01-01 00:00:00Z',
+                        published_state: 'published',
+                    },
+                ],
             },
         ]);
         expect(calls.map((c) => c.subject)).toEqual([

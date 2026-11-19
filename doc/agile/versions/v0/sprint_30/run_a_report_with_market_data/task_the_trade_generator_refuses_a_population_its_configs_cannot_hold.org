@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 1DF91F1D-2AA6-40DD-87A5-160437CEBCDF
+:END:
+#+title: Task: Book the bond codes the seeded population cannot hold
+#+description: At main da9ee3cece the acme_demo provision's generate_trades step refuses: the population of 1000 trades gives bond 40 trades while its 4 configs need 44, so it books nothing and every report runs on an empty book. The seeded total grows to 1100, the smallest that holds the bond codes the generator now cycles.
+#+type: task
+#+level: s1
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
+#+owner: marco
+#+branch: feature/the-trade-generator-refuses-a-population-its-configs-cannot-hold
+#+pr: 4830
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+At main =da9ee3cece=, provisioning =acme_demo= ends its =generate_trades=
+step with a refusal: "The population of 1000 trades gives 'bond' 40 trades,
+and its 4 configs state at least one trade per code it cycles, which is 44.
+A total of 1100 is the smallest that holds them." No trade is booked for any
+party, so every report runs on an empty book.
+
+The refusal is right: a config shorter than its code list books a prefix and
+silently drops the product types past it, which is the opposite of what the
+generator is for. The seeded total is what did not keep up: the option on a
+bond future joined the bond code cycle, taking it from ten codes to eleven,
+and four entities each book a bond config. So the fix is the seeded total,
+and the planner's refusal is the guard that finds the next such drift.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The seeded =acme_demo= total holds every class's code cycle at its share,
+  and eleven hundred is the smallest total that does.
+- The population knob rule is tested at the bond code count the generator
+  actually cycles, and a total below it is refused with the smallest one
+  that holds them.
+- A fresh provision books every code of every class, with the trade step
+  green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4830][#4830]] | [agile] Hold the next asset classes until rates and FX are signed off |
+| [[https://github.com/OreStudio/OreStudio/pull/4828][#4828]] | [iam] Hold the bond codes the seeded population cycles |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The seeded total is eleven hundred, so four per cent of it is the forty-four
+trades the four bond configs need to book one trade per code. The knob fixture
+now carries the bond count the generator cycles, which is what let this drift
+reach main: the fixture said ten codes while the catalogue routed eleven, so the
+rule the planner enforces was never exercised at the real count.
+
+The fix takes effect on a recreated database, because the seeded defaults are
+rows rather than code. A fresh provision is the proof, and the story's proof
+task recreates one anyway.
+
+Found while verifying the story: no report could run on the generated trades
+because the trade step refused before booking any. Fixed here rather than in the
+generator story, which closed before the option on a bond future joined the
+cycle.
+
+* Promoted from capture
+
+Captured 2026-11-17 in the product backlog; promoted preserving the UUID.
+
+** What
+
+At main =da9ee3cece=, provisioning =acme_demo= ends its =generate_trades=
+step with one warning: "The population of 1000 trades gives 'bond' 40
+trades, and its 4 configs state at least one trade per code it cycles,
+which is 44. A total of 1100 is the smallest that holds them." No trade is
+booked for any party. Either the seeded population grows to the size its
+configs need, or the planner books what it can and names the codes it left
+out.
+
+** Why
+
+Every report of a freshly provisioned tenant runs on an empty book, so no
+run can show what the market data work does to the trades.
+
+** References
+
+- Found by the task "Give each party the fixings of the indices its trades
+  use", on 2026-11-17.

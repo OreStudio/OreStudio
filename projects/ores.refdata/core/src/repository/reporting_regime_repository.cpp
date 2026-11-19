@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/reporting_regime.hpp"
 #include "ores.refdata.api/domain/reporting_regime_json_io.hpp" // IWYU pragma: keep.
@@ -103,6 +104,22 @@ using reporting_regime_rows_by_key =
     std::map<std::tuple<std::string, std::string>, std::vector<domain::reporting_regime>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::reporting_regime>
+reporting_regime_claim_rows(const ores::database::context& ctx,
+                            std::vector<domain::reporting_regime> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -121,7 +138,8 @@ reporting_regime_current_rows(reporting_regime_repository& repo,
         coding_scheme_codes.push_back(row.coding_scheme_code);
     }
     reporting_regime_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, codes, coding_scheme_codes))
+    for (auto& item :
+         reporting_regime_claim_rows(ctx, repo.read_latest(ctx, codes, coding_scheme_codes)))
         current[std::make_tuple(item.code, item.coding_scheme_code)].push_back(std::move(item));
     return current;
 }
@@ -184,7 +202,10 @@ reporting_regime_apply_claim(const domain::reporting_regime& v,
 }
 
 void reporting_regime_repository::write(const context& ctx, const domain::reporting_regime& v) {
-    write(ctx, v, reporting_regime_replace_claim(read_latest(ctx, v.code, v.coding_scheme_code)));
+    write(ctx,
+          v,
+          reporting_regime_replace_claim(
+              reporting_regime_claim_rows(ctx, read_latest(ctx, v.code, v.coding_scheme_code))));
 }
 
 void reporting_regime_repository::write(const context& ctx,
@@ -202,11 +223,12 @@ void reporting_regime_repository::write(const context& ctx,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing reporting regime. " << "code: " << v.code
                                << " coding_scheme_code: " << v.coding_scheme_code;
-    const auto t = reporting_regime_apply_claim(v,
-                                                claim,
-                                                reporting_regime_claim_reads_current(claim) ?
-                                                    read_latest(ctx, v.code, v.coding_scheme_code) :
-                                                    std::vector<domain::reporting_regime>{});
+    const auto t = reporting_regime_apply_claim(
+        v,
+        claim,
+        reporting_regime_claim_reads_current(claim) ?
+            reporting_regime_claim_rows(ctx, read_latest(ctx, v.code, v.coding_scheme_code)) :
+            std::vector<domain::reporting_regime>{});
     query_builder::execute_write_query(
         ctx, reporting_regime_mapper::map(t), lg(), "Writing reporting regime to database.");
 }
@@ -237,8 +259,10 @@ void reporting_regime_repository::write(
 std::vector<domain::reporting_regime> reporting_regime_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<reporting_regime_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c, "coding_scheme_code"_c);
 
     return query_builder::execute_read_query<reporting_regime_entity, domain::reporting_regime>(
@@ -255,9 +279,10 @@ std::vector<domain::reporting_regime> reporting_regime_repository::read_latest(
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<reporting_regime_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
                              "coding_scheme_code"_c == coding_scheme_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<reporting_regime_entity, domain::reporting_regime>(
@@ -274,10 +299,12 @@ std::vector<domain::reporting_regime> reporting_regime_repository::read_all(
     BOOST_LOG_SEV(lg(), debug) << "Reading all reporting regime versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<reporting_regime_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "coding_scheme_code"_c == coding_scheme_code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<reporting_regime_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                             "coding_scheme_code"_c == coding_scheme_code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<reporting_regime_entity, domain::reporting_regime>(
         ctx,
@@ -296,10 +323,11 @@ reporting_regime_repository::read_at_version(const context& ctx,
                                << " coding_scheme_code: " << coding_scheme_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<reporting_regime_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "coding_scheme_code"_c == coding_scheme_code &&
-                                            "version"_c == version) |
+                       query_builder::where(
+                           ("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                           "coding_scheme_code"_c == coding_scheme_code && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities =
@@ -365,9 +393,10 @@ reporting_regime_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest reporting regimes with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<reporting_regime_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<reporting_regime_entity,
                                                      domain::reporting_regime>(
@@ -386,8 +415,9 @@ reporting_regime_repository::get_total_regime_count(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active reporting regime count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<reporting_regime_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<reporting_regime_entity>(
         ctx,
@@ -426,9 +456,10 @@ reporting_regime_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<reporting_regime_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c.in(codes) &&
                              "coding_scheme_code"_c.in(coding_scheme_codes) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<reporting_regime_entity, domain::reporting_regime>(

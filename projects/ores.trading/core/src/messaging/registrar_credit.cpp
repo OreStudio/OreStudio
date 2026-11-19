@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trading.core/messaging/cbo_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/credit_basket_constituent_registrar.hpp"
 #include "ores.trading.core/messaging/credit_default_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/credit_instrument_registrar.hpp"
@@ -57,6 +58,10 @@ register_credit_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(synthetic_cdo_subs.begin()),
                 std::make_move_iterator(synthetic_cdo_subs.end()));
+    auto cbo_subs = register_cbo_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(cbo_subs.begin()),
+                std::make_move_iterator(cbo_subs.end()));
     auto credit_linked_swap_subs =
         register_credit_linked_swap_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),

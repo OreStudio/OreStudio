@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 4100E59D-C4FF-49C4-BE01-568782492056
+:END:
+#+title: Let the permission check read codes with digits
+#+description: compass-ng's handler_permissions check reports trading::autocallable_01_instruments:read as checked but never seeded although iam_permissions_populate.sql seeds it; the same happens for performance_option_01_instruments. The codes that contain a digit are the only ones it misses, so its pattern for a permission code appears to exclude digits. The multi-asset entities were named without the digit to work around it.
+#+type: capture
+#+level: cross
+#+filetags: :compass:checks:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the =handler_permissions/unseeded_permission= check of compass-ng read a
+permission code that contains a digit, such as
+=trading::autocallable_01_instruments:read=, as the seed file states it.
+
+* Why
+
+The check reports such a code as checked but never seeded although
+=iam_permissions_populate.sql= seeds it, so a model whose plural carries a
+digit cannot pass the local checks. The multi-asset products were named
+=autocallable_instrument= and =performance_option_instrument= instead of their
+=_01= forms to work around it.
+
+* References
+
+- The multi-asset PR of the task "Hold the remaining fixed-element products on
+  their tables".
+
+* See also
+
+-

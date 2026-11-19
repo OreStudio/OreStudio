@@ -26,6 +26,7 @@
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed_expiry.hpp"
 #include "ores.synthetic.api/export.hpp"
@@ -63,8 +64,8 @@ struct fx_vol_surface_feed_build_input final {
     std::vector<std::string> contributors;
     /// Their noise profiles, in the same order; empty means every one is the clean contributor.
     std::vector<ores::analytics::quant::service::fx_vol_noise_profile> contributor_profiles;
-    /// The pair's quoting convention, which every expiry of the surface is quoted in.
-    ores::analytics::quant::math::fx_quote_convention convention;
+    /// The pair's FX option convention, which states the quoting convention of each expiry.
+    ores::refdata::domain::fx_option_convention convention;
     /// The deltas, besides ATM, to quote a risk reversal and a butterfly at.
     std::vector<double> deltas;
     /// The pair's expiry date rule: the date each expiry the surface quotes is struck at.
@@ -141,8 +142,12 @@ fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
  * latent market correlates the shocks and a surface that correlated them again would move
  * twice as far with spot as it says.
  *
+ * Each expiry is quoted in the convention the pair's FX option convention states for its
+ * tenor, read by reference data's mapper as the calibration reads it.
+ *
  * Refuses a tenor that does not read, expiries that do not rise, ATM total variances that
- * do not rise with them, a segment with no expiry, and a contributor who is named twice.
+ * do not rise with them, a segment with no expiry, a convention that states no quoting
+ * convention for an expiry, and a contributor who is named twice.
  */
 [[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::expected<fx_vol_surface_emitter, std::string>
 make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::uint64_t run_seed);
@@ -207,8 +212,8 @@ public:
      * @brief Sends one contributor's points to an adapter, under that contributor's vendor ids.
      *
      * Every contributor observes the one latent surface this feed holds, so the vendors quote one
-     * market whichever adapters attach. A surface no adapter is attached to publishes its points
-     * as market ticks, as it did before adapters could serve it.
+     * market whichever adapters attach. A contributor no attached adapter serves publishes its
+     * points as market ticks, as every contributor did before adapters could serve them.
      */
     void
     attach(const std::string& adapter_id, const std::string& contributor, point_targets targets);

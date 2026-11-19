@@ -1,0 +1,217 @@
+#!/usr/bin/env python3
+"""Seed the recipes of the scripted twins, from the trade type catalogue.
+
+A product ORE carries in both forms is booked twice: its own element, and a
+generic ScriptedTrade over the library script the catalogue's Scripted forms
+table names. The catalogue's Scripted twin recipes table states where each
+input of the script takes its value from in the native trade's rows. This
+script joins the two tables with the inputs the script library seed mines from
+ORE's library, refuses a recipe that misses an input of its script or names one
+the script does not read, and writes the recipes twice: as the seed of the
+script twin inputs table, and as the table the trade generator compiles in.
+
+Run with no argument to write both files, and with --check to fail when either
+committed file is not what the catalogue gives.
+"""
+import argparse
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+TRANSFORMS = {"sign", "flag"}
+CATALOGUE = ROOT / "projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org"
+LIBRARY_SEED = ROOT / "projects/ores.sql/populate/trading/trading_script_library_populate.sql"
+SEED = ROOT / "projects/ores.sql/populate/trading/trading_script_twin_inputs_populate.sql"
+HEADER = ROOT / "projects/ores.synthetic/core/src/service/script_twin_recipes.hpp"
+
+LICENCE = """/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+"""
+
+
+def org_table(text, heading):
+    """The rows of the first table under the heading, as lists of cells."""
+    start = text.index(f"\n* {heading}\n")
+    end = text.find("\n* ", start + 1)
+    section = text[start:end if end != -1 else len(text)]
+    rows = []
+    for line in section.splitlines():
+        if not line.startswith("|") or line.startswith("|-"):
+            continue
+        rows.append([cell.strip() for cell in line.strip().strip("|").split("|")])
+    return rows[1:]
+
+
+def script_inputs():
+    """Each script's inputs, in the library's order, as (name, type, is_array)."""
+    text = LIBRARY_SEED.read_text()
+    block = text[text.index("insert into ores_trading_script_inputs_tbl"):]
+    pattern = re.compile(r"^    \('([^']+)', ores_utility_system_tenant_id_fn\(\), 0, (\d+), "
+                         r"'([^']+)', '([^']+)', (true|false),", re.M)
+    inputs = {}
+    for script, _, name, typ, array in pattern.findall(block):
+        inputs.setdefault(script, []).append((name, typ, array == "true"))
+    if not inputs:
+        sys.exit(f"found no script input in {LIBRARY_SEED.relative_to(ROOT)}; its layout changed")
+    return inputs
+
+
+def source_parts(source):
+    """The alternatives of an `a or b` source; a quoted literal is one part, whatever it holds."""
+    if len(source) >= 2 and source.startswith("'") and source.endswith("'"):
+        return [source]
+    return source.split(" or ")
+
+
+def recipes():
+    text = CATALOGUE.read_text()
+    forms = {code: script for code, script in org_table(text, "Scripted forms")}
+    library = script_inputs()
+    stated = {}
+    errors, rows = [], []
+    for code, name, source, transform in org_table(text, "Scripted twin recipes"):
+        if transform and transform not in TRANSFORMS:
+            errors.append(f"{code}: {name} names the unknown transform {transform}")
+        for part in source_parts(source):
+            if part.startswith("'") != part.endswith("'"):
+                errors.append(f"{code}: {name} states an unclosed literal {part}")
+        stated.setdefault(code, {})[name] = (source, transform or None)
+    schedule = re.compile(r"instrument_schedules\[\w+\]")
+    # A type of the Scripted forms table with no recipe is not twinned yet: the
+    # recipes land a few products at a time.
+    for code in sorted(stated):
+        if code not in forms:
+            errors.append(f"{code}: a recipe for a type the Scripted forms table does not name")
+            continue
+        script = forms[code]
+        inputs = library.get(script, [])
+        names = [name for name, _, _ in inputs]
+        for name in stated[code]:
+            if name not in names:
+                errors.append(f"{code}: {script} reads no input {name}")
+        for sequence, (name, typ, array) in enumerate(inputs, 1):
+            if name not in stated[code]:
+                errors.append(f"{code}: the recipe states no source for {script}'s {name}")
+                continue
+            source, transform = stated[code][name]
+            parts = source_parts(source)
+            for part in parts:
+                if part.startswith("'") or "." in part:
+                    continue
+                if not schedule.fullmatch(part):
+                    errors.append(f"{code}: {name} names no column in {part}")
+                elif typ != "Event":
+                    errors.append(f"{code}: {name} reads a schedule but is not an Event")
+                elif len(parts) > 1:
+                    errors.append(f"{code}: {name} reads a whole schedule, which takes no fallback")
+            rows.append((code, sequence, script, name, typ, array, source, transform))
+    if errors:
+        sys.exit("\n".join(errors))
+    return rows
+
+
+def literal(value):
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    return "'" + value.replace("'", "''") + "'"
+
+
+def seed(rows):
+    out = ["/* Generated by projects/ores.sql/utility/generate_script_twins.py from the trade\n"
+           " * type catalogue. Do not edit: run the script, which --check verifies. */\n\n"
+           "\\echo '--- Script twin inputs ---'\n\n"]
+    if rows:
+        body = ",\n".join(
+            "    (" + literal(code) + ", ores_utility_system_tenant_id_fn(), 0, "
+            + ", ".join(literal(v) for v in (sequence, script, name, typ, array, source,
+                                             transform))
+            + ", current_user, 'system.initial_load', 'Seed the script twin recipes')"
+            for code, sequence, script, name, typ, array, source, transform in rows)
+        out.append("insert into ores_trading_script_twin_inputs_tbl (\n"
+                   "    trade_type_code, tenant_id, version, sequence_number, script_name, "
+                   "input_name, data_type, is_array, source, transform,\n"
+                   "    modified_by, change_reason_code, change_commentary\n"
+                   f") values\n{body}\n"
+                   "on conflict (tenant_id, trade_type_code, sequence_number)\n"
+                   "where valid_to = ores_utility_infinity_timestamp_fn()\ndo nothing;\n")
+    return "".join(out)
+
+
+def cxx(value):
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def header(rows):
+    lines = [LICENCE,
+             "// Generated by projects/ores.sql/utility/generate_script_twins.py from the trade\n"
+             "// type catalogue. Do not edit: run the script, which --check verifies.\n",
+             "#ifndef ORES_SYNTHETIC_CORE_SERVICE_SCRIPT_TWIN_RECIPES_HPP",
+             "#define ORES_SYNTHETIC_CORE_SERVICE_SCRIPT_TWIN_RECIPES_HPP\n",
+             "#include <string_view>\n",
+             "namespace ores::synthetic::service {\n",
+             "/// One input of a scripted twin and where its value comes from in the native trade.",
+             "struct script_twin_recipe final {",
+             "    std::string_view trade_type_code;",
+             "    std::string_view script_name;",
+             "    std::string_view input_name;",
+             "    std::string_view data_type;",
+             "    bool is_array;",
+             "    std::string_view source;",
+             "    std::string_view transform;",
+             "};\n",
+             "/// The recipes, by trade type, each in its script's input order.",
+             "inline constexpr script_twin_recipe script_twin_recipes[] = {"]
+    for code, _, script, name, typ, array, source, transform in rows:
+        lines.append(f"    {{{cxx(code)}, {cxx(script)}, {cxx(name)}, {cxx(typ)}, "
+                     f"{'true' if array else 'false'}, {cxx(source)}, {cxx(transform or '')}}},")
+    lines += ["};\n", "}\n", "#endif"]
+    text = "\n".join(lines) + "\n"
+    # The header is formatted as every other source is, so the format check passes it.
+    try:
+        return subprocess.run(["clang-format", f"--assume-filename={HEADER}"], input=text,
+                              capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError) as error:
+        sys.exit(f"clang-format, which formats the generated header, failed: {error}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--check", action="store_true")
+    args = parser.parse_args()
+    rows = recipes()
+    outputs = {SEED: seed(rows), HEADER: header(rows)}
+    if args.check:
+        stale = [str(p.relative_to(ROOT)) for p, text in outputs.items()
+                 if not p.exists() or p.read_text() != text]
+        if stale:
+            sys.exit("not what the catalogue gives; run the script: " + ", ".join(stale))
+        return
+    for path, text in outputs.items():
+        path.write_text(text)
+
+
+if __name__ == "__main__":
+    main()

@@ -81,7 +81,7 @@ create table if not exists "ores_trading_rate_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('SwaptionStraddle', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'InflationSwap')),
+    check ("trade_type_code" in ('RateDigitalOption', 'SwaptionStraddle', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'InflationSwap')),
     check ("maturity_date" is null or "start_date" is null or "maturity_date" > "start_date")
 );
 
@@ -281,6 +281,9 @@ begin
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
     delete from "ores_trading_cap_floor_instruments_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_rate_digital_option_instruments_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
     delete from "ores_trading_swaption_instruments_tbl"

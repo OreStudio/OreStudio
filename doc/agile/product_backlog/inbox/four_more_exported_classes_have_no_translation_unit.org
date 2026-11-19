@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 0F3DC55C-2ED1-40B7-A279-DB1F38C67765
+:END:
+#+title: Four exported classes have no translation unit in their own …
+#+description: Four exported classes have no translation unit in their own project including the header, so Windows will fail to link their members the same way service_error did: awaitable_body_source and body_source in ores.http.api, repository_exception in ores.database, tenant_provisioning_service in ores.iam.core.
+#+type: capture
+#+level: cross
+#+filetags: :windows:link:service:export:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Four classes carry an export macro but no translation unit in their own project includes their
+header, which is the shape that broke both Windows nightlies on =service_error=:
+
+| class | header |
+|---|---|
+| =awaitable_body_source= | =projects/ores.http/api/include/ores.http.api/domain/awaitable_body_source.hpp= |
+| =body_source= | =projects/ores.http/api/include/ores.http.api/domain/body_source.hpp= |
+| =repository_exception= | =projects/ores.database/include/ores.database/repository/repository_exception.hpp= |
+| =tenant_provisioning_service= | =projects/ores.iam/core/include/ores.iam.core/service/tenant_provisioning_service.hpp= |
+
+Found by listing every `class XXX_EXPORT Name` in the tree (3,418 of them) and asking which projects
+have no `.cpp` that includes the header.
+
+* Why
+
+An exported class whose members are all inline is emitted only in a translation unit that includes
+its header. Without one the DLL exports nothing and every consumer that imports the class fails to
+link — on Windows only, so Linux stays green and the fault surfaces a day later in the nightly.
+
+Two of the four are interfaces with no state, where removing the export macro is the honest fix; the
+other two want a unit, as =service_error= got. Each needs the same judgement.
+
+* References
+
+- The fix that proved the pattern: `projects/ores.service/src/messaging/service_error.cpp`.
+- The audit: walk `projects/**/*.hpp` for `class (ORES_\w+_EXPORT) (\w+)`, then look for a `.cpp`
+  in the same project that includes the header by name.
+
+* References
+
+-
+
+* See also
+
+-

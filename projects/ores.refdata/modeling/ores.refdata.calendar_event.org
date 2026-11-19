@@ -167,6 +167,7 @@ std::string("federalreserve.gov")
 :PROPERTIES:
 :tablename: ores_refdata_calendar_events_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Foreign keys
@@ -174,6 +175,7 @@ std::string("federalreserve.gov")
 ** calendar_code
 :PROPERTIES:
 :table:              ores_refdata_calendars_tbl
+:system_tenant_visible: true
 :target_column:      code
 :nullable:           false
 :error_message:      Invalid calendar_code: %. No active calendar found with this code.

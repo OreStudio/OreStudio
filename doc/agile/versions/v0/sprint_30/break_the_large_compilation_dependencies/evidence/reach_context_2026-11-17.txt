@@ -1,0 +1,13 @@
+objects 939, targets 224
+
+ objects  targets  header
+     376       68  ores.database/domain/context.hpp
+       1        1  ores.database/domain/connection.hpp
+     363       61  ores.database/domain/context_fwd.hpp
+     376       68  ores.utility/uuid/tenant_id_fwd.hpp
+     837      156  ores.utility/uuid/tenant_id.hpp
+     878      197  boost/uuid/uuid.hpp
+     189       35  libpq-fe.h
+
+commit: working tree on feature/split-the-context-into-its-two-parts
+command: header_blast_radius.parse_deps over `ninja -t deps` of build/output/linux-clang-release-ninja

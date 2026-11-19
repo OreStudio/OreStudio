@@ -1,0 +1,384 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 7FDC17BC-2519-43CD-81CE-95F70ACD47AB
+:ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.equity_generic_barrier_option_instrument
+#+description: Codegen entity model for the trading =equity_generic_barrier_option_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: equity_generic_barrier_option_instrument
+#+entity_plural: equity_generic_barrier_option_instruments
+#+entity_title: Equity Generic Barrier Option Instrument
+#+brief: Equity generic barrier option.
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+Represents EquityGenericBarrierOption trades: a vanilla, asset-or-nothing
+or cash-or-nothing option with barriers watched on a schedule. ORE reads it
+through a class of its own. The OptionData block is an instrument option row
+with its exercise dates; each BarrierData under =Barriers= is an instrument
+barrier row under the role =barrier=, and each under =TransatlanticBarrier=
+one under =transatlantic=; the barrier =ScheduleData= is an instrument
+schedule row under =barrier_schedule=; the underlying is an instrument
+underlying row under the role =underlying=.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:   trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+Routes ORE product types: EquityGenericBarrierOption.
+
+#+begin_src cpp :name generator
+std::string("EquityGenericBarrierOption")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:       identity
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The trade this instrument belongs to, and the instrument's own key.
+
+The trade id identifies both the trade and its instrument, so the
+instrument carries no identity of its own: this column is the key, and the
+trade it names gives the instrument its scope.
+
+** trade_activity_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
+** pay_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+The currency the option pays in, as =PayCurrency= states it.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** quantity
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:economic: true
+:END:
+
+The number of units, as =Quantity= states it.
+
+#+begin_src cpp :name generator
+1000.0
+#+end_src
+
+** strike
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The strike, as =Strike= states it.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("100").value()
+#+end_src
+
+** amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The cash amount a cash-or-nothing payoff pays, as =Amount= states it.
+
+** settlement_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The date the option pays, as =SettlementDate= states it.
+
+** settlement_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The period from expiry to payment, as =SettlementLag= states it.
+
+** settlement_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar of the settlement lag, as =SettlementCalendar= states it.
+
+** settlement_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The convention of the settlement lag, as =SettlementConvention= states it.
+
+** barrier_start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The first date the barriers are watched, as the =StartDate= of =Barriers=
+states it.
+
+#+begin_src cpp :name generator
+std::optional<std::chrono::year_month_day>(std::chrono::year_month_day{std::chrono::year{2027}, std::chrono::month{1}, std::chrono::day{4}})
+#+end_src
+
+** barrier_end_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The last date the barriers are watched, as the =EndDate= of =Barriers=
+states it.
+
+#+begin_src cpp :name generator
+std::optional<std::chrono::year_month_day>(std::chrono::year_month_day{std::chrono::year{2027}, std::chrono::month{6}, std::chrono::day{30}})
+#+end_src
+
+** kiko_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How a knock-in and a knock-out interact, as the =KikoType= of =Barriers=
+states it.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:economic: false
+:END:
+
+Optional free-text description.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.identity.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.identity.trade_activity_id = activity.id;
+    }
+#+end_src
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_equity_generic_barrier_options_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "pay_currency" <> '' |
+| "quantity" is null or "quantity" > 0 |
+| "strike" is null or "strike" > 0 |
+| "kiko_type" is null or "kiko_type" in ('KoAlways', 'KoBeforeKi', 'KoAfterKi') |
+| "barrier_start_date" is null or "barrier_end_date" is null or "barrier_end_date" >= "barrier_start_date" |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| trade_type | tenant_id, trade_type_code | false | true | |
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, the primary key) and the
+columns marked =:group: identity= above fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: equity_generic_barrier_option_instrument
+:entity_plural_short:   equity_generic_barrier_option_instruments
+:entity_singular_words: equity generic barrier option instrument
+:entity_plural_words:   equity generic barrier option instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: egbo
+:END:
+
+** Table display
+
+|  column                    |  header       |
+|--------------------------|-------------|
+|  identity.trade_id    |  ID           |
+|  identity.trade_type_code  |  Type         |
+|  pay_currency              |  Ccy          |
+|  quantity                  |  Quantity     |
+|  strike                    |  Strike       |
+|  audit.recorded_at         |  Recorded At  |
+
+** Custom repository methods
+
+** Write observation
+
+The trade's economic digest observes every write of this component. The
+observer's specialisation must be visible where the repository writes, so the
+repository includes it.
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.trading.core/repository/trade_write_observation.hpp"
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] -- component group overview.

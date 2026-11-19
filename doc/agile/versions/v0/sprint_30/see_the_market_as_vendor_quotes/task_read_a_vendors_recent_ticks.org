@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 454D2B6D-9EC8-4801-A2AB-1C5C46338D97
+:END:
+#+title: Task: Read a vendor's recent ticks through the subscription
+#+description: Give the quotes view its history: the recent ticks of a vendor's series from the store, behind the party's subscription, with the system tenant reading every vendor.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:ticks:history:see_the_market_as_vendor_quotes:sprint_30:v0:
+#+owner: marco
+#+branch: feature/read-a-vendors-recent-ticks
+#+pr: 4882
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A screen that opens on a vendor's quotes fills its recent history in one call, from the store the ingest writes, and the subscription decides what it may read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-18                               |
+
+* Acceptance
+
+- One read returns a vendor's recent ticks for the series a view shows, from the store.
+- The read refuses a vendor the party does not subscribe to, and the system tenant reads every vendor.
+- The read and the live subject agree: the newest tick the read returns is the last one the subject carried.
+
+* Plan
+
+1. *The call.* =get_provider_ticks= names the provider and the series URI, as
+   the live subject and the stream do, so a view of a vendor needs no series of
+   the party and the system tenant can read. It returns the history call's
+   reply. A point URI names its series.
+2. *The rule.* =may_read_ticks(ctx, provider, for_display)=: every provider for
+   the system tenant; for a party, the display right for a screen, display or
+   non-display for a service.
+3. *The reader.* =series_tick_reader= shares the span checks and the stream
+   read between the two calls.
+4. *The refusal.* A URI the codec cannot read is refused with a new outcome,
+   =uri_invalid=, and not answered with an empty reply.
+5. *Tests.* The read by series and by point URI; the display right for a screen
+   and the non-display right for a service; the system tenant; no party; a bad
+   URI.
+
+=get_series_ticks= keeps its rule (display or non-display), because its callers
+are charts of a party's own series and services; moving it to the use is a change
+of its own.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: =get_series_ticks= already reads a series' ticks behind the subscription. There is no recent window; it reads the store. The work is the system tenant rule in =tick_entitlement.cpp=, and the display right for a read that a screen makes: =may_read_ticks= accepts the non-display right today.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4882][#4882]] | [marketdata] Read a provider's ticks by the series URI, for every tenant |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The two may_read_ticks overloads differ for the system tenant | tick_entitlement.hpp | Accept | The two-argument overload states why it gives the system tenant no pass. |
+| 2 | The system tenant reads without the display right | tick_entitlement.cpp | Decline | The product owner's decision: the system tenant sees every provider. |
+| 3 | The codec's text reaches the reply | series_tick_reader.cpp | Decline | The other refusals of a URI carry the codec's message too; it is what tells the caller what is wrong. |
+| 4 | The handler repeats get_ticks | series_ticks_handler.hpp | Decline | Two variants; a helper would cost more reading than it saves. |
+| 5 | System tenant and point URI tests | service_series_tick_reader_tests.cpp | No change | Both exist: the_system_tenant_reads_a_provider_no_party_of_it_subscribes_to and a_provider_read_by_a_point_uri_reads_the_points_series. |
+
+* Result
+
+- =marketdata.v1.ops.get_provider_ticks= reads a provider's series by the
+  provider code and the series URI, in one reply of the history call's shape. A
+  point URI names its series; a URI the codec cannot read is refused with the new
+  outcome =uri_invalid=.
+- The rule is =may_read_ticks(ctx, provider, for_display)=: every provider for the
+  system tenant; the display right for a screen and either right for a service.
+- Tests: the read by series and by point URI, the display right for a screen and
+  the non-display right for a service, the system tenant, no party, a bad URI;
+  and a loop test in which the newest tick of the read is the tick the feed
+  subject carried, at the same instant and value.
+- Full build clean. Suites: market data service 318 cases, core 467, API 1039 in
+  the codec tests, database 78, shell application 65, HTTP market data 34; BFF
+  1313; all pass.

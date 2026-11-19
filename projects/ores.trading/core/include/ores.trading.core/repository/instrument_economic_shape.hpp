@@ -27,41 +27,61 @@
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
+#include "ores.trading.core/repository/autocallable_instrument_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
 #include "ores.trading.core/repository/cash_position_instrument_repository.hpp"
+#include "ores.trading.core/repository/cbo_instrument_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
 #include "ores.trading.core/repository/credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/credit_instrument_repository.hpp"
 #include "ores.trading.core/repository/credit_linked_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/double_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_accumulator_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_basket_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_basket_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_best_entry_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_forward_volatility_agreement_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_generic_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_pairwise_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_position_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_strike_resettable_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_window_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/european_option_barrier_instrument_repository.hpp"
 #include "ores.trading.core/repository/fra_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_accumulator_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_asian_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_basket_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_basket_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_best_entry_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_forward_volatility_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_pairwise_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_strike_resettable_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_window_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_worst_of_basket_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
+#include "ores.trading.core/repository/performance_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/rate_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/risk_participation_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/scripted_instrument_repository.hpp"
@@ -86,6 +106,9 @@ void read_instrument_components(const ores::database::context& ctx,
                                 domain::instrument_table table,
                                 Append&& append) {
     switch (table) {
+        case domain::instrument_table::autocallable_instrument:
+            append(autocallable_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
         case domain::instrument_table::bond_instrument:
             append(bond_instrument_repository{}.read_latest(ctx, trade_id));
             break;
@@ -106,7 +129,11 @@ void read_instrument_components(const ores::database::context& ctx,
             append(index_credit_default_swap_option_instrument_repository{}.read_latest(ctx,
                                                                                         trade_id));
             append(risk_participation_agreement_instrument_repository{}.read_latest(ctx, trade_id));
+            append(cbo_instrument_repository{}.read_latest(ctx, trade_id));
             append(synthetic_cdo_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::double_digital_option_instrument:
+            append(double_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::equity_accumulator_instrument:
             append(equity_accumulator_instrument_repository{}.read_latest(ctx, trade_id));
@@ -117,11 +144,28 @@ void read_instrument_components(const ores::database::context& ctx,
         case domain::instrument_table::equity_barrier_option_instrument:
             append(equity_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
+        case domain::instrument_table::equity_basket_option_instrument:
+            append(equity_basket_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_basket_variance_swap_instrument:
+            append(equity_basket_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_best_entry_option_instrument:
+            append(equity_best_entry_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
         case domain::instrument_table::equity_digital_option_instrument:
             append(equity_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::equity_forward_instrument:
             append(equity_forward_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_forward_volatility_agreement_instrument:
+            append(equity_forward_volatility_agreement_instrument_repository{}.read_latest(
+                ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_generic_barrier_option_instrument:
+            append(
+                equity_generic_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::equity_option_instrument:
             append(equity_option_instrument_repository{}.read_latest(ctx, trade_id));
@@ -133,11 +177,21 @@ void read_instrument_components(const ores::database::context& ctx,
         case domain::instrument_table::equity_position_instrument:
             append(equity_position_instrument_repository{}.read_latest(ctx, trade_id));
             break;
+        case domain::instrument_table::equity_strike_resettable_option_instrument:
+            append(
+                equity_strike_resettable_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
         case domain::instrument_table::equity_swap_instrument:
             append(equity_swap_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::equity_variance_swap_instrument:
             append(equity_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_window_barrier_option_instrument:
+            append(equity_window_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::european_option_barrier_instrument:
+            append(european_option_barrier_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::fx_accumulator_instrument:
             append(fx_accumulator_instrument_repository{}.read_latest(ctx, trade_id));
@@ -151,20 +205,45 @@ void read_instrument_components(const ores::database::context& ctx,
         case domain::instrument_table::fx_barrier_option_instrument:
             append(fx_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
+        case domain::instrument_table::fx_basket_option_instrument:
+            append(fx_basket_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_basket_variance_swap_instrument:
+            append(fx_basket_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_best_entry_option_instrument:
+            append(fx_best_entry_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
         case domain::instrument_table::fx_digital_option_instrument:
             append(fx_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::fx_forward_instrument:
             append(fx_forward_instrument_repository{}.read_latest(ctx, trade_id));
             break;
+        case domain::instrument_table::fx_forward_volatility_agreement_instrument:
+            append(
+                fx_forward_volatility_agreement_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
         case domain::instrument_table::fx_pairwise_variance_swap_instrument:
             append(fx_pairwise_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_strike_resettable_option_instrument:
+            append(fx_strike_resettable_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::fx_vanilla_option_instrument:
             append(fx_vanilla_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::fx_variance_swap_instrument:
             append(fx_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_window_barrier_option_instrument:
+            append(fx_window_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_worst_of_basket_swap_instrument:
+            append(fx_worst_of_basket_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::performance_option_instrument:
+            append(performance_option_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::rate_instrument:
             append(rate_instrument_repository{}.read_latest(ctx, trade_id));
@@ -173,6 +252,7 @@ void read_instrument_components(const ores::database::context& ctx,
             append(cap_floor_instrument_repository{}.read_latest(ctx, trade_id));
             append(fra_instrument_repository{}.read_latest(ctx, trade_id));
             append(inflation_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            append(rate_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
             append(knock_out_swap_instrument_repository{}.read_latest(ctx, trade_id));
             append(swaption_instrument_repository{}.read_latest(ctx, trade_id));
             append(vanilla_swap_instrument_repository{}.read_latest(ctx, trade_id));

@@ -1,0 +1,237 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 1119CA97-770A-47F8-A4E1-261311FE7B21
+:ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.cbo_instrument
+#+description: Codegen entity model for the trading =cbo_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: CBO investment facts.
+#+entity_singular: cbo_instrument
+#+entity_plural: cbo_instruments
+#+entity_title: CBO Instrument
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+Represents a CBO: an investment in one tranche of a collateralised bond
+obligation, as =CBOInvestment= states it. The structure the investment
+names is held by its own task, "Hold a CBO structure stated inline".
+
+This row is the family's fact table, not its identity. The header,
+=ores.trading.credit_instruments=, holds the trade type code, the party, the
+instrument's start and maturity dates and its description; this table holds
+only the product's own fields, and joins the header by =trade_id=.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:economic:    false
+:END:
+
+The trade this instrument belongs to, and the instrument's own key.
+
+The trade id identifies both the trade and its instrument, so the
+instrument carries no identity of its own: this column is the key, and the
+trade it names gives the instrument its scope.
+
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:economic: false
+:END:
+
+The activity that wrote this version.
+
+** tranche_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+The tranche invested in, as =TrancheName= states it.
+
+#+begin_src cpp :name generator
+std::string("Senior")
+#+end_src
+
+** notional
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: ores::utility::decimal::decimal
+:nullable: false
+:economic: true
+:END:
+
+The amount invested, as =Notional= states it.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("1000000").value()
+#+end_src
+
+** structure_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+The structure the tranche belongs to, as =StructureId= states it.
+
+#+begin_src cpp :name generator
+std::string("CBO_STRUCTURE_1")
+#+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_cbo_instruments_tbl
+:party_scoped_writes: true
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "tranche_name" <> '' |
+| "notional" > 0 |
+| "structure_id" <> '' |
+
+* C++
+
+The C++ domain class is a fact table's: the two keys stay flat, the
+implicit scaffolding columns carry the version and the tenant, and the
+columns below are the product's own fields. The row carries no
+=instrument_identity= and no audit member, because it carries neither the
+identity nor the party: the header, =ores.trading.credit_instruments=, owns
+both and this row joins it by =trade_id=. The SQL schema, DB entity and
+column lists are unaffected. The entity templates consume these
+annotations; domain and repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cbo_instrument
+:entity_plural_short:   cbo_instruments
+:entity_singular_words: CBO instrument
+:entity_plural_words:   CBO instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include "ores.utility/decimal/decimal.hpp"
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cbo
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| trade_id    | ID          |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+** Write observation
+
+The trade's economic digest observes every write of this component. The
+observer's specialisation must be visible where the repository writes, so the
+repository includes it.
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.trading.core/repository/trade_write_observation.hpp"
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

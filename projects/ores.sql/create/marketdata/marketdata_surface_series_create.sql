@@ -46,6 +46,7 @@
  * @param p_quote      the pair's quote currency.
  * @param p_surface_id the blueprint's name, which the surface series carries.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=writes the live market series a published surface blueprint names, as ores_marketdata_publish_curve_series_fn does for a curve; recorded in entity_table_writes_baseline.json
 create or replace function ores_marketdata_publish_surface_series_fn(
     p_tenant_id uuid,
     p_party_id uuid,

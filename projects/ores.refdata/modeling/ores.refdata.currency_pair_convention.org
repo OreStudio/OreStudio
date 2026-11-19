@@ -215,6 +215,7 @@ The import carries =advance_calendar=, a comma-joined list of calendar codes. =o
 :PROPERTIES:
 :tablename: ores_refdata_currency_pair_conventions_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -270,6 +271,7 @@ trigger's DQ validation (see below) remains the production guard, and
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: convention
 :entity_plural_short:   conventions
 :entity_singular_words: currency pair convention

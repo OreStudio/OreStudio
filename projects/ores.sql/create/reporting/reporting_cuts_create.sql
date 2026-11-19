@@ -170,7 +170,8 @@ begin
     -- Validate business_centre_code (soft FK to ores_refdata_business_centres_tbl)
     if not exists (
         select 1 from ores_refdata_business_centres_tbl
-        where tenant_id = NEW.tenant_id
+        where (tenant_id = NEW.tenant_id
+           or tenant_id = ores_utility_system_tenant_id_fn())
           and code = NEW.business_centre_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then

@@ -178,3 +178,75 @@ describe('the composer', () => {
         expect(composer(EMPTY)).not.toContain('Asset class');
     });
 });
+
+describe('the composer and the shape of the family', () => {
+    const FIXING: EditorState = {
+        kind: 'fixing',
+        instrument: 'ibor',
+        quote: '',
+        subject: 'EUR',
+        values: { name: '' },
+    };
+    const IBOR = { asset_class: 'ir', series_subclass: 'index_fixing', index_family: 'ibor' };
+    const row = (field: string, requirement: string) => ({
+        ...IBOR,
+        field,
+        requirement,
+        description: '',
+        version: 1,
+        system: true,
+        modified_by: '',
+        recorded_at: '',
+        change_reason_code: '',
+        change_commentary: '',
+    });
+
+    function withShapes(state: EditorState, shapes: readonly unknown[]): string {
+        const client = new QueryClient({
+            defaultOptions: { queries: { retry: false, retryOnMount: false } },
+        });
+        client.setQueryData(['series-identity-shapes'], shapes);
+        client.setQueryData(
+            ['series-classification-rules'],
+            [
+                {
+                    instrument: '',
+                    quote: '',
+                    key_kind: 'index',
+                    series_subclass_code: 'index_fixing',
+                },
+            ],
+        );
+        return renderToStaticMarkup(
+            <QueryClientProvider client={client}>
+                <TranslationProvider>
+                    <Composer schema={SCHEMA} state={state} onChange={() => undefined} />
+                </TranslationProvider>
+            </QueryClientProvider>,
+        );
+    }
+
+    it('names the family and marks each field its shape requires', () => {
+        const html = withShapes(FIXING, [row('ccy', 'required'), row('index_name', 'required')]);
+        expect(html).toContain('Family ir / index_fixing / ibor: its shape marks');
+        expect(html.split('Family requires').length - 1).toBe(2);
+    });
+
+    it('marks a field the shape forbids', () => {
+        const html = withShapes({ ...FIXING, values: { name: 'EURIBOR', tenor: '6M' } }, [
+            row('tenor', 'forbidden'),
+        ]);
+        expect(html).toContain('Family forbids');
+    });
+
+    it('says when no shape states the family', () => {
+        const html = withShapes(FIXING, []);
+        expect(html).toContain('no shape states it yet');
+        expect(html).not.toContain('Family requires');
+    });
+
+    it('says which required field this kind of URL cannot write', () => {
+        const html = withShapes(FIXING, [row('source', 'required')]);
+        expect(html).toContain('requires source, which this kind of URL does not write');
+    });
+});

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+// compass:except-file(entity_writes/cpp_writer) expires=2027-05-18 approver=marco reason=a build-time generator that prints the SQL loading the QuantLib calendar holidays into the system tenant; it never runs against a database; recorded in entity_table_writes_baseline.json
 #include <ql/time/calendars/all.hpp>
 #include <ql/version.hpp>
 #include <cstdio>

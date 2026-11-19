@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/cashflow_type.hpp"
 #include "ores.refdata.api/domain/cashflow_type_json_io.hpp" // IWYU pragma: keep.
@@ -103,6 +104,22 @@ using cashflow_type_rows_by_key =
     std::map<std::tuple<std::string, std::string>, std::vector<domain::cashflow_type>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::cashflow_type>
+cashflow_type_claim_rows(const ores::database::context& ctx,
+                         std::vector<domain::cashflow_type> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -120,7 +137,8 @@ cashflow_type_rows_by_key cashflow_type_current_rows(cashflow_type_repository& r
         coding_scheme_codes.push_back(row.coding_scheme_code);
     }
     cashflow_type_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, codes, coding_scheme_codes))
+    for (auto& item :
+         cashflow_type_claim_rows(ctx, repo.read_latest(ctx, codes, coding_scheme_codes)))
         current[std::make_tuple(item.code, item.coding_scheme_code)].push_back(std::move(item));
     return current;
 }
@@ -181,7 +199,10 @@ domain::cashflow_type cashflow_type_apply_claim(const domain::cashflow_type& v,
 }
 
 void cashflow_type_repository::write(const context& ctx, const domain::cashflow_type& v) {
-    write(ctx, v, cashflow_type_replace_claim(read_latest(ctx, v.code, v.coding_scheme_code)));
+    write(ctx,
+          v,
+          cashflow_type_replace_claim(
+              cashflow_type_claim_rows(ctx, read_latest(ctx, v.code, v.coding_scheme_code))));
 }
 
 void cashflow_type_repository::write(const context& ctx,
@@ -199,11 +220,12 @@ void cashflow_type_repository::write(const context& ctx,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cashflow type. " << "code: " << v.code
                                << " coding_scheme_code: " << v.coding_scheme_code;
-    const auto t = cashflow_type_apply_claim(v,
-                                             claim,
-                                             cashflow_type_claim_reads_current(claim) ?
-                                                 read_latest(ctx, v.code, v.coding_scheme_code) :
-                                                 std::vector<domain::cashflow_type>{});
+    const auto t = cashflow_type_apply_claim(
+        v,
+        claim,
+        cashflow_type_claim_reads_current(claim) ?
+            cashflow_type_claim_rows(ctx, read_latest(ctx, v.code, v.coding_scheme_code)) :
+            std::vector<domain::cashflow_type>{});
     query_builder::execute_write_query(
         ctx, cashflow_type_mapper::map(t), lg(), "Writing cashflow type to database.");
 }
@@ -234,8 +256,10 @@ void cashflow_type_repository::write(
 std::vector<domain::cashflow_type> cashflow_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<cashflow_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c, "coding_scheme_code"_c);
 
     return query_builder::execute_read_query<cashflow_type_entity, domain::cashflow_type>(
@@ -252,9 +276,10 @@ std::vector<domain::cashflow_type> cashflow_type_repository::read_latest(
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<cashflow_type_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
                              "coding_scheme_code"_c == coding_scheme_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<cashflow_type_entity, domain::cashflow_type>(
@@ -271,10 +296,12 @@ std::vector<domain::cashflow_type> cashflow_type_repository::read_all(
     BOOST_LOG_SEV(lg(), debug) << "Reading all cashflow type versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<cashflow_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "coding_scheme_code"_c == coding_scheme_code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<cashflow_type_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                             "coding_scheme_code"_c == coding_scheme_code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<cashflow_type_entity, domain::cashflow_type>(
         ctx,
@@ -293,10 +320,11 @@ cashflow_type_repository::read_at_version(const context& ctx,
                                << " coding_scheme_code: " << coding_scheme_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<cashflow_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "coding_scheme_code"_c == coding_scheme_code &&
-                                            "version"_c == version) |
+                       query_builder::where(
+                           ("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                           "coding_scheme_code"_c == coding_scheme_code && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities =
@@ -361,9 +389,10 @@ cashflow_type_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest cashflow types with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<cashflow_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<cashflow_type_entity, domain::cashflow_type>(
         ctx,
@@ -381,8 +410,9 @@ cashflow_type_repository::get_total_type_count(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active cashflow type count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<cashflow_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<cashflow_type_entity>(
         ctx,
@@ -421,9 +451,10 @@ cashflow_type_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<cashflow_type_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c.in(codes) &&
                              "coding_scheme_code"_c.in(coding_scheme_codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<cashflow_type_entity, domain::cashflow_type>(
         ctx,

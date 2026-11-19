@@ -104,9 +104,11 @@ Every writer supplies one. A caller that leaves it empty stores nothing, because
 null and the generated service copies the write's fields straight through -- so an update carries
 the identity it read rather than clearing it.
 
-The test-data generator writes a generic index name, the one oresmd URI that names a series with
-nothing but a name. Its rows cannot collide on the identity: the party is freshly generated per row,
-and the party is part of the key.
+The test-data generator writes an IBOR fixing, so the codec reads it and the identity shape of an
+IBOR fixing holds it to its required fields. The index name carries a random part and the row's
+counter. The counter keeps two rows of one party apart, because a fixture often gives several
+generated rows the same party. The random part keeps a run apart from earlier runs, because the tick
+store keys its streams by the URI and keeps them between runs.
      */
     std::string oresmd_uri;
 
@@ -121,6 +123,9 @@ and the party is part of the key.
      * (referenced series_subclass_code.code). Validated by
      * ores_refdata_validate_series_subclass_code_fn, the same cross-table reference mechanism the
      * asset-class junction uses, and carried as the code itself: the taxonomy is runtime-managed.
+     *
+     * The test-data generator writes index_fixing, the subclass of the fixing its URI names, so the
+     * identity kind rule accepts the pair.
      */
     std::string series_subclass;
 

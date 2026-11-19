@@ -43,6 +43,30 @@ namespace refdata_repo = ores::refdata::repository;
 constexpr unsigned weekend_closed_mask = 0b1000001;
 constexpr std::size_t only_calendar = 0;
 
+/**
+ * @brief The rows the caller owns, or every row when it owns none.
+ *
+ * A pair's convention and its calendar links are shared reference data: the
+ * read names the system tenant's rows beside the caller's own. A tenant that
+ * configures its own pair reads that configuration and not the catalogue's
+ * beside it; a tenant that configures nothing reads the catalogue.
+ */
+bool is_own(const ores::database::context& ctx, const utility::uuid::tenant_id& id) {
+    return id == ctx.tenant_id();
+}
+
+bool is_own(const ores::database::context& ctx, const std::string& id) {
+    return id == ctx.tenant_id().to_string();
+}
+
+template <class Row>
+std::vector<Row> own_or_shared(const ores::database::context& ctx, std::vector<Row> rows) {
+    std::vector<Row> own;
+    std::ranges::copy_if(
+        rows, std::back_inserter(own), [&](const Row& r) { return is_own(ctx, r.tenant_id); });
+    return own.empty() ? rows : own;
+}
+
 }
 
 quant_domain::business_day_calendar_set
@@ -67,7 +91,7 @@ joint_calendar(std::span<const std::vector<domain::calendar_date>> calendars) {
 std::expected<pair_expiry_date_rule, std::string>
 read_pair_expiry_date_rule(const ores::database::context& ctx, const std::string& pair_code) {
     refdata_repo::currency_pair_convention_repository convention_repo;
-    const auto conventions = convention_repo.read_latest(ctx, pair_code);
+    const auto conventions = own_or_shared(ctx, convention_repo.read_latest(ctx, pair_code));
     if (conventions.empty())
         return std::unexpected("No convention is published for " + pair_code + ".");
     const auto& convention = conventions.front();
@@ -76,7 +100,7 @@ read_pair_expiry_date_rule(const ores::database::context& ctx, const std::string
     std::string codes;
     refdata_repo::currency_pair_convention_calendar_repository links{ctx};
     refdata_repo::calendar_date_repository dates{ctx};
-    for (const auto& link : links.read_latest_by_pair(pair_code)) {
+    for (const auto& link : own_or_shared(ctx, links.read_latest_by_pair(pair_code))) {
         codes += (codes.empty() ? "" : ",") + link.calendar_code;
         calendars.push_back(dates.read_latest_by_calendar(link.calendar_code));
         if (calendars.back().empty())

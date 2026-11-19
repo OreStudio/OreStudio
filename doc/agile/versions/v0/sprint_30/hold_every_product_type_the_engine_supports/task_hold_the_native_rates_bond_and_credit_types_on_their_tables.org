@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/hold-the-native-rates-bond-and-credit-types-on-their-tables
+#+pr: 4851
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -21,18 +21,18 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 RateDigitalOption, BondFutureOption and CBO are held natively, on tables of the
-rates, bond and credit families. A CBO holds its structure (bond basket,
-tranches, fees, schedule) as well as its investment.
+rates, bond and credit families. A CBO holds its investment; a structure
+stated inline is the split-out task's.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -53,9 +53,20 @@ tranches, fees, schedule) as well as its investment.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Each type moves to the family whose facts it states, and the class-read entry
+that held it as parameter rows is deleted, so the scripted table keeps only the
+generic =ScriptedTrade= form.
+
+- =RateDigitalOption= gains a fact table of its own under the rates header, with
+  its option block in the shared option rows the family already uses.
+- =CBO= gains a credit fact table holding its investment. A structure stated
+  inline is refused, with the message naming the split task, because its bond
+  basket holds whole bond definitions.
+- =BondFutureOption= needs no new table: the bond family already states a future
+  and an option, so the type holds one row of each under the bond header.
+
+The builders move to the family files, the planner branches with them, and the
+tests follow, so each family's code sits together.
 
 * Measurements
 
@@ -69,7 +80,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The three types' own tables | =rate_digital_option_instruments= and =cbo_instruments= created; =BondFutureOption= on the existing bond future and option rows | =ls projects/ores.sql/create/trading/ | grep -c "rate_digital\|_cbo_"= | =4b138a71b9= |
+| The scripted table's class-read list | 23 entries before, 20 after the three leave | =grep -c "class_read" projects/ores.ore/core/src/domain/scripted_instrument_projection.cpp= | =4b138a71b9= |
+| The ORE core suite | 520655 assertions, 564 cases, all pass | =ores.ore.core.tests= | =4b138a71b9= |
+| The trading API suite | 18390 assertions, 4874 cases, all pass | =ores.trading.api.tests= | =4b138a71b9= |
+| The trading core suite | 1671 assertions, 258 cases, all pass | =ores.trading.core.tests= | =4b138a71b9= |
+| The shell's trading suite | 4044 assertions, 1432 cases, all pass | =ores.shell.trading.tests= | =4b138a71b9= |
+| The planner's suite, including the booking round trip through the database | 4289 assertions, 147 cases, all pass | =ores.synthetic.core.tests= | =4b138a71b9= |
+| The ORE engine on the recorded trades | 244 assertions, no error of the trade kind | =ORES_ORE_EXECUTABLE=<engine> ores.synthetic.core.tests "[ore_engine]"= | =4b138a71b9= |
+| The handler permission seeds | 18 codes seeded, 1518 codes over 10 components checked | =python projects/ores.codegen/scripts/check_handler_permissions.py= | =98936dd85= |
+| The codegen suite | 1806 passed, 2 failed; both failures on =origin/main= before this branch (the row-level-security flag) | =pytest projects/ores.codegen/tests -q= | =98936dd85= |
 
 * Notes
 
@@ -77,7 +97,9 @@ The type was first held on the scripted instrument table through the
 class-read path, as parameter rows. That held every value but gave the element
 no table of its own, against the story's rule that a product ORE carries in
 both forms is held in both, and that the forms can be compared. ORE builds all three natively. The CBO structure was captured
-separately as "Hold a CBO structure stated inline", which this task absorbs.
+separately as "Hold a CBO structure stated inline". Its bond basket holds full
+bond definitions, so it is split out again as [[id:70A950DD-F516-44D3-8859-6FEA30766589][a task of its own]]; this
+task holds the investment and refuses a structure stated inline.
 
 * Test Scenarios
 
@@ -94,12 +116,45 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4851][#4851]] | [trading] Hold the native rates, bond and credit types on their tables |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | the straddle comment sits above the new reader | rate_instrument_projection.cpp | accept | moved back above =read_swaption= |
+| 2 | =write_cbo= states the element before its empty check | credit_instrument_projection.cpp | accept | the early return comes first |
+| 3 | does the inline-structure refusal abort a whole import | credit_instrument_projection.cpp | no change | the importer catches a reader's exception per trade, logs the trade and leaves it with no instrument; =a_cbo_that_states_its_structure_inline_is_refused= asserts it |
+| 4 | missing values default to zero | the three readers | decline | the same as every reader in these files; refusing them is a change for the whole family |
+| 5 | BondFutureOption without OptionData, or with both strike forms | bond_instrument_projection.cpp | no change | ORE's schema requires =OptionData= and makes =strikeGroup= a choice of =Strike= or =StrikeData= |
+| 6 | formatting churn | - | decline | the format check covers whole changed files |
+| 7 | size | - | no change | mostly generated |
 
 * Result
+
+=RateDigitalOption= holds its facts on a rates table of its own, under the rates
+header, with its option block in the shared option rows. =CBO= holds its
+investment on a credit fact table under the credit header, which names the
+structure as an internal reference; a structure stated inline is refused with
+the message pointing at [[id:70A950DD-F516-44D3-8859-6FEA30766589][the task that holds it]].
+=BondFutureOption= needed no new table: it states one bond future row and one
+bond option row under the bond header, and the bond reader now asks for both by
+type rather than one per trade.
+
+The class-read entries for the three are gone, so the scripted table holds only
+the generic =ScriptedTrade= form. The builders, planner branches and tests moved
+to their families.
+
+The suites the change touches pass on the merged tree — 520,655 assertions over
+the ORE core's 564 cases, 18,390 over the trading API's 4,874, 1,671 over the
+trading core's 258, 4,044 over the shell's 1,432, and 4,289 over the planner's
+147 — and the ORE engine reads and builds every recorded trade with no error of
+the trade kind.
+
+Two defects the paused run left are fixed: the rate digital option's writer
+stated the option block and not the exercise dates the reader keeps as schedule
+rows, and the CBO refusal test's fixture was not schema-valid, so it tested
+binding rather than the refusal. The bond future option's recorded portfolio
+gains the settlement its option row now states, and the rebook test records one
+shape difference: a bond's rows come back in its carrier, and the flat arrays
+beside it are the write-time shape.

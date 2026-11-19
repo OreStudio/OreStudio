@@ -31,8 +31,10 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::trading::builders {
 
@@ -232,6 +234,63 @@ public:
 private:
     const marketdata::conventions::convention_lookup& conventions_;
     synthetic_cdo_terms terms_;
+};
+
+/// One tranche of a CBO structure, with the fixed coupon its leg pays.
+struct cbo_tranche_terms final {
+    std::string name;
+    utility::decimal::decimal notional;
+    utility::decimal::decimal ic_ratio;
+    utility::decimal::decimal oc_ratio;
+    utility::decimal::decimal fixed_rate;
+};
+
+/// One bond of a CBO's basket, named by its security id, and the notional held.
+struct cbo_basket_bond final {
+    std::string security_id;
+    utility::decimal::decimal notional;
+};
+
+/**
+ * @brief A CBO structure stated inline: its fees, its tranches, its bond basket
+ * and its payment schedule, one date a tenor from the start to the end.
+ */
+struct cbo_structure_terms final {
+    std::string currency;
+    std::string day_counter;
+    std::string payment_convention;
+    utility::decimal::decimal senior_fee;
+    std::string fee_day_counter;
+    utility::decimal::decimal subordinated_fee;
+    utility::decimal::decimal equity_kicker;
+    std::vector<cbo_tranche_terms> tranches;
+    std::vector<cbo_basket_bond> basket;
+    std::chrono::year_month_day start;
+    std::chrono::year_month_day end;
+    std::string tenor;
+    std::string calendar;
+};
+
+/**
+ * @brief An investment in one tranche of a collateralised bond obligation,
+ * whose structure the reference data holds under the structure id, or the
+ * trade states inline.
+ */
+struct cbo_terms final {
+    required<std::string> tranche_name;
+    required<utility::decimal::decimal> notional;
+    required<std::string> structure_id;
+    std::optional<cbo_structure_terms> structure;
+};
+
+class ORES_TRADING_API_EXPORT cbo_builder final {
+public:
+    static constexpr std::string_view trade_type = "CBO";
+    explicit cbo_builder(cbo_terms terms);
+    [[nodiscard]] std::expected<domain::credit_instrument_data, build_error> build() const;
+
+private:
+    cbo_terms terms_;
 };
 
 }

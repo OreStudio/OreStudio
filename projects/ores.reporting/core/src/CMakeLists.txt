@@ -69,16 +69,20 @@ target_link_libraries(${lib_target_name}
         ores.compute.api.lib
         ores.diff.lib
         ores.dq.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.history.core.lib
         ores.iam.api.lib
         ores.iam.client.lib
         ores.marketdata.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.ore.core.lib
         ores.platform.lib
         ores.storage.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.storage.core.lib
         ores.trading.api.lib
         ores.utility.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.workflow.core.lib
         ores.security.lib
         faker-cxx::faker-cxx

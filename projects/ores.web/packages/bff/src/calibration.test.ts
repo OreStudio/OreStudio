@@ -93,6 +93,7 @@ describe('the IR curve coverage', () => {
                 published_state: 'published',
                 gap: '',
                 gap_reason: '',
+                curves: expect.any(Array),
             },
         ]);
     });
@@ -111,6 +112,7 @@ describe('the IR curve coverage', () => {
                 published_state: 'published',
                 gap: 'no_feed',
                 gap_reason: 'No synthetic feed holds this currency.',
+                curves: expect.any(Array),
             },
         ]);
     });
@@ -132,6 +134,7 @@ describe('the IR curve coverage', () => {
                 published_state: 'published',
                 gap: 'no_source',
                 gap_reason: note,
+                curves: expect.any(Array),
             },
         ]);
     });
@@ -156,6 +159,7 @@ describe('the IR curve coverage', () => {
                 published_state: 'published',
                 gap: 'no_source',
                 gap_reason: 'The class policy refuses to start the feed without a fixing.',
+                curves: expect.any(Array),
             },
         ]);
     });
@@ -174,6 +178,7 @@ describe('the IR curve coverage', () => {
                 published_state: '',
                 gap: 'no_curve_config',
                 gap_reason: 'No bootstrap config holds this currency.',
+                curves: expect.any(Array),
             },
         ]);
     });
@@ -192,6 +197,7 @@ describe('the IR curve coverage', () => {
                 published_state: '',
                 gap: 'no_publish',
                 gap_reason: 'The curve has never been published.',
+                curves: expect.any(Array),
             },
         ]);
     });
@@ -226,6 +232,7 @@ describe('the IR curve coverage', () => {
                 published_state: 'published',
                 gap: 'stale_publish',
                 gap_reason: 'The latest curve was published more than 30 minutes ago.',
+                curves: expect.any(Array),
             },
         ]);
     });
@@ -284,5 +291,63 @@ describe('the IR curve coverage', () => {
         });
         expect(rows.map((row) => row.currency_code)).toEqual(['EUR', 'USD']);
         expect(rows.map((row) => row.gap)).toEqual(['', '']);
+    });
+
+    const LIBOR_3M: IrCoverageBootstrapConfig = {
+        id: '88888888-8888-4888-8888-888888888888',
+        currency_code: 'USD',
+        name: 'USD-LIBOR-3M',
+        output_series_id: '99999999-9999-4999-8999-999999999999',
+        curve_family_role: 'PROJECTION',
+        index_tenor: '3M',
+        discount_curve_config_id: BOOTSTRAP,
+    };
+    const SOFR = { ...USD_BOOTSTRAP, curve_family_role: 'FUNDING', index_tenor: '' };
+
+    it('lists every curve of a currency, the funding curve first, each projection naming its discount curve', () => {
+        const [row] = coverage({
+            bootstrapConfigs: [LIBOR_3M, SOFR],
+            publishedBySeries: new Map([
+                [SERIES, publish('2026-11-13 11:30:00Z')],
+                [LIBOR_3M.output_series_id, publish('2026-11-13 11:45:00Z')],
+            ]),
+        });
+        expect(row?.curves).toEqual([
+            {
+                bootstrap_config_id: BOOTSTRAP,
+                name: 'USD-SOFR',
+                role: 'FUNDING',
+                index_tenor: '',
+                discount_curve_name: '',
+                published_as_of: '2026-11-13 11:30:00Z',
+                published_state: 'published',
+            },
+            {
+                bootstrap_config_id: LIBOR_3M.id,
+                name: 'USD-LIBOR-3M',
+                role: 'PROJECTION',
+                index_tenor: '3M',
+                discount_curve_name: 'USD-SOFR',
+                published_as_of: '2026-11-13 11:45:00Z',
+                published_state: 'published',
+            },
+        ]);
+    });
+
+    it('covers a currency by its funding curve, not by a projection that published later', () => {
+        const [row] = coverage({
+            bootstrapConfigs: [LIBOR_3M, SOFR],
+            publishedBySeries: new Map([
+                [SERIES, publish('2026-11-13 10:00:00Z')],
+                [LIBOR_3M.output_series_id, publish('2026-11-13 11:45:00Z')],
+            ]),
+        });
+        expect(row?.bootstrap_config_name).toBe('USD-SOFR');
+        expect(row?.gap).toBe('stale_publish');
+    });
+
+    it('reads a config with no role as the funding curve, as the first configs were written', () => {
+        const [row] = coverage();
+        expect(row?.curves.map((curve) => curve.role)).toEqual(['FUNDING']);
     });
 });

@@ -259,6 +259,31 @@ The same point before the rows are written by the generated
 =v=. A block here checks the whole batch in one call, so a batch that
 breaches the check is refused before any of its rows are written.
 
+** Before a single write
+:PROPERTIES:
+:ID: 088215F5-7268-40D1-A9B3-673D4060A7B4
+:END:
+
+Code inserted in the generated =write(context, value, claim)= after the
+claim is applied and before the row is written. The value the write is about
+to store is in scope as =t=, and the context is the caller's.
+
+This is the point for a check that must refuse the row rather than record
+it: when the block throws, nothing is written, with or without a transaction
+around the call. A block here may also declare a local that the after-write
+block reads, so a derived table is built and checked before the row is
+stored and written after it.
+
+** Before a batch write
+:PROPERTIES:
+:ID: 2101380B-30AD-44F8-A684-568978786FF8
+:END:
+
+The same point in the generated =write(context, values, claims)=, with the
+values about to be written in scope as =batch=. A block here checks the whole
+batch in one call, so a batch that breaches the check stores none of its
+rows.
+
 * See also
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.

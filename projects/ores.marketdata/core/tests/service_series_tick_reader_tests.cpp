@@ -18,6 +18,7 @@
  *
  */
 #include "ores.database/query_builder/execute.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
@@ -44,6 +45,7 @@ namespace {
 
 using namespace ores::marketdata::generators;
 using namespace std::chrono_literals;
+using ores::marketdata::messaging::get_provider_ticks_request;
 using ores::marketdata::messaging::get_series_ticks_request;
 using ores::marketdata::messaging::resolve_series_identity_request;
 using ores::marketdata::repository::market_series_repository;
@@ -83,6 +85,7 @@ owned_series make_series(database_helper& h,
     if (!provider.empty())
         s.provider_code = provider;
     s.oresmd_uri = zero_uri(curve_id);
+    s.series_subclass = "yield";
     market_series_repository{}.write(h.context(), s);
     if (with_subscription)
         subscribe(h, s.party_id, s.provider_code);
@@ -99,6 +102,20 @@ get_series_ticks_request span(const owned_series& o,
     request.identity = o.identity;
     request.from_instant = from;
     request.to_instant = to;
+    return request;
+}
+
+/// A read of the provider's series that @p o names, as a view of a vendor's quotes makes it.
+get_provider_ticks_request provider_span(const owned_series& o,
+                                         std::chrono::system_clock::time_point from,
+                                         std::chrono::system_clock::time_point to,
+                                         bool for_display = true) {
+    get_provider_ticks_request request;
+    request.provider_code = o.series.provider_code;
+    request.series_uri = o.series.oresmd_uri;
+    request.from_instant = from;
+    request.to_instant = to;
+    request.for_display = for_display;
     return request;
 }
 
@@ -527,4 +544,93 @@ TEST_CASE("the_shared_tick_of_a_provider_is_read_by_every_subscribed_party", "[s
     CHECK(from_first.values == std::vector<double>{1.25});
     CHECK(from_second.result.outcome == outcome::ok);
     CHECK(from_second.values == std::vector<double>{1.25});
+}
+
+TEST_CASE("a_provider_read_returns_the_ticks_of_the_stream_the_provider_and_series_name",
+          "[service][ticks][provider]") {
+    database_helper h;
+    const auto o = make_series(h);
+    const auto t0 = now_second();
+    insert_tick(o.owner, o.stream, o.number, t0, 1.5);
+    insert_tick(o.owner, o.stream, o.number, t0 + 2s, 2.5);
+
+    const auto reply = series_tick_reader::read(o.owner, provider_span(o, t0 - 1s, t0 + 1min));
+
+    CHECK(reply.result.outcome == outcome::ok);
+    CHECK(reply.coordinates == std::vector<std::string>{o.series.oresmd_uri});
+    CHECK(reply.values == std::vector<double>{1.5, 2.5});
+}
+
+TEST_CASE("a_provider_read_by_a_point_uri_reads_the_points_series", "[service][ticks][provider]") {
+    database_helper h;
+    const auto curve = fresh_curve_id();
+    const auto o = make_series(h, curve);
+    const auto t0 = now_second();
+    insert_tick(o.owner, o.stream, o.number, t0, 4.5);
+    auto request = provider_span(o, t0 - 1s, t0 + 1min);
+    request.series_uri = "oresmd://ir/EUR?type=quote&instrument=zero&quote=rate&curve_id=" + curve +
+                         "&day_counter=A365&term=1Y";
+
+    const auto reply = series_tick_reader::read(o.owner, request);
+
+    CHECK(reply.result.outcome == outcome::ok);
+    CHECK(reply.values == std::vector<double>{4.5});
+}
+
+TEST_CASE("a_screen_read_needs_the_display_right_and_a_service_read_takes_non_display",
+          "[service][ticks][provider]") {
+    database_helper h;
+    const auto o = make_series(h, fresh_curve_id(), boost::uuids::nil_uuid(), "", false);
+    subscribe(h, o.series.party_id, o.series.provider_code, false, true, false);
+    const auto t0 = now_second();
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
+
+    const auto screen = series_tick_reader::read(o.owner, provider_span(o, t0 - 1s, t0 + 1min));
+    const auto service =
+        series_tick_reader::read(o.owner, provider_span(o, t0 - 1s, t0 + 1min, false));
+
+    CHECK(screen.result.code == "not_subscribed");
+    CHECK(screen.values.empty());
+    CHECK(service.result.outcome == outcome::ok);
+    CHECK(service.values == std::vector<double>{1.0});
+}
+
+TEST_CASE("the_system_tenant_reads_a_provider_no_party_of_it_subscribes_to",
+          "[service][ticks][provider]") {
+    database_helper h;
+    const auto o = make_series(h);
+    const auto t0 = now_second();
+    insert_tick(o.owner, o.stream, o.number, t0, 7.5);
+    const auto system_ctx =
+        ores::database::service::tenant_context::with_system_tenant(h.context());
+
+    const auto reply = series_tick_reader::read(system_ctx, provider_span(o, t0 - 1s, t0 + 1min));
+
+    CHECK(reply.result.outcome == outcome::ok);
+    CHECK(reply.values == std::vector<double>{7.5});
+}
+
+TEST_CASE("a_provider_read_by_a_session_with_no_party_is_refused", "[service][ticks][provider]") {
+    database_helper h;
+    const auto o = make_series(h);
+    const auto t0 = now_second();
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
+
+    const auto reply = series_tick_reader::read(h.context(), provider_span(o, t0 - 1s, t0 + 1min));
+
+    CHECK(reply.result.code == "party_required");
+    CHECK(reply.values.empty());
+}
+
+TEST_CASE("a_provider_read_of_a_uri_the_codec_cannot_read_is_refused",
+          "[service][ticks][provider]") {
+    database_helper h;
+    const auto o = make_series(h);
+    auto request = provider_span(o, now_second() - 1min, now_second());
+    request.series_uri = "oresmd://ir/EUR?type=series";
+
+    const auto reply = series_tick_reader::read(o.owner, request);
+
+    CHECK(reply.result.code == "uri_invalid");
+    CHECK(reply.result.message.find("series_uri") != std::string::npos);
 }

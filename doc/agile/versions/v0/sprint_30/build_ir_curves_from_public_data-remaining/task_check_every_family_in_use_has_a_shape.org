@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :marketdata:identity:sql:checks:build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/check-every-family-in-use-has-a-shape
+#+pr: 4874
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-19
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ A family with no shape row is projected unguarded, by design, so the catalogue c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-17                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
 
 * Acceptance
 
@@ -40,9 +40,26 @@ A family with no shape row is projected unguarded, by design, so the catalogue c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The check lives in the shape suite, =marketdata_series_identity_shape_test.sql=,
+beside the scan that holds each identity to its shape. It reads the stored
+identities and the shapes directly rather than the backfill's =unstated_count=.
+The count needs a backfill call and a service, and it says how many series fall
+in an unstated family, not which family. The suite can name the family.
+
+A family is keyed as the guard keys it: the identity's asset class, the series
+subclass, and the identity's =index=, empty for a series. An identity the codec
+could not read has no class, so it is no family and the check ignores it.
+
+A deliberate gap is a row of =t_unguarded_on_purpose= in the suite, with its
+reason. The list lives in the suite rather than in the shapes table, because a
+gap is a decision about this check, and a shape row with no requirement would
+also hide the family from the backfill's unguarded count.
+
+The check must be able to fail, and a database whose families all have shapes
+cannot show that. The suite copies the shapes it reads into a temporary table,
+takes one family that is in use out of the copy, and asserts the check names
+it. It then lists that family as a gap and asserts the check passes. A
+database with no family in use yet skips both cases.
 
 * Measurements
 
@@ -56,9 +73,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Families in use, system tenant, after the gate's suites | 5: =ir/yield=, =fx/volatility=, =fx/spot=, =fx/index_fixing/fx=, =ir/index_fixing/ibor= | =compass sql -u ddl=, identities joined to their series | 09a943b52b |
+| Families in use with no shape | 0 | the same query, against the shapes | 09a943b52b |
+| Shape suite | 12 tests, pass | =projects/ores.sql/test/run_tests.sh projects/ores.sql/test/marketdata_series_identity_shape_test.sql= | this branch |
 
 * Notes
+
+The suite sees what row-level security lets its session see: the system
+tenant's identities. A family only a tenant's own data uses is not checked here,
+as the scan above it states for the same reason.
+
+The projector already counts what this task asks about: =backfill_result::unstated= is
+incremented for every series whose family no shape states, and the backfill response
+does not carry it. The check is therefore mostly a reader, and it is taken after
+[[id:15A60BBE-102B-40BA-8F6A-83E2FB92E96B][Report what the shape guard refuses]] rather
+than beside it.
+
+What the count says at =67803175ce=, which shapes the deliberate-gap list: the system
+tenant holds 330 identities in 5 families and every one of them is stated, so the check
+passes on today's data. The 66 unstated families in use are a test tenant's fixtures --
+the synthetic series generator writes a faker URI and a drawn subclass -- so the list
+is not a catalogue gap but a fixture gap, and the answer may be to fix the generator
+instead of listing 66 entries. That is
+[[id:474E8968-C7B4-4740-839F-9328B93A5FEA][Generate a series that is an identity]].
 
 * Test Scenarios
 
@@ -75,12 +112,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4874][#4874]] | [sql] Name every family in use that no shape states |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4874 review 1: a row comparison with =not in= drops a row with a null subclass silently | =marketdata_series_identity_shape_test.sql= | Accept | The subclass is =not null=, but the view now uses =not exists=, which has no such case |
+| 2 | PR #4874 review 1: =order by 1= inside =string_agg= sorts by a constant | =marketdata_series_identity_shape_test.sql= | Accept | Sorted by the three key columns, so the failure message lists families in a stable order |
+| 3 | PR #4874 review 1: only the system tenant is checked | PR | Decline | Stated in Notes and the PR; a per-tenant check needs a tenant fixture with series |
 
 * Result
+
+The shape suite now names every family in use that no shape row states, and
+fails when there is one. A family left unguarded on purpose goes in the suite's
+=t_unguarded_on_purpose= list with its reason, and the check then passes. There
+is no such family today: the five families the system tenant uses all have
+shapes.
+
+Both acceptance points are met, and the suite proves each one. It takes a
+family in use out of its copy of the shapes and asserts the check names it, and
+it lists that family as a gap and asserts the check passes.

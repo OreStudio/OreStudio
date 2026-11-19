@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/regulatory_corporate_sector.hpp"
 #include "ores.refdata.api/domain/regulatory_corporate_sector_json_io.hpp" // IWYU pragma: keep.
@@ -106,6 +107,22 @@ using regulatory_corporate_sector_rows_by_key =
              std::vector<domain::regulatory_corporate_sector>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::regulatory_corporate_sector>
+regulatory_corporate_sector_claim_rows(const ores::database::context& ctx,
+                                       std::vector<domain::regulatory_corporate_sector> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -124,7 +141,8 @@ regulatory_corporate_sector_rows_by_key regulatory_corporate_sector_current_rows
         coding_scheme_codes.push_back(row.coding_scheme_code);
     }
     regulatory_corporate_sector_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, codes, coding_scheme_codes))
+    for (auto& item : regulatory_corporate_sector_claim_rows(
+             ctx, repo.read_latest(ctx, codes, coding_scheme_codes)))
         current[std::make_tuple(item.code, item.coding_scheme_code)].push_back(std::move(item));
     return current;
 }
@@ -188,10 +206,10 @@ domain::regulatory_corporate_sector regulatory_corporate_sector_apply_claim(
 
 void regulatory_corporate_sector_repository::write(const context& ctx,
                                                    const domain::regulatory_corporate_sector& v) {
-    write(
-        ctx,
-        v,
-        regulatory_corporate_sector_replace_claim(read_latest(ctx, v.code, v.coding_scheme_code)));
+    write(ctx,
+          v,
+          regulatory_corporate_sector_replace_claim(regulatory_corporate_sector_claim_rows(
+              ctx, read_latest(ctx, v.code, v.coding_scheme_code))));
 }
 
 void regulatory_corporate_sector_repository::write(
@@ -215,7 +233,8 @@ void regulatory_corporate_sector_repository::write(
         v,
         claim,
         regulatory_corporate_sector_claim_reads_current(claim) ?
-            read_latest(ctx, v.code, v.coding_scheme_code) :
+            regulatory_corporate_sector_claim_rows(ctx,
+                                                   read_latest(ctx, v.code, v.coding_scheme_code)) :
             std::vector<domain::regulatory_corporate_sector>{});
     query_builder::execute_write_query(ctx,
                                        regulatory_corporate_sector_mapper::map(t),
@@ -252,8 +271,10 @@ std::vector<domain::regulatory_corporate_sector>
 regulatory_corporate_sector_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<regulatory_corporate_sector_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c, "coding_scheme_code"_c);
 
     return query_builder::execute_read_query<regulatory_corporate_sector_entity,
@@ -273,9 +294,10 @@ regulatory_corporate_sector_repository::read_latest(const context& ctx,
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<regulatory_corporate_sector_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
                              "coding_scheme_code"_c == coding_scheme_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<regulatory_corporate_sector_entity,
@@ -293,10 +315,12 @@ std::vector<domain::regulatory_corporate_sector> regulatory_corporate_sector_rep
     BOOST_LOG_SEV(lg(), debug) << "Reading all regulatory corporate sector versions. "
                                << "code: " << code << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<regulatory_corporate_sector_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "coding_scheme_code"_c == coding_scheme_code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<regulatory_corporate_sector_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                             "coding_scheme_code"_c == coding_scheme_code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<regulatory_corporate_sector_entity,
                                              domain::regulatory_corporate_sector>(
@@ -316,10 +340,11 @@ regulatory_corporate_sector_repository::read_at_version(const context& ctx,
                                << "code: " << code << " coding_scheme_code: " << coding_scheme_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<regulatory_corporate_sector_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "coding_scheme_code"_c == coding_scheme_code &&
-                                            "version"_c == version) |
+                       query_builder::where(
+                           ("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                           "coding_scheme_code"_c == coding_scheme_code && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<regulatory_corporate_sector_entity,
@@ -385,9 +410,10 @@ regulatory_corporate_sector_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest regulatory corporate sectors with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<regulatory_corporate_sector_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<regulatory_corporate_sector_entity,
                                                      domain::regulatory_corporate_sector>(
@@ -405,8 +431,9 @@ std::uint32_t regulatory_corporate_sector_repository::get_total_sector_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active regulatory corporate sector count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<regulatory_corporate_sector_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<regulatory_corporate_sector_entity>(
         ctx,
@@ -446,9 +473,10 @@ regulatory_corporate_sector_repository::read_latest(
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<regulatory_corporate_sector_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c.in(codes) &&
                              "coding_scheme_code"_c.in(coding_scheme_codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<regulatory_corporate_sector_entity,
                                                     domain::regulatory_corporate_sector>(

@@ -19,6 +19,7 @@
  */
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -72,7 +73,8 @@ inline constexpr auto credit_fact_arrays_batch =
                &instrument_batch::index_credit_default_swap_option_instruments,
                &instrument_batch::synthetic_cdo_instruments,
                &instrument_batch::credit_linked_swap_instruments,
-               &instrument_batch::risk_participation_agreement_instruments};
+               &instrument_batch::risk_participation_agreement_instruments,
+               &instrument_batch::cbo_instruments};
 
 static_assert(std::tuple_size_v<decltype(credit_fact_arrays_batch)> ==
               std::tuple_size_v<decltype(credit_fact_arrays)>);
@@ -107,6 +109,9 @@ credit_instrument_data as_credit(const instrument_batch& batch,
         .leg_amounts = find_all(batch.swap_leg_amounts, trade_id),
         .leg_rates = find_all(batch.swap_leg_rates, trade_id),
         .constituents = find_all(batch.credit_basket_constituents, trade_id),
+        .cbo_structures = find_all(batch.cbo_structures, trade_id),
+        .cbo_tranches = find_all(batch.cbo_tranches, trade_id),
+        .cbo_basket_members = find_all(batch.cbo_basket_members, trade_id),
         .strikes = find_all(batch.instrument_strikes, trade_id),
         .schedules = find_all(batch.instrument_schedules, trade_id),
         .schedule_dates = find_all(batch.instrument_schedule_dates, trade_id),
@@ -179,7 +184,20 @@ inline constexpr auto fx_batch_arrays = std::tuple{
     std::pair{&fx_instrument_data::variance_swaps, &instrument_batch::fx_variance_swap_instruments},
     std::pair{&fx_instrument_data::asian_options, &instrument_batch::fx_asian_option_instruments},
     std::pair{&fx_instrument_data::pairwise_variance_swaps,
-              &instrument_batch::fx_pairwise_variance_swap_instruments}};
+              &instrument_batch::fx_pairwise_variance_swap_instruments},
+    std::pair{&fx_instrument_data::basket_options, &instrument_batch::fx_basket_option_instruments},
+    std::pair{&fx_instrument_data::basket_variance_swaps,
+              &instrument_batch::fx_basket_variance_swap_instruments},
+    std::pair{&fx_instrument_data::forward_volatility_agreements,
+              &instrument_batch::fx_forward_volatility_agreement_instruments},
+    std::pair{&fx_instrument_data::best_entry_options,
+              &instrument_batch::fx_best_entry_option_instruments},
+    std::pair{&fx_instrument_data::strike_resettable_options,
+              &instrument_batch::fx_strike_resettable_option_instruments},
+    std::pair{&fx_instrument_data::window_barrier_options,
+              &instrument_batch::fx_window_barrier_option_instruments},
+    std::pair{&fx_instrument_data::worst_of_basket_swaps,
+              &instrument_batch::fx_worst_of_basket_swap_instruments}};
 
 /**
  * The family's child arrays paired with the batch columns they land in, in the
@@ -204,21 +222,80 @@ inline constexpr auto fx_batch_child_arrays = std::make_tuple(
     std::pair{&fx_instrument_data::barriers, &instrument_batch::instrument_barriers},
     std::pair{&fx_instrument_data::barrier_levels, &instrument_batch::instrument_barrier_levels},
     std::pair{&fx_instrument_data::instrument_underlyings,
-              &instrument_batch::instrument_underlyings});
+              &instrument_batch::instrument_underlyings},
+    std::pair{&fx_instrument_data::values, &instrument_batch::instrument_values});
+
+/**
+ * The multi-asset family's arrays paired with the batch columns they land in,
+ * in the family's product order, then its child arrays.
+ */
+inline constexpr auto multi_asset_batch_arrays =
+    std::make_tuple(std::pair{&multi_asset_instrument_data::autocallables,
+                              &instrument_batch::autocallable_instruments},
+                    std::pair{&multi_asset_instrument_data::double_digital_options,
+                              &instrument_batch::double_digital_option_instruments},
+                    std::pair{&multi_asset_instrument_data::european_option_barriers,
+                              &instrument_batch::european_option_barrier_instruments},
+                    std::pair{&multi_asset_instrument_data::performance_options,
+                              &instrument_batch::performance_option_instruments});
+
+inline constexpr auto multi_asset_batch_child_arrays = std::make_tuple(
+    std::pair{&multi_asset_instrument_data::option_premiums,
+              &instrument_batch::instrument_option_premiums},
+    std::pair{&multi_asset_instrument_data::schedules, &instrument_batch::instrument_schedules},
+    std::pair{&multi_asset_instrument_data::schedule_dates,
+              &instrument_batch::instrument_schedule_dates},
+    std::pair{&multi_asset_instrument_data::instrument_underlyings,
+              &instrument_batch::instrument_underlyings},
+    std::pair{&multi_asset_instrument_data::values, &instrument_batch::instrument_values});
 
 /**
  * A family carrier whose parts are typed arrays rather than alternatives. Each
  * array, product or child, is a part in its own right, so every one of them
  * reaches the batch; a carrier that states none leaves the batch alone.
  */
-void append_fx_arrays(instrument_batch& batch, const fx_instrument_data& carrier) {
+template <typename Carrier, typename Arrays, typename Children>
+void append_arrays(instrument_batch& batch,
+                   const Carrier& carrier,
+                   const Arrays& arrays,
+                   const Children& children) {
     const auto append_one = [&](const auto& columns) {
         const auto& rows = carrier.*(columns.first);
         auto& column = batch.*(columns.second);
         column.insert(column.end(), rows.begin(), rows.end());
     };
     std::apply([&](const auto... columns) { (append_one(columns), ...); },
-               std::tuple_cat(fx_batch_arrays, fx_batch_child_arrays));
+               std::tuple_cat(arrays, children));
+}
+
+/**
+ * The carrier an array family states for the trade: the first product array
+ * that holds the trade decides, and the child arrays bring every row of it.
+ * Nothing when no product array holds the trade.
+ */
+template <typename Carrier, typename Arrays, typename Children>
+std::optional<Carrier> take_arrays(const instrument_batch& batch,
+                                   boost::uuids::uuid trade_id,
+                                   const Arrays& arrays,
+                                   const Children& children) {
+    Carrier carrier;
+    bool matched = false;
+    const auto take_one = [&](const auto& columns) {
+        if (matched)
+            return;
+        if (const auto* row = find(batch.*(columns.second), trade_id)) {
+            (carrier.*(columns.first)).push_back(*row);
+            matched = true;
+        }
+    };
+    std::apply([&](const auto... columns) { (take_one(columns), ...); }, arrays);
+    if (!matched)
+        return std::nullopt;
+    const auto take_children = [&](const auto& columns) {
+        carrier.*(columns.first) = find_all(batch.*(columns.second), trade_id);
+    };
+    std::apply([&](const auto... columns) { (take_children(columns), ...); }, children);
+    return carrier;
 }
 
 }
@@ -284,7 +361,9 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                     v.tranche_notionals.begin(),
                     v.tranche_notionals.end());
             } else if constexpr (std::is_same_v<T, fx_instrument_data>) {
-                append_fx_arrays(batch, v);
+                append_arrays(batch, v, fx_batch_arrays, fx_batch_child_arrays);
+            } else if constexpr (std::is_same_v<T, multi_asset_instrument_data>) {
+                append_arrays(batch, v, multi_asset_batch_arrays, multi_asset_batch_child_arrays);
             } else if constexpr (std::is_same_v<T, equity_instrument_data>) {
                 append_variant(batch, v.instrument);
                 batch.equity_position_option_underlyings.insert(
@@ -353,6 +432,13 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 batch.credit_basket_constituents.insert(batch.credit_basket_constituents.end(),
                                                         v.constituents.begin(),
                                                         v.constituents.end());
+                batch.cbo_structures.insert(
+                    batch.cbo_structures.end(), v.cbo_structures.begin(), v.cbo_structures.end());
+                batch.cbo_tranches.insert(
+                    batch.cbo_tranches.end(), v.cbo_tranches.begin(), v.cbo_tranches.end());
+                batch.cbo_basket_members.insert(batch.cbo_basket_members.end(),
+                                                v.cbo_basket_members.begin(),
+                                                v.cbo_basket_members.end());
                 append_credit_fact_arrays(
                     batch,
                     v,
@@ -431,6 +517,8 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
             return as_swap(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.cap_floor_instruments, trade_id))
             return as_swap(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.rate_digital_option_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.swaption_instruments, trade_id))
             return as_swap(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.balance_guaranteed_swap_instruments, trade_id))
@@ -448,28 +536,12 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
     // The FX carrier states one array per product, so the join fills the one
     // array that holds the trade rather than an alternative of a variant. The
     // first row that matches decides, as the variant's alternative did.
-    fx_instrument_data fx;
-    bool matched = false;
-    const auto take_one = [&](const auto& columns) {
-        if (matched)
-            return;
-        const auto& column = batch.*(columns.second);
-        if (const auto* row = find(column, trade_id)) {
-            (fx.*(columns.first)).push_back(*row);
-            matched = true;
-        }
-    };
-    std::apply([&](const auto... columns) { (take_one(columns), ...); }, fx_batch_arrays);
-    if (matched) {
-        const auto take_children = [&](const auto& columns) {
-            const auto& column = batch.*(columns.second);
-            auto& rows = fx.*(columns.first);
-            rows = find_all(column, trade_id);
-        };
-        std::apply([&](const auto... columns) { (take_children(columns), ...); },
-                   fx_batch_child_arrays);
-        return fx;
-    }
+    if (auto fx = take_arrays<fx_instrument_data>(
+            batch, trade_id, fx_batch_arrays, fx_batch_child_arrays))
+        return std::move(*fx);
+    if (auto multi_asset = take_arrays<multi_asset_instrument_data>(
+            batch, trade_id, multi_asset_batch_arrays, multi_asset_batch_child_arrays))
+        return std::move(*multi_asset);
 
     if (const auto* v = find(batch.equity_option_instruments, trade_id))
         return as_equity(batch, *v, trade_id);
@@ -486,6 +558,20 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
     if (const auto* v = find(batch.equity_swap_instruments, trade_id))
         return as_equity(batch, *v, trade_id);
     if (const auto* v = find(batch.equity_accumulator_instruments, trade_id))
+        return as_equity(batch, *v, trade_id);
+    if (const auto* v = find(batch.equity_basket_option_instruments, trade_id))
+        return as_equity(batch, *v, trade_id);
+    if (const auto* v = find(batch.equity_basket_variance_swap_instruments, trade_id))
+        return as_equity(batch, *v, trade_id);
+    if (const auto* v = find(batch.equity_forward_volatility_agreement_instruments, trade_id))
+        return as_equity(batch, *v, trade_id);
+    if (const auto* v = find(batch.equity_best_entry_option_instruments, trade_id))
+        return as_equity(batch, *v, trade_id);
+    if (const auto* v = find(batch.equity_strike_resettable_option_instruments, trade_id))
+        return as_equity(batch, *v, trade_id);
+    if (const auto* v = find(batch.equity_window_barrier_option_instruments, trade_id))
+        return as_equity(batch, *v, trade_id);
+    if (const auto* v = find(batch.equity_generic_barrier_option_instruments, trade_id))
         return as_equity(batch, *v, trade_id);
     if (const auto* v = find(batch.cash_position_instruments, trade_id))
         return as_equity(batch, *v, trade_id);
@@ -516,6 +602,8 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
         if (const auto* v = find(batch.credit_linked_swap_instruments, trade_id))
             return as_credit(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.risk_participation_agreement_instruments, trade_id))
+            return as_credit(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.cbo_instruments, trade_id))
             return as_credit(batch, *header, *v, trade_id);
     }
     if (const auto* v = find(batch.commodity_instruments, trade_id))

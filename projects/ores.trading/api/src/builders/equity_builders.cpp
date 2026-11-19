@@ -428,7 +428,7 @@ equity_result equity_auto_delta_hedged_option_builder::build() const {
     row.identity.trade_type_code = std::string(trade_type);
     row.underlying_name = batches.front().underlying.uri();
     row.currency = batches.front().currency;
-    row.volatility = terms_.volatility.get();
+    row.volatility = terms_.volatility.get().to_double();
     row.drift_rate = terms_.drift_rate.get();
     row.observation_start_date = terms_.observation_start.get();
     row.payment_date = terms_.payment_date.get();
@@ -441,7 +441,7 @@ equity_result equity_auto_delta_hedged_option_builder::build() const {
         entry.underlying_name = batch.underlying.uri();
         entry.currency = batch.currency;
         entry.strike = batch.strike;
-        entry.quantity = batch.quantity;
+        entry.quantity = batch.quantity.to_double();
         entry.long_short = long_short_of(batch.position);
         entry.option_type = option_type_of(batch.kind);
         entry.exercise_type = "European";

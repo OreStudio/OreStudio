@@ -21,14 +21,21 @@
 #include "ores.trading.core/messaging/equity_accumulator_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_asian_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_barrier_option_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/equity_basket_option_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/equity_basket_variance_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/equity_best_entry_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_digital_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_forward_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/equity_forward_volatility_agreement_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/equity_generic_barrier_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_pairwise_variance_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_option_underlying_registrar.hpp"
+#include "ores.trading.core/messaging/equity_strike_resettable_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_variance_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/equity_window_barrier_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 
 namespace ores::trading::messaging::detail {
@@ -110,6 +117,49 @@ register_equity_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(equity_pairwise_variance_swap_instrument_subs.begin()),
                 std::make_move_iterator(equity_pairwise_variance_swap_instrument_subs.end()));
+
+    auto equity_basket_option_instrument_subs =
+        register_equity_basket_option_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(equity_basket_option_instrument_subs.begin()),
+                std::make_move_iterator(equity_basket_option_instrument_subs.end()));
+
+    auto equity_basket_variance_swap_instrument_subs =
+        register_equity_basket_variance_swap_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(equity_basket_variance_swap_instrument_subs.begin()),
+                std::make_move_iterator(equity_basket_variance_swap_instrument_subs.end()));
+
+    auto equity_forward_volatility_agreement_instrument_subs =
+        register_equity_forward_volatility_agreement_instrument_handlers(nats, ctx, verifier);
+    subs.insert(
+        subs.end(),
+        std::make_move_iterator(equity_forward_volatility_agreement_instrument_subs.begin()),
+        std::make_move_iterator(equity_forward_volatility_agreement_instrument_subs.end()));
+
+    auto equity_best_entry_option_instrument_subs =
+        register_equity_best_entry_option_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(equity_best_entry_option_instrument_subs.begin()),
+                std::make_move_iterator(equity_best_entry_option_instrument_subs.end()));
+
+    auto equity_strike_resettable_option_instrument_subs =
+        register_equity_strike_resettable_option_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(equity_strike_resettable_option_instrument_subs.begin()),
+                std::make_move_iterator(equity_strike_resettable_option_instrument_subs.end()));
+
+    auto equity_window_barrier_option_instrument_subs =
+        register_equity_window_barrier_option_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(equity_window_barrier_option_instrument_subs.begin()),
+                std::make_move_iterator(equity_window_barrier_option_instrument_subs.end()));
+
+    auto equity_generic_barrier_option_instrument_subs =
+        register_equity_generic_barrier_option_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(equity_generic_barrier_option_instrument_subs.begin()),
+                std::make_move_iterator(equity_generic_barrier_option_instrument_subs.end()));
 
     return subs;
 }

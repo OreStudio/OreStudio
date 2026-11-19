@@ -94,6 +94,7 @@
 #include "ores.marketdata.core/messaging/subscription_interval_registrar.hpp"
 #include "ores.marketdata.core/messaging/subscription_registrar.hpp"
 #include "ores.marketdata.core/messaging/supplier_registrar.hpp"
+#include "ores.marketdata.core/messaging/watchable_feeds_handler.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include <functional>
@@ -271,6 +272,22 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             series_ticks_handler h(nats, ctx, verifier);
                                             h.get_ticks(std::move(msg));
+                                        }));
+
+    // Every tick of one provider's series in a span of time, named as the stream is.
+    subs.push_back(nats.queue_subscribe(std::string(get_provider_ticks_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            series_ticks_handler h(nats, ctx, verifier);
+                                            h.get_provider_ticks(std::move(msg));
+                                        }));
+
+    // The feeds the session's party may watch live, asked before a watch starts.
+    subs.push_back(nats.queue_subscribe(std::string(list_watchable_feeds_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            watchable_feeds_handler h(nats, ctx, verifier);
+                                            h.list(std::move(msg));
                                         }));
 
     // Typed series identity: resolves a series from the identity fields a

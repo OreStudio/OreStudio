@@ -1,0 +1,111 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.trading.core/repository/autocallable_instrument_mapper.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.trading.api/domain/autocallable_instrument.hpp"
+#include "ores.trading.api/domain/autocallable_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.trading.core/repository/autocallable_instrument_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <vector>
+
+namespace ores::trading::repository {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+domain::autocallable_instrument
+autocallable_instrument_mapper::map(const autocallable_instrument_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::autocallable_instrument r;
+    r.identity.version = v.version;
+    r.identity.tenant_id = v.tenant_id;
+    r.identity.trade_id = v.trade_id;
+    r.identity.trade_type_code = v.trade_type_code;
+    r.identity.party_id = v.party_id;
+    r.identity.trade_activity_id = v.trade_activity_id;
+    r.notional_amount = v.notional_amount;
+    r.determination_level = v.determination_level;
+    r.trigger_level = v.trigger_level;
+    r.long_short = v.long_short;
+    r.pay_currency = v.pay_currency;
+    r.cap = v.cap;
+    r.description = v.description.value_or("");
+    r.audit.modified_by = v.modified_by;
+    r.audit.performed_by = v.performed_by;
+    r.audit.change_reason_code = v.change_reason_code;
+    r.audit.change_commentary = v.change_commentary;
+    r.audit.recorded_at = v.valid_from;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
+
+autocallable_instrument_entity
+autocallable_instrument_mapper::map(const domain::autocallable_instrument& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+
+    autocallable_instrument_entity r;
+    r.trade_id = v.identity.trade_id;
+    r.tenant_id = v.identity.tenant_id;
+    r.version = v.identity.version;
+    r.trade_type_code = v.identity.trade_type_code;
+    r.party_id = v.identity.party_id;
+    r.trade_activity_id = v.identity.trade_activity_id;
+    r.notional_amount = v.notional_amount;
+    r.determination_level = v.determination_level;
+    r.trigger_level = v.trigger_level;
+    r.long_short = v.long_short;
+    r.pay_currency = v.pay_currency;
+    r.cap = v.cap;
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.modified_by = v.audit.modified_by;
+    r.performed_by = v.audit.performed_by;
+    r.change_reason_code = v.audit.change_reason_code;
+    r.change_commentary = v.audit.change_commentary;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
+}
+
+std::vector<domain::autocallable_instrument>
+autocallable_instrument_mapper::map(const std::vector<autocallable_instrument_entity>& v) {
+    return map_vector<autocallable_instrument_entity, domain::autocallable_instrument>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
+}
+
+std::vector<autocallable_instrument_entity>
+autocallable_instrument_mapper::map(const std::vector<domain::autocallable_instrument>& v) {
+    return map_vector<domain::autocallable_instrument, autocallable_instrument_entity>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
+}
+
+}

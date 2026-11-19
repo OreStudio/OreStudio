@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: B9E1C314-8D56-4BD0-9163-89075B47B9AE
+:END:
+#+title: The generator template leaves a double column unfilled
+#+description: The C++ generator template writes no value for a double precision field, so synthetic equity position rows carry a zero quantity and a null volatility, and an option underlying a null quantity; commodity_instrument's implied_vol_strike is filled by a path the template does not show.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:generator:trading:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The C++ generator template emits a fill for a decimal, a date and a text
+field, and none for a =double precision= field. The equity position
+instrument's =quantity= is a double and its generator leaves it at 0.0. Its
+=volatility= and the option underlying's =quantity= became doubles when the
+exact-number rule moved them off =numeric(38, 12)=, and their generator
+lines went with the regeneration. The commodity instrument's
+=implied_vol_strike= has the same model shape and its generator fills it,
+so something other than the template writes that line. Make the template
+fill a double, and find what writes the commodity line.
+
+* Why
+
+Synthetic rows with a zero quantity and a null volatility do not exercise
+the columns they hold, so a test or a demo built on them cannot see a
+defect in those columns.
+
+* References
+
+- Found in the local review of =hotfix/align-the-codegen-tests-with-the-tree=.
+- =projects/ores.trading/api/src/generators/equity_position_instrument_generator.cpp=
+- =projects/ores.trading/api/src/generators/commodity_instrument_generator.cpp=
+
+* See also
+
+-

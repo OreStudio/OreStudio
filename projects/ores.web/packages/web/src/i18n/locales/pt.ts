@@ -1434,6 +1434,13 @@ const pt: SourceCatalogue = {
         optional: 'Opcional',
         required: 'Obrigatório',
         coordinate: 'Coordenada',
+        familyStated: 'Família {family}: a sua forma marca os campos que exige e proíbe.',
+        familyUnstated:
+            'Família {family}: nenhuma forma a descreve ainda, por isso a escrita não a sujeita a uma.',
+        familyUnreachable:
+            'A forma desta família exige {fields}, que este tipo de URL não escreve.',
+        shapeRequires: 'Exigido pela família',
+        shapeForbids: 'Proibido pela família',
         preview: 'URL',
         kinds: {
             quote: 'Cotação',
@@ -5057,7 +5064,9 @@ const pt: SourceCatalogue = {
                 currency: 'Moeda',
                 source: 'Fonte',
                 window: 'Janela (dias)',
-                bootstrap: 'Configuração de arranque',
+                curves: 'Curvas',
+                discountsOff: 'desconta sobre {curve}',
+                neverPublished: 'nunca publicada',
                 published: 'Última publicada',
                 stateHeader: 'Estado',
                 empty: 'Nenhuma moeda tem uma curva de taxa.',
@@ -5351,6 +5360,37 @@ const pt: SourceCatalogue = {
                 cross: 'Cruzado',
             },
             configure: 'Configurar em Connectivity',
+        },
+        identityShapes: {
+            title: 'Formas de identidade',
+            lead: 'Os campos que cada família de séries de mercado exige e proíbe. A escrita recusa uma série cuja identidade viola a forma da sua família.',
+            add: 'Adicionar uma linha',
+            none: 'Nenhuma família indica ainda uma forma.',
+            field: 'Campo',
+            requirement: 'Exigência',
+            description: 'Porquê',
+            owner: 'Dono',
+            shared: 'Partilhada',
+            own: 'Própria',
+            history: 'Histórico',
+            edit: 'Alterar',
+            remove: 'Remover',
+            version: 'Versão',
+            changedBy: 'Alterado por',
+            reason: 'Motivo',
+            recorded: 'Registado',
+            assetClass: 'Classe de ativos',
+            seriesSubclass: 'Subclasse de série',
+            indexFamily: 'Família de índice (vazia exceto num fixing)',
+            addTitle: 'Adicionar uma linha de forma',
+            editTitle: 'Alterar {field} de {family}',
+            removeTitle: 'Remover {field} de {family}',
+            removeLead:
+                'A família deixa de exigir ou proibir este campo. As identidades escritas depois deixam de estar sujeitas a ele.',
+            requirements: {
+                required: 'Exigido',
+                forbidden: 'Proibido',
+            },
         },
         connectivity: {
             title: 'Conetividade',
@@ -5781,6 +5821,27 @@ const pt: SourceCatalogue = {
         },
 
         curveAnalytics: {
+            teaches: {
+                title: 'O que as duas curvas ensinam',
+                lead: '{funding} e {projection} respondem a perguntas diferentes. Uma diz quanto rende um depósito garantido overnight; a outra diz o que o mercado espera de uma taxa a prazo de {tenor}.',
+                underlying: {
+                    title: 'Subjacente',
+                    body: '{funding} faz a média das transações overnight. {projection} é uma taxa a prazo cotada, como um IBOR, por isso carrega o crédito e a liquidez dos bancos que a cotam.',
+                },
+                fixing: {
+                    title: 'Como se fixa',
+                    body: 'Uma taxa overnight fixa-se para trás: cada dia é conhecido depois do dia. Uma taxa a prazo cotada fixa-se para a frente: a taxa de {tenor} é fixada hoje para um período que começa hoje. Uma taxa a prazo composta a partir de fixings overnight não.',
+                },
+                use: {
+                    title: 'Para que serve',
+                    body: '{funding} desconta: dá o valor presente dos fluxos. {projection} projeta: prevê a taxa que uma perna variável paga.',
+                },
+                shape: {
+                    title: 'Porque a forma difere',
+                    body: 'A diferença não é só expectativa. Uma curva a prazo acrescenta um prémio de prazo e o crédito do seu painel; uma curva overnight composta não.',
+                },
+                lesson: 'Nenhuma curva é a taxa. Leia as duas juntas: qual desconta, qual projeta, e de que é feita a diferença.',
+            },
             title: 'Análise da curva',
             lead: 'As convenções de uma curva, os pilares cotados pelo mercado e o que o bootstrap deles faz.',
             curve: 'Curva',

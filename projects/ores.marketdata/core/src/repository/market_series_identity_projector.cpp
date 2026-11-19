@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
@@ -44,6 +45,12 @@ namespace ores::marketdata::repository {
 namespace {
 
 using datum::field;
+
+auto& projector_lg() {
+    static auto instance =
+        make_logger("ores.marketdata.repository.market_series_identity_projector");
+    return instance;
+}
 
 /**
  * @brief What the shape table says about the families it states.
@@ -359,26 +366,28 @@ projection project_one(const ores::database::context& ctx, const domain::market_
 
 }
 
-std::size_t
+std::vector<domain::market_series_identity>
 market_series_identity_projector::project(const ores::database::context& ctx,
                                           const std::vector<domain::market_series>& series) {
-    if (series.empty())
-        return 0;
-    const shape_book shapes(ctx);
     std::vector<domain::market_series_identity> rows;
+    if (series.empty())
+        return rows;
+    const shape_book shapes(ctx);
     rows.reserve(series.size());
-    std::size_t unknown = 0;
     for (const auto& s : series) {
         auto p = project_one(ctx, s);
-        if (!p.understood)
-            ++unknown;
         // A series written through the repository is refused here or nowhere: the
         // store's own columns cannot say which fields a family requires.
         shapes.check(s, p.row);
         rows.push_back(std::move(p.row));
     }
-    market_series_identity_repository{}.write(ctx, rows);
-    return unknown;
+    return rows;
+}
+
+void market_series_identity_projector::write(
+    const ores::database::context& ctx, const std::vector<domain::market_series_identity>& rows) {
+    if (!rows.empty())
+        market_series_identity_repository{}.write(ctx, rows);
 }
 
 market_series_identity_projector::backfill_result
@@ -419,14 +428,22 @@ market_series_identity_projector::project_missing(const ores::database::context&
         auto p = project_one(ctx, s);
         if (!p.understood)
             ++result.unreadable;
-        if (!shapes.states(s, p.row))
-            ++result.unstated;
         try {
             shapes.check(s, p.row);
-        } catch (const std::invalid_argument&) {
+        } catch (const std::invalid_argument& e) {
+            // The message names the series, its family and the field, which is what an
+            // operator needs to repair the row; the count says how many were left. A
+            // refused series is not projected, so it is not counted as unguarded too,
+            // and the same warning comes again on the next run because the row is
+            // still there: this is a repair an operator asks for, not a sweep.
+            BOOST_LOG_SEV(projector_lg(), warn) << e.what();
             ++result.refused;
             continue;
         }
+        // Counted after the check, so the count means what its doc says: the series
+        // this call projected without a shape to hold them.
+        if (!shapes.states(s, p.row))
+            ++result.unstated;
         accepted.push_back(std::move(p.row));
     }
     result.already_projected = series.size() - missing.size();

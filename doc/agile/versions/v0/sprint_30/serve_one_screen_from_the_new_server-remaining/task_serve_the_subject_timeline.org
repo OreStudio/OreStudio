@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 67A1E35D-7B51-458C-987D-6D0C771DF1BC
+:END:
+#+title: Task: Serve one subject's story
+#+description: The workflow area's last composed view, GET /api/timeline, is answered only by the BFF.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve =GET /api/timeline= from the gateway. The route answers one subject's story
+for three subjects, and each is its own composition: a request is the story the
+part already serves, wrapped with its subject and no gaps; a person is the
+account, its contact record, the roles it was given, the parties it works in and
+its sign-ins; a party is its own versions, the versions of each part it holds and
+the links it keeps. Every source a caller may not read is a gap in the answer
+rather than a failure, which is why the answer carries a list of gaps at all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+The work was sized while the workflow composed views were served, and it was left
+to this task on purpose: a person's timeline that silently left out the sign-ins,
+or a party's that left out the parts it holds, would look complete while being
+short, which is the failure worth refusing.
+
+Each subject is served as its own family, smallest first, and each states its
+composition once:
+
+| Subject | What it composes | Standing gaps |
+|+--------+------------------+---------------|
+| request | the story the part already answers, wrapped with its subject | none |
+| person | the account's own versions, the roles it was given and the parties it works in read as link histories, its contact record, and its sign-ins | the sign-in log is a rolling window, so an older sign-in is not shown |
+| party | its own versions, the versions of each part it holds, and the links it keeps | no read lists a part that was removed from the party, so its closing is not shown |
+
+The entity keys are =ores.iam.account=, =ores.iam.account_role=,
+=ores.iam.account_party=, =ores.iam.account_contact_information= and
+=ores.iam.auth_event= for a person, and =ores.refdata.party= with its parts and
+links for a party. Every one of them is read through the gateway's own history
+read, reached by =history_subject_for(entity_type)=, so no route invents a subject.
+
+Two rules the families share with the rest of the part. The events are ordered by
+the one rule the request story already uses: newest first, and within one second
+the later act first, because the timestamps on the wire carry whole seconds. And a
+read that fails is a fault while a read the caller may not make is a gap: only a
+refusal becomes a gap, so a service that is down is not reported as a permission
+the person lacks.
+
+The answer carries an ETag and stays fresh for 30 seconds, as the inventory
+records for this view.
+
+Each family is finished when its subject answers at the BFF's address with the
+BFF's member names and status codes, its events carry the kinds and fields the
+screen draws, its gaps are stated with the reason the screen shows, and its route
+is paired in the inventory.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

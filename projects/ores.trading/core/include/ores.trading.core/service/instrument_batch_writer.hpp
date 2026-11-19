@@ -29,6 +29,7 @@
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/ascot_repository.hpp"
+#include "ores.trading.core/repository/autocallable_instrument_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_notional_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
@@ -56,6 +57,10 @@
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
 #include "ores.trading.core/repository/cash_position_instrument_repository.hpp"
+#include "ores.trading.core/repository/cbo_basket_member_repository.hpp"
+#include "ores.trading.core/repository/cbo_instrument_repository.hpp"
+#include "ores.trading.core/repository/cbo_structure_repository.hpp"
+#include "ores.trading.core/repository/cbo_tranche_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
@@ -63,18 +68,27 @@
 #include "ores.trading.core/repository/credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/credit_instrument_repository.hpp"
 #include "ores.trading.core/repository/credit_linked_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/double_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_accumulator_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_basket_constituent_repository.hpp"
+#include "ores.trading.core/repository/equity_basket_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_basket_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_best_entry_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_forward_volatility_agreement_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_generic_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_pairwise_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_position_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
+#include "ores.trading.core/repository/equity_strike_resettable_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_window_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/european_option_barrier_instrument_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
 #include "ores.trading.core/repository/fra_instrument_repository.hpp"
@@ -82,11 +96,18 @@
 #include "ores.trading.core/repository/fx_asian_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_basket_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_basket_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_best_entry_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_forward_volatility_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_pairwise_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_strike_resettable_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_window_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_worst_of_basket_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
@@ -101,8 +122,11 @@
 #include "ores.trading.core/repository/instrument_schedule_repository.hpp"
 #include "ores.trading.core/repository/instrument_strike_repository.hpp"
 #include "ores.trading.core/repository/instrument_underlying_repository.hpp"
+#include "ores.trading.core/repository/instrument_value_repository.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/performance_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/range_bound_repository.hpp"
+#include "ores.trading.core/repository/rate_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/risk_participation_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/scripted_instrument_repository.hpp"
@@ -218,6 +242,8 @@ void write_instrument_batch(const ores::database::context& ctx,
                             const instrument_keys& keys,
                             Stamp&& stamp,
                             const Claim& claim) {
+    write_rows<repository::autocallable_instrument_repository>(
+        ctx, batch.autocallable_instruments, keys, stamp, claim);
     write_rows<repository::bond_instrument_repository>(
         ctx, batch.bond_instruments, keys, stamp, claim);
     write_rows<repository::cash_position_instrument_repository>(
@@ -228,26 +254,44 @@ void write_instrument_batch(const ores::database::context& ctx,
         ctx, batch.composite_instruments, keys, stamp, claim);
     write_rows<repository::credit_instrument_repository>(
         ctx, batch.credit_instruments, keys, stamp, claim);
+    write_rows<repository::double_digital_option_instrument_repository>(
+        ctx, batch.double_digital_option_instruments, keys, stamp, claim);
     write_rows<repository::equity_accumulator_instrument_repository>(
         ctx, batch.equity_accumulator_instruments, keys, stamp, claim);
     write_rows<repository::equity_asian_option_instrument_repository>(
         ctx, batch.equity_asian_option_instruments, keys, stamp, claim);
     write_rows<repository::equity_barrier_option_instrument_repository>(
         ctx, batch.equity_barrier_option_instruments, keys, stamp, claim);
+    write_rows<repository::equity_basket_option_instrument_repository>(
+        ctx, batch.equity_basket_option_instruments, keys, stamp, claim);
+    write_rows<repository::equity_basket_variance_swap_instrument_repository>(
+        ctx, batch.equity_basket_variance_swap_instruments, keys, stamp, claim);
+    write_rows<repository::equity_best_entry_option_instrument_repository>(
+        ctx, batch.equity_best_entry_option_instruments, keys, stamp, claim);
     write_rows<repository::equity_digital_option_instrument_repository>(
         ctx, batch.equity_digital_option_instruments, keys, stamp, claim);
     write_rows<repository::equity_forward_instrument_repository>(
         ctx, batch.equity_forward_instruments, keys, stamp, claim);
+    write_rows<repository::equity_forward_volatility_agreement_instrument_repository>(
+        ctx, batch.equity_forward_volatility_agreement_instruments, keys, stamp, claim);
+    write_rows<repository::equity_generic_barrier_option_instrument_repository>(
+        ctx, batch.equity_generic_barrier_option_instruments, keys, stamp, claim);
     write_rows<repository::equity_option_instrument_repository>(
         ctx, batch.equity_option_instruments, keys, stamp, claim);
     write_rows<repository::equity_pairwise_variance_swap_instrument_repository>(
         ctx, batch.equity_pairwise_variance_swap_instruments, keys, stamp, claim);
     write_rows<repository::equity_position_instrument_repository>(
         ctx, batch.equity_position_instruments, keys, stamp, claim);
+    write_rows<repository::equity_strike_resettable_option_instrument_repository>(
+        ctx, batch.equity_strike_resettable_option_instruments, keys, stamp, claim);
     write_rows<repository::equity_swap_instrument_repository>(
         ctx, batch.equity_swap_instruments, keys, stamp, claim);
     write_rows<repository::equity_variance_swap_instrument_repository>(
         ctx, batch.equity_variance_swap_instruments, keys, stamp, claim);
+    write_rows<repository::equity_window_barrier_option_instrument_repository>(
+        ctx, batch.equity_window_barrier_option_instruments, keys, stamp, claim);
+    write_rows<repository::european_option_barrier_instrument_repository>(
+        ctx, batch.european_option_barrier_instruments, keys, stamp, claim);
     write_rows<repository::fx_accumulator_instrument_repository>(
         ctx, batch.fx_accumulator_instruments, keys, stamp, claim);
     write_rows<repository::fx_asian_forward_instrument_repository>(
@@ -256,16 +300,32 @@ void write_instrument_batch(const ores::database::context& ctx,
         ctx, batch.fx_asian_option_instruments, keys, stamp, claim);
     write_rows<repository::fx_barrier_option_instrument_repository>(
         ctx, batch.fx_barrier_option_instruments, keys, stamp, claim);
+    write_rows<repository::fx_basket_option_instrument_repository>(
+        ctx, batch.fx_basket_option_instruments, keys, stamp, claim);
+    write_rows<repository::fx_basket_variance_swap_instrument_repository>(
+        ctx, batch.fx_basket_variance_swap_instruments, keys, stamp, claim);
+    write_rows<repository::fx_best_entry_option_instrument_repository>(
+        ctx, batch.fx_best_entry_option_instruments, keys, stamp, claim);
     write_rows<repository::fx_digital_option_instrument_repository>(
         ctx, batch.fx_digital_option_instruments, keys, stamp, claim);
     write_rows<repository::fx_forward_instrument_repository>(
         ctx, batch.fx_forward_instruments, keys, stamp, claim);
+    write_rows<repository::fx_forward_volatility_agreement_instrument_repository>(
+        ctx, batch.fx_forward_volatility_agreement_instruments, keys, stamp, claim);
     write_rows<repository::fx_pairwise_variance_swap_instrument_repository>(
         ctx, batch.fx_pairwise_variance_swap_instruments, keys, stamp, claim);
+    write_rows<repository::fx_strike_resettable_option_instrument_repository>(
+        ctx, batch.fx_strike_resettable_option_instruments, keys, stamp, claim);
     write_rows<repository::fx_vanilla_option_instrument_repository>(
         ctx, batch.fx_vanilla_option_instruments, keys, stamp, claim);
     write_rows<repository::fx_variance_swap_instrument_repository>(
         ctx, batch.fx_variance_swap_instruments, keys, stamp, claim);
+    write_rows<repository::fx_window_barrier_option_instrument_repository>(
+        ctx, batch.fx_window_barrier_option_instruments, keys, stamp, claim);
+    write_rows<repository::fx_worst_of_basket_swap_instrument_repository>(
+        ctx, batch.fx_worst_of_basket_swap_instruments, keys, stamp, claim);
+    write_rows<repository::performance_option_instrument_repository>(
+        ctx, batch.performance_option_instruments, keys, stamp, claim);
     write_rows<repository::rate_instrument_repository>(
         ctx, batch.rate_instruments, keys, stamp, claim);
     write_rows<repository::scripted_instrument_repository>(
@@ -311,6 +371,12 @@ void write_instrument_batch(const ores::database::context& ctx,
         ctx, batch.callable_swap_instruments, keys, stamp, claim);
     write_rows<repository::cap_floor_instrument_repository>(
         ctx, batch.cap_floor_instruments, keys, stamp, claim);
+    write_rows<repository::cbo_instrument_repository>(
+        ctx, batch.cbo_instruments, keys, stamp, claim);
+    write_rows<repository::cbo_basket_member_repository>(
+        ctx, batch.cbo_basket_members, keys, stamp, claim);
+    write_rows<repository::cbo_structure_repository>(ctx, batch.cbo_structures, keys, stamp, claim);
+    write_rows<repository::cbo_tranche_repository>(ctx, batch.cbo_tranches, keys, stamp, claim);
     write_rows<repository::commodity_basket_constituent_repository>(
         ctx, batch.commodity_basket_constituents, keys, stamp, claim);
     write_rows<repository::credit_basket_constituent_repository>(
@@ -359,9 +425,13 @@ void write_instrument_batch(const ores::database::context& ctx,
         ctx, batch.instrument_strikes, keys, stamp, claim);
     write_rows<repository::instrument_underlying_repository>(
         ctx, batch.instrument_underlyings, keys, stamp, claim);
+    write_rows<repository::instrument_value_repository>(
+        ctx, batch.instrument_values, keys, stamp, claim);
     write_rows<repository::knock_out_swap_instrument_repository>(
         ctx, batch.knock_out_swap_instruments, keys, stamp, claim);
     write_rows<repository::range_bound_repository>(ctx, batch.range_bounds, keys, stamp, claim);
+    write_rows<repository::rate_digital_option_instrument_repository>(
+        ctx, batch.rate_digital_option_instruments, keys, stamp, claim);
     write_rows<repository::risk_participation_agreement_instrument_repository>(
         ctx, batch.risk_participation_agreement_instruments, keys, stamp, claim);
     write_rows<repository::swap_leg_repository>(ctx, batch.swap_legs, keys, stamp, claim);
@@ -396,6 +466,9 @@ void write_instrument_batch(const ores::database::context& ctx,
 misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_type) {
     std::vector<std::string> names;
     const auto table = domain::instrument_table_for(trade_type);
+    if (!batch.autocallable_instruments.empty() &&
+        table != domain::instrument_table::autocallable_instrument)
+        names.emplace_back("autocallable_instruments");
     if (!batch.bond_instruments.empty() && table != domain::instrument_table::bond_instrument)
         names.emplace_back("bond_instruments");
     if (!batch.cash_position_instruments.empty() &&
@@ -409,6 +482,9 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("composite_instruments");
     if (!batch.credit_instruments.empty() && table != domain::instrument_table::credit_instrument)
         names.emplace_back("credit_instruments");
+    if (!batch.double_digital_option_instruments.empty() &&
+        table != domain::instrument_table::double_digital_option_instrument)
+        names.emplace_back("double_digital_option_instruments");
     if (!batch.equity_accumulator_instruments.empty() &&
         table != domain::instrument_table::equity_accumulator_instrument)
         names.emplace_back("equity_accumulator_instruments");
@@ -418,12 +494,27 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
     if (!batch.equity_barrier_option_instruments.empty() &&
         table != domain::instrument_table::equity_barrier_option_instrument)
         names.emplace_back("equity_barrier_option_instruments");
+    if (!batch.equity_basket_option_instruments.empty() &&
+        table != domain::instrument_table::equity_basket_option_instrument)
+        names.emplace_back("equity_basket_option_instruments");
+    if (!batch.equity_basket_variance_swap_instruments.empty() &&
+        table != domain::instrument_table::equity_basket_variance_swap_instrument)
+        names.emplace_back("equity_basket_variance_swap_instruments");
+    if (!batch.equity_best_entry_option_instruments.empty() &&
+        table != domain::instrument_table::equity_best_entry_option_instrument)
+        names.emplace_back("equity_best_entry_option_instruments");
     if (!batch.equity_digital_option_instruments.empty() &&
         table != domain::instrument_table::equity_digital_option_instrument)
         names.emplace_back("equity_digital_option_instruments");
     if (!batch.equity_forward_instruments.empty() &&
         table != domain::instrument_table::equity_forward_instrument)
         names.emplace_back("equity_forward_instruments");
+    if (!batch.equity_forward_volatility_agreement_instruments.empty() &&
+        table != domain::instrument_table::equity_forward_volatility_agreement_instrument)
+        names.emplace_back("equity_forward_volatility_agreement_instruments");
+    if (!batch.equity_generic_barrier_option_instruments.empty() &&
+        table != domain::instrument_table::equity_generic_barrier_option_instrument)
+        names.emplace_back("equity_generic_barrier_option_instruments");
     if (!batch.equity_option_instruments.empty() &&
         table != domain::instrument_table::equity_option_instrument)
         names.emplace_back("equity_option_instruments");
@@ -433,12 +524,21 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
     if (!batch.equity_position_instruments.empty() &&
         table != domain::instrument_table::equity_position_instrument)
         names.emplace_back("equity_position_instruments");
+    if (!batch.equity_strike_resettable_option_instruments.empty() &&
+        table != domain::instrument_table::equity_strike_resettable_option_instrument)
+        names.emplace_back("equity_strike_resettable_option_instruments");
     if (!batch.equity_swap_instruments.empty() &&
         table != domain::instrument_table::equity_swap_instrument)
         names.emplace_back("equity_swap_instruments");
     if (!batch.equity_variance_swap_instruments.empty() &&
         table != domain::instrument_table::equity_variance_swap_instrument)
         names.emplace_back("equity_variance_swap_instruments");
+    if (!batch.equity_window_barrier_option_instruments.empty() &&
+        table != domain::instrument_table::equity_window_barrier_option_instrument)
+        names.emplace_back("equity_window_barrier_option_instruments");
+    if (!batch.european_option_barrier_instruments.empty() &&
+        table != domain::instrument_table::european_option_barrier_instrument)
+        names.emplace_back("european_option_barrier_instruments");
     if (!batch.fx_accumulator_instruments.empty() &&
         table != domain::instrument_table::fx_accumulator_instrument)
         names.emplace_back("fx_accumulator_instruments");
@@ -451,21 +551,45 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
     if (!batch.fx_barrier_option_instruments.empty() &&
         table != domain::instrument_table::fx_barrier_option_instrument)
         names.emplace_back("fx_barrier_option_instruments");
+    if (!batch.fx_basket_option_instruments.empty() &&
+        table != domain::instrument_table::fx_basket_option_instrument)
+        names.emplace_back("fx_basket_option_instruments");
+    if (!batch.fx_basket_variance_swap_instruments.empty() &&
+        table != domain::instrument_table::fx_basket_variance_swap_instrument)
+        names.emplace_back("fx_basket_variance_swap_instruments");
+    if (!batch.fx_best_entry_option_instruments.empty() &&
+        table != domain::instrument_table::fx_best_entry_option_instrument)
+        names.emplace_back("fx_best_entry_option_instruments");
     if (!batch.fx_digital_option_instruments.empty() &&
         table != domain::instrument_table::fx_digital_option_instrument)
         names.emplace_back("fx_digital_option_instruments");
     if (!batch.fx_forward_instruments.empty() &&
         table != domain::instrument_table::fx_forward_instrument)
         names.emplace_back("fx_forward_instruments");
+    if (!batch.fx_forward_volatility_agreement_instruments.empty() &&
+        table != domain::instrument_table::fx_forward_volatility_agreement_instrument)
+        names.emplace_back("fx_forward_volatility_agreement_instruments");
     if (!batch.fx_pairwise_variance_swap_instruments.empty() &&
         table != domain::instrument_table::fx_pairwise_variance_swap_instrument)
         names.emplace_back("fx_pairwise_variance_swap_instruments");
+    if (!batch.fx_strike_resettable_option_instruments.empty() &&
+        table != domain::instrument_table::fx_strike_resettable_option_instrument)
+        names.emplace_back("fx_strike_resettable_option_instruments");
     if (!batch.fx_vanilla_option_instruments.empty() &&
         table != domain::instrument_table::fx_vanilla_option_instrument)
         names.emplace_back("fx_vanilla_option_instruments");
     if (!batch.fx_variance_swap_instruments.empty() &&
         table != domain::instrument_table::fx_variance_swap_instrument)
         names.emplace_back("fx_variance_swap_instruments");
+    if (!batch.fx_window_barrier_option_instruments.empty() &&
+        table != domain::instrument_table::fx_window_barrier_option_instrument)
+        names.emplace_back("fx_window_barrier_option_instruments");
+    if (!batch.fx_worst_of_basket_swap_instruments.empty() &&
+        table != domain::instrument_table::fx_worst_of_basket_swap_instrument)
+        names.emplace_back("fx_worst_of_basket_swap_instruments");
+    if (!batch.performance_option_instruments.empty() &&
+        table != domain::instrument_table::performance_option_instrument)
+        names.emplace_back("performance_option_instruments");
     if (!batch.rate_instruments.empty() && table != domain::instrument_table::rate_instrument)
         names.emplace_back("rate_instruments");
     if (!batch.scripted_instruments.empty() &&
@@ -484,23 +608,42 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
 [[nodiscard]] inline std::vector<std::string> orphan_arrays(const domain::instrument_batch& batch) {
     std::vector<std::string> names;
     const bool headed =
-        !batch.bond_instruments.empty() || !batch.cash_position_instruments.empty() ||
-        !batch.commodity_instruments.empty() || !batch.composite_instruments.empty() ||
-        !batch.credit_instruments.empty() || !batch.equity_accumulator_instruments.empty() ||
+        !batch.autocallable_instruments.empty() || !batch.bond_instruments.empty() ||
+        !batch.cash_position_instruments.empty() || !batch.commodity_instruments.empty() ||
+        !batch.composite_instruments.empty() || !batch.credit_instruments.empty() ||
+        !batch.double_digital_option_instruments.empty() ||
+        !batch.equity_accumulator_instruments.empty() ||
         !batch.equity_asian_option_instruments.empty() ||
         !batch.equity_barrier_option_instruments.empty() ||
+        !batch.equity_basket_option_instruments.empty() ||
+        !batch.equity_basket_variance_swap_instruments.empty() ||
+        !batch.equity_best_entry_option_instruments.empty() ||
         !batch.equity_digital_option_instruments.empty() ||
-        !batch.equity_forward_instruments.empty() || !batch.equity_option_instruments.empty() ||
+        !batch.equity_forward_instruments.empty() ||
+        !batch.equity_forward_volatility_agreement_instruments.empty() ||
+        !batch.equity_generic_barrier_option_instruments.empty() ||
+        !batch.equity_option_instruments.empty() ||
         !batch.equity_pairwise_variance_swap_instruments.empty() ||
-        !batch.equity_position_instruments.empty() || !batch.equity_swap_instruments.empty() ||
-        !batch.equity_variance_swap_instruments.empty() ||
+        !batch.equity_position_instruments.empty() ||
+        !batch.equity_strike_resettable_option_instruments.empty() ||
+        !batch.equity_swap_instruments.empty() || !batch.equity_variance_swap_instruments.empty() ||
+        !batch.equity_window_barrier_option_instruments.empty() ||
+        !batch.european_option_barrier_instruments.empty() ||
         !batch.fx_accumulator_instruments.empty() || !batch.fx_asian_forward_instruments.empty() ||
         !batch.fx_asian_option_instruments.empty() ||
         !batch.fx_barrier_option_instruments.empty() ||
+        !batch.fx_basket_option_instruments.empty() ||
+        !batch.fx_basket_variance_swap_instruments.empty() ||
+        !batch.fx_best_entry_option_instruments.empty() ||
         !batch.fx_digital_option_instruments.empty() || !batch.fx_forward_instruments.empty() ||
+        !batch.fx_forward_volatility_agreement_instruments.empty() ||
         !batch.fx_pairwise_variance_swap_instruments.empty() ||
+        !batch.fx_strike_resettable_option_instruments.empty() ||
         !batch.fx_vanilla_option_instruments.empty() ||
-        !batch.fx_variance_swap_instruments.empty() || !batch.rate_instruments.empty() ||
+        !batch.fx_variance_swap_instruments.empty() ||
+        !batch.fx_window_barrier_option_instruments.empty() ||
+        !batch.fx_worst_of_basket_swap_instruments.empty() ||
+        !batch.performance_option_instruments.empty() || !batch.rate_instruments.empty() ||
         !batch.scripted_instruments.empty() || false;
     if (headed)
         return names;
@@ -554,6 +697,14 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("callable_swap_instruments");
     if (!batch.cap_floor_instruments.empty())
         names.emplace_back("cap_floor_instruments");
+    if (!batch.cbo_instruments.empty())
+        names.emplace_back("cbo_instruments");
+    if (!batch.cbo_basket_members.empty())
+        names.emplace_back("cbo_basket_members");
+    if (!batch.cbo_structures.empty())
+        names.emplace_back("cbo_structures");
+    if (!batch.cbo_tranches.empty())
+        names.emplace_back("cbo_tranches");
     if (!batch.commodity_basket_constituents.empty())
         names.emplace_back("commodity_basket_constituents");
     if (!batch.credit_basket_constituents.empty())
@@ -602,10 +753,14 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("instrument_strikes");
     if (!batch.instrument_underlyings.empty())
         names.emplace_back("instrument_underlyings");
+    if (!batch.instrument_values.empty())
+        names.emplace_back("instrument_values");
     if (!batch.knock_out_swap_instruments.empty())
         names.emplace_back("knock_out_swap_instruments");
     if (!batch.range_bounds.empty())
         names.emplace_back("range_bounds");
+    if (!batch.rate_digital_option_instruments.empty())
+        names.emplace_back("rate_digital_option_instruments");
     if (!batch.risk_participation_agreement_instruments.empty())
         names.emplace_back("risk_participation_agreement_instruments");
     if (!batch.swap_legs.empty())

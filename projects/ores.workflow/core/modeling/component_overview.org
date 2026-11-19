@@ -80,13 +80,16 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.service.lib
         ores.nats.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.history.core.lib
         ores.dq.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.dq.core.lib
         ores.iam.api.lib
         ores.ore.api.lib
         ores.refdata.api.lib
         ores.reporting.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.telemetry.core.lib
         Boost::boost)
 

@@ -41,8 +41,12 @@ is refused. See [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum iden
 
 ** The subject
 
-=market_tick_subject(tenant, party, oresmd_uri)= builds
-=marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=. See [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]].
+=feed_tick_subject(provider, feed, datum, series_uri)= builds the subject that
+names the feed and not the party,
+=marketdata.v1.ops.market_tick.<provider>.<feed>.<instrument_type>.<series_token>.<coordinate_token>=.
+The ingest publishes each tick once on it, for every party that may watch the
+feed. See
+[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]].
 
 * See also
 

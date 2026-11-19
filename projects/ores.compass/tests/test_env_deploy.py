@@ -892,3 +892,33 @@ class TestTheManyHostRunIsCareful:
             env_deploy._deploy_many(self._args(["newton"]), root)
         assert seen["env"]["PYTHONUNBUFFERED"] == "1"
         assert seen["stdin"] == subprocess.DEVNULL
+
+
+class TestPullImages:
+    """The pull path has to leave the host with the names remote-run.sh
+    resolves, or a pull deploy and a transfer deploy would diverge."""
+
+    def _capture(self, monkeypatch):
+        seen = {}
+
+        def fake_remote_script(host, script, env_vars):
+            seen["host"] = host
+            seen["script"] = script
+            seen["env"] = env_vars
+
+        monkeypatch.setattr(env_deploy, "_remote_script", fake_remote_script)
+        return seen
+
+    def test_pulls_and_tags_each_image_under_its_local_names(self, monkeypatch):
+        seen = self._capture(monkeypatch)
+        env_deploy._pull_images(
+            Path("."), "pauli", "ghcr.io/orestudio", "1.0.0-abc",
+            ["ores-service-base", "ores-nats"])
+
+        assert seen["env"]["REGISTRY"] == "ghcr.io/orestudio"
+        assert seen["env"]["TAG"] == "1.0.0-abc"
+        assert 'podman pull "${REGISTRY}/ores-nats:${TAG}"' in seen["script"]
+        assert ('podman tag "${REGISTRY}/ores-nats:${TAG}" '
+                '"localhost/ores-nats:local"') in seen["script"]
+        assert ('podman tag "${REGISTRY}/ores-service-base:${TAG}" '
+                '"localhost/ores-service-base:local"') in seen["script"]

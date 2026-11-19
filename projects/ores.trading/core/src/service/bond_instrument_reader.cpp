@@ -208,14 +208,16 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_i
             own.underlyings = std::move(it->second);
         const auto& ttc = data.instrument.identity.trade_type_code;
         const auto& trade_id = data.instrument.identity.trade_id;
-        if (ttc == "BondOption")
+        // An option on a bond future states both fact rows, so the two are
+        // asked for by type rather than one per trade.
+        if (ttc == "BondOption" || ttc == "BondFutureOption")
             own.bond_option = option_svc.get_option(trade_id);
-        else if (ttc == "BondTRS")
+        if (ttc == "BondFuture" || ttc == "BondFutureOption")
+            own.future = future_svc.get_future(trade_id);
+        if (ttc == "BondTRS")
             own.trs = trs_svc.get_trs(trade_id);
         else if (ttc == "BondRepo")
             own.repo = repo_svc.get_repo(trade_id);
-        else if (ttc == "BondFuture")
-            own.future = future_svc.get_future(trade_id);
         else if (ttc == "Ascot")
             own.ascot = ascot_svc.get_ascot(trade_id);
         domain::assemble_bond(data, own, security_rows);

@@ -77,6 +77,23 @@ public:
     read(const ores::database::context& ctx,
          const messaging::get_series_ticks_request& request,
          std::chrono::system_clock::time_point now = std::chrono::system_clock::now());
+
+    /**
+     * @brief Reads the ticks of the provider's series that @p request names.
+     *
+     * The series is named by the provider and the series URI, as the stream is, so the read
+     * needs no series of the party. The system tenant reads every provider; a party reads one
+     * it subscribes to with the right the request's use needs.
+     *
+     * @param ctx Database context, already scoped to the tenant and the party by the caller.
+     * @param request The provider, the series, the span, the coordinates and the use.
+     * @param now The end of a span that states none.
+     * @return The ticks, or an outcome that says why the read is refused.
+     */
+    static messaging::get_series_ticks_response
+    read(const ores::database::context& ctx,
+         const messaging::get_provider_ticks_request& request,
+         std::chrono::system_clock::time_point now = std::chrono::system_clock::now());
 };
 
 }

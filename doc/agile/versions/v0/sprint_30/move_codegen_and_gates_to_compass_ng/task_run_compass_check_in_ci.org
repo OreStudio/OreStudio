@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: C333376D-5D88-4D73-BB2F-AACED7605D17
+:END:
+#+title: Task: Run compass check in CI
+#+description: Install the pinned compass-ng release in CI and replace the single-gate workflows it covers with one compass check --ratchet job.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr: 4845
+#+blocked_on: the compass story Publish installable binaries: CI and external developers install a release, never build compass
+#+blocked_since: 2026-11-18
+#+created: 2026-11-17
+#+updated: 2026-11-18
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+CI runs every ported gate in one job of seconds, from the same binary and configuration as the environments.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Blocked. |
+| Waiting on   | The compass story Publish installable binaries: CI and external developers install a release, never build compass. |
+| Next         | Install the first compass-ng release in CI once Publish installable binaries ships one. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- Waits on the compass story Publish installable binaries: CI installs a release and verifies its checksum, and never builds compass.
+- One workflow runs compass check --ratchet origin/main on each pull request.
+- The ported single-gate workflows (codegen-drift, codegen-sweep, core-link-edges, entity-writes, event-registrar-composition, history-registrar-composition, portable-stop-types, rls-system-tenant-widenings, shell-command-composition, shell-recipe-provenance, shell-script-drift, template-drift, populate-reference-drift and the rest) are removed after one week of agreement.
+- A compass-ng failure in CI shows the --version output in the log.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4845][#4845]] | [agile] Record the blocked compass-ng tasks and the story's state |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

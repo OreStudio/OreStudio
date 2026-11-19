@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 3F0C6E2A-8B41-4D7E-9A15-6C2D7E8B9F10
+:END:
+#+title: Check: TypeScript formatting
+#+description: Every file of ores.web that prettier formats is as prettier formats it.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:typescript:formatting:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+options: prop:t
+
+This page defines a =check= that compass runs over ORE Studio. Its =* Definition=
+is what compass runs; the rest says why.
+
+* Rule
+
+Every file of =projects/ores.web= that prettier formats is as prettier formats
+it, with the repository's =.prettierrc.yaml=.
+
+* Why
+
+The TypeScript workflow's =Format check= step runs =prettier --check .= in
+=projects/ores.web=, after the push. Between 2026-09-19 and 2026-11-18 it
+failed 229 CI runs; in 218 of them a hand-written =.ts= or =.tsx= file was
+not formatted. compass runs the same check before the push, through its
+format cache, so a run after an edit formats only the edited files.
+
+The files and exclusions mirror =projects/ores.web/.prettierignore=, and
+prettier's own: =node_modules= is never formatted.
+
+* Definition
+:PROPERTIES:
+:ENGINE: format
+:FORMATTER: prettier
+:PROGRAM: projects/ores.web/node_modules/.bin/prettier prettier
+:STYLE: .prettierrc.yaml
+:FILES: projects/ores.web/**/*.{ts,tsx,js,mjs,cjs,json,md,yaml,yml,css,html}
+:OUTSIDE: projects/ores.web/**/node_modules/** projects/ores.web/**/package-lock.json projects/ores.web/packages/wire-protocol/src/generated/refdata/protocol/** projects/ores.web/tools/ui-tests/{test-results,playwright-report}/**
+:END:
+
+* Exceptions
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|

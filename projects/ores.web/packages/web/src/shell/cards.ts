@@ -198,6 +198,14 @@ export const CARDS = {
         permission: 'marketdata::providers:read',
         screenTitleKey: 'marketdata.connectivity.title',
     },
+    identityShapes: {
+        titleKey: 'marketdata.identityShapes.title',
+        bodyKey: 'marketdata.identityShapes.lead',
+        to: PATHS.identityShapes,
+        icon: 'document',
+        permission: 'marketdata::series_identity_shapes:read',
+        screenTitleKey: 'marketdata.identityShapes.title',
+    },
     publicRates: {
         titleKey: 'marketdata.publicRates.title',
         bodyKey: 'marketdata.publicRates.lead',
@@ -497,6 +505,7 @@ export const AREA_CARDS = {
         'synthetic',
         'subscriptions',
         'connectivity',
+        'identityShapes',
         'publicRates',
         'calibration',
         'publishedCurves',

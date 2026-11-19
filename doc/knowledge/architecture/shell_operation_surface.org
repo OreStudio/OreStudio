@@ -59,10 +59,12 @@ a request the caller assembles. =fx-spot= and =ir-paths= take =--ticks=,
 
 ** marketdata stream
 
-=marketdata stream <oresmd-uri>= watches one datum on the republished tick
-stream. It resolves the URI with the oresmd codec, writes the datum's
-canonical ORE key, and subscribes on the caller's own tenant and party
-subject, so the command takes no tenant or party argument. Each tick prints
+=marketdata stream <oresmd-uri>= watches one datum or one series live. It
+reads the URI with the oresmd codec, asks the market data service which feeds
+the session's party may show on a screen (=list_watchable_feeds=), and
+subscribes to the URI's subject on each of those feeds, so the command takes no
+tenant, party or feed argument. When a route or a subscription changes, it asks
+again and adds or drops feeds to match. Each tick prints
 its observation time, the point's oresmd URI, the value and the source;
 =--csv <path>= writes the same four fields as a header and one row per tick
 instead. Ctrl-C stops the stream, prints the count, and leaves the file
@@ -70,9 +72,8 @@ flushed.
 
 An unparseable or unknown URI is refused with the codec's own message, naming
 what the grammar did not admit rather than a subject error. A series URI
-states two subjects, because the series key and the point keys under it are
-different subjects and no NATS wildcard covers both: the series subject and
-the point subject one token down.
+watches the series token with a wildcard coordinate on each feed, so the broker
+sends the points of that series and nothing else.
 
 ** The target rule
 

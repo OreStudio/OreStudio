@@ -45,18 +45,23 @@ std::string fx_vol_point_label(double delta, bool butterfly) {
         "{}{}", static_cast<int>(std::lround(delta * 100.0)), butterfly ? "BF" : "RR");
 }
 
-std::expected<fx_vol_surface_emitter, std::string>
-fx_vol_surface_emitter::make(ssvi_parameters start,
-                             ores::analytics::quant::service::fx_vol_surface_dynamics dynamics,
-                             double dt,
-                             ores::analytics::quant::math::fx_quote_convention convention,
-                             std::vector<double> deltas,
-                             std::vector<fx_vol_contributor_spec> contributors) {
+std::expected<fx_vol_surface_emitter, std::string> fx_vol_surface_emitter::make(
+    ssvi_parameters start,
+    ores::analytics::quant::service::fx_vol_surface_dynamics dynamics,
+    double dt,
+    std::vector<ores::analytics::quant::math::fx_quote_convention> conventions,
+    std::vector<double> deltas,
+    std::vector<fx_vol_contributor_spec> contributors) {
     for (const double delta : deltas)
         if (!(delta > 0.0 && delta <= atm_delta))
             return std::unexpected(std::format("The delta {} is not inside (0, 0.5].", delta));
     if (contributors.empty())
         return std::unexpected(std::string("A surface needs at least one contributor."));
+    if (conventions.size() != start.expiries.size())
+        return std::unexpected(
+            std::format("A surface of {} expiries needs one convention for each, not {}.",
+                        start.expiries.size(),
+                        conventions.size()));
     for (const auto& c : contributors)
         if (const auto why = fx_vol_noise_profile_error(c.profile); why)
             return std::unexpected(
@@ -76,11 +81,10 @@ fx_vol_surface_emitter::make(ssvi_parameters start,
     fx_vol_surface_emitter emitter(std::move(*generator));
     // The slices are laid out once: the expiry and the convention are fixed, and a step only
     // writes the market into them, so a tick copies no string.
-    emitter.convention_ = convention;
     emitter.slices_.reserve(start.expiries.size());
-    for (const auto& expiry : start.expiries)
+    for (std::size_t i = 0; i < start.expiries.size(); ++i)
         emitter.slices_.push_back(
-            {.expiry_id = expiry.expiry_id, .market = {}, .convention = convention});
+            {.expiry_id = start.expiries[i].expiry_id, .market = {}, .convention = conventions[i]});
     emitter.deltas_ = std::move(deltas);
     emitter.per_contributor_ = start.expiries.size() * (1 + 2 * emitter.deltas_.size());
     emitter.names_.reserve(contributors.size());

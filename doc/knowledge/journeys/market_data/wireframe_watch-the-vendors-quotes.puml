@@ -1,0 +1,56 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>QUOTES: Acme Corporation Plc, 4 feeds you may watch</b> | [ Pause ]
+  --
+  {
+    Class | ^Interest Rate^ | Type | ^all^ | Find | "SOFR        " | Layout | (X) Every datum | () By series
+  }
+  --
+  {
+    {#
+      <b>Sources</b>
+      All vendors (4)
+      * bloomberg  0.2s
+      tradeweb  0.7s
+      ice  14m (silent)
+      derived  2.1s
+    } | {#
+      Class | Type | Series | Point | Value | Change | Time | Age
+      Interest Rate | ir_swap | USD SOFR fwd 0D | 1Y | 4.0488 | +0.0002 | 11:30:00.412 | 0.2s
+      Interest Rate | ir_swap | USD SOFR fwd 0D | 5Y | 4.1533 | +0.0006 | 11:29:59.904 | 0.7s
+      Interest Rate | ir_swap | USD SOFR fwd 0D | 10Y | 4.2201 | 0.0000 | 11:29:58.120 | 2.5s
+    }
+  }
+  --
+  {#
+    <b>All quotes: USD SOFR fwd 0D 5Y</b> | Value | To the mid | Age
+    bloomberg | 4.1533 | +0.0003 | 0.7s
+    tradeweb | 4.1520 | -0.0010 | 1.2s
+    ice | 4.1537 | +0.0007 | 14m
+    Mid of 3 | 4.1530 | spread 0.0017 | .
+  }
+  {
+    The last hour of each vendor as lines: one history read each, then the live ticks
+  }
+}
+
+@enduml

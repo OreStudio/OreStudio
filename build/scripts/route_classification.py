@@ -415,16 +415,43 @@ RULES = (
          " controls use, so a client that wants one of them reads that collection instead."),
 
     Rule("the request story",
+         ("exact", "GET /api/requests/{id}/story"),
+         CPP, COMPOSED, "workflow",
+         "One request's whole story answered by ores.http at the address and in the shape the BFF"
+         " answered: its own versions, the answers given on it, the roles it asked for and what"
+         " became of them, and the notices the reader was given, ordered as one stream and each"
+         " source read under its owner's permission."),
+    Rule("the request story",
+         ("exact", "GET /api/requests/{id}/changes"),
+         CPP, COMPOSED, "workflow",
+         "What one request proposes, answered by ores.http at the address and in the shape the BFF"
+         " answered: the request is read first because its kind decides where its lines are kept,"
+         " and then the component that owns the kind states them beside the value in force."),
+    Rule("the request story",
          ("regex", r"^GET /api/requests/:id/(story|changes)$"),
          BFF, COMPOSED, "workflow",
          "One request's whole story woven from every row any component wrote for it, the"
          " request's versions, the answers given on it, the roles it asked for and the"
          " notices, or the change lines of its kind beside the live record's values."),
     Rule("the request checks",
+         ("exact", "GET /api/requests/{id}/checks"),
+         CPP, COMPOSED, "workflow",
+         "What running a request's lines through the real write now says, answered by ores.http"
+         " at the address and in the shape the BFF answered: the kind's own component runs its"
+         " lines again without applying them, and the parts the policy names travel beside the"
+         " refusal of each line."),
+    Rule("the request checks",
          ("exact", "GET /api/requests/:id/checks"),
          BFF, COMPOSED, "workflow",
          "Runs a request's proposed lines through the real write and answers what it says"
          " now, weaving the request with the record as it stands."),
+    Rule("the approval inbox",
+         ("exact", "GET /api/requests"),
+         CPP, COMPOSED, "workflow",
+         "The requests this person may decide answered by ores.http at the address and in the"
+         " shape the BFF answered: the queue read the inbox service picks, each row with the"
+         " roles it asks for, the latest thing said about it and the trades it is about, and the"
+         " answered tail beside the open queue."),
     Rule("the approval inbox",
          ("exact", "GET /api/requests"),
          BFF, COMPOSED, "workflow",
@@ -462,11 +489,24 @@ RULES = (
          "A run's progress as a rail renders it: the run's status, the step executing and one"
          " summary per step, three reads, so a page follows the run rather than the engine's"
          " events."),
+    Rule("the run's progress",
+         ("exact", "GET /api/workflow/{instanceId}"),
+         CPP, COMPOSED, "workflow",
+         "A run's progress answered by ores.http at the address and in the shape the BFF"
+         " answered: the run's status, the step it is executing and one summary per step, from"
+         " the one read the engine already answers in that shape, kept for the interval a page"
+         " asks again."),
     Rule("the run's retry",
          ("prefix", "POST /api/workflow/"),
          BFF, RESOURCE, "workflow",
          "A command on one run: retrying a run that stopped asks the engine to start it"
          " again, and answers the run rather than a collection the client reads."),
+    Rule("the run's retry route",
+         ("exact", "POST /api/workflow/{instanceId}/retry"),
+         CPP, RESOURCE, "workflow",
+         "One run resumed at the address and in the shape the BFF answered: the step the page"
+         " chose, or the step the run stopped at, and the engine's own answer saying which step"
+         " it re-dispatched or why it refused."),
     Rule("the tenor catalogue",
          ("exact", "GET /api/tenors/catalogue"),
          BFF, COMPOSED, "reference-data",
@@ -497,6 +537,14 @@ RULES = (
          BFF, COMPOSED, "market-data",
          "The publishers, suppliers, adapters, sessions, feeds, scopes and routes the"
          " Connectivity screen draws, seven collection reads in one answer."),
+    Rule("the identity shapes",
+         ("regex", r"^(GET /api/marketdata/series-identity-shapes(/versions)?"
+                   r"|(PUT|DELETE) /api/marketdata/series-identity-shapes"
+                   r"|GET /api/marketdata/series-classification-rules)$"),
+         BFF, RESOURCE, "market-data",
+         "The fields each market series family requires and forbids: every row the session"
+         " reads, one row's versions, its write and its removal, and the classification rules"
+         " the oresmd editor reads to name a URL's family."),
     Rule("an item's fixing series",
          ("exact", "GET /api/marketdata/fixing-series"),
          BFF, COMPOSED, "market-data",
@@ -807,6 +855,21 @@ RULES = (
          "The cuts a party holds, and one cut's record: the body's facts, the state and the"
          " label the reporting service derives, the kind the body was taken under, the gaps"
          " the assembly could not fill and the runs that priced from it."),
+    Rule("the grid's jobs route",
+         ("regex", r"^GET /api/operations/grid/jobs/(batches|workunits|results)"
+                   r"(/\{id\}(/workunits|/results)?)?$"),
+         CPP, RESOURCE, "grid",
+         "The grid's jobs at the addresses and in the shapes the BFF answered: one page of the"
+         " batches the session may see with the name of the run and the party that made each,"
+         " one batch, the work units of one batch, one work unit, the runs of one work unit,"
+         " one page of the runs that ended with an outcome, and one run."),
+    Rule("a grid artefact's route",
+         ("regex", r"^GET /api/operations/grid/jobs/"
+                   r"(workunits/\{id\}/input|results/\{id\}/output)$"),
+         CPP, RESOURCE, "grid",
+         "The input bundle of one work unit or the output of one run, at the addresses and in"
+         " the shapes the BFF answered: the bytes the grid stored, read only after the record"
+         " that names them is read on the caller's own token."),
     Rule("a grid artefact",
          ("regex", r"^GET /api/operations/grid/jobs/(workunits/:id/input|results/:id/output)"),
          BFF, RESOURCE, "grid",
@@ -844,6 +907,14 @@ RULES = (
          BFF, RESOURCE, "grid",
          "One page of the runs that ended with an outcome, the answer to which of them"
          " failed, or one run by id."),
+    Rule("the grid app versions' route",
+         ("regex", r"^(GET|PUT) /api/operations/grid/app-versions/\{id\}"
+                   r"(/release-note)?$"),
+         CPP, RESOURCE, "grid",
+         "One build of the compute catalogue at the addresses and in the shapes the BFF"
+         " answered: the build with the app it belongs to, the packages the wrapper downloads"
+         " and the versions beside it, and the write that replaces its release note against"
+         " the version the editor read."),
     Rule("the grid app versions",
          ("regex", r"^(GET|PUT) /api/operations/grid/app-versions"),
          BFF, RESOURCE, "grid",
@@ -855,21 +926,44 @@ RULES = (
          BFF, RESOURCE, "operations",
          "Every expected service instance with the age of its last report, read from the"
          " telemetry samples."),
+    Rule("the services roster's route",
+         ("exact", "GET /api/operations/services"),
+         CPP, RESOURCE, "operations",
+         "Every expected service instance at the address and in the shape the BFF answered, each"
+         " with the age of its last report subtracted on the deployment's own clock, which is the"
+         " clock the sample was stamped against."),
     Rule("the telemetry logs",
          ("exact", "GET /api/operations/logs"),
          BFF, RESOURCE, "operations",
          "One page of telemetry entries a filter selects, with the count of everything it"
          " matches."),
+    Rule("the telemetry logs' route",
+         ("exact", "GET /api/operations/logs"),
+         CPP, RESOURCE, "operations",
+         "One page of telemetry entries at the address and in the shape the BFF answered: the"
+         " window from a range, the filters combined with and, and the page and its total."),
     Rule("the system settings",
          ("exact", "GET /api/v1/system-settings"),
          CPP, RESOURCE, "operations",
          "The deployment's system settings, the variability component's own collection."),
 
+    Rule("one request's route",
+         ("exact", "GET /api/requests/{id}"),
+         CPP, RESOURCE, "workflow",
+         "One request at the address and in the shape the BFF answered: what it asks for, what"
+         " was decided about it, where each part it named stands, and the trades it is about with"
+         " the identifier each is known by."),
     Rule("one request",
          ("exact", "GET /api/requests/:id"),
          BFF, RESOURCE, "workflow",
          "One request an identifier names, when the person may open it, which a queue read"
          " cannot answer because a notice is read after the request stopped waiting."),
+    Rule("a request decision's route",
+         ("exact", "POST /api/requests/{id}/decision"),
+         CPP, RESOURCE, "workflow",
+         "One request decided at the address and in the shape the BFF answered: approved,"
+         " refused, held or resumed against the version read, with the part the decider answers"
+         " for and the reason a hold names."),
     Rule("a request decision",
          ("exact", "POST /api/requests/:id/decision"),
          BFF, RESOURCE, "workflow",
@@ -879,11 +973,32 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "Whether auto-approval is on, its scope, and who set it, when and why, read from"
          " the one subject the inbox answers it on."),
+    Rule("the approvals mode route",
+         ("exact", "GET /api/approvals-mode"),
+         CPP, RESOURCE, "workflow",
+         "Whether the tenant enforces approvals at the address and in the shape the BFF answered:"
+         " the mode read as whether it auto-approves, with its scope and the person who set it,"
+         " when and why."),
+    Rule("the principal's requests route",
+         ("regex", r"^((GET|POST) /api/me/requests|DELETE /api/me/requests/\{id\})$"),
+         CPP, RESOURCE, "workflow",
+         "The signed-in person's own requests at the addresses and in the shapes the BFF"
+         " answered: the page they raised, newest first, each row with the roles it asks for"
+         " and the latest thing said about it; the ask that raises one; and the withdrawal"
+         " that carries the version the person saw."),
     Rule("the principal's requests",
          ("regex", r"^(GET|POST|DELETE) /api/me/requests"),
          BFF, RESOURCE, "workflow",
          "The signed-in person's own requests, raised, read and taken back, the withdrawal"
          " carrying the version the person saw."),
+    Rule("the principal's notifications' route",
+         ("regex", r"^(GET|POST) /api/me/notifications"
+                   r"(/(unread-count|read|clear))?$"),
+         CPP, RESOURCE, "workflow",
+         "The signed-in person's notices at the addresses and in the shapes the BFF answered: a"
+         " page of them, or only the unread ones; how many are unread, for the bell; and the two"
+         " writes that mark them read or clear them, an empty list naming every one they apply"
+         " to."),
     Rule("the principal's notifications",
          ("regex", r"^(GET|POST) /api/me/notifications"),
          BFF, RESOURCE, "workflow",
@@ -894,6 +1009,12 @@ RULES = (
          BFF, RESOURCE, "workflow",
          "The codes a decider may park a request with, a tenant-wide lookup that carries no"
          " personal data."),
+    Rule("the hold reasons' route",
+         ("exact", "GET /api/hold-reasons"),
+         CPP, RESOURCE, "workflow",
+         "The codes a decider may park a request with at the address and in the shape the BFF"
+         " answered, and the kinds that allow a hold: a refused kind read costs the rules and"
+         " not the reasons, because a panel that offers no hold asks for a grant."),
 
     Rule("an access screen's route",
          ("regex", r"^(GET|POST|PUT|DELETE) /api/(me|accounts|roles|permissions|reporting-tree)(/.*)?$"),

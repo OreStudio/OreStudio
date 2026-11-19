@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 74D08CD6-E26F-5A4B-AA15-223F6B6584F3
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the equity_basket_option_instruments commands from the shell?
+#+description: Every command the equity_basket_option_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:equity_basket_option_instruments:
+
+This file documents the equity_basket_option_instruments resource at the shell, one section per command. Every command is a subcommand of =equity_basket_option_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 0F5BC7E8-39BA-508C-B1FA-3B534A149607
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_basket_option_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.equity_basket_option_instruments.list=.
+
+#+name: equity_basket_option_instruments-list
+#+begin_src ores-shell :tangle equity_basket_option_instruments-list.ores :exports none
+equity_basket_option_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 95DD522B-7E89-508A-A385-6AA524C3696A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_basket_option_instruments get <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.equity_basket_option_instruments.get=.
+
+#+name: equity_basket_option_instruments-get
+#+begin_src ores-shell :tangle equity_basket_option_instruments-get.ores :exports none
+equity_basket_option_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 88BF6A14-AB59-5075-A263-FC084A7A6D0F
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_basket_option_instruments get-many <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.equity_basket_option_instruments.get_many=.
+
+#+name: equity_basket_option_instruments-get-many
+#+begin_src ores-shell :tangle equity_basket_option_instruments-get-many.ores :exports none
+equity_basket_option_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A92A6F2E-A1DF-5680-A750-A21E1CF587B0
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_basket_option_instruments add <trade_id> <trade_type_code> <trade_activity_id> <currency> <notional> <strike> <settlement_date> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_basket_option_instruments.put=.
+
+#+name: equity_basket_option_instruments-add
+#+begin_src ores-shell :tangle equity_basket_option_instruments-add.ores :exports none
+equity_basket_option_instruments add 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ 1 - - __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8B3753BE-760F-5ADE-9AB7-29ACB438F07E
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_basket_option_instruments set <trade_id> <trade_type_code> <trade_activity_id> <currency> <notional> <strike> <settlement_date> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.equity_basket_option_instruments.put=.
+
+#+name: equity_basket_option_instruments-set
+#+begin_src ores-shell :tangle equity_basket_option_instruments-set.ores :exports none
+equity_basket_option_instruments set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ 1 - - __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: C198F5F4-AF0D-5331-BCD3-87A9A77AEB15
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_basket_option_instruments put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <currency> <notional> <strike> <settlement_date> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_basket_option_instruments.put_many=.
+
+#+name: equity_basket_option_instruments-put-many
+#+begin_src ores-shell :tangle equity_basket_option_instruments-put-many.ores :exports none
+equity_basket_option_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ 1 - - __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 296717AF-D080-5D38-BE9A-82675BD8E58C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_basket_option_instruments delete <trade_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.equity_basket_option_instruments.delete=.
+
+#+name: equity_basket_option_instruments-delete
+#+begin_src ores-shell :tangle equity_basket_option_instruments-delete.ores :exports none
+equity_basket_option_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: C4408C68-2170-5769-A583-EEEE9370753E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_basket_option_instruments delete-many <trade_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_basket_option_instruments.delete_many=.
+
+#+name: equity_basket_option_instruments-delete-many
+#+begin_src ores-shell :tangle equity_basket_option_instruments-delete-many.ores :exports none
+equity_basket_option_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E5B8E870-EBF1-5986-8AE0-C65E8B7723DA
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_basket_option_instruments versions <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.equity_basket_option_instruments_versions.list=.
+
+#+name: equity_basket_option_instruments-versions
+#+begin_src ores-shell :tangle equity_basket_option_instruments-versions.ores :exports none
+equity_basket_option_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 22F269B3-7EE0-5061-9095-FE4183CE06FF
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_basket_option_instruments version <trade_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.equity_basket_option_instruments_versions.get=.
+
+#+name: equity_basket_option_instruments-version
+#+begin_src ores-shell :tangle equity_basket_option_instruments-version.ores :exports none
+equity_basket_option_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

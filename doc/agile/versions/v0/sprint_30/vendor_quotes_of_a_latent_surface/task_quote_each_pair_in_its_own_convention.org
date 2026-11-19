@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/quote-each-pair-in-its-own-convention
+#+pr: 4854
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -26,12 +26,12 @@ A latent surface's quotes mean what the pair's market means by them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-17                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-18                               |
 
 * Acceptance
 
@@ -40,9 +40,24 @@ A latent surface's quotes mean what the pair's market means by them.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The feed quoted every pair in spot delta, delta-neutral ATM and smile
+butterflies. The stored conventions of all 14 surface pairs quote broker
+butterflies, ten quote premium-adjusted deltas, and most switch delta type at
+2Y (USDINR at 7Y). A party calibrating in its pair's convention therefore read
+the vendor quotes with the wrong meaning.
+
+- The data shape: the feed's build input carries the pair's
+  =fx_option_convention= row, not one quoting convention. The emitter holds one
+  quoting convention per expiry, which the generator already quotes each slice
+  in.
+- The mapping is reference data's =to_quote_convention=, the one the
+  calibration plan and the derived source use, so the three cannot disagree.
+- The registry reads the row named =BASE-QUOTE-FXOPTION=, as the derived source
+  does, and skips a surface whose pair has none, naming it.
+- The proof is the round trip: a row that switches from Spot to PaFwd inside
+  the surface, with broker butterflies, and a calibration that reads each
+  expiry's convention from the same row. A mutant that quotes every expiry in
+  the first convention must fail it.
 
 * Measurements
 
@@ -56,7 +71,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Surface pairs whose stored convention differs from the one the feed quoted | 14 of 14 (all Broker butterflies; 10 premium-adjusted deltas) | =compass sql= join of =ores_synthetic_fx_vol_surface_feeds_tbl= to =ores_refdata_fx_option_conventions_tbl= on =BASE-QUOTE-FXOPTION= | 4aa5621681 |
+| Round trip worst error, switching row (Spot to PaFwd at 3M, Broker) | 2.41e-09 ATM, 5.83e-09 wings | =compass test run -- -R ores.synthetic.api.tests= with the margins forced to zero | 19e2630c0d |
+| Round trip worst error, mutant quoting every expiry in the first convention | 1.44e-05 ATM, 2.76e-04 wings; fails | the same run, with =conventions.front()= for every slice | 19e2630c0d |
+| Synthetic API suite | 1021 test cases pass | =compass test run -- -R ores.synthetic.api.tests= | 19e2630c0d |
+| Synthetic service suite, with the refusal pinned | 82 test cases pass | =compass test run -- -R ores.synthetic.service.tests= | f16ecc696e |
+| Surface pairs ticking on the fleet after a restart, 10:44 to 11:04 GMT | 14 of 14 | =compass sql= count of =fx_option= ticks by pair | 19e2630c0d |
 
 * Notes
 
@@ -75,12 +95,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4854][#4854]] | [synthetic] Quote each latent surface in its pair's own convention |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the convention row is per party, and read_latest(ctx, id) takes front() | feed_kind_registry.cpp | Decline | The calibration and the publish service read the row the same way, so the feed and the calibration see the same row. A party-explicit read belongs to all three readers. |
+| 2 | Local review: the feed derives the id BASE-QUOTE-FXOPTION; the calibration reads the blueprint's fx_option_convention_id | feed_kind_registry.cpp | Decline | Every populated blueprint names the BASE-QUOTE-FXOPTION id. The feed config has no blueprint link; the task "Point the blueprints at the vendor contributors" joins them. |
+| 3 | Local review: misspell-fixer on the changed files | (all) | Accept | Clean, exit 0. |
+| 4 | @claude: say why the registry uses the derived source's id rule | feed_kind_registry.cpp | Accept | One sentence added to the existing comment, f3b9eb6fa3. |
+| 5 | @claude: confirm read_latest returns at most one row per id | feed_kind_registry.cpp | Decline | Current rows are unique on (tenant, id, party). More than one comes back only when the session sees several parties, and the calibration reads the row the same way (row 1). |
+| 6 | @claude: the per-tick cost is fine | fx_vol_surface_feed.cpp | No change | The mapping runs once per expiry at build time. |
+| 7 | @claude: check that the convention_ member left the header | fx_vol_surface_emitter.hpp | No change | The member is removed in this diff. |
+| 8 | @claude: test an unreadable tenor and a convention with no quoting convention for a tenor | feeds_fx_vol_surface_feed_tests.cpp | No change | Both are pinned: the 6X tenor and the Forward delta at 3M, with its exact error, in "a feed row whose expiries cannot make a surface is refused". |
+| 9 | @claude: rerun ticks-smoke before merge | (gate) | Accept | It will run before merge, when the host load allows. |
 
 * Result
+
+Each latent surface now quotes each expiry in the convention its pair's stored
+FX option convention states for that tenor: its ATM type, delta type, switch
+tenor, risk-reversal favour and butterfly style. The mapping is reference data's
+=to_quote_convention=, the one the calibration reads, so a party reads a vendor
+quote with the meaning the vendor quoted it in. A pair with no stored convention
+is refused and named. All 14 surface pairs tick on the fleet with their own
+conventions.

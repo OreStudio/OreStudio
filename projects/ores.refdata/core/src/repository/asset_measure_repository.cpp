@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/asset_measure.hpp"
 #include "ores.refdata.api/domain/asset_measure_json_io.hpp" // IWYU pragma: keep.
@@ -103,6 +104,22 @@ using asset_measure_rows_by_key =
     std::map<std::tuple<std::string, std::string>, std::vector<domain::asset_measure>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::asset_measure>
+asset_measure_claim_rows(const ores::database::context& ctx,
+                         std::vector<domain::asset_measure> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -120,7 +137,8 @@ asset_measure_rows_by_key asset_measure_current_rows(asset_measure_repository& r
         coding_scheme_codes.push_back(row.coding_scheme_code);
     }
     asset_measure_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, codes, coding_scheme_codes))
+    for (auto& item :
+         asset_measure_claim_rows(ctx, repo.read_latest(ctx, codes, coding_scheme_codes)))
         current[std::make_tuple(item.code, item.coding_scheme_code)].push_back(std::move(item));
     return current;
 }
@@ -181,7 +199,10 @@ domain::asset_measure asset_measure_apply_claim(const domain::asset_measure& v,
 }
 
 void asset_measure_repository::write(const context& ctx, const domain::asset_measure& v) {
-    write(ctx, v, asset_measure_replace_claim(read_latest(ctx, v.code, v.coding_scheme_code)));
+    write(ctx,
+          v,
+          asset_measure_replace_claim(
+              asset_measure_claim_rows(ctx, read_latest(ctx, v.code, v.coding_scheme_code))));
 }
 
 void asset_measure_repository::write(const context& ctx,
@@ -199,11 +220,12 @@ void asset_measure_repository::write(const context& ctx,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset measure. " << "code: " << v.code
                                << " coding_scheme_code: " << v.coding_scheme_code;
-    const auto t = asset_measure_apply_claim(v,
-                                             claim,
-                                             asset_measure_claim_reads_current(claim) ?
-                                                 read_latest(ctx, v.code, v.coding_scheme_code) :
-                                                 std::vector<domain::asset_measure>{});
+    const auto t = asset_measure_apply_claim(
+        v,
+        claim,
+        asset_measure_claim_reads_current(claim) ?
+            asset_measure_claim_rows(ctx, read_latest(ctx, v.code, v.coding_scheme_code)) :
+            std::vector<domain::asset_measure>{});
     query_builder::execute_write_query(
         ctx, asset_measure_mapper::map(t), lg(), "Writing asset measure to database.");
 }
@@ -234,8 +256,10 @@ void asset_measure_repository::write(
 std::vector<domain::asset_measure> asset_measure_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<asset_measure_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c, "coding_scheme_code"_c);
 
     return query_builder::execute_read_query<asset_measure_entity, domain::asset_measure>(
@@ -252,9 +276,10 @@ std::vector<domain::asset_measure> asset_measure_repository::read_latest(
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<asset_measure_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
                              "coding_scheme_code"_c == coding_scheme_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<asset_measure_entity, domain::asset_measure>(
@@ -271,10 +296,12 @@ std::vector<domain::asset_measure> asset_measure_repository::read_all(
     BOOST_LOG_SEV(lg(), debug) << "Reading all asset measure versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<asset_measure_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "coding_scheme_code"_c == coding_scheme_code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<asset_measure_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                             "coding_scheme_code"_c == coding_scheme_code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<asset_measure_entity, domain::asset_measure>(
         ctx,
@@ -293,10 +320,11 @@ asset_measure_repository::read_at_version(const context& ctx,
                                << " coding_scheme_code: " << coding_scheme_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<asset_measure_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "coding_scheme_code"_c == coding_scheme_code &&
-                                            "version"_c == version) |
+                       query_builder::where(
+                           ("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                           "coding_scheme_code"_c == coding_scheme_code && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities =
@@ -361,9 +389,10 @@ asset_measure_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset measures with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<asset_measure_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<asset_measure_entity, domain::asset_measure>(
         ctx,
@@ -381,8 +410,9 @@ asset_measure_repository::get_total_measure_count(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset measure count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<asset_measure_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<asset_measure_entity>(
         ctx,
@@ -421,9 +451,10 @@ asset_measure_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<asset_measure_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c.in(codes) &&
                              "coding_scheme_code"_c.in(coding_scheme_codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<asset_measure_entity, domain::asset_measure>(
         ctx,

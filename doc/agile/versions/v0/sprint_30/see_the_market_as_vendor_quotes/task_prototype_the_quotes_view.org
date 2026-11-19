@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: D9CEB730-C3E2-464A-B69D-57E518C8AAA1
+:END:
+#+title: Task: Prototype the quotes view for sign-off
+#+description: Build a static prototype of the quotes view on mock data, with the variants and states the journey needs, and record the product owner's sign-off or the changes asked.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:prototype:marketdata:see_the_market_as_vendor_quotes:sprint_30:v0:
+#+owner: marco
+#+branch: feature/prototype-the-quotes-view
+#+pr: 4884
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The product owner signs off the quotes view before it is built.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-18                               |
+
+* Acceptance
+
+- A static prototype under doc/prototypes/ shows the view on mock ticks of several vendors and asset classes, including vol quotes.
+- It shows a party's view and the system tenant's view.
+- The sign-off, or the changes asked, is recorded on the prototype's page.
+
+* Plan
+
+1. A static page under =doc/prototypes/market_data/watch-the-vendors-quotes/=,
+   in the look of the group's other prototypes, on mock ticks of seven feeds and
+   four asset classes: FX spot, IR swap pillars, FX option vols and swaption
+   vols.
+2. Two variants for the design question, every datum or by series, and four
+   states: a party, the system tenant, no subscription, a silent vendor.
+3. A prototype page with the verdict section, a row on the group page, a count
+   on the top page, and a /Prototype/ section on the journey.
+4. Ask the product owner for the sign-off and record it on the prototype page.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4884][#4884]] | [doc] Prototype the quotes view |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A click on the bar's padding reloads the page | index.html | Accept | The handler returns unless a button was clicked. |
+| 2 | The Find value is not escaped | index.html | Accept | Escaped. |
+| 3 | An unknown variant or state falls through | index.html | Accept | Both fall back to the first value. |
+| 4 | Staleness is per datum, not per feed | watch-the-vendors-quotes.org | Accept | Stated under What is fake. |
+| 5 | Pause freezes the ages | index.html | Accept | Paused, the values hold and the ages keep counting. |
+| 6 | A full redraw on a class change loses the focus | index.html | Decline | Throwaway page; the Find input keeps its focus. |
+| 7 | Two statements on one line; a class name | index.html | Accept in part | The statements are split; the class name stays. |
+
+* Result
+
+- Signed off by the product owner on 2026-11-19: variant C, the source rail, with
+  the /All quotes/ panel for the picked row, the two layouts (every datum, by
+  series), and the asset class codes table as the class filter. The verdict and
+  the rounds before it are on the prototype page.
+- Four rounds: flat or grouped (both kept as layouts); an across-vendors layout
+  (replaced: the vendors are a choice); vendor cards as health and toggle
+  (replaced: the two jobs confused each other); three idiomatic choices, of which
+  C was chosen.
+- The journey's steps and wireframe follow variant C, and the story records the
+  decision.

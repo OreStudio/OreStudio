@@ -60,9 +60,9 @@ population answers the same question.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Each party's run writes the public fixings the system tenant stores, so the overnight SONIA history resolves. Five more IBOR curves are bootstrapped, and ORE builds 32 of ACCOUK's trades where it built none. |
+| Now           | A fresh provision books 808 of the 1100 trades the mix states, and every one of the eleven bond codes is among them. The two interest rate configs are refused by the forward rate agreement builder, which draws an overnight index for a product that needs an IBOR; captured. |
 | Waiting on    | Nothing for the first task. See Dependencies for the later ones. |
-| Next          | [[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]]. |
+| Next          | [[id:06886D23-1A52-4BBC-B305-4609D606EEA7][Generate the historical fixings the generated trades need]]. |
 | Last touched  | 2026-11-17 |
 
 * Acceptance
@@ -101,6 +101,8 @@ population answers the same question.
 | [[id:B4B85683-D59C-4526-A4BF-7A5B1127BA5E][Value the generated trades in a report and make them correct]] | BACKLOG | |  | A report values every type, and each matches ORE's own NPV for its sample. |
 | [[id:D42DC42B-1729-4B1C-9EE8-658208319355][Prove a run on generated trades and market data]] | BACKLOG | | | Every end-to-end run so far has depended on hand-seeded ACME data, which is why a run fails for a data reason rather than a chain reason. The synthetic component already generates the trade population (bond books, counterparties, trade generation configs) and publishes market data (IR curve and FX spot generation configs, feeds into ores.marketdata). Prove a report runs to completion on data the system generates: generate the trades, generate the market data they need, point a report definition at those books, and run it. Record what the generated data cannot yet express, which is the gap a gather has to respect. |
 | [[id:2189859D-6B0B-493E-A858-0435091D2365][Bootstrap every IBOR tenor the generated trades book]] | DONE | 2026-11-17 | 2026-11-17 | The generator books trades on IBOR indices whose curve the system does not bootstrap: GBP-LIBOR 6M, 12M and 1W, EUR-EURIBOR 12M and others. ORE then cannot find the index, and those trades fail. Bootstrap and publish a curve for each IBOR index the generated trades name, so each party holds it and the package step forwards it. |
+| [[id:1DF91F1D-2AA6-40DD-87A5-160437CEBCDF][Book the bond codes the seeded population cannot hold]] | DONE | 2026-11-17 | 2026-11-17 | At main da9ee3cece the acme_demo provision's generate_trades step warns that the population of 1000 trades gives bond 40 trades while its 4 configs need 44, and books no trade, so every report runs on an empty book. |
+| [[id:F28EB7EE-7252-402E-9BAD-35560888DD9C][Hold every code on every path, and draw an Ibor for an agreement]] | DONE | 2026-11-17 | 2026-11-18 | The review of #4828 found that a run stating a size and no mix, or no knobs at all, keeps the seeded configs' ten bond trades and so books ten of the eleven bond codes. The same rule on a fresh provision found both interest rate configs refused because a forward rate agreement drew an overnight index. Refuse any count shorter than its class's code list on every path, seed one trade per code, and draw an Ibor for a forward rate agreement. |
 
 * Decisions
 
@@ -122,6 +124,11 @@ Settled on 2026-11-17, when this story was formed:
    the source stories review the moves later.
 2. *The generated trades drive the requirements.* The relative-time DQ
    corpus is not built.
+3. *The public fixings history is not seeded from a DQ dataset.* A provision
+   already fetches about ten years of FX fixings and 2,522 days of SONIA from
+   the public sources, so the DQ snapshot would only spare their API. Its task
+   stays BACKLOG in this story and is not on the arc; it returns to the product
+   backlog when the story closes.
 3. *One run is one trade set.* The moved tasks say "trade set". Until the
    fan-out exists, a run's whole population is its one set.
 

@@ -35,6 +35,7 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
 #include "ores.marketdata.core/repository/subscription_repository.hpp"
+#include "ores.marketdata.core/service/series_tick_reader.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.service/app/tick_writer.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -169,11 +170,11 @@ struct app_feed_ingest_loop_fixture {
         route(source, party_id);
     }
 
-    void route(const std::string& source, const boost::uuids::uuid& routed_party) {
+    /// The catalogue feed named @p source, written once, whatever the number of parties routed
+    /// to it. The catalogue belongs to the system tenant, which is the only tenant the ingest
+    /// loop reads it from.
+    ores::marketdata::domain::feed catalogue_feed(const std::string& source) {
         using namespace ores::marketdata;
-        // The catalogue source belongs to the system tenant, which is the only tenant the
-        // ingest loop reads the catalogue from. A source is written once, whatever the number of
-        // parties routed to it.
         const auto system_ctx =
             ores::database::service::tenant_context::with_system_tenant(h.context());
         auto sources = repository::feed_repository{}.read_latest(system_ctx);
@@ -194,6 +195,18 @@ struct app_feed_ingest_loop_fixture {
             src.change_commentary = "Route fixture source";
             repository::feed_repository{}.write(system_ctx, src);
         }
+        return src;
+    }
+
+    /// The wildcard that covers every tick the feed named @p source carries.
+    std::string feed_ticks(const std::string& source) {
+        return std::string(ores::marketdata::messaging::market_tick::nats_subject) + ".ore." +
+               boost::uuids::to_string(catalogue_feed(source).id) + ".>";
+    }
+
+    void route(const std::string& source, const boost::uuids::uuid& routed_party) {
+        using namespace ores::marketdata;
+        const auto src = catalogue_feed(source);
 
         auto sub = generators::generate_synthetic_subscription(gen);
         sub.tenant_id = h.tenant_id();
@@ -384,7 +397,7 @@ TEST_CASE("a_routed_tick_writes_the_series_and_the_tick", "[app][feed_ingest_loo
     CHECK(boost::uuids::to_string(points.front().party_id) == party);
 }
 
-TEST_CASE("a_tick_from_a_source_that_no_route_names_is_dropped_and_writes_nothing",
+TEST_CASE("a_tick_from_a_source_the_catalogue_does_not_name_is_dropped_and_writes_nothing",
           "[app][feed_ingest_loop]") {
     app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
@@ -398,7 +411,7 @@ TEST_CASE("a_tick_from_a_source_that_no_route_names_is_dropped_and_writes_nothin
 
     const auto outcome = loop.handle_tick(tick_from(bound_source, quote_uri));
     REQUIRE(outcome.has_value());
-    CHECK(*outcome == tick_drop::unbound_source);
+    CHECK(*outcome == tick_drop::unknown_source);
 
     CHECK(f.series_for(quote_uri).empty());
 }
@@ -751,19 +764,16 @@ void report(const std::string& what, int rep, std::size_t rows, double seconds) 
               << static_cast<double>(rows) / seconds << " rows per second" << std::endl;
 }
 
-/// The ticks that the loop republished, each with the time it arrived. The callback only copies
+/// The ticks that the loop published, each with the time it arrived. The callback only copies
 /// the message, so it does not slow the drain that a test times. The ticks are decoded later.
-class republish_tap final {
+class feed_tap final {
 public:
-    republish_tap(app_feed_ingest_loop_fixture& f,
-                  const std::string& tenant,
-                  const std::string& party)
-        : sub_(f.nats.subscribe(ores::marketdata::domain::market_tick_subject_all(tenant, party),
-                                [this](ores::nats::message msg) {
-                                    const auto at = std::chrono::system_clock::now();
-                                    std::lock_guard lock(mu_);
-                                    seen_.emplace_back(at, std::move(msg.data));
-                                })) {}
+    feed_tap(app_feed_ingest_loop_fixture& f, const std::string& wildcard)
+        : sub_(f.nats.subscribe(wildcard, [this](ores::nats::message msg) {
+            const auto at = std::chrono::system_clock::now();
+            std::lock_guard lock(mu_);
+            seen_.emplace_back(at, std::move(msg.data));
+        })) {}
 
     std::size_t count() const {
         std::lock_guard lock(mu_);
@@ -784,7 +794,7 @@ public:
         }
     }
 
-    /// The value of each republished tick, in the order the ticks arrived.
+    /// The value of each published tick, in the order the ticks arrived.
     std::vector<double> values() const {
         std::vector<double> out;
         std::lock_guard lock(mu_);
@@ -827,8 +837,8 @@ void report_ages(const std::string& what, int rep, std::vector<double> ages, std
     const auto at = [&](double q) {
         return ages.empty() ? 0.0 : ages[static_cast<std::size_t>(q * (ages.size() - 1))];
     };
-    std::cout << "RESULT age at republish, " << what << " run " << rep << ": " << ages.size()
-              << " of " << sent << " republished, median " << std::fixed << std::setprecision(1)
+    std::cout << "RESULT age at publish, " << what << " run " << rep << ": " << ages.size()
+              << " of " << sent << " published, median " << std::fixed << std::setprecision(1)
               << at(0.5) << " ms, p99 " << at(0.99) << " ms, max " << at(1.0) << " ms" << std::endl;
 }
 
@@ -973,14 +983,11 @@ TEST_CASE("burst_serial_against_pipelined_through_nats", "[.][burst]") {
         f.nats.publish(subject, ores::nats::default_wire_codec().encode(tick));
     };
 
-    const auto tenant = f.h.tenant_id().to_string();
-    const auto party = boost::uuids::to_string(f.party_id);
-
     // One loop and one burst for each sample, the two modes in turn, so that both see the load
     // of the machine as it changes. A second part sends a slow stream of ticks, which shows what
     // the stages add to the wait of a tick when the loop is not busy.
     const auto sample = [&](bool pipelined) {
-        republish_tap tap(f, tenant, party);
+        feed_tap tap(f, f.feed_ticks(source));
         feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer, pipelined);
         loop.start();
         const auto set = warm_up(f, source, reader, [&](const std::vector<market_tick>& ticks) {
@@ -1007,8 +1014,8 @@ TEST_CASE("burst_serial_against_pipelined_through_nats", "[.][burst]") {
         REQUIRE(done);
         CHECK(reader.count_since(set.streams, base) == burst_ticks);
 
-        // The republish follows the copy of the batch that holds the tick. A tick that is too
-        // old is not republished, so the wait ends when the count stops growing.
+        // The publish follows the copy of the batch that holds the tick. A tick that is too
+        // old is not published, so the wait ends when the count stops growing.
         tap.wait_for_quiet(std::chrono::seconds(2));
         sample_result result;
         result.rows_per_second = static_cast<double>(burst_ticks) / seconds;
@@ -1093,16 +1100,13 @@ TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_nex
     const auto source = bound_prefix + run_tag();
     f.route(source);
     f.connect();
-    const auto tenant = f.h.tenant_id().to_string();
-    const auto party = boost::uuids::to_string(f.party_id);
     burst_reader reader;
 
-    // Every tick is republished once, stored or not, so the count of the republish says that
+    // Every tick is published once, stored or not, so the count of the publish says that
     // none was lost, and the rows of the table say that none was stored twice.
-    std::atomic<std::size_t> republished{0};
+    std::atomic<std::size_t> published{0};
     const auto sub =
-        f.nats.subscribe(ores::marketdata::domain::market_tick_subject_all(tenant, party),
-                         [&](ores::nats::message) { ++republished; });
+        f.nats.subscribe(f.feed_ticks(source), [&](ores::nats::message) { ++published; });
 
     feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
     loop.start();
@@ -1159,14 +1163,14 @@ TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_nex
 
     // A burst while the store is down. The first copy fails, the batches behind it are prepared
     // while it fails, and the waits that follow leave them unstored. The store stays down, so the
-    // burst stores nothing however long it takes to republish.
+    // burst stores nothing however long it takes to publish.
     writer->take_down();
     send(20000);
-    REQUIRE(wait_until([&] { return republished.load() == sent; }));
+    REQUIRE(wait_until([&] { return published.load() == sent; }));
     CHECK(reader.count_since(streams, base) == stored_before);
 
     // The store comes up. The loop tries it again only when its wait has ended, so a single tick is
-    // sent until one is stored. A tick that arrives during the wait is republished and not stored.
+    // sent until one is stored. A tick that arrives during the wait is published and not stored.
     writer->bring_up();
     std::size_t probes = 0;
     REQUIRE(wait_until([&] {
@@ -1177,7 +1181,7 @@ TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_nex
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         return false;
     }));
-    REQUIRE(wait_until([&] { return republished.load() == sent; }));
+    REQUIRE(wait_until([&] { return published.load() == sent; }));
     const auto recovered = reader.count_since(streams, base);
     CHECK(recovered > stored_before);
     CHECK(recovered <= stored_before + probes);
@@ -1185,11 +1189,11 @@ TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_nex
     // The store is up and takes the next burst, and takes each tick once.
     send(part);
     REQUIRE(wait_until([&] { return reader.has(streams[last_datum], last_ts); }));
-    REQUIRE(wait_until([&] { return republished.load() == sent; }));
+    REQUIRE(wait_until([&] { return published.load() == sent; }));
 
     CHECK(reader.count_since(streams, base) == recovered + part);
     CHECK(writer->written() == recovered + part);
-    CHECK(republished.load() == sent);
+    CHECK(published.load() == sent);
 }
 
 namespace {
@@ -1269,12 +1273,10 @@ TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages",
     const auto source = bound_prefix + run_tag();
     f.route(source);
     f.connect();
-    const auto tenant = f.h.tenant_id().to_string();
-    const auto party = boost::uuids::to_string(f.party_id);
 
-    // Each tick carries its number as its value, so the republish shows whether any tick passed
+    // Each tick carries its number as its value, so the publish shows whether any tick passed
     // another.
-    republish_tap tap(f, tenant, party);
+    feed_tap tap(f, f.feed_ticks(source));
     feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
     loop.start();
     const auto subject = ores::marketdata::domain::synthetic_tick_subject_for(source);
@@ -1326,7 +1328,7 @@ TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages",
     CHECK(writer->held_thread() != *writer->small_threads().begin());
 
     // A tick that arrives now is a small batch. It must wait behind the batch in the copy stage.
-    // A loop that worked it through at once would republish it while that batch is held.
+    // A loop that worked it through at once would publish it while that batch is held.
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
     send(1, std::chrono::milliseconds(0));
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
@@ -1454,4 +1456,176 @@ TEST_CASE("the_ingest_writes_one_row_for_two_consumers_of_the_same_source",
     const auto stream = stream_text_of(first_series.front());
     CHECK(stream == stream_text_of(second_series.front()));
     CHECK(tick_rows_of(stream) == "1");
+}
+
+TEST_CASE("a_tick_of_two_consumers_is_published_once_on_its_feed_and_metered_for_each",
+          "[app][feed_ingest_loop]") {
+    using namespace ores::marketdata;
+    app_feed_ingest_loop_fixture f;
+    const auto bound_source = bound_prefix + run_tag();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
+    const auto other_party = f.add_party();
+    f.route(bound_source);
+    f.route(bound_source, other_party);
+    f.connect();
+    const auto feed = f.catalogue_feed(bound_source).id;
+
+    std::atomic<std::size_t> on_feed{0};
+    std::atomic<std::size_t> on_tenant{0};
+    std::string feed_subject;
+    std::mutex mu;
+    const auto feed_sub =
+        f.nats.subscribe(f.feed_ticks(bound_source), [&](ores::nats::message msg) {
+            std::lock_guard lock(mu);
+            feed_subject = msg.subject;
+            ++on_feed;
+        });
+    // The subtree the copies for each party travelled on, which nothing publishes any more.
+    const auto tenant_sub = f.nats.subscribe(std::string(messaging::market_tick::nats_subject) +
+                                                 "." + f.h.tenant_id().to_string() + ".>",
+                                             [&](ores::nats::message) { ++on_tenant; });
+
+    feed_ingest_loop loop(f.nats, f.h.context());
+    const auto meter = std::make_shared<service::app::delivery_meter>();
+    loop.set_delivery_meter(meter);
+    loop.refresh();
+    REQUIRE_FALSE(loop.handle_tick(tick_from(bound_source, quote_uri)).has_value());
+
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+    while (on_feed < 1 && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    // A second publish, on the feed or under the tenant, would arrive within the wait the first
+    // took.
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+
+    CHECK(on_feed == 1);
+    CHECK(on_tenant == 0);
+    {
+        std::lock_guard lock(mu);
+        const auto series_uri = service::app::name_datum(quote_uri).value()->series_uri;
+        CHECK(feed_subject.ends_with(std::string(messaging::market_tick::nats_subject) + ".ore." +
+                                     boost::uuids::to_string(feed) + ".fx_spot." +
+                                     domain::subject_token(series_uri) + "._"));
+    }
+
+    // The bill is what it was when each party received a copy: one delivery for each party.
+    const auto counts = meter->drain();
+    REQUIRE(counts.size() == 2);
+    std::set<boost::uuids::uuid> parties;
+    for (const auto& entry : counts) {
+        CHECK(entry.deliveries == 1);
+        CHECK(entry.key.provider_code == "ore");
+        CHECK(entry.key.feed_id == feed);
+        CHECK(entry.key.oresmd_uri == quote_uri);
+        parties.insert(entry.key.party_id);
+    }
+    CHECK(parties == std::set{f.party_id, other_party});
+}
+
+TEST_CASE("a_tick_of_a_feed_that_no_route_names_is_published_on_its_feed_and_not_stored",
+          "[app][feed_ingest_loop]") {
+    using namespace ores::marketdata;
+    app_feed_ingest_loop_fixture f;
+    const auto source = other_prefix + run_tag();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
+    const auto feed = boost::uuids::to_string(f.catalogue_feed(source).id);
+    f.connect();
+
+    std::atomic<std::size_t> on_feed{0};
+    const auto feed_sub =
+        f.nats.subscribe(std::string(messaging::market_tick::nats_subject) + ".ore." + feed + ".>",
+                         [&](ores::nats::message) { ++on_feed; });
+
+    feed_ingest_loop loop(f.nats, f.h.context());
+    loop.refresh();
+    REQUIRE_FALSE(loop.handle_tick(tick_from(source, quote_uri)).has_value());
+
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+    while (on_feed < 1 && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    // A second publish would arrive within the wait the first took.
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+
+    CHECK(on_feed == 1);
+    CHECK(f.series_for(quote_uri).empty());
+    const auto series_uri = service::app::name_datum(quote_uri).value()->series_uri;
+    CHECK(tick_rows_of(boost::uuids::to_string(datum::stream_id("ore", series_uri))) == "0");
+}
+
+TEST_CASE("a_tick_of_a_feed_that_no_route_names_is_not_published_once_it_has_aged_out",
+          "[app][feed_ingest_loop]") {
+    using namespace ores::marketdata;
+    app_feed_ingest_loop_fixture f;
+    const auto source = other_prefix + run_tag();
+    const auto feed = boost::uuids::to_string(f.catalogue_feed(source).id);
+    f.connect();
+
+    std::atomic<std::size_t> on_feed{0};
+    const auto feed_sub =
+        f.nats.subscribe(std::string(messaging::market_tick::nats_subject) + ".ore." + feed + ".>",
+                         [&](ores::nats::message) { ++on_feed; });
+
+    feed_ingest_loop loop(f.nats, f.h.context());
+    loop.refresh();
+    // Older than the age limit of any service, the end of day one included.
+    auto tick = tick_from(source, app_feed_ingest_loop_eur_usd_spot());
+    tick.observation_time -= std::chrono::days{30};
+    REQUIRE_FALSE(loop.handle_tick(tick).has_value());
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    CHECK(on_feed == 0);
+}
+
+TEST_CASE("the_provider_read_returns_the_tick_the_feed_subject_carried",
+          "[app][feed_ingest_loop]") {
+    using namespace ores::marketdata;
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
+    app_feed_ingest_loop_fixture f;
+    const auto source = bound_prefix + run_tag();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
+    f.route(source);
+    f.connect();
+
+    std::mutex mu;
+    std::optional<market_tick> carried;
+    const auto feed_sub = f.nats.subscribe(f.feed_ticks(source), [&](ores::nats::message msg) {
+        const auto tick = ores::nats::default_wire_codec().decode<market_tick>(msg.data);
+        std::lock_guard lock(mu);
+        if (tick)
+            carried = *tick;
+    });
+
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
+    loop.refresh();
+    const auto sent = tick_from(source, quote_uri);
+    REQUIRE_FALSE(loop.handle_tick(sent).has_value());
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+    const auto arrived = [&] {
+        std::lock_guard lock(mu);
+        return carried.has_value();
+    };
+    while (!arrived() && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+    messaging::get_provider_ticks_request request;
+    request.provider_code = "ore";
+    request.series_uri = quote_uri;
+    request.from_instant = sent.observation_time - std::chrono::minutes(1);
+    const auto system_ctx =
+        ores::database::service::tenant_context::with_system_tenant(f.h.context());
+    const auto reply = service::series_tick_reader::read(system_ctx, request);
+
+    std::lock_guard lock(mu);
+    REQUIRE(carried.has_value());
+    REQUIRE(reply.result.outcome == ores::utility::domain::outcome::ok);
+    REQUIRE_FALSE(reply.values.empty());
+    // The newest tick of the read is the one the subject carried: the same value at the same
+    // instant, to the microsecond the store keeps.
+    auto newest = *reply.first_instant;
+    for (const auto gap : reply.gaps_us)
+        newest += std::chrono::microseconds(gap);
+    CHECK(reply.values.back() == std::stod(carried->value));
+    CHECK(std::chrono::floor<std::chrono::microseconds>(carried->observation_time) == newest);
 }

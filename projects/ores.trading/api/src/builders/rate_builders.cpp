@@ -473,4 +473,36 @@ swap_result inflation_swap_builder::build() const {
     return result;
 }
 
+rate_digital_option_builder::rate_digital_option_builder(rate_digital_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+swap_result rate_digital_option_builder::build() const {
+    if (terms_.index.get().empty())
+        return std::unexpected(build_error{"index", "must name an index"});
+    if (terms_.payoff_currency.get().empty())
+        return std::unexpected(build_error{"payoff_currency", "must name a currency"});
+    if (!(terms_.payoff_amount.get() > utility::decimal::decimal{}))
+        return std::unexpected(build_error{"payoff_amount", "must be positive"});
+    if (terms_.payment_date.get() < terms_.fixing_date.get())
+        return std::unexpected(build_error{"payment_date", "must not be before the fixing date"});
+    domain::swap_instrument_data out;
+    out.header.identity.trade_type_code = std::string(trade_type);
+    out.header.maturity_date = terms_.payment_date.get();
+    domain::rate_digital_option_instrument fact{};
+    fact.index_name = terms_.index.get();
+    fact.strike = terms_.strike.get();
+    fact.payoff_amount = terms_.payoff_amount.get();
+    fact.payoff_currency = terms_.payoff_currency.get();
+    fact.fixing_date = terms_.fixing_date.get();
+    fact.payment_date = terms_.payment_date.get();
+    out.facts = std::move(fact);
+    domain::instrument_option option{};
+    option.long_short = long_short_of(terms_.position.get());
+    option.option_type = option_type_of(terms_.kind.get());
+    option.style = "European";
+    out.options.push_back(std::move(option));
+    add_exercise_dates(out, {terms_.fixing_date.get()});
+    return out;
+}
+
 }

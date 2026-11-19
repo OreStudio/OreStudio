@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: E1BC8C25-71E9-4586-98D6-F320F44B02A7
+:END:
+#+title: Task: Fix the gate defects compass found
+#+description: Fix the defects in ORE Studio's own gates that the compass port found.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The gates compass does not port give a correct verdict, and the value-set gates pass.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The r.id stop in the value-set generators (conventions_fx_projection.cpp) is fixed in the source or exempted with a recorded reason.
+- xml-bindings-drift no longer runs everything twice.
+- file-types-seed uses byte order, not the locale, and scenarioOutputFile is curated, not chosen by directory order.
+- A capture records moving ore-parameters-seed's texts into data files compass can read.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- *r.id* (20bfe6a5bc): the FX projection's own convention Id is exempt in
+  generate_convention_kind_terms.py, beside spot_days; the convention kind
+  terms, the ORE element map and the value sets all match their committed
+  seeds.
+- *file-types-seed* (a2283edbe0): byte order in the vendoring script and the
+  generator, new byte-order digests in the two ORE manifests, a sorted walk, an
+  explicit tie-break, and the three tied parameters curated. The check passes
+  under C and en_GB.UTF-8, and the seeds are unchanged.
+- *component-drift and drift-sweep* (874d67870b) render under the git common
+  directory instead of the shared tmpfs.
+- *xml-bindings-drift's second run is kept.* It runs the generator under a
+  second PYTHONHASHSEED, which guards against a future change that iterates
+  over a set; without it that bug shows as intermittent drift. It costs about
+  9 s.
+- *tangle-shell and tangle-http writing into the tree is kept*: it is their
+  stated fix path, which asks the developer to commit the regenerated files.
+- *ore-parameters-seed*: captured as "Move the ORE parameters seed's texts
+  into data files" (7c6d0e5810).
+

@@ -71,6 +71,24 @@ struct instrument_projection final {
 /// The families the projection knows, in the order the old dispatcher tried.
 ORES_ORE_CORE_EXPORT auto instrument_projections() -> const std::vector<instrument_projection>&;
 
+/**
+ * @brief The multi-asset family: the products whose underlyings each trade names.
+ *
+ * Autocallable_01, DoubleDigitalOption, EuropeanOptionBarrier and
+ * PerformanceOption_01 may state equity, FX or commodity underlyings, so no
+ * asset family reads them.
+ */
+ORES_ORE_CORE_EXPORT auto read_multi_asset_instrument(xml::record_reader trade,
+                                                      std::string_view trade_type)
+    -> std::optional<trading::domain::trade_instrument>;
+
+ORES_ORE_CORE_EXPORT auto
+write_multi_asset_instrument(xml::record_writer& trade,
+                             std::string_view trade_type,
+                             const trading::domain::trade_instrument& instrument,
+                             const ores::marketdata::projection::ore_projection& projection)
+    -> bool;
+
 /// The scripted family, whose products carry their parameters as JSON.
 ORES_ORE_CORE_EXPORT auto read_scripted_instrument(xml::record_reader trade,
                                                    std::string_view trade_type)

@@ -48,8 +48,8 @@ using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 /**
- * @brief NATS message handler for the history call: every tick of one series in a span of
- * time, in one reply.
+ * @brief NATS message handler for the history calls: every tick of one series in a span of
+ * time, in one reply, named by the party's series or by the provider and the series URI.
  *
  * The handler owns the session, the permission and the wire. The read itself is
  * service::series_tick_reader, which a test drives without NATS.
@@ -103,6 +103,45 @@ public:
         }
         BOOST_LOG_SEV(series_ticks_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         error_reply(nats_, msg, ores::service::error_code::bad_request);
+    }
+
+    void get_provider_ticks(ores::nats::message msg) {
+        BOOST_LOG_SEV(series_ticks_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!ores::service::messaging::has_permission(req_ctx,
+                                                      "marketdata::market_observations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        const auto req = decode<get_provider_ticks_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(series_ticks_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        get_series_ticks_response resp;
+        try {
+            resp = service::series_tick_reader::read(req_ctx, *req);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(series_ticks_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp = {};
+            resp.result.outcome = ores::utility::domain::outcome::failed;
+            resp.result.code = "internal_error";
+            resp.result.message = e.what();
+        }
+        BOOST_LOG_SEV(series_ticks_handler_lg(), debug)
+            << "Completed " << msg.subject << " tenant=" << req_ctx.tenant_id().to_string()
+            << " provider=" << req->provider_code << " series=" << req->series_uri
+            << " for_display=" << req->for_display
+            << " outcome=" << (resp.result.code.empty() ? "ok" : resp.result.code)
+            << " ticks=" << resp.values.size();
+        reply(nats_, msg, resp);
     }
 
 private:

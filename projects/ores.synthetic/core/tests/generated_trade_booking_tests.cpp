@@ -371,7 +371,15 @@ std::vector<std::string> differing_arrays(ores::trading::domain::instrument_batc
  * differing fails the test until it leaves the list.
  */
 const std::set<std::string>& known_rebook_differences() {
-    static const std::set<std::string> types{};
+    /*
+     * A bond's rows live in its carrier, and the flat arrays beside it are the
+     * write-time shape split_bond_rows makes. The export hands the carrier back,
+     * so a bond type whose facts are bond option and bond future rows reads
+     * them in the carrier and states none in the arrays. That is a shape
+     * difference and not a lost value; the round trip through the projection is
+     * what proves the values.
+     */
+    static const std::set<std::string> types{"BondFutureOption"};
     return types;
 }
 
@@ -400,9 +408,11 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
 
         const auto scope = booking_scope_of(f, asset_class);
         const auto plan = planner_for(asset_class).plan(scope);
-        // A container adds the trades it holds, which take no slot of their own.
-        const auto offered_slots = std::ranges::count_if(
-            plan.slots, [](const auto& s) { return s.structure_role != "sub_trade"; });
+        // A container adds the trades it holds, and a product with a scripted
+        // form adds its twin; neither takes a slot of its own.
+        const auto offered_slots = std::ranges::count_if(plan.slots, [](const auto& s) {
+            return s.structure_role != "sub_trade" && !s.internal_identifier.ends_with("-scripted");
+        });
         REQUIRE(static_cast<std::size_t>(offered_slots) == offered);
 
         std::set<std::string> booked_types;
@@ -417,7 +427,8 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
             INFO("the database refused it: " << response.result.message);
             CHECK(response.result.outcome == outcome::ok);
             if (response.result.outcome == outcome::ok) {
-                booked_types.insert(slot.trade_type_code);
+                if (!slot.internal_identifier.ends_with("-scripted"))
+                    booked_types.insert(slot.trade_type_code);
                 booked.emplace_back(slot.trade_type_code, request);
             }
         }

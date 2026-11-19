@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 5F23EDE1-2076-4A0C-8DAA-48A7812BDE2E
+:END:
+#+title: Story: Configure the public sources in a setup dialog
+#+description: The official rates adapter hosts whatever sources its command line names, so an environment must pass the list by hand and its keys must live in the deployment environment. A person configures the sources, and their keys, on the setup steps screen instead.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:setup:secrets:sprint_30:v0:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person configures the public sources, and the key of each, on the setup steps
+screen. The screen asks for the sources the environment hosts and for the
+credential of each one; a field is filled in from the deployment environment
+when the variable is there. What the person saves goes to the database as a
+tenant secret. The official rates adapter then starts from the stored sources,
+so no deployment passes a source list on a command line and no key has to stay
+in a file.
+
+The step is the public sources step of the first run
+(=projects/ores.web/packages/web/src/journeys/PublicSourcesStep.tsx=), which
+today decides only the terms of each publisher.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The story is scaffolded. The source list still reaches the adapter only on its command line. |
+| Waiting on    | Nothing.                               |
+| Next          | Start the tenant secret task.          |
+| Last touched  | 2026-11-17                               |
+
+* Acceptance
+
+- The public sources step asks for the credential of each provider whose row in
+  the catalogue names one: a single key, or a user and a password, as the row's
+  =credential_ref= states.
+- Each field is filled in from the environment of the service when the variable
+  the row names is set there, and is saved as a tenant secret when the person
+  continues.
+- A stored secret is never sent to the browser: a field shows that a value is
+  stored and asks for a new one only when the person replaces it.
+- A value filled in from the environment reaches the browser once, in a response
+  the browser neither caches nor a log records.
+- A stored secret is protected at rest by a key that is not in the database, and
+  the tenant boundary is enforced where the value is read, as on any tenant row.
+- The adapter starts on the providers the tenant accepted and holds a credential
+  for, with no =--source= argument and no key in its environment.
+- A provider whose key is missing is named on the step and in the adapter's log,
+  with the variable that would have supplied it.
+- =no-committed-credentials= stays green: no key reaches a file that git tracks.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CC9DB37B-6145-45F6-BCD9-13B39F466923][Scaffold story: Configure the public sources in a setup dialog]] | DONE | 2026-11-17 | 2026-11-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F41E92B0-9A06-44CA-B88B-51D71EE1885E][Implement Configure the public sources in a setup dialog]] | BACKLOG | | | Initial task for: Configure the public sources in a setup dialog |
+| [[id:0CC501C4-DAFB-4707-83DA-1AE98E9A024A][Store a tenant secret in the database]] | BACKLOG | | | A value that a service needs and a person supplies, such as the key of a public source, is stored against the tenant, is written once and is read only by name. The browser learns that a value is stored, never the value. |
+| [[id:1DF9EF52-D9D2-43D2-A1BA-40CDA62EEFC4][Name the stored secret on the provider row]] | BACKLOG | | | A provider row states where its credential comes from. It gains a form that names a stored secret, and the official rates adapter resolves that secret instead of a variable when it starts. |
+| [[id:A7910524-BE3B-422A-8EB6-F6C1A3BC2142][Ask for the source keys on the sources step]] | BACKLOG | | | The public sources step draws the credential fields of each publisher, fills each one from the environment of the service when the variable is set, and saves what the person continues with as a tenant secret. |
+| [[id:BE9974B8-3AB8-4D23-BEB9-0DE096858230][Start the adapter from the accepted sources]] | BACKLOG | | | The official rates adapter hosts the providers whose terms the tenant accepted, with the credential each row names, so the deployment passes no source list and holds no key. |
+
+* Decisions
+
+- *The database holds the secret, the environment only seeds it.* A key in the
+  deployment environment cannot be changed without a deploy, and it sits in a
+  file on the host. The step copies it once into a tenant secret; from then on
+  the row in the catalogue names the stored secret and the environment needs
+  nothing.
+- *The provider row stays the one place a source is described.* =credential_ref=
+  already names the variable a key lives in. It gains a second form that names a
+  stored secret, so the field the step draws, the variable it prefills from and
+  the secret the adapter resolves all come from the same row.
+- *A source is hosted because the tenant accepted it, not because a deploy said
+  so.* The adapter reads the providers whose terms the tenant accepted, which is
+  the same decision the step already records, so =--source= has nothing left to
+  say.
+- *Prefilling sends the value to the browser once.* A field filled from the
+  environment carries a secret the person did not type. That is acceptable
+  because the step is reachable only by an environment administrator and only
+  while no secret is stored; a stored secret is never sent back.
+- *The setup steps screen owns configuration, not the shell.* The alternative,
+  a =setup-rerun= argument per step, keeps the list in a person's memory and in
+  a shell history, which is how the list arrived by hand on 2026-11-17.
+
+* Out of scope
+
+- Rotating a stored secret, and recording who read it.
+- The derived sources, whose credentials the catalogue seeds already carry.

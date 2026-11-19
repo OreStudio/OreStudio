@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: 027C6D6E-5D32-49CF-9476-447D978758A2
+:END:
+#+title: The marketdata core suite hangs until the ctest timeout
+#+description: ores.marketdata.core.tests ran into the 3600s ctest timeout twice on 2026-11-18 on bright_faraday, once in the full gate and once run alone with seed 639594708. In that run the last test to finish was import_dedupes_duplicate_observation_and_reports_warning. The next one in that seed's order, import_keeps_the_shape_of_a_series_it_does_not_name, passes alone in 0.75s, so the hang depends on order or timing. The branch under test did not touch ores.marketdata.
+#+type: capture
+#+level: cross
+#+filetags: :testing:flaky:ores.marketdata:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+ores.marketdata.core.tests sometimes runs until the 3600s ctest timeout. The test that hangs is not yet known; the next test in the hung order passes alone.
+
+* Why
+
+The hang costs an hour of gate time and fails the gate for branches that do not touch ores.marketdata. The next step is to attach a debugger to a hung run, or run the suite with -s, and find the blocked call.
+

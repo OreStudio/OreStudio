@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: F0CAA6A8-0BD4-4C06-A93A-30AFFA620CDB
+:END:
+#+title: The rates planner draws an index the forward rate agreement builder refuses
+#+description: On a freshly recreated database provisioned acme_demo at main 0d2e6758d7, generate_trades writes 14 of its 16 configs: both interest rate configs are refused, 'The ForwardRateAgreement builder refuses the drawn index: a forward rate agreement needs an Ibor index', so 308 of the 1100 planned trades are missing and 808 are booked.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+On a freshly recreated database provisioned with acme_demo at main 0d2e6758d7,
+the generate_trades step writes fourteen of its sixteen configs. The two
+interest rate configs, ACME ACCOUK rates and ACME ACCOUS rates, are not written:
+
+  warn: not written: ACME ACCOUK rates for ACME Corporation UK plc: The
+  ForwardRateAgreement builder refuses the drawn index: a forward rate
+  agreement needs an Ibor index
+
+The other classes are written; the population holds 808 trades where the mix
+states 1100, and the 308 missing ones are those two configs.
+
+* Why
+
+The rates planner draws a forward rate agreement over an overnight index for
+some slots, and the builder refuses it because a forward rate agreement's index
+must be an IBOR by definition. Either the planner should draw an IBOR index for
+that product, or the builder should accept what the planner draws; the
+definition settles it in the planner's favour, so the planner is the side to fix.
+
+Until it is fixed, a fresh provision loses a third of the rate trades, and any
+measurement over the rate book is over two thirds of it. Found while proving the
+population fix in #4828 on a recreated database.
+
+* References
+
+-
+
+* See also
+
+-

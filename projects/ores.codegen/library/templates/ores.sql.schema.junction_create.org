@@ -203,8 +203,10 @@ begin
         if not exists (
             select 1 from {{table}}
             where {{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
-              and {{/use_system_tenant}}{{^use_system_tenant}}{{#junction.has_tenant_id}}tenant_id = new.tenant_id
-              and {{/junction.has_tenant_id}}{{/use_system_tenant}}{{target_column}} = new.{{column}}
+              and {{/use_system_tenant}}{{^use_system_tenant}}{{#system_tenant_visible}}(tenant_id = new.tenant_id
+               or tenant_id = ores_utility_system_tenant_id_fn())
+              and {{/system_tenant_visible}}{{^system_tenant_visible}}{{#junction.has_tenant_id}}tenant_id = new.tenant_id
+              and {{/junction.has_tenant_id}}{{/system_tenant_visible}}{{/use_system_tenant}}{{target_column}} = new.{{column}}
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception '{{error_message}}', new.{{column}}

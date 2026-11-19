@@ -34,6 +34,7 @@
  * whose roles hold no Member gets nothing either: the account then reads only
  * what its other roles grant, which fails closed.
  */
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
 create or replace function ores_iam_accounts_give_member_fn()
 returns trigger as $$
 begin

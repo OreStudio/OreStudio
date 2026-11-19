@@ -21,9 +21,11 @@
 #define ORES_MARKETDATA_CORE_REPOSITORY_TICK_ENTITLEMENT_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <set>
 #include <string>
+#include <vector>
 
 namespace ores::marketdata::repository {
 
@@ -43,9 +45,24 @@ readable_providers(const ores::database::context& ctx);
 
 /**
  * @brief Whether the session's party may read the ticks of @p provider_code.
+ *
+ * The read of a party's own series uses it: display or non-display serves, and the system
+ * tenant gets no pass, because it has no series of a party to read. A read named by the provider
+ * uses the overload that takes the use.
  */
 ORES_MARKETDATA_CORE_EXPORT bool may_read_ticks(const ores::database::context& ctx,
                                                 const std::string& provider_code);
+
+/**
+ * @brief Whether the session may read the ticks of @p provider_code for the use it states.
+ *
+ * A read that a screen shows to a person needs the display right, when @p for_display; any other
+ * read needs display or non-display. The system tenant runs the installation and reads every
+ * provider. A session with no party in any other tenant reads none.
+ */
+ORES_MARKETDATA_CORE_EXPORT bool may_read_ticks(const ores::database::context& ctx,
+                                                const std::string& provider_code,
+                                                bool for_display);
 
 /**
  * @brief The providers whose ticks the session's party may compute from.
@@ -61,6 +78,20 @@ computable_providers(const ores::database::context& ctx);
  */
 ORES_MARKETDATA_CORE_EXPORT bool may_compute_from_ticks(const ores::database::context& ctx,
                                                         const std::string& provider_code);
+
+/**
+ * @brief The feeds whose live subjects the session's party may watch.
+ *
+ * The broker does not check subjects, so a watcher asks this before it subscribes. The route
+ * picks the feed of each provider, and the subscription to the provider must hold the right
+ * the use needs: display when @p for_display, because a person sees the ticks, and display or
+ * non-display otherwise. The system tenant runs the installation and may watch every feed. A
+ * session with no party in any other tenant may watch none.
+ *
+ * The feeds come back each once, ordered by provider code and then feed id.
+ */
+ORES_MARKETDATA_CORE_EXPORT std::vector<messaging::watchable_feed>
+watchable_feeds(const ores::database::context& ctx, bool for_display);
 
 }
 

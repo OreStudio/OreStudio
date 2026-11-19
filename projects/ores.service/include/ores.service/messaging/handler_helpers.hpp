@@ -30,6 +30,7 @@
 #include "ores.security/authorization/grants.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>

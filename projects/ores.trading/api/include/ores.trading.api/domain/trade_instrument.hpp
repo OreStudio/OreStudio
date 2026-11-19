@@ -39,7 +39,8 @@ namespace ores::trading::domain {
  * header and child rows carries its own struct instead: swap, bond, credit,
  * equity, commodity and composite. Rates still carries its fact row in an
  * inner variant, rates_fact_variant. A single-type family carries the domain
- * struct directly.
+ * struct directly. The multi-asset family, whose products' underlyings each
+ * trade names, carries one typed array per product as FX does.
  */
 using trade_instrument = std::variant<std::monostate,
                                       swap_instrument_data,
@@ -49,7 +50,8 @@ using trade_instrument = std::variant<std::monostate,
                                       equity_instrument_data,
                                       commodity_instrument_data,
                                       composite_instrument_data,
-                                      scripted_instrument_data>;
+                                      scripted_instrument_data,
+                                      multi_asset_instrument_data>;
 
 inline void
 stamp_ids(trade_instrument& ti, boost::uuids::uuid trade_id, boost::uuids::uuid activity_id = {}) {

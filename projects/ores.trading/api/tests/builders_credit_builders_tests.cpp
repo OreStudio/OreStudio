@@ -356,3 +356,90 @@ TEST_CASE("a_single_name_option_that_expires_after_the_swap_starts_fails", credi
     REQUIRE_FALSE(option.has_value());
     CHECK(option.error().term == "expiry");
 }
+
+TEST_CASE("a_cbo_is_its_investment_fact", credit_tags) {
+    const auto built = cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                    .notional = *decimal::from_string("1802750.20"),
+                                    .structure_id = std::string("Pegasus")})
+                           .build();
+    REQUIRE(built.has_value());
+    CHECK(built->instrument.identity.trade_type_code == "CBO");
+    REQUIRE(built->cbo_instruments.size() == 1);
+    CHECK(built->cbo_instruments[0].tranche_name == "JuniorNote");
+    CHECK(built->cbo_instruments[0].notional == *decimal::from_string("1802750.20"));
+    CHECK(built->cbo_instruments[0].structure_id == "Pegasus");
+
+    const auto unnamed = cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                      .notional = *decimal::from_string("1"),
+                                      .structure_id = std::string()})
+                             .build();
+    REQUIRE_FALSE(unnamed.has_value());
+    CHECK(unnamed.error().term == "structure_id");
+}
+
+TEST_CASE("a_cbo_that_states_its_structure_inline_states_its_rows", credit_tags) {
+    const auto rate = [](const char* text) {
+        return *decimal::from_string(text);
+    };
+    cbo_structure_terms structure{
+        .currency = std::string("USD"),
+        .day_counter = std::string("A365"),
+        .payment_convention = std::string("F"),
+        .senior_fee = rate("0.001"),
+        .fee_day_counter = std::string("A365"),
+        .subordinated_fee = rate("0.005"),
+        .equity_kicker = rate("0.01"),
+        .tranches = {{.name = "SeniorNote",
+                      .notional = rate("16224751.80"),
+                      .ic_ratio = rate("1.0"),
+                      .oc_ratio = rate("1.0"),
+                      .fixed_rate = rate("0.04")},
+                     {.name = "JuniorNote",
+                      .notional = rate("1802750.20"),
+                      .ic_ratio = rate("-1.0"),
+                      .oc_ratio = rate("-1.0"),
+                      .fixed_rate = rate("0")}},
+        .basket = {{.security_id = "ISIN:US15135BAW19", .notional = rate("1000000")}},
+        .start = std::chrono::year{2022} / 5 / 29,
+        .end = std::chrono::year{2037} / 5 / 29,
+        .tenor = std::string("3M"),
+        .calendar = std::string("US")};
+    const auto built = cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                    .notional = rate("1802750.20"),
+                                    .structure_id = std::string("Pegasus"),
+                                    .structure = structure})
+                           .build();
+    REQUIRE(built.has_value());
+    REQUIRE(built->cbo_structures.size() == 1);
+    CHECK(built->cbo_structures[0].senior_fee == rate("0.001"));
+    REQUIRE(built->cbo_tranches.size() == 2);
+    CHECK(built->cbo_tranches[1].name == "JuniorNote");
+    CHECK(built->cbo_tranches[1].sequence_number == 2);
+    CHECK(built->cbo_tranches[1].ic_ratio == -1.0);
+    REQUIRE(built->legs.size() == 2);
+    CHECK(built->legs[0].leg_group == std::optional<std::string>("tranche"));
+    REQUIRE(built->leg_rates.size() == 2);
+    CHECK(built->leg_rates[0].value == rate("0.04"));
+    REQUIRE(built->cbo_basket_members.size() == 1);
+    CHECK(built->cbo_basket_members[0].sub_trade_id == "US15135BAW19");
+    REQUIRE(built->schedules.size() == 1);
+    CHECK(built->schedules[0].schedule_role == "payment_schedule");
+
+    structure.tranches.pop_back();
+    const auto missing = cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                      .notional = rate("1"),
+                                      .structure_id = std::string("Pegasus"),
+                                      .structure = structure})
+                             .build();
+    REQUIRE_FALSE(missing.has_value());
+    CHECK(missing.error().term == "tranche_name");
+
+    structure.basket.push_back(structure.basket.front());
+    const auto twice = cbo_builder({.tranche_name = std::string("SeniorNote"),
+                                    .notional = rate("1"),
+                                    .structure_id = std::string("Pegasus"),
+                                    .structure = structure})
+                           .build();
+    REQUIRE_FALSE(twice.has_value());
+    CHECK(twice.error().term == "structure.basket");
+}

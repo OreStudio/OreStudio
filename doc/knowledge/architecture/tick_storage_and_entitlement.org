@@ -46,9 +46,14 @@ for each read, not one for each point.
 
 ** Who receives a tick
 
-The live path republishes a tick to each party subscribed to its stream, on the
-party's subject. The delivery meter counts each delivery for the party
+Today the live path republishes a tick to each party subscribed to its stream, on
+the party's subject. The delivery meter counts each delivery for the party
 ([[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]]), so billing counts deliveries, not stored rows.
+
+The target applies the rule of this page to the live path: the ingest publishes
+each tick once, on its feed's subject, and the route and the subscription are
+checked where a watch starts. The meter keeps its counts for each route. See
+[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]].
 
 ** What it saves
 

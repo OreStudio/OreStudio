@@ -82,10 +82,12 @@ std::string("TARGET")
 :PROPERTIES:
 :tablename: ores_refdata_currency_calendars_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :name_singular_short: currency_calendar
 :name_short:          currency_calendars
 :name_singular_words: currency calendar

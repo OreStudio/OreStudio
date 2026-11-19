@@ -111,7 +111,7 @@ through the old ticks.
 *** Conflation and the live path
 
 A lane worker keeps the newest tick of each datum in the batch it took. It publishes
-those ticks to the live consumers on the party subjects. The publish uses core NATS
+each of those ticks once, on the subject of its feed. The publish uses core NATS
 and waits for no acknowledgement. The live path ends here, and it never waits for the
 store.
 
@@ -127,13 +127,24 @@ arrives, so no value waits longer than the interval. A class with =consistency= 
 A consumer selects what it watches on the broker, so the live subject splits its
 tail into tokens:
 
-=marketdata.v1.ops.market_tick.<tenant>.<party>.<instrument_type>.<series_token>.<coordinate_token>=
+=marketdata.v1.ops.market_tick.<provider>.<feed>.<instrument_type>.<series_token>.<coordinate_token>=
+
+The provider is the feed's publisher code and the feed is the feed id. The subject
+names no tenant and no party: a tick is published once, and a party reaches the
+feed through its route and its subscription, as
+[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]] states.
 
 The series token is the percent-encoded series URI. The coordinate token is the
-percent-encoded coordinates, or one fixed character for a series without any. A
-consumer then subscribes to a class with =...<instrument_type>.>=, to a series with
-=...<instrument_type>.<series_token>.>=, or to one datum. A chart subscribes to the
-series that it shows, and the broker sends nothing else.
+percent-encoded coordinates, each coordinate field that holds a value written as
+=<name>=<value>= in the schema row's order and joined by =&=. A datum without
+any has the token =_=, which no encoded coordinate can equal. A
+consumer then subscribes to a feed with =...<provider>.<feed>.>=, to a class with
+=...<instrument_type>.>=, to a series with =...<instrument_type>.<series_token>.>=,
+or to one datum. A chart subscribes to the series that it shows, and the broker
+sends nothing else.
+
+The ingest builds this subject with =feed_tick_subject()= and publishes each tick
+on it once.
 
 The ingress subject is =marketdata.v1.ingress.<adapter>.<id token>=.
 
@@ -499,10 +510,26 @@ unit of isolation is the series that a party reads through. See [[id:D71F9446-C6
   row-level security, that the party's series names the stream and that the party may read
   it, then reads the points with the service's own role.
 - *Hot reads skip the table.* A chart and the latest value come from the recent window
-  and the live subject. The subject has the tenant and the party.
+  and the live subject. The subject names the feed, and the watch is entitled where it
+  starts, by the same rule as the history read.
 - *A derived series enters through the same door.* The blending service reads its inputs
   on the live path, in the context of the party. It emits ticks for the party's derived
   stream into the same lane and the same writer.
+
+** What is built today
+
+This page states the design. At commit =0a63e9a679= (2026-11-18) the ingest
+(=feed_ingest_loop.cpp=) does not yet have all of it:
+
+- It has no lanes, no conflation and no recent window. It takes each batch, stores
+  it and publishes every accepted tick that is not too old.
+- It publishes each tick once on the feed's subject, and no copy for any party.
+- It publishes the ticks of a feed that no route names on the feed's subject, and
+  stores none of them.
+- The history read answers from the store only.
+
+The story [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] moves the live subject to the
+design. The lanes, the conflation and the window are not in that story.
 
 * See also
 

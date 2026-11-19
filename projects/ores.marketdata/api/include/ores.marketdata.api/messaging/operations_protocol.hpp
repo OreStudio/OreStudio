@@ -1708,6 +1708,22 @@ struct backfill_series_identity_response {
      * what says how many identities the database could not state.
      */
     int unreadable_count = 0;
+    /**
+     * @brief How many series the shape refused, and so were left unprojected.
+     *
+     * A series whose identity contradicts the shape its family states is a repair the
+     * caller has to make, not a projection this call can write. The count says how many
+     * were left as they are, and the series is named in the log.
+     */
+    int refused_count = 0;
+    /**
+     * @brief How many series fall in a family no shape states, so were projected unguarded.
+     *
+     * The catalogue grows: a family nothing has stated yet is projected rather than refused,
+     * because refusing would stop an ingest over a gap that is the catalogue's. The count says
+     * how many identities that tolerance covered, so the gap is visible instead of silent.
+     */
+    int unstated_count = 0;
 
     friend bool operator==(const backfill_series_identity_response&,
                            const backfill_series_identity_response&) = default;
@@ -1919,6 +1935,34 @@ struct get_series_ticks_request {
 };
 
 /**
+ * @brief Asks for every tick of one provider's series in a span of time.
+ *
+ * The span is half open, as get_series_ticks_request's is, and a span over the ceiling is
+ * refused, never cut. The subscription is the door: a party must subscribe to the provider with
+ * the right the use needs, and the system tenant reads every provider.
+ */
+struct get_provider_ticks_request {
+    using response_type = struct get_series_ticks_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_provider_ticks";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string provider_code;
+    std::string series_uri;
+    std::chrono::system_clock::time_point from_instant;
+    std::optional<std::chrono::system_clock::time_point> to_instant;
+    std::vector<std::string> coordinates;
+    bool for_display = true;
+
+    friend bool operator==(const get_provider_ticks_request&,
+                           const get_provider_ticks_request&) = default;
+};
+
+/**
  * @brief Every tick of a span of one series.
  *
  * The coordinates come first, once each. The times follow as the first instant and a gap in
@@ -1936,6 +1980,56 @@ struct get_series_ticks_response {
 
     friend bool operator==(const get_series_ticks_response&,
                            const get_series_ticks_response&) = default;
+};
+
+/**
+ * @brief One feed a party may watch.
+ *
+ * The two codes are the first two tokens of the feed's live subject after the
+ * market_tick base, so a watcher builds every subject of the feed from them.
+ */
+struct watchable_feed {
+    std::string provider_code;
+    std::string feed_id;
+
+    friend bool operator==(const watchable_feed&, const watchable_feed&) = default;
+};
+
+/**
+ * @brief Asks which feeds the session's party may watch.
+ *
+ * The answer follows the rule of the history read: the party's route picks the feed of a
+ * provider, and its subscription to the provider holds the right the use needs. The system
+ * tenant may watch every feed.
+ */
+struct list_watchable_feeds_request {
+    using response_type = struct list_watchable_feeds_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.list_watchable_feeds";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    bool for_display = true;
+
+    friend bool operator==(const list_watchable_feeds_request&,
+                           const list_watchable_feeds_request&) = default;
+};
+
+/**
+ * @brief The feeds the session's party may watch.
+ *
+ * A party with no route, or with no subscription that holds the right, gets an empty list,
+ * which is not a refusal. A session with no party and no system tenant is refused.
+ */
+struct list_watchable_feeds_response {
+    ores::utility::domain::result result;
+    std::vector<watchable_feed> feeds;
+
+    friend bool operator==(const list_watchable_feeds_response&,
+                           const list_watchable_feeds_response&) = default;
 };
 
 /**
@@ -3265,6 +3359,10 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
                                       &backfill_series_identity_response::already_projected_count},
         ::ores::utility::codec::field{"unreadable_count",
                                       &backfill_series_identity_response::unreadable_count},
+        ::ores::utility::codec::field{"refused_count",
+                                      &backfill_series_identity_response::refused_count},
+        ::ores::utility::codec::field{"unstated_count",
+                                      &backfill_series_identity_response::unstated_count},
     };
 }
 
@@ -3410,6 +3508,25 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
 }
 
 /**
+ * @brief The members of get_provider_ticks_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_provider_ticks_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"provider_code", &get_provider_ticks_request::provider_code},
+        ::ores::utility::codec::field{"series_uri", &get_provider_ticks_request::series_uri},
+        ::ores::utility::codec::field{"from_instant", &get_provider_ticks_request::from_instant},
+        ::ores::utility::codec::field{"to_instant", &get_provider_ticks_request::to_instant},
+        ::ores::utility::codec::field{"coordinates", &get_provider_ticks_request::coordinates},
+        ::ores::utility::codec::field{"for_display", &get_provider_ticks_request::for_display},
+    };
+}
+
+/**
  * @brief The members of get_series_ticks_response, named as the wire names them and in the order
  * the type declares them.
  *
@@ -3426,6 +3543,50 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
         ::ores::utility::codec::field{"coordinate_indexes",
                                       &get_series_ticks_response::coordinate_indexes},
         ::ores::utility::codec::field{"values", &get_series_ticks_response::values},
+    };
+}
+
+/**
+ * @brief The members of watchable_feed, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<watchable_feed>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"provider_code", &watchable_feed::provider_code},
+        ::ores::utility::codec::field{"feed_id", &watchable_feed::feed_id},
+    };
+}
+
+/**
+ * @brief The members of list_watchable_feeds_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_watchable_feeds_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"for_display", &list_watchable_feeds_request::for_display},
+    };
+}
+
+/**
+ * @brief The members of list_watchable_feeds_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_watchable_feeds_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"result", &list_watchable_feeds_response::result},
+        ::ores::utility::codec::field{"feeds", &list_watchable_feeds_response::feeds},
     };
 }
 
@@ -4387,6 +4548,18 @@ struct ORES_MARKETDATA_API_EXPORT
 };
 template <>
 struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_provider_ticks_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_provider_ticks_request& v);
+    static ores::marketdata::messaging::get_provider_ticks_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_provider_ticks_request& v);
+    static ores::marketdata::messaging::get_provider_ticks_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
     wire_traits<ores::marketdata::messaging::get_series_ticks_response> {
     static constexpr bool is_generated = true;
 
@@ -4395,6 +4568,44 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::get_series_ticks_response& v);
     static ores::marketdata::messaging::get_series_ticks_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::watchable_feed> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::watchable_feed& v);
+    static ores::marketdata::messaging::watchable_feed read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::watchable_feed& v);
+    static ores::marketdata::messaging::watchable_feed
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_watchable_feeds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_watchable_feeds_request& v);
+    static ores::marketdata::messaging::list_watchable_feeds_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_watchable_feeds_request& v);
+    static ores::marketdata::messaging::list_watchable_feeds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_watchable_feeds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_watchable_feeds_response& v);
+    static ores::marketdata::messaging::list_watchable_feeds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_watchable_feeds_response& v);
+    static ores::marketdata::messaging::list_watchable_feeds_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

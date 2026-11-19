@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 28EE3185-5F2E-472A-9364-FAE5E41E4743
+:END:
+#+title: Task: Fix the drift compass reports on main
+#+description: Regenerate the outputs compass shows as drift, decide each hand edit in a generated file, and fix the real findings, so compass check is clean before it becomes a gate.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every drift finding compass reports at the start of this story is fixed in the source, or recorded as a compass bug.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The 7 script entities' create SQL, event headers and repositories, and tenor_convention_resolution_repository.cpp, are regenerated.
+- Each hand edit in a generated file has a decision: market_fixing_repository read_latest_for_series (compass generate deletes it), marketdata options.hpp zero initialisers, ores.ore core tests CMakeLists.txt pugixml. The change moves into the model or template, or it is dropped.
+- The 52 shell recipe scripts compass tangles but the tree lacks are written, and the shell recipe inventory and HTTP route inventory are current.
+- The 12 handler_permissions, 1 bff_list_requests and 1 parameter_value_sets findings are fixed or shown to be compass bugs.
+- The 4 trading tables without RLS (cash_position_instruments, equity_pairwise_variance_swap_instruments, fx_asian_option_instruments, fx_pairwise_variance_swap_instruments) get tenant and party isolation policies. Python er-diagram --strict finds this and compass does not.
+- compass diff writes nothing on the branch.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the generators no longer fill the two retyped nullable fields | equity_position_*_generator.cpp | Declined | The template leaves every std::optional<double> unset; the sibling optional doubles behave the same. |
+| 2 | Local review: misspell-fixer on the changed files | all | Accepted | Clean; the exit 1 over the whole tree comes from files this branch does not touch. |
+| 3 | Gate: pgtap trading_script_library_visibility expected the old 42501 refusal | trading_script_library_visibility_test.sql | Accepted | The split policy matches no system row; the test asserts the update changes none (e63b1b6b58). |
+| 4 | Gate: codegen-tests, drift tests outside a git checkout and two RLS template tests | check_component_drift.py, test_rls_own_or_system_tenant_rows.py | Accepted | Fixed (e21296d146, fab4b4d91b); two failures already on main are captured. |
+| 5 | PR review: the tenor convention resolution read now includes the system tenant's rows | tenor_convention_resolution_repository.cpp | Accepted, filed | The model sets system_tenant_visible and rls_own_or_system_tenant_rows, and its select policy admits the rows. The review found that the pair template builds claims, and the entity template's remove reads, from shared rows; captured as "Keep the system tenant's rows out of writes and removals" (about 100 models). |
+| 6 | PR review: the drift render root falls back to the system temp dir silently | check_component_drift.py | Declined | It falls back only outside a git checkout, as in the drift tests; inside one, git rev-parse cannot fail. A killed run's render stays on disk under the git common directory, not in the shared tmpfs. |
+| 7 | PR review: the two retyped columns need a migration | trading create scripts | Declined | ORE Studio has no migration path: every environment recreates its database from the create scripts, and the schema fingerprint refuses a database built from others. |
+
+* Result
+
+compass diff writes nothing on the branch, and compass check reports only the
+baseline rules (entity_writes, core_link_edges, rls_widenings,
+template_sections and 7 known money columns), which the baselines task owns.
+
+- *Hand edits moved into their models* (9605b1e8d0). The market_fixing
+  read_latest_for_series overload of a tenant, a party and a set of series is a
+  repository paste block; the marketdata stale_seconds options get
+  =:initial: 0=, which keeps the zero initialisers valgrind needed; the ores.ore
+  core tests link pugixml from the component model. compass generate
+  reproduces each committed file.
+- *Regeneration* (7f4942054f). The system-tenant shared-read change reaches the
+  7 script entities and the tenor convention resolution read; the 52 shell
+  recipe scripts are tangled, 40 of them for four instrument families that had
+  none; the shell recipe and HTTP route inventories are current.
+- *List request table* regenerated for the four new instrument families
+  (37c78e7beb).
+- *Two continuous columns typed exact*: equity_position_instrument.volatility
+  and equity_position_option_underlying.quantity are double precision and
+  double, as the rule for continuous quantities and every sibling model state;
+  the ORE projection and the builder convert at the seam.
+- *The 4 trading tables without RLS and the 12 unseeded handler permissions*
+  were fixed on main by a28783596f before this task started.
+- *Parity*: Python component-drift passes on marketdata, trading, ore and
+  refdata; Python er-diagram --strict passes with no warnings and agrees with
+  the diagram compass wrote.
+- *Tests*: ores.trading.api.tests, ores.ore.core.tests and
+  ores.trading.core.tests pass on a recreated database.
+- *ores_mq_queues_tbl* (861cd6d639): compass's rls_coverage, in a build not
+  yet installed, reads a party_id column the Python parser skips. The table
+  isolates parties by scope in its read policy, so validation_ignore.txt lists
+  it for RLS_002 with that reason.
+

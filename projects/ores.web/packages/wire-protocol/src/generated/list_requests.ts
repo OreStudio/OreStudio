@@ -1666,6 +1666,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['series'],
     },
+    'marketdata.v1.ops.list_watchable_feeds': {
+        asOf: false,
+        filter: [],
+        rows: ['feeds'],
+    },
     'marketdata.v1.providers.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -5534,6 +5539,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.autocallable_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['autocallable_instruments'],
+    },
+    'trading.v1.autocallable_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.average_types.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -5859,6 +5874,71 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.cash_position_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['cash_position_instruments'],
+    },
+    'trading.v1.cash_position_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.cbo_basket_members.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_basket_members'],
+    },
+    'trading.v1.cbo_basket_members.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_basket_members'],
+    },
+    'trading.v1.cbo_basket_members_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.cbo_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['cbo_instruments'],
+    },
+    'trading.v1.cbo_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.cbo_structures.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_structures'],
+    },
+    'trading.v1.cbo_structures.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_structures'],
+    },
+    'trading.v1.cbo_structures_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.cbo_tranches.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_tranches'],
+    },
+    'trading.v1.cbo_tranches.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['cbo_tranches'],
+    },
+    'trading.v1.cbo_tranches_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.commodity_basket_constituents.list': {
         asOf: true,
         filter: ['trade_id', 'trade_id_one_of'],
@@ -5949,6 +6029,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.double_digital_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['double_digital_option_instruments'],
+    },
+    'trading.v1.double_digital_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.draft_reasons.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -6009,6 +6099,36 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.equity_basket_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['equity_basket_option_instruments'],
+    },
+    'trading.v1.equity_basket_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.equity_basket_variance_swap_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['equity_basket_variance_swap_instruments'],
+    },
+    'trading.v1.equity_basket_variance_swap_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.equity_best_entry_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['equity_best_entry_option_instruments'],
+    },
+    'trading.v1.equity_best_entry_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.equity_cliquet_option_instruments.list': {
         asOf: true,
         filter: ['trade_id_one_of'],
@@ -6035,6 +6155,26 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['equity_forward_instruments'],
     },
     'trading.v1.equity_forward_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.equity_forward_volatility_agreement_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['equity_forward_volatility_agreement_instruments'],
+    },
+    'trading.v1.equity_forward_volatility_agreement_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.equity_generic_barrier_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['equity_generic_barrier_option_instruments'],
+    },
+    'trading.v1.equity_generic_barrier_option_instruments_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6069,6 +6209,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.equity_pairwise_variance_swap_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['equity_pairwise_variance_swap_instruments'],
+    },
+    'trading.v1.equity_pairwise_variance_swap_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.equity_position_instruments.list': {
         asOf: true,
         filter: ['trade_id_one_of'],
@@ -6090,6 +6240,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['equity_position_option_underlyings'],
     },
     'trading.v1.equity_position_option_underlyings_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.equity_strike_resettable_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['equity_strike_resettable_option_instruments'],
+    },
+    'trading.v1.equity_strike_resettable_option_instruments_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6120,6 +6280,26 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['equity_variance_swap_instruments'],
     },
     'trading.v1.equity_variance_swap_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.equity_window_barrier_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['equity_window_barrier_option_instruments'],
+    },
+    'trading.v1.equity_window_barrier_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.european_option_barrier_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['european_option_barrier_instruments'],
+    },
+    'trading.v1.european_option_barrier_instruments_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6199,12 +6379,52 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.fx_asian_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['fx_asian_option_instruments'],
+    },
+    'trading.v1.fx_asian_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.fx_barrier_option_instruments.list': {
         asOf: true,
         filter: ['trade_id_one_of'],
         rows: ['fx_barrier_option_instruments'],
     },
     'trading.v1.fx_barrier_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.fx_basket_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['fx_basket_option_instruments'],
+    },
+    'trading.v1.fx_basket_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.fx_basket_variance_swap_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['fx_basket_variance_swap_instruments'],
+    },
+    'trading.v1.fx_basket_variance_swap_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.fx_best_entry_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['fx_best_entry_option_instruments'],
+    },
+    'trading.v1.fx_best_entry_option_instruments_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6229,6 +6449,36 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.fx_forward_volatility_agreement_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['fx_forward_volatility_agreement_instruments'],
+    },
+    'trading.v1.fx_forward_volatility_agreement_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.fx_pairwise_variance_swap_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['fx_pairwise_variance_swap_instruments'],
+    },
+    'trading.v1.fx_pairwise_variance_swap_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.fx_strike_resettable_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['fx_strike_resettable_option_instruments'],
+    },
+    'trading.v1.fx_strike_resettable_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.fx_vanilla_option_instruments.list': {
         asOf: true,
         filter: ['trade_id_one_of'],
@@ -6245,6 +6495,26 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['fx_variance_swap_instruments'],
     },
     'trading.v1.fx_variance_swap_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.fx_window_barrier_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['fx_window_barrier_option_instruments'],
+    },
+    'trading.v1.fx_window_barrier_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.fx_worst_of_basket_swap_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['fx_worst_of_basket_swap_instruments'],
+    },
+    'trading.v1.fx_worst_of_basket_swap_instruments_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6434,6 +6704,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.instrument_values.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['instrument_values'],
+    },
+    'trading.v1.instrument_values.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['instrument_values'],
+    },
+    'trading.v1.instrument_values_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.knock_out_swap_instruments.list': {
         asOf: true,
         filter: ['trade_id_one_of'],
@@ -6514,6 +6799,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.performance_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['performance_option_instruments'],
+    },
+    'trading.v1.performance_option_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.price_types.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -6555,6 +6850,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['range_bounds'],
     },
     'trading.v1.range_bounds_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.rate_digital_option_instruments.list': {
+        asOf: true,
+        filter: ['trade_id_one_of'],
+        rows: ['rate_digital_option_instruments'],
+    },
+    'trading.v1.rate_digital_option_instruments_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6635,6 +6940,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['results'],
     },
     'trading.v1.script_results_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.script_twin_inputs.list': {
+        asOf: true,
+        filter: [],
+        rows: ['inputs'],
+    },
+    'trading.v1.script_twin_inputs_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

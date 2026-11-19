@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/hold-the-remaining-fixed-element-products-on-their-tables
+#+pr: 4890
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -28,11 +28,11 @@ table holds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -53,9 +53,27 @@ table holds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two PRs, decided with the user on 2026-11-19.
+
+1. FxWorstOfBasketSwap. FX has no general swap table, so it gets a table of its
+   own for the element's scalars, as EquityWorstOfBasketSwap is held on
+   =equity_swap_instrument= with its constituents and periods. The members with
+   their initial prices, the per-period knock-out and fixed trigger levels and
+   the eight schedules are rows: FX constituent rows (or underlying rows), the
+   shared =basket_swap_period= rows and schedule rows.
+2. Autocallable_01, DoubleDigitalOption, EuropeanOptionBarrier and
+   PerformanceOption_01 have no home market: their underlyings may be equity,
+   FX or commodity, and one trade may mix them (a DoubleDigitalOption states up
+   to four underlyings, a EuropeanOptionBarrier one for the option and one for
+   the barrier). Routing is per type and every table so far sits in a family
+   carrier, so these four get a new multi-asset family: its own carrier, one
+   table per product, the shared underlying and schedule rows (each underlying
+   row keeps its own type), and child tables for the value lists
+   (StrikePrices, AccumulationFactors). The catalogue already names no market
+   for these four, which it defines as a market decided per trade, so the
+   product type asset class junction holds no row for them. The user
+   chose this over an element row on the scripted carrier and over deferring
+   the four.
 
 * Measurements
 
@@ -69,7 +87,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.trading.api.tests | 5468 test cases, all pass | =./ores.trading.api.tests= | 05796e8aea |
+| ores.trading.core.tests, on a recreated database | 276 test cases, all pass | =./ores.trading.core.tests= | 05796e8aea |
+| ores.shell.trading.tests | 1738 test cases, all pass | =./ores.shell.trading.tests= | 05796e8aea |
+| ores.ore.core.tests, with the ORE engine | 566 test cases, all pass | =./ores.ore.core.tests= | 05796e8aea |
+| ores.synthetic.core.tests, with the ORE engine | 149 test cases, all pass | =./ores.synthetic.core.tests= | 05796e8aea |
+| Generated trades after two refreshes | no file changed | =ORES_UPDATE_GENERATED_TRADES=1 ./ores.synthetic.core.tests "[generated]"= | 05796e8aea |
 
 * Notes
 
@@ -93,12 +116,48 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4890][#4890]] | [trading] Hold the multi-asset products in a family of their own |
+| [[https://github.com/OreStudio/OreStudio/pull/4887][#4887]] | [trading] Hold the FX worst-of basket swap on its table |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 4887.1 | The value role check will need widening | instrument_value model | Declined | The multi-asset PR widens it in the model, as planned. |
+| 4887.2 | Quantity is a double | fx_worst_of_basket_swap model | Declined | The continuous-quantity model rule requires it. |
+| 4887.3 | The schedule roles are listed twice | fx_instrument_projection.cpp | Accepted | The writer uses the one product schedule table through a new write_product_schedules. |
+| 4887.4 | The builder fixes some terms | worst_of_basket_swap_builders.cpp | Declined | The generator states them; the projection holds any value. |
+| 4887.5 | The derived base names the element | worst_of_basket_swap_builders.cpp | Declined | BaseSchedule names the element, as the reader keeps it. |
+| 4887.6 | Name the generated files | PR | Declined | The hand-written files are the builder, the projection and the SQL. |
+| 4887.7 | Follow up the equity worst-of | backlog | Accepted | Filed the capture Hold the whole equity worst-of basket swap. |
+| 4890.1 | A stale sentence in the table headers | models | Accepted | The four models now say ORE states the product as an element of its own. |
+| 4890.2 | The writer creates an element before refusing | multi_asset_instrument_projection.cpp | Accepted | It checks for a row first; the read defaults stay, as the schema requires each term. |
+| 4890.3 | The tables check different dates | models | Declined | Each table checks the dates its element states. |
+| 4890.4 | The capture names the two products | backlog | Declined | It does. |
+| 4890.5 | No database round trip of mixed underlying types | tests | Declined | The type is a text column of the shared row, which the booking tests store. |
 
 * Result
+
+First of two PRs (#4887): FxWorstOfBasketSwap is held natively on
+=fx_worst_of_basket_swap_instruments=, with every scalar as a column, its members
+as underlying rows, its eight schedules as schedule rows and its three level
+lists as rows of the new shared =instrument_value= table. The round trip, the
+builder and the generator cover it, and the recorded trades are unchanged. The
+four multi-asset products are the second PR, in a new multi-asset family.
+
+Second PR: the four products whose underlyings each trade names are held in a
+new multi-asset family. Each has a table of its own: =autocallable_instruments=,
+=double_digital_option_instruments=, =european_option_barrier_instruments= and
+=performance_option_instruments=. The underlyings are underlying rows that each
+keep their own type, so one trade may name an FX rate and a commodity, as ORE's
+double digital example does. The schedules, the premiums and the value lists
+are the shared rows. The round trip reads ORE's examples and checks every
+column before and after a rebuild, the builders return the family's rows, the
+generator books them, and the recorded trades are unchanged. The catalogue
+keeps no market for the four, as it defines a market decided per trade, and
+ORE's library has no script for any of them, so each is held in its own form
+only.
+
+With both PRs, every product the task names is held natively, and the
+scripted projection's class-read path, which held their element form as
+parameter rows, is removed.

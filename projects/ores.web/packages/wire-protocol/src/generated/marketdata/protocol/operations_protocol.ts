@@ -1311,6 +1311,22 @@ export interface BackfillSeriesIdentityResponse {
      * what says how many identities the database could not state.
      */
     unreadable_count: number;
+    /**
+     * @brief How many series the shape refused, and so were left unprojected.
+     *
+     * A series whose identity contradicts the shape its family states is a repair the
+     * caller has to make, not a projection this call can write. The count says how many
+     * were left as they are, and the series is named in the log.
+     */
+    refused_count: number;
+    /**
+     * @brief How many series fall in a family no shape states, so were projected unguarded.
+     *
+     * The catalogue grows: a family nothing has stated yet is projected rather than refused,
+     * because refusing would stop an ingest over a gap that is the catalogue's. The count says
+     * how many identities that tolerance covered, so the gap is visible instead of silent.
+     */
+    unstated_count: number;
 }
 
 /**
@@ -1452,6 +1468,22 @@ export interface GetSeriesTicksRequest {
 }
 
 /**
+ * @brief Asks for every tick of one provider's series in a span of time.
+ *
+ * The span is half open, as get_series_ticks_request's is, and a span over the ceiling is
+ * refused, never cut. The subscription is the door: a party must subscribe to the provider with
+ * the right the use needs, and the system tenant reads every provider.
+ */
+export interface GetProviderTicksRequest {
+    provider_code: string;
+    series_uri: string;
+    from_instant: string;
+    to_instant: string | null;
+    coordinates: string[];
+    for_display: boolean;
+}
+
+/**
  * @brief Every tick of a span of one series.
  *
  * The coordinates come first, once each. The times follow as the first instant and a gap in
@@ -1466,6 +1498,39 @@ export interface GetSeriesTicksResponse {
     gaps_us: number[];
     coordinate_indexes: number[];
     values: number[];
+}
+
+/**
+ * @brief One feed a party may watch.
+ *
+ * The two codes are the first two tokens of the feed's live subject after the
+ * market_tick base, so a watcher builds every subject of the feed from them.
+ */
+export interface WatchableFeed {
+    provider_code: string;
+    feed_id: string;
+}
+
+/**
+ * @brief Asks which feeds the session's party may watch.
+ *
+ * The answer follows the rule of the history read: the party's route picks the feed of a
+ * provider, and its subscription to the provider holds the right the use needs. The system
+ * tenant may watch every feed.
+ */
+export interface ListWatchableFeedsRequest {
+    for_display: boolean;
+}
+
+/**
+ * @brief The feeds the session's party may watch.
+ *
+ * A party with no route, or with no subscription that holds the right, gets an empty list,
+ * which is not a refusal. A session with no party and no system tenant is refused.
+ */
+export interface ListWatchableFeedsResponse {
+    result: Result;
+    feeds: WatchableFeed[];
 }
 
 /**
@@ -1529,6 +1594,8 @@ export const subjects = {
     export_market_data_request: 'marketdata.v1.ops.export_market_data',
     market_tick: 'marketdata.v1.ops.market_tick',
     get_series_ticks_request: 'marketdata.v1.ops.get_series_ticks',
+    get_provider_ticks_request: 'marketdata.v1.ops.get_provider_ticks',
+    list_watchable_feeds_request: 'marketdata.v1.ops.list_watchable_feeds',
     store_market_state_request: 'marketdata.v1.ops.store_market_state',
 } as const;
 /**
@@ -1564,5 +1631,7 @@ export const requiresSession = {
     export_market_data_request: true,
     market_tick: false,
     get_series_ticks_request: true,
+    get_provider_ticks_request: true,
+    list_watchable_feeds_request: true,
     store_market_state_request: true,
 } as const;

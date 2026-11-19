@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+// compass:except-file(entity_writes/cpp_writer) expires=2027-05-18 approver=marco reason=the bulk tick writer: it copies each batch into a session staging table under the INSERT-only writer role and inserts it with on conflict do nothing, which the repositories cannot express; recorded in entity_table_writes_baseline.json
 #include "ores.marketdata.service/app/tick_writer.hpp"
 #include <format>
 #include <libpq-fe.h>

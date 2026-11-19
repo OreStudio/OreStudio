@@ -107,7 +107,7 @@ begin
     if NEW.country_code is not null and NEW.country_code != '' then
         if not exists (
             select 1 from ores_refdata_countries_tbl
-            where tenant_id = NEW.tenant_id
+            where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
               and alpha2_code = NEW.country_code
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then

@@ -18,9 +18,9 @@
  *
  */
 #include "ores.marketdata.service/app/staleness_policy.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include <atomic>
 #include <charconv>
-#include <cstdlib>
 #include <map>
 #include <mutex>
 #include <string>
@@ -58,11 +58,12 @@ void read_environment_once() {
     auto& s = state();
     if (s.read.exchange(true))
         return;
-    const auto* raw = std::getenv("ORES_MARKETDATA_STALE_SECONDS");
-    if (raw == nullptr)
+    const auto raw =
+        ores::platform::environment::environment::get_value("ORES_MARKETDATA_STALE_SECONDS");
+    if (!raw)
         return;
     std::int64_t value = 0;
-    const std::string_view text{raw};
+    const std::string_view text{*raw};
     const auto parsed = std::from_chars(text.data(), text.data() + text.size(), value);
     if (parsed.ec != std::errc{} || value <= 0)
         return;

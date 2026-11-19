@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: 64F34397-39DC-4A9D-8AE3-3C73FA0ACC20
+:END:
+#+title: Refdata restarts in a loop while it materialises calendars on a fresh database
+#+description: On a fresh database, ores.refdata.service materialises 13515 calendar_date rows for every calendar before it notifies systemd that it is ready. At load 34 on bright_faraday on 2026-11-18, each calendar took about 4s, so the unit passed its 90s TimeoutStartSec, was killed and restarted 3 times. Each restart resumed where the last stopped, so the fleet came up after about 25 minutes, but compass services start and the ticks smoke test timed out first.
+#+type: capture
+#+level: cross
+#+filetags: :services:startup:ores.refdata:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+ores.refdata.service does the calendar materialisation before it reports ready to systemd. On a fresh database and a busy host this takes longer than the 90s start limit, so systemd kills and restarts the unit until the work is done.
+
+* Why
+
+The loop makes compass services start, the ticks smoke test and the step-consumers check fail on a fresh database, with no fault in the branch under test. A fix can report ready first and materialise in the background, or extend the start timeout while it works.
+

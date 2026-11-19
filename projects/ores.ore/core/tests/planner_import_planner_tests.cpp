@@ -457,6 +457,22 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", "[ore][planner][im
                                      std::is_same_v<T, credit_instrument_data>) {
                     CHECK(r.instrument.identity.trade_id == item.anchor.id);
                     ++checked;
+                } else if constexpr (std::is_same_v<
+                                         T,
+                                         ores::trading::domain::multi_asset_instrument_data>) {
+                    // Each product array holds the row of the one product the trade is.
+                    std::apply(
+                        [&](const auto... member) {
+                            (
+                                [&] {
+                                    for (const auto& instr : r.*member) {
+                                        CHECK(instr.identity.trade_id == item.anchor.id);
+                                        ++checked;
+                                    }
+                                }(),
+                                ...);
+                        },
+                        ores::trading::domain::detail::multi_asset_instrument_arrays);
                 } else {
                     // scripted — the script's row carries the identity.
                     CHECK(r.instrument.identity.trade_id == item.anchor.id);

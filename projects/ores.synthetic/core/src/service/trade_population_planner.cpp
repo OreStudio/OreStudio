@@ -22,14 +22,21 @@
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/projection/ore_projection.hpp"
+#include "ores.synthetic.core/service/scripted_twins.hpp"
+#include "ores.trading.api/builders/barrier_product_builders.hpp"
+#include "ores.trading.api/builders/basket_option_builders.hpp"
 #include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/commodity_builders.hpp"
 #include "ores.trading.api/builders/composite_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
+#include "ores.trading.api/builders/entry_reset_option_builders.hpp"
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
+#include "ores.trading.api/builders/multi_asset_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/builders/scripted_builders.hpp"
+#include "ores.trading.api/builders/volatility_product_builders.hpp"
+#include "ores.trading.api/builders/worst_of_basket_swap_builders.hpp"
 #include "ores.trading.api/domain/bond_product_batch.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
@@ -413,6 +420,9 @@ namespace {
 struct swap_choice final {
     ores::marketdata::datum::market_reference index;
     std::string convention;
+    /// Whether the swap floats on an Ibor index rather than an overnight one,
+    /// which is what the index's own address says.
+    bool ibor = false;
 };
 
 struct swap_choices final {
@@ -441,13 +451,25 @@ swap_choices swap_choices_of(const domain::trade_generation_scope& scope) {
         if (!added && swap.id < it->second->id)
             it->second = &swap;
     }
+    /*
+     * A swap floats on an index convention, and the convention's id is the
+     * index's name without the tenor a swap's own index states. A forward rate
+     * agreement may only float on an Ibor, so the pool says which swaps do.
+     */
+    const auto floats_on_an_ibor = [&](const std::string& index_code) {
+        for (const auto& ibor : scope.conventions.ibor_indices)
+            if (!ibor.id.empty() &&
+                (index_code == ibor.id || index_code.starts_with(ibor.id + "-")))
+                return true;
+        return false;
+    };
     swap_choices out;
     for (const auto& [legs, swap] : swaps) {
         auto index = md::market_reference::parse(*swap->oresmd_uri);
         if (!index || index->index() == nullptr || index->index()->get("tenor") == nullptr)
             continue;
         auto& pool = index->index()->subject() == scope.currency_code ? out.domestic : out.foreign;
-        pool.push_back(swap_choice{std::move(*index), swap->id});
+        pool.push_back(swap_choice{std::move(*index), swap->id, floats_on_an_ibor(swap->index)});
     }
     return out;
 }
@@ -472,38 +494,6 @@ constexpr std::string_view bond_types[] = {"Bond",
 constexpr std::size_t bond_type_count = sizeof(bond_types) / sizeof(bond_types[0]);
 
 constexpr std::string_view bond_futures[] = {"FGBL", "FGBM", "ZN", "ZB"};
-
-/*
- * An option on a bond future is read through a class of its own, so it is a
- * scripted batch rather than a bond product. It expires a month out, before
- * any listed contract's delivery.
- */
-ores::trading::domain::instrument_batch
-build_bond_future_option(const domain::trade_generation_scope& scope,
-                         const domain::trade_population_slot& entry) {
-    namespace tb = ores::trading::builders;
-    using ores::utility::decimal::decimal;
-    const auto name = slot_name(scope, entry.slot);
-    const auto money = [](double value) {
-        return decimal::from_double(std::round(value * 100.0) / 100.0).value();
-    };
-    auto built = tb::bond_future_option_builder(
-                     {.contract = std::string(bond_futures[entry.slot % 4]),
-                      .contract_notional = money(100000.0),
-                      .strike = money(100.0 + 30.0 * draw(name, 6)),
-                      .kind = draw(name, 5) < 0.5 ? tb::option_kind::call : tb::option_kind::put,
-                      .position = first_way(entry) ? tb::option_position::long_option :
-                                                     tb::option_position::short_option,
-                      .expiry = add_months(scope.as_of_date, 1)})
-                     .build();
-    if (!built)
-        throw trade_population_error("The BondFutureOption builder refuses the drawn " +
-                                     built.error().term + ": " + built.error().message);
-    ores::trading::domain::instrument_batch batch;
-    ores::trading::domain::append_instrument(
-        batch, ores::trading::domain::trade_instrument{std::move(*built)});
-    return batch;
-}
 
 ores::trading::domain::bond_product bond_product_of(
     std::expected<ores::trading::domain::bond_product, ores::trading::builders::build_error> built,
@@ -611,6 +601,18 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
                                                .lock_rate = rate(0.02, 0.03, 7)})
                          .build());
     }
+    if (type == "BondFutureOption")
+        // The option expires a month out, before any listed contract's delivery.
+        return built(
+            tb::bond_future_option_builder(
+                {.holding = holding,
+                 .contract = std::string(bond_futures[slot % 4]),
+                 .contract_notional = money(100000.0),
+                 .strike = money(std::round((100.0 + 30.0 * draw(name, 6)) * 100.0) / 100.0),
+                 .kind = draw(name, 5) < 0.5 ? tb::option_kind::call : tb::option_kind::put,
+                 .position = position,
+                 .expiry = add_months(scope.as_of_date, 1)})
+                .build());
     if (type == "BondFuture")
         return built(tb::bond_future_builder({.holding = holding,
                                               .contract = std::string(bond_futures[slot % 4]),
@@ -766,19 +768,10 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         entry.bond_issue_leg_amounts = std::move(security->amounts);
         entry.bond_issue_leg_rates = std::move(security->rates);
         entry.bond_issue_leg_schedules = std::move(security->schedules);
-        /*
-         * An option on a bond future names a contract rather than the slot's
-         * security, so its batch is scripted; the slot states the security as
-         * every bond slot does.
-         */
-        if (entry.trade_type_code == "BondFutureOption") {
-            entry.instruments = build_bond_future_option(scope, entry);
-        } else {
-            auto product = build_bond_trade(scope, swaps, entry, security_id, issue_id, maturity);
-            entry.bond_issue_call_dates = product.call_dates;
-            entry.bond_issue_conversion_targets = product.conversion_targets;
-            append(entry.instruments, std::move(product));
-        }
+        auto product = build_bond_trade(scope, swaps, entry, security_id, issue_id, maturity);
+        entry.bond_issue_call_dates = product.call_dates;
+        entry.bond_issue_conversion_targets = product.conversion_targets;
+        append(entry.instruments, std::move(product));
 
         plan.slots.push_back(std::move(entry));
     }
@@ -1626,19 +1619,31 @@ build_rate_trade(const domain::trade_generation_scope& scope,
      * exactly.
      */
     const auto fixed_rate = money(std::round((0.01 + 0.05 * draw(name, 2)) * 10000.0) / 10000.0);
-    const auto swap_from = [&](year_month_day start, year_month_day maturity) {
-        return tb::vanilla_swap_terms{.notional = money(entry.notional),
-                                      .currency = scope.currency_code,
-                                      .start = start,
-                                      .maturity = maturity,
-                                      .fixed_rate = fixed_rate,
-                                      .index = domestic[slot % domestic.size()].index,
-                                      .fixed_side =
-                                          first_way(entry, 1) ? tb::side::pay : tb::side::receive,
-                                      .convention = domestic[slot % domestic.size()].convention};
-    };
+    const auto terms_with =
+        [&](const swap_choice& chosen, year_month_day start, year_month_day maturity) {
+            return tb::vanilla_swap_terms{.notional = money(entry.notional),
+                                          .currency = scope.currency_code,
+                                          .start = start,
+                                          .maturity = maturity,
+                                          .fixed_rate = fixed_rate,
+                                          .index = chosen.index,
+                                          .fixed_side = first_way(entry, 1) ? tb::side::pay :
+                                                                              tb::side::receive,
+                                          .convention = chosen.convention};
+        };
+    /*
+     * A forward rate agreement fixes on an Ibor index, and the tenant's swap
+     * conventions also state overnight ones. So the agreement draws from the
+     * swaps whose index is an Ibor, never from the whole pool.
+     */
+    std::vector<const swap_choice*> ibor_swaps;
+    for (const auto& choice : domestic)
+        if (choice.ibor)
+            ibor_swaps.push_back(&choice);
+
     const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
-    const auto swap = swap_from(start, add_years(start, static_cast<int>(years)));
+    const auto swap = terms_with(
+        domestic[slot % domestic.size()], start, add_years(start, static_cast<int>(years)));
     const auto built = [&](auto result) {
         return swap_batch_of(std::move(result), type, "Generated interest rate trade.");
     };
@@ -1667,10 +1672,16 @@ build_rate_trade(const domain::trade_generation_scope& scope,
          * A forward rate agreement is a short contract that settles in the
          * future: it starts in three months and runs for six.
          */
+        if (ibor_swaps.empty())
+            throw trade_population_error(
+                "No swap convention of the tenant names an Ibor index in " + scope.currency_code +
+                ", so no forward rate agreement can state its index.");
         const auto from = add_months(scope.as_of_date, 3);
+        const auto& chosen = *ibor_swaps[slot % ibor_swaps.size()];
         return built(
             tb::forward_rate_agreement_builder(
-                conventions, {.period = swap_from(from, add_months(from, 6)), .position = position})
+                conventions,
+                {.period = terms_with(chosen, from, add_months(from, 6)), .position = position})
                 .build());
     }
     if (type == "CapFloor")
@@ -1688,7 +1699,9 @@ build_rate_trade(const domain::trade_generation_scope& scope,
         const auto expiry = add_years(scope.as_of_date, 1);
         const auto swap_start = year_month_day{sys_days{expiry} + days{2}};
         const tb::swaption_terms terms{
-            .swap = swap_from(swap_start, add_years(swap_start, static_cast<int>(years))),
+            .swap = terms_with(domestic[slot % domestic.size()],
+                               swap_start,
+                               add_years(swap_start, static_cast<int>(years))),
             .expiry = expiry,
             .position = position,
             .settles = tb::settlement::cash};
@@ -1914,19 +1927,6 @@ ores::marketdata::datum::market_reference fx_index_of(const domain::currency_pai
     return std::move(*reference);
 }
 
-/// The rows of a product ORE reads through a class of its own, as a batch.
-ores::trading::domain::instrument_batch
-scripted_batch_of(ores::trading::builders::scripted_result built,
-                  const std::string& trade_type_code) {
-    if (!built)
-        throw trade_population_error("The " + trade_type_code + " builder refuses the drawn " +
-                                     built.error().term + ": " + built.error().message);
-    ores::trading::domain::instrument_batch batch;
-    ores::trading::domain::append_instrument(
-        batch, ores::trading::domain::trade_instrument{std::move(*built)});
-    return batch;
-}
-
 ores::trading::domain::instrument_batch
 fx_batch_of(std::expected<ores::trading::domain::fx_instrument_data,
                           ores::trading::builders::build_error> built,
@@ -2012,8 +2012,8 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
     if (type == "FxWindowBarrierOption") {
         // The barrier is watched from the start to halfway to the expiry, a tenth away.
         const bool call = kind == tb::option_kind::call;
-        return scripted_batch_of(
-            tb::window_barrier_option_builder<tb::scripted_family::fx>(
+        return built(
+            tb::fx_window_barrier_option_builder(
                 {.underlying = index,
                  .currency = pair.quote,
                  .fixing_amount = money(notional),
@@ -2026,28 +2026,26 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                      year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2},
                  .barrier = tb::scripted_barrier{.type = call ? "DownAndOut" : "UpAndOut",
                                                  .level = level(rate * (call ? 0.9 : 1.1))}})
-                .build(),
-            type);
+                .build());
     }
     if (type == "FxBestEntryOption")
-        return scripted_batch_of(tb::best_entry_option_builder<tb::scripted_family::fx>(
-                                     {.underlying = index,
-                                      .currency = pair.quote,
-                                      .notional = money(notional),
-                                      .multiplier = level(1.0),
-                                      .strike = level(1.0),
-                                      .cap = level(0.2),
-                                      .trigger_level = level(0.98),
-                                      .reset_minimum = level(0.95),
-                                      .premium = money(0.0),
-                                      .premium_date = start,
-                                      .strike_date = start,
-                                      .strike_observation_dates = quarterly_dates(start, end),
-                                      .expiry = end,
-                                      .settlement = end,
-                                      .position = position})
-                                     .build(),
-                                 type);
+        return built(tb::fx_best_entry_option_builder(
+                         {.underlying = index,
+                          .currency = pair.quote,
+                          .notional = money(notional),
+                          .multiplier = level(1.0),
+                          .strike = level(1.0),
+                          .cap = level(0.2),
+                          .trigger_level = level(0.98),
+                          .reset_minimum = level(0.95),
+                          .premium = money(0.0),
+                          .premium_date = start,
+                          .strike_date = start,
+                          .strike_observation_dates = quarterly_dates(start, end),
+                          .expiry = end,
+                          .settlement = end,
+                          .position = position})
+                         .build());
     if (type == "FxStrikeResettableOption") {
         /*
          * A call resets lower when the rate falls, a put higher when it rises. A
@@ -2056,24 +2054,22 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
          */
         const bool call = kind == tb::option_kind::call;
         const auto reset = level(rate * (call ? 0.98 : 1.02));
-        return scripted_batch_of(
-            tb::strike_resettable_option_builder<tb::scripted_family::fx>(
-                {.underlying = index,
-                 .currency = pair.quote,
-                 .kind = kind,
-                 .position = position,
-                 .quantity = money(notional),
-                 .strike = level(rate),
-                 .reset_strike = reset,
-                 .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
-                 .trigger_price = level(rate * (call ? 0.93 : 1.07)),
-                 .observation_dates = quarterly_dates(start, end),
-                 .expiry = end,
-                 .settlement = end,
-                 .premium = money(0.0),
-                 .premium_date = start})
-                .build(),
-            type);
+        return built(tb::fx_strike_resettable_option_builder(
+                         {.underlying = index,
+                          .currency = pair.quote,
+                          .kind = kind,
+                          .position = position,
+                          .quantity = money(notional),
+                          .strike = level(rate),
+                          .reset_strike = reset,
+                          .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
+                          .trigger_price = level(rate * (call ? 0.93 : 1.07)),
+                          .observation_dates = quarterly_dates(start, end),
+                          .expiry = end,
+                          .settlement = end,
+                          .premium = money(0.0),
+                          .premium_date = start})
+                         .build());
     }
     /*
      * A product on two pairs holds the slot's pair and another the tenant
@@ -2099,8 +2095,8 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
         // A volatility strike of a fifth, observed daily over the trade's life.
         const auto strike = level(0.2);
         if (type == "FxBasketVarianceSwap")
-            return scripted_batch_of(
-                tb::basket_variance_swap_builder<tb::scripted_family::fx>(
+            return built(
+                tb::fx_basket_variance_swap_builder(
                     {.members =
                          std::vector<tb::basket_option_member>{
                              {.underlying = index, .currency = std::nullopt, .weight = level(0.5)},
@@ -2113,8 +2109,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                      .end = end,
                      .settlement = year_month_day{sys_days{end} + days{5}},
                      .position = position})
-                    .build(),
-                type);
+                    .build());
         return built(tb::fx_pairwise_variance_swap_builder(
                          {.first = tb::pairwise_member{.underlying = index,
                                                        .strike = strike,
@@ -2168,7 +2163,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
         for (std::size_t i = 1; i < periods.size(); ++i)
             pays.emplace_back(sys_days{periods[i]} + days{2});
         const auto count = pays.size();
-        return scripted_batch_of(
+        return built(
             tb::fx_worst_of_basket_swap_builder(
                 {.members =
                      std::vector<tb::worst_of_member>{
@@ -2188,25 +2183,23 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                  .knock_in_level = level(0.75),
                  .strike = level(1.0),
                  .position = position})
-                .build(),
-            type);
+                .build());
     }
     if (type == "FxForwardVolatilityAgreement") {
         // The volatility fixes halfway to the expiry, which the straddle runs to.
         const auto fva_date =
             year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2};
-        return scripted_batch_of(tb::forward_volatility_agreement_builder<tb::scripted_family::fx>(
-                                     {.underlying = index,
-                                      .pay_currency = pair.quote,
-                                      .quantity = money(notional),
-                                      .implied_vol_strike = level(0.1),
-                                      .fva_date = fva_date,
-                                      .option_expiry = end,
-                                      .premium_date = year_month_day{sys_days{fva_date} + days{2}},
-                                      .settlement = year_month_day{sys_days{end} + days{5}},
-                                      .position = position})
-                                     .build(),
-                                 type);
+        return built(tb::fx_forward_volatility_agreement_builder(
+                         {.underlying = index,
+                          .pay_currency = pair.quote,
+                          .quantity = money(notional),
+                          .implied_vol_strike = level(0.1),
+                          .fva_date = fva_date,
+                          .option_expiry = end,
+                          .premium_date = year_month_day{sys_days{fva_date} + days{2}},
+                          .settlement = year_month_day{sys_days{end} + days{5}},
+                          .position = position})
+                         .build());
     }
     if (type == "FxBasketOption" || type == "FxRainbowOption") {
         const auto* other = &second_pair();
@@ -2227,10 +2220,8 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
             .expiry = end,
             .settlement = end};
         if (type == "FxBasketOption")
-            return scripted_batch_of(
-                tb::basket_option_builder<tb::basket_product::fx_basket>(basket).build(), type);
-        return scripted_batch_of(
-            tb::basket_option_builder<tb::basket_product::fx_rainbow>(basket).build(), type);
+            return built(tb::basket_option_builder<tb::basket_product::fx_basket>(basket).build());
+        return built(tb::basket_option_builder<tb::basket_product::fx_rainbow>(basket).build());
     }
     const auto barrier = [&]<tb::fx_barrier_product Product>(std::vector<tb::fx_barrier> barriers) {
         return built(tb::fx_barrier_option_builder<Product>(
@@ -2376,6 +2367,8 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         plan.slots.push_back(std::move(entry));
     }
 
+    // A product ORE carries in both forms is booked again as its generic ScriptedTrade.
+    add_scripted_twins(plan);
     return plan;
 }
 
@@ -2569,13 +2562,44 @@ build_credit_trade(const domain::trade_generation_scope& scope,
                                            tb::option_position::short_option};
         return batch_of(tb::credit_default_swap_option_builder(conventions, terms).build(), type);
     }
-    if (type == "CBO")
-        // An investment in the junior note of the structure ORE's own example names.
-        return scripted_batch_of(tb::cbo_builder({.tranche_name = std::string("JuniorNote"),
-                                                  .notional = money(entry.notional),
-                                                  .structure_id = std::string("Pegasus")})
-                                     .build(),
-                                 type);
+    if (type == "CBO") {
+        /*
+         * An investment in the junior note of the structure ORE's own example
+         * names, stated inline with the example's fees, tranches and the first
+         * bonds of its basket, so the trade carries its structure whole.
+         */
+        tb::cbo_structure_terms structure{
+            .currency = std::string("USD"),
+            .day_counter = std::string("A365"),
+            .payment_convention = std::string("F"),
+            .senior_fee = money(0.001),
+            .fee_day_counter = std::string("A365"),
+            .subordinated_fee = money(0.005),
+            .equity_kicker = money(0.01),
+            .tranches = {{.name = "SeniorNote",
+                          .notional = money(16224751.80),
+                          .ic_ratio = money(1.0),
+                          .oc_ratio = money(1.0),
+                          .fixed_rate = money(0.04)},
+                         {.name = "JuniorNote",
+                          .notional = money(1802750.20),
+                          .ic_ratio = money(-1.0),
+                          .oc_ratio = money(-1.0),
+                          .fixed_rate = money(0.0)}},
+            .basket = {{.security_id = "ISIN:US15135BAW19", .notional = money(1000000.0)},
+                       {.security_id = "ISIN:US16411QAK76", .notional = money(1000000.0)},
+                       {.security_id = "ISIN:US16411QAL59", .notional = money(1000000.0)}},
+            .start = scope.as_of_date,
+            .end = add_years(scope.as_of_date, 15),
+            .tenor = std::string("3M"),
+            .calendar = std::string("US")};
+        return batch_of(tb::cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                         .notional = money(entry.notional),
+                                         .structure_id = std::string("Pegasus"),
+                                         .structure = std::move(structure)})
+                            .build(),
+                        type);
+    }
     if (type == "IndexCreditDefaultSwapOption") {
         const auto expiry = add_months(scope.as_of_date, 3);
         const tb::index_credit_default_swap_option_terms terms{
@@ -2729,7 +2753,7 @@ build_scripted_trade(const domain::trade_generation_scope& scope,
         first_way(entry) ? tb::option_position::long_option : tb::option_position::short_option;
     const auto settlement = add_months(end, 2);
 
-    const auto built = [&](tb::scripted_result result) {
+    const auto built = [&](auto result) {
         if (!result)
             throw trade_population_error("The " + type + " builder refuses the drawn " +
                                          result.error().term + ": " + result.error().message);
@@ -3165,10 +3189,9 @@ build_equity_trade(const domain::trade_generation_scope& scope,
             .expiry = end,
             .settlement = end};
         if (type == "EquityBasketOption")
-            return scripted_batch_of(
-                tb::basket_option_builder<tb::basket_product::equity_basket>(basket).build(), type);
-        return scripted_batch_of(
-            tb::basket_option_builder<tb::basket_product::equity_rainbow>(basket).build(), type);
+            return built(
+                tb::basket_option_builder<tb::basket_product::equity_basket>(basket).build());
+        return built(tb::basket_option_builder<tb::basket_product::equity_rainbow>(basket).build());
     }
     if (type == "EquityWindowBarrierOption" || type == "EquityGenericBarrierOption") {
         // A call knocks out a tenth below the level, a put a tenth above it.
@@ -3176,78 +3199,72 @@ build_equity_trade(const domain::trade_generation_scope& scope,
         const tb::scripted_barrier knock_out{.type = call ? "DownAndOut" : "UpAndOut",
                                              .level = money(level * (call ? 0.9 : 1.1))};
         if (type == "EquityWindowBarrierOption")
-            return scripted_batch_of(
-                tb::window_barrier_option_builder<tb::scripted_family::equity>(
-                    {.underlying = address,
-                     .currency = currency,
-                     .fixing_amount = money(notional / level),
-                     .strike = money(level),
-                     .kind = kind,
-                     .position = position,
-                     .expiry = end,
-                     .window_start = start,
-                     .window_end =
-                         year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2},
-                     .barrier = knock_out})
-                    .build(),
-                type);
-        return scripted_batch_of(tb::equity_generic_barrier_option_builder(
-                                     {.underlying = address,
-                                      .pay_currency = currency,
-                                      .quantity = money(notional / level),
-                                      .strike = money(level),
-                                      .kind = kind,
-                                      .position = position,
-                                      .expiry = end,
-                                      // ORE rolls an expiry on a holiday forward.
-                                      .settlement = year_month_day{sys_days{end} + days{5}},
-                                      .monitoring_start = start,
-                                      .barriers = std::vector<tb::scripted_barrier>{knock_out},
-                                      .kiko_type = std::nullopt})
-                                     .build(),
-                                 type);
+            return built(tb::equity_window_barrier_option_builder(
+                             {.underlying = address,
+                              .currency = currency,
+                              .fixing_amount = money(notional / level),
+                              .strike = money(level),
+                              .kind = kind,
+                              .position = position,
+                              .expiry = end,
+                              .window_start = start,
+                              .window_end = year_month_day{sys_days{start} +
+                                                           (sys_days{end} - sys_days{start}) / 2},
+                              .barrier = knock_out})
+                             .build());
+        return built(tb::equity_generic_barrier_option_builder(
+                         {.underlying = address,
+                          .pay_currency = currency,
+                          .quantity = money(notional / level),
+                          .strike = money(level),
+                          .kind = kind,
+                          .position = position,
+                          .expiry = end,
+                          // ORE rolls an expiry on a holiday forward.
+                          .settlement = year_month_day{sys_days{end} + days{5}},
+                          .monitoring_start = start,
+                          .barriers = std::vector<tb::scripted_barrier>{knock_out},
+                          .kiko_type = std::nullopt})
+                         .build());
     }
     if (type == "EquityBestEntryOption")
-        return scripted_batch_of(tb::best_entry_option_builder<tb::scripted_family::equity>(
-                                     {.underlying = address,
-                                      .currency = currency,
-                                      .notional = money(notional),
-                                      .multiplier = money(1.0),
-                                      .strike = money(0.85),
-                                      .cap = money(0.06),
-                                      .trigger_level = money(0.95),
-                                      .reset_minimum = money(0.85),
-                                      .premium = money(0.0),
-                                      .premium_date = start,
-                                      .strike_date = start,
-                                      .strike_observation_dates = quarterly_dates(start, end),
-                                      .expiry = end,
-                                      .settlement = end,
-                                      .position = position})
-                                     .build(),
-                                 type);
+        return built(tb::equity_best_entry_option_builder(
+                         {.underlying = address,
+                          .currency = currency,
+                          .notional = money(notional),
+                          .multiplier = money(1.0),
+                          .strike = money(0.85),
+                          .cap = money(0.06),
+                          .trigger_level = money(0.95),
+                          .reset_minimum = money(0.85),
+                          .premium = money(0.0),
+                          .premium_date = start,
+                          .strike_date = start,
+                          .strike_observation_dates = quarterly_dates(start, end),
+                          .expiry = end,
+                          .settlement = end,
+                          .position = position})
+                         .build());
     if (type == "EquityStrikeResettableOption") {
         // A call resets lower when the price falls, a put higher when it rises.
         const bool call = kind == tb::option_kind::call;
         const auto reset = money(level * (call ? 0.9 : 1.1));
-        return scripted_batch_of(
-            tb::strike_resettable_option_builder<tb::scripted_family::equity>(
-                {.underlying = address,
-                 .currency = currency,
-                 .kind = kind,
-                 .position = position,
-                 .quantity = money(notional / level),
-                 .strike = money(level),
-                 .reset_strike = reset,
-                 .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
-                 .trigger_price = reset,
-                 .observation_dates = quarterly_dates(start, end),
-                 .expiry = end,
-                 .settlement = end,
-                 .premium = money(0.0),
-                 .premium_date = start})
-                .build(),
-            type);
+        return built(tb::equity_strike_resettable_option_builder(
+                         {.underlying = address,
+                          .currency = currency,
+                          .kind = kind,
+                          .position = position,
+                          .quantity = money(notional / level),
+                          .strike = money(level),
+                          .reset_strike = reset,
+                          .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
+                          .trigger_price = reset,
+                          .observation_dates = quarterly_dates(start, end),
+                          .expiry = end,
+                          .settlement = end,
+                          .premium = money(0.0),
+                          .premium_date = start})
+                         .build());
     }
     if (type == "EquityBasketVarianceSwap" || type == "EquityPairwiseVarianceSwap") {
         const auto [first, second] = same_currency_pair();
@@ -3255,25 +3272,24 @@ build_equity_trade(const domain::trade_generation_scope& scope,
         // A volatility strike of a fifth, observed daily over the trade's life.
         const auto strike = money(0.2);
         if (type == "EquityBasketVarianceSwap")
-            return scripted_batch_of(tb::basket_variance_swap_builder<tb::scripted_family::equity>(
-                                         {.members =
-                                              std::vector<tb::basket_option_member>{
-                                                  {.underlying = equity_address_of(first->code),
-                                                   .currency = std::nullopt,
-                                                   .weight = money(0.5)},
-                                                  {.underlying = equity_address_of(second->code),
-                                                   .currency = std::nullopt,
-                                                   .weight = money(0.5)}},
-                                          .currency = pay,
-                                          .notional = money(notional / 100.0),
-                                          .strike = strike,
-                                          .squared_payoff = false,
-                                          .start = start,
-                                          .end = end,
-                                          .settlement = year_month_day{sys_days{end} + days{5}},
-                                          .position = position})
-                                         .build(),
-                                     type);
+            return built(tb::equity_basket_variance_swap_builder(
+                             {.members =
+                                  std::vector<tb::basket_option_member>{
+                                      {.underlying = equity_address_of(first->code),
+                                       .currency = std::nullopt,
+                                       .weight = money(0.5)},
+                                      {.underlying = equity_address_of(second->code),
+                                       .currency = std::nullopt,
+                                       .weight = money(0.5)}},
+                              .currency = pay,
+                              .notional = money(notional / 100.0),
+                              .strike = strike,
+                              .squared_payoff = false,
+                              .start = start,
+                              .end = end,
+                              .settlement = year_month_day{sys_days{end} + days{5}},
+                              .position = position})
+                             .build());
         return built(
             tb::equity_pairwise_variance_swap_builder(
                 {.first = tb::pairwise_member{.underlying = equity_address_of(first->code),
@@ -3300,19 +3316,17 @@ build_equity_trade(const domain::trade_generation_scope& scope,
         // The volatility fixes halfway to the expiry, which the straddle runs to.
         const auto fva_date =
             year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2};
-        return scripted_batch_of(
-            tb::forward_volatility_agreement_builder<tb::scripted_family::equity>(
-                {.underlying = address,
-                 .pay_currency = currency,
-                 .quantity = money(notional / level),
-                 .implied_vol_strike = money(0.2),
-                 .fva_date = fva_date,
-                 .option_expiry = end,
-                 .premium_date = year_month_day{sys_days{fva_date} + days{2}},
-                 .settlement = year_month_day{sys_days{end} + days{5}},
-                 .position = position})
-                .build(),
-            type);
+        return built(tb::equity_forward_volatility_agreement_builder(
+                         {.underlying = address,
+                          .pay_currency = currency,
+                          .quantity = money(notional / level),
+                          .implied_vol_strike = money(0.2),
+                          .fva_date = fva_date,
+                          .option_expiry = end,
+                          .premium_date = year_month_day{sys_days{fva_date} + days{2}},
+                          .settlement = year_month_day{sys_days{end} + days{5}},
+                          .position = position})
+                         .build());
     }
     if (type == "EquityOutperformanceOption") {
         const auto [first, second] = same_currency_pair();
@@ -3730,6 +3744,8 @@ equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         plan.slots.push_back(std::move(entry));
     }
 
+    // A product ORE carries in both forms is booked again as its generic ScriptedTrade.
+    add_scripted_twins(plan);
     return plan;
 }
 

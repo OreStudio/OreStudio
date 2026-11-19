@@ -429,7 +429,72 @@ TEST_CASE("a_bloomberg_volatility_ticker_names_its_pair_expiry_and_label_and_rou
                                     .field = "PX_LAST"});
         CHECK_FALSE((read && std::holds_alternative<vendor::fx_option_quote>(*read)));
     }
-    // Another notation does not write a volatility point.
-    CHECK_FALSE(vendor::notation_of("lseg")->write(
-        vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "1Y", "ATM"}}));
+    // Another notation does not write a volatility point. Demo's refusal is what keeps the
+    // latent surface's clean contributor off every adapter.
+    for (const auto* provider : {"lseg", "demo"}) {
+        INFO(provider);
+        CHECK_FALSE(vendor::notation_of(provider)->write(
+            vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "1Y", "ATM"}}));
+    }
+}
+
+TEST_CASE("an_ice_or_tradeweb_volatility_id_names_its_pair_expiry_and_label_and_roundtrips",
+          "[vendor_notation]") {
+    const std::vector<std::pair<std::string, vendor::fx_option_quote>> cases{
+        {"EURUSD.VOL.ATM.1Y=", {"EUR", "USD", "1Y", "ATM"}},
+        {"EURUSD.VOL.25RR.1W=", {"EUR", "USD", "1W", "25RR"}},
+        {"USDJPY.VOL.10RR.18M=", {"USD", "JPY", "18M", "10RR"}},
+        {"GBPUSD.VOL.25BF.10Y=", {"GBP", "USD", "10Y", "25BF"}},
+        {"AUDUSD.VOL.10BF.3M=", {"AUD", "USD", "3M", "10BF"}}};
+    for (const auto& [provider, scheme] :
+         {std::pair<std::string, std::string>{"ice", "ice_ticker"},
+          std::pair<std::string, std::string>{"tradeweb", "tradeweb_ticker"}}) {
+        INFO(provider);
+        const auto& sut = *vendor::notation_of(provider);
+        for (const auto& [external_id, quote] : cases) {
+            INFO(external_id);
+            const auto written = sut.write(vendor::quote_description{quote});
+            REQUIRE(written);
+            CHECK(written->id_scheme == scheme);
+            CHECK(written->external_id == external_id);
+            CHECK(written->field == "BID");
+            const auto read = sut.read(*written);
+            REQUIRE(read);
+            CHECK(*read == vendor::quote_description{quote});
+        }
+
+        // A point is not a pillar: the pillar form still reads as a pillar.
+        const auto pillar = sut.read(
+            {.id_scheme = scheme, .external_id = "USDLIBOR3M.DEPO.SPOT.6M=", .field = "BID"});
+        REQUIRE(pillar);
+        CHECK(std::holds_alternative<vendor::ir_curve_pillar>(*pillar));
+
+        CHECK_FALSE(sut.write(
+            vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "1Y", "15RR"}}));
+        CHECK_FALSE(sut.write(
+            vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "0Y", "ATM"}}));
+        CHECK_FALSE(sut.write(
+            vendor::quote_description{vendor::fx_option_quote{"EUR", "EUR", "1Y", "ATM"}}));
+        CHECK_FALSE(sut.write(
+            vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "ON", "ATM"}}));
+
+        const auto wrong_field =
+            sut.read({.id_scheme = scheme, .external_id = "EURUSD.VOL.ATM.1Y=", .field = "ASK"});
+        REQUIRE_FALSE(wrong_field);
+        CHECK(wrong_field.error().reason == vendor::notation_error::kind::wrong_field);
+        const auto same_currency =
+            sut.read({.id_scheme = scheme, .external_id = "EUREUR.VOL.ATM.1Y=", .field = "BID"});
+        REQUIRE_FALSE(same_currency);
+        CHECK(same_currency.error().reason == vendor::notation_error::kind::malformed);
+        for (const auto* damaged : {"EURUSD.VOL.15RR.1Y=",
+                                    "EURUSD.VOL.ATM.0M=",
+                                    "EURUSD.VOL.ATM.1Y",
+                                    "EURUSD.VOL.1Y.ATM="}) {
+            INFO(damaged);
+            const auto read =
+                sut.read({.id_scheme = scheme, .external_id = damaged, .field = "BID"});
+            REQUIRE_FALSE(read);
+            CHECK(read.error().reason == vendor::notation_error::kind::malformed);
+        }
+    }
 }

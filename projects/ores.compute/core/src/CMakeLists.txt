@@ -72,6 +72,7 @@ target_link_libraries(${lib_target_name}
         ores.platform.lib
         ores.reporting.api.lib
         ores.iam.client.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed; recorded in core_link_edges_baseline.json
         ores.history.core.lib
         faker-cxx::faker-cxx
         libfort::fort)

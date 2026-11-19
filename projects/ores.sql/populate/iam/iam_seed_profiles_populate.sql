@@ -55,7 +55,8 @@
 \echo '--- Seed Profiles ---'
 
 -- Operational: for real use, so the tenant it makes is a production one. It
--- publishes the base bundle, imports the parties under a GLEIF root LEI the
+-- publishes the tenant's own bundles and the counterparties it trades
+-- against, imports the parties under a GLEIF root LEI the
 -- administrator names, and creates no test data. It prefills no tenant detail,
 -- because the administrator supplies the tenant and its own identity.
 --
@@ -174,13 +175,13 @@ from ores_iam_seed_profiles_tbl p
 cross join (values
     ('empty_operational', 'system_provision', 5, '{}'::jsonb),
     ('empty_operational', 'publish_system_curves', 6, '{}'::jsonb),
-    ('empty_operational', 'publish_bundle', 10, '{"bundles": ["world", "tenant_defaults"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
+    ('empty_operational', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('empty_operational', 'build_calendars', 15, '{}'::jsonb),
     ('empty_operational', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('empty_operational', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
     ('gleif_entity', 'system_provision', 5, '{}'::jsonb),
     ('gleif_entity', 'publish_system_curves', 6, '{}'::jsonb),
-    ('gleif_entity', 'publish_bundle', 10, '{"bundles": ["world", "tenant_defaults"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
+    ('gleif_entity', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('gleif_entity', 'build_calendars', 15, '{}'::jsonb),
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
@@ -188,7 +189,7 @@ cross join (values
     ('acme_demo', 'publish_system_curves', 6, '{}'::jsonb),
     ('acme_demo', 'start_auto_approval', 8, '{}'::jsonb),
     ('acme_demo', 'end_auto_approval', 9000, '{}'::jsonb),
-    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["world", "tenant_defaults", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "ore.counterparty_aliases"]}'::jsonb),
+    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_demo', 'build_calendars', 15, '{}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
@@ -282,22 +283,28 @@ cross join (values
     -- because a planner draws its codes by the slot's position and a config
     -- shorter than the list never reaches the codes past that point.
     --
-    -- The two rules fix the total. A thousand trades is the smallest round
-    -- number where every class can hold both: commodity routes twenty-five
-    -- codes and weighs five per cent, so it needs a thousand to hold them at
-    -- its weight, and bond trades are ten per book across four entities, so
-    -- bonds weigh four per cent of a thousand exactly.
+    -- The two rules fix the total. Eleven hundred trades is the smallest total
+    -- where every class can hold both: bond cycles eleven codes, one more since
+    -- the option on a bond future joined the catalogue, and four entities each
+    -- book a bond config, so bonds need forty-four trades, which is four per
+    -- cent of eleven hundred exactly.
     --
-    -- Counts per config, and what each class comes to:
-    --   bonds           10 x 4 entities               40    4%
-    --   interest rates  140 x 3 entities             420   42%
-    --   FX              63 + 63 + 62 + 62            250   25%
-    --   equity          120                            120   12%
-    --   credit          60                              60    6%
-    --   commodity       50                              50    5%
-    --   inflation       30                              30    3%
-    --   scripted        30                              30    3%
-    --                                                1000  100%
+    -- Counts per config, and what each class comes to at a total of eleven
+    -- hundred. The planner draws these from the shares, so they are what the
+    -- weights come to, not what a config states:
+    --   bonds           11 x 4 entities               44    4%
+    --   interest rates  154 x 3 entities             462   42%
+    --   FX              69 + 69 + 69 + 68            275   25%
+    --   equity          132                            132   12%
+    --   credit          66                              66   6%
+    --   commodity       55                              55    5%
+    --   inflation       33                              33    3%
+    --   scripted        33                              33    3%
+    --                                               1100  100%
+    --
+    -- The configs themselves state one trade per code, so a run that states a
+    -- size and no mix, or none at all, also books every code rather than a
+    -- prefix of it.
     --
     -- The book count and the population size are the config's, so a tenant that
     -- wants a thinner book changes a row and not the generator, and gives up the
@@ -325,7 +332,7 @@ cross join (values
          "description": "The bonds the group books, in its intercompany book.",
          "asset_class_code": "bond", "book": "Group Intercompany Loans",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 10, "structures_per_book": 2,
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 11, "structures_per_book": 2,
          "trade_type_codes": ["Bond"]},
                 {"party": "Acme Corporation Plc", "name": "ACME ACMCOR FX",
          "description": "The foreign exchange trades the group books, in its hedge book.",
@@ -337,7 +344,7 @@ cross join (values
          "description": "The bonds the UK entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 45, "trades_per_book": 10, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 45, "trades_per_book": 11, "structures_per_book": 2},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK rates",
          "description": "The interest rate trades the UK entity books, in its sterling swaps book.",
          "asset_class_code": "interest_rates", "book": "GBP Vanilla Swaps",
@@ -377,7 +384,7 @@ cross join (values
          "description": "The bonds the US entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 48, "trades_per_book": 10, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 48, "trades_per_book": 11, "structures_per_book": 2},
         {"party": "ACME Corporation US Inc", "name": "ACME ACCOUS rates",
          "description": "The interest rate trades the US entity books, in its dollar swaps book.",
          "asset_class_code": "interest_rates", "book": "USD Vanilla Swaps",
@@ -392,7 +399,7 @@ cross join (values
          "description": "The bonds the Hong Kong entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 51, "trades_per_book": 10, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 51, "trades_per_book": 11, "structures_per_book": 2},
         {"party": "ACME Corporation HK Ltd", "name": "ACME ACCOHK rates",
          "description": "The interest rate trades the Hong Kong entity books, in its Hong Kong dollar swaps book.",
          "asset_class_code": "interest_rates", "book": "HKD Vanilla Swaps",
@@ -419,7 +426,7 @@ cross join (values
     ('acme_minimal', 'publish_system_curves', 6, '{}'::jsonb),
     ('acme_minimal', 'start_auto_approval', 8, '{}'::jsonb),
     ('acme_minimal', 'end_auto_approval', 9000, '{}'::jsonb),
-    ('acme_minimal', 'publish_bundle', 10, '{"bundles": ["world", "tenant_defaults"], "opted_in_datasets": ["gleif.lei_counterparties.tiny", "ore.counterparty_aliases"]}'::jsonb),
+    ('acme_minimal', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties"], "opted_in_datasets": ["gleif.lei_counterparties.tiny", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_minimal', 'build_calendars', 15, '{}'::jsonb),
     ('acme_minimal', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_minimal', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
@@ -428,7 +435,7 @@ cross join (values
     ]}'::jsonb),
     ('northwind', 'system_provision', 5, '{}'::jsonb),
     ('northwind', 'publish_system_curves', 6, '{}'::jsonb),
-    ('northwind', 'publish_bundle', 10, '{"bundles": ["world", "tenant_defaults"], "opted_in_datasets": ["gleif.lei_counterparties.tiny"]}'::jsonb),
+    ('northwind', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties"], "opted_in_datasets": ["gleif.lei_counterparties.tiny"]}'::jsonb),
     ('northwind', 'build_calendars', 15, '{}'::jsonb),
     ('northwind', 'import_lei_hierarchy', 20, '{"bundles": ["northwind_lei_import"], "root_lei": "9695NORTHWIND0000065"}'::jsonb),
     ('northwind', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
@@ -455,17 +462,17 @@ cross join (values
          "description": "The bonds Northwind Traders books in its London GBP book, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "GBP Bonds Book",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 11},
         {"party": "Northwind Traders Ltd", "name": "Northwind USD bond population",
          "description": "The bonds Northwind Traders books in its London USD book, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "USD Bonds Book",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 11},
         {"party": "Northwind Traders Ltd", "name": "Northwind EUR bond population",
          "description": "The bonds Northwind Traders books in its London EUR book, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "EUR Bonds Book",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 43, "trades_per_book": 8},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 43, "trades_per_book": 11},
         {"party": "Northwind Traders Ltd", "name": "Northwind USD rates population",
          "description": "The interest rate trades Northwind Traders books in its Seattle USD rates book.",
          "asset_class_code": "interest_rates", "book": "USD Rates Book",
@@ -559,11 +566,14 @@ cross join (values
      '["tiny", "small", "large"]'::jsonb, 'small', true,
      'tiny is about 2.5k GLEIF counterparties and covers every region; small is '
      'about 13k; large is about 500k.', 20),
-    ('acme_demo', 'population_size', 'Population size (trades)', 'integer', null, '1000', false,
+    ('acme_demo', 'population_size', 'Population size (trades)', 'integer', null, '1100', false,
      'The trades the demonstration writes, across every asset class. The seeded '
-     'configs state a thousand, which is the smallest total where every class can '
-     'be its weight of the population and still book one trade per code it routes. '
-     'Leave it empty to take the seeded configs as they stand.', 20),
+     'total is eleven hundred, the smallest where every class can be its weight of '
+     'the population and still book one trade per code it routes: the bonds need '
+     'forty-four, which is four per cent of eleven hundred. A class whose code '
+     'cycle grows raises that total, and the planner refuses a total that cannot '
+     'hold it, naming the smallest one that can. Leave it empty to take the seeded '
+     'configs as they stand.', 20),
     ('acme_demo', 'population_interest_rates_percent', 'Interest rates share (%)', 'integer', null, '42', false,
      'The percentage of the population interest rate trades take.', 21),
     ('acme_demo', 'population_fx_percent', 'FX share (%)', 'integer', null, '25', false,

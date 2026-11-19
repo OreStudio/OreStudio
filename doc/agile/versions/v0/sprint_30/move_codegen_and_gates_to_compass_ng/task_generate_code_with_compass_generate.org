@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: AD824750-38EA-4209-A359-082223E68EBA
+:END:
+#+title: Task: Generate code with compass generate
+#+description: Replace regenerate --all, the ores.codegen regeneration verbs and the per-artefact regenerate scripts that compass covers with compass generate.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch: feature/generate-code-with-compass-generate
+#+pr: 4840
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A model or template edit is regenerated in seconds by one command, with byte-identical output.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- compass generate is the documented way to regenerate code, tangled scripts, inventories, seeds and component_files.cmake.
+- The skills and recipes that name regenerate, codegen.sh or regenerate_*.py name compass generate.
+- regenerate_cmake_component_files.py and the PlantUML script stay until component_files and er_diagram are confirmed on main.
+- ores.codegen stays for scaffolding (compass add) until compass-ng scaffolds documents.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4840][#4840]] | [doc] Point the codegen recipes and skills at compass-ng generate |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- How do I run codegen? leads with ./compass.sh diff and ./compass.sh generate;
+  the Python entry points stay for scaffolding and single-address runs, and the
+  whole-component section points at compass-ng.
+- The eight per-layer regeneration recipes, Regenerate all layers and Add a new
+  codegen entity model name ./compass.sh generate instead of codegen
+  regenerate; the revert-the-other-entities steps are gone, because compass-ng
+  writes only what changed.
+- The two memories that forbade tree-wide runs (generate one entity at a time;
+  regenerate only the drift-free components) now state that compass-ng
+  generate is the tree-wide run on a drift-free tree, and keep their rule for
+  the Python codegen.
+- The CMake source-list recipe and the compass-codegen-sync-cmake-sources skill
+  lead with ./compass.sh generate; regenerate_cmake_component_files.py stays as
+  the fallback without compass-ng. component_files and er_diagram are
+  confirmed: each caught its planted drift, and each writes its outputs byte
+  for byte as its script does.
+

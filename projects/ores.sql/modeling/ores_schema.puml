@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-781 tables in 21 groups.
+806 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -562,6 +562,7 @@ entity "trading" as trading {
   ores_trading_activity_types_tbl
   ores_trading_amortization_types_tbl
   ores_trading_ascots_tbl
+  ores_trading_autocallable_instruments_tbl
   ores_trading_average_types_tbl
   ores_trading_balance_guaranteed_swap_instruments_tbl
   ores_trading_balance_guaranteed_swap_tranches_tbl
@@ -592,6 +593,10 @@ entity "trading" as trading {
   ores_trading_callable_swap_instruments_tbl
   ores_trading_cap_floor_instruments_tbl
   ores_trading_cash_position_instruments_tbl
+  ores_trading_cbo_basket_members_tbl
+  ores_trading_cbo_instruments_tbl
+  ores_trading_cbo_structures_tbl
+  ores_trading_cbo_tranches_tbl
   ores_trading_cds_instruments_tbl
   ores_trading_commodity_basket_constituents_tbl
   ores_trading_commodity_instruments_tbl
@@ -600,24 +605,33 @@ entity "trading" as trading {
   ores_trading_credit_basket_constituents_tbl
   ores_trading_credit_instruments_tbl
   ores_trading_credit_linked_swap_instruments_tbl
+  ores_trading_double_digital_option_instruments_tbl
   ores_trading_draft_reasons_tbl
   ores_trading_entry_channel_types_tbl
   ores_trading_equity_accumulator_instruments_tbl
   ores_trading_equity_asian_option_instruments_tbl
   ores_trading_equity_barrier_option_instruments_tbl
   ores_trading_equity_basket_constituents_tbl
+  ores_trading_equity_basket_option_instruments_tbl
+  ores_trading_equity_basket_var_swap_instruments_tbl
+  ores_trading_equity_best_entry_option_instruments_tbl
   ores_trading_equity_cliquet_option_instruments_tbl
   ores_trading_equity_digital_option_instruments_tbl
   ores_trading_equity_forward_instruments_tbl
+  ores_trading_equity_fva_instruments_tbl
+  ores_trading_equity_generic_barrier_options_tbl
   ores_trading_equity_instruments_tbl
   ores_trading_equity_option_instruments_tbl
   ores_trading_equity_outperformance_options_tbl
   ores_trading_equity_pairwise_var_swap_instruments_tbl
   ores_trading_equity_position_instruments_tbl
   ores_trading_equity_position_option_underlyings_tbl
+  ores_trading_equity_strike_reset_option_instruments_tbl
   ores_trading_equity_swap_instruments_tbl
   ores_trading_equity_tarf_instruments_tbl
   ores_trading_equity_variance_swap_instruments_tbl
+  ores_trading_equity_window_barrier_options_tbl
+  ores_trading_european_option_barrier_instruments_tbl
   ores_trading_exercise_types_tbl
   ores_trading_flexi_swap_instruments_tbl
   ores_trading_flexi_swap_lower_notionals_tbl
@@ -627,11 +641,18 @@ entity "trading" as trading {
   ores_trading_fx_asian_forward_instruments_tbl
   ores_trading_fx_asian_option_instruments_tbl
   ores_trading_fx_barrier_option_instruments_tbl
+  ores_trading_fx_basket_option_instruments_tbl
+  ores_trading_fx_basket_variance_swap_instruments_tbl
+  ores_trading_fx_best_entry_option_instruments_tbl
   ores_trading_fx_digital_option_instruments_tbl
   ores_trading_fx_forward_instruments_tbl
+  ores_trading_fx_fva_instruments_tbl
   ores_trading_fx_pairwise_variance_swap_instruments_tbl
+  ores_trading_fx_strike_reset_option_instruments_tbl
   ores_trading_fx_vanilla_option_instruments_tbl
   ores_trading_fx_variance_swap_instruments_tbl
+  ores_trading_fx_window_barrier_option_instruments_tbl
+  ores_trading_fx_worst_of_basket_swap_instruments_tbl
   ores_trading_index_cds_instruments_tbl
   ores_trading_index_cds_option_instruments_tbl
   ores_trading_inflation_swap_instruments_tbl
@@ -646,6 +667,7 @@ entity "trading" as trading {
   ores_trading_instrument_schedules_tbl
   ores_trading_instrument_strikes_tbl
   ores_trading_instrument_underlyings_tbl
+  ores_trading_instrument_values_tbl
   ores_trading_knock_out_swap_instruments_tbl
   ores_trading_lifecycle_events_tbl
   ores_trading_long_short_types_tbl
@@ -655,10 +677,12 @@ entity "trading" as trading {
   ores_trading_party_role_types_tbl
   ores_trading_party_roles_tbl
   ores_trading_payoff_types_tbl
+  ores_trading_performance_option_instruments_tbl
   ores_trading_price_types_tbl
   ores_trading_product_type_asset_classes_tbl
   ores_trading_product_types_tbl
   ores_trading_range_bounds_tbl
+  ores_trading_rate_digital_option_instruments_tbl
   ores_trading_rate_instruments_tbl
   ores_trading_return_types_tbl
   ores_trading_risk_participation_instruments_tbl
@@ -667,6 +691,7 @@ entity "trading" as trading {
   ores_trading_script_coarsenings_tbl
   ores_trading_script_inputs_tbl
   ores_trading_script_results_tbl
+  ores_trading_script_twin_inputs_tbl
   ores_trading_script_variants_tbl
   ores_trading_scripted_instruments_tbl
   ores_trading_scripted_parameter_values_tbl
@@ -701,7 +726,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-140 tables — ores_schema.trading.puml
+165 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {

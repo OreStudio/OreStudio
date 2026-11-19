@@ -20,11 +20,17 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_TICK_SUBJECTS_HPP
 #define ORES_MARKETDATA_API_DOMAIN_TICK_SUBJECTS_HPP
 
+#include "ores.marketdata.api/datum/market_datum.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include <algorithm>
 #include <cstddef>
+#include <expected>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <variant>
 
 namespace ores::marketdata::domain {
 
@@ -32,10 +38,10 @@ namespace ores::marketdata::domain {
  * @brief The subjects a live market_tick travels on.
  *
  * A producer publishes on "synthetic.v1.ops.tick.<source>", or under the sandbox
- * base, which the ingest loop never subscribes to. The ingest loop
- * republishes each tick to every consumer the source's feed bindings name, on
- * the market_tick subject extended with the consumer and the datum's oresmd
- * URI, encoded as one subject token.
+ * base, which the ingest loop never subscribes to. The ingest loop publishes each
+ * tick once on the market_tick subject of the source's feed, feed_tick_subject(),
+ * which names the provider, the feed, the instrument type, the series and the
+ * coordinate.
  *
  * These name the base of each family, not a subject a producer uses and not
  * the wildcard a reader wants. A subscription passes the relative wildcard,
@@ -124,27 +130,76 @@ inline std::optional<std::string> subject_token_text(std::string_view token) {
     return text;
 }
 
-/// The subject that covers every datum a party reads in one tenant.
-inline std::string market_tick_subject_all(std::string_view tenant_id, std::string_view party_id) {
+/// The coordinate token of a series, which has no coordinates.
+inline constexpr std::string_view no_coordinates_token = "_";
+
+/**
+ * @brief The coordinates of @p datum as one subject token: each coordinate field
+ * that holds a value, as "<name>=<value>" in the schema row's order, joined by
+ * "&" and encoded by @c subject_token(). A datum with none gets
+ * @c no_coordinates_token, which no encoded coordinate can equal because each
+ * holds an encoded "=".
+ */
+inline std::string coordinates_token(const datum::market_datum& datum) {
+    const auto& row = datum::schema_of(datum.type());
+    std::string text;
+    for (const auto& fv : datum.fields()) {
+        const auto spec = std::ranges::find(row.fields, fv.name, &datum::field_spec::name);
+        if (spec == row.fields.end() || spec->role != datum::field_role::coordinate ||
+            std::holds_alternative<datum::none_t>(fv.held))
+            continue;
+        if (!text.empty())
+            text.push_back('&');
+        text.append(datum::name_of(fv.name)).append("=").append(datum::text_of(fv.held));
+    }
+    return text.empty() ? std::string(no_coordinates_token) : subject_token(text);
+}
+
+/// Every token of a feed's tick subject up to the series, which the coordinate token follows.
+inline std::string feed_series_subject(std::string_view provider_code,
+                                       std::string_view feed_id,
+                                       datum::instrument_type type,
+                                       std::string_view series_uri) {
     std::string subject(messaging::market_tick::nats_subject);
-    for (const auto part : {tenant_id, party_id})
-        subject.append(".").append(part);
-    return subject.append(".>");
+    subject.append(".").append(subject_token(provider_code));
+    subject.append(".").append(feed_id);
+    subject.append(".").append(datum::oresmd_uri_codec::instrument_spelling(type));
+    return subject.append(".").append(subject_token(series_uri));
 }
 
 /**
- * @brief The subject a consumer reads one datum's ticks on:
- * "marketdata.v1.ops.market_tick.<tenant>.<party>.<token>", where the token is
- * the datum's canonical oresmd URI as one subject token. Every valid datum has
- * a URI, so every valid quote has a subject, with or without an ORE key.
+ * @brief The subject a feed's ticks of one datum travel on:
+ * "marketdata.v1.ops.market_tick.<provider>.<feed>.<instrument_type>.<series_token>.<coordinate_token>".
+ *
+ * The subject names the feed and no tenant or party, so the ingest publishes a tick
+ * once, whatever the number of parties that may watch the feed. The series token is
+ * the encoded @p series_uri, so one wildcard covers a series, such as a volatility
+ * surface.
  */
-inline std::string market_tick_subject(std::string_view tenant_id,
-                                       std::string_view party_id,
-                                       std::string_view oresmd_uri) {
-    std::string subject(messaging::market_tick::nats_subject);
-    for (const auto part : {tenant_id, party_id})
-        subject.append(".").append(part);
-    return subject.append(".").append(subject_token(oresmd_uri));
+inline std::string feed_tick_subject(std::string_view provider_code,
+                                     std::string_view feed_id,
+                                     const datum::market_datum& datum,
+                                     std::string_view series_uri) {
+    return feed_series_subject(provider_code, feed_id, datum.type(), series_uri)
+        .append(".")
+        .append(coordinates_token(datum));
+}
+
+/**
+ * @brief The subject a watcher of @p datum subscribes to on one feed.
+ *
+ * A point watches its own subject. A series has no subject of its own, so it watches its
+ * series token with a wildcard for the coordinate, and the broker sends every point of the
+ * series and nothing else. The error is the codec's own message.
+ */
+inline std::expected<std::string, std::string> feed_tick_watch_subject(
+    std::string_view provider_code, std::string_view feed_id, const datum::market_datum& datum) {
+    const auto series = datum::oresmd_uri_codec::write(datum::series_of(datum));
+    if (!series)
+        return std::unexpected(series.error());
+    if (!datum.is_series())
+        return feed_tick_subject(provider_code, feed_id, datum, *series);
+    return feed_series_subject(provider_code, feed_id, datum.type(), *series).append(".*");
 }
 
 }

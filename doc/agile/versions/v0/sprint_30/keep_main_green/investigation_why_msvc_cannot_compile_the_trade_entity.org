@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: CBFCB234-DDB8-4ED6-80B1-1D3F4FAA04AD
+:END:
+#+title: Investigation: Why MSVC cannot compile the trade entity
+#+description: windows-msvc-release-ninja stops on trade_entity.hpp with C1202. The entity has nineteen columns, but the widest entity in the same unity translation unit has seventy-three and compiles, so the column count is not what the compiler is complaining about.
+#+type: investigation
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into windows-msvc-release-ninja stops on trade_entity.hpp with C1202. The entity has nineteen columns, but the widest entity in the same unity translation unit has seventy-three and compiles, so the column count is not what the compiler is complaining about..
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+=windows-msvc-release-ninja= stops with:
+
+#+begin_example
+trade_entity.hpp(95): fatal error C1202: recursive type or function dependency
+context too complex
+#+end_example
+
+The line is the =performed_by= binding, about two thirds of the way down the
+entity's column list. The obvious reading is that the trade entity has too many
+columns. This investigation tests that reading.
+
+* Methodology
+
+Binding counts came from every generated entity in the tree. The failing
+translation unit's membership was read from the local unity grouping, which is
+the same grouping the Windows build generates, though its batch numbering need
+not match. Compiler flags came from the command line the failed run printed.
+
+* Measurements
+
+| What | Command | Value |
+|------+---------+-------|
+| Entities carrying bindings | =python3 -c "import glob,re;print(len([p for p in glob.glob('projects/*/core/include/*/repository/*_entity.hpp') if re.search(r'query_builder::bind\\\\(', open(p).read())]))"= | 601 |
+| Widest entities | same script, sorted by the count of =query_builder::bind(= | =swap_leg= 73, =commodity_instrument= 64, =market_series_identity= 58 |
+| The trade entity's own count | =grep -c 'query_builder::bind(' projects/ores.trading/core/include/ores.trading.core/repository/trade_entity.hpp= | 19 |
+| Membership of the failing unit | =grep '#include' build/output/linux-clang-release-ninja/projects/ores.trading/core/src/CMakeFiles/ores.trading.core.lib.dir/Unity/unity_55_cxx.cxx= | 16 sources, including =swap_leg= |
+| Compiler flags | =gh run view 44485188155 --log-failed= | =/constexpr:depth100000 /constexpr:steps10000000= |
+| Unity batch size | =CMakeLists.txt:130-143= | 16 (=ORES_UNITY_BUILD_BATCH_SIZE=) |
+
+All counts were taken at =ff57b5cd1e= on the local =linux-clang-release-ninja=
+tree.
+
+* Paths taken
+
+- The compile line already carries =/constexpr:depth100000
+  /constexpr:steps10000000=, so the statement-depth limits are not what is
+  being hit and raising them is not a lever.
+- Counted the columns of every entity (table above). The trade entity is not
+  among the widest; it is barely a quarter of the widest.
+- Read the failing unit's sources: =swap_leg=, the widest entity in the build,
+  is inside it.
+- Looked for a path from those sixteen sources to =trade_entity.hpp= and found
+  none: the only header that includes it is =trade_mapper.hpp=, which those
+  sources do not pull in. Either the Windows grouping differs from the local
+  one, or the instantiation arrives through a chain the local tree does not
+  show. This is the loose end in the evidence.
+
+* Conclusions
+
+*Working hypothesis, not an established fact.*
+
+The trade entity is not too wide. The widest entity in the build compiles in the
+unit that fails on the trade entity, so column count alone does not explain the
+failure. The reading that best fits is that C1202 measures the accumulated
+template-instantiation context of the whole translation unit, so whichever
+instantiation sits late enough in a heavy unit trips the limit -- and the trade
+entity is that one here. That reading is consistent with the compiler's own
+message and with the flags already being raised, but no MSVC toolchain was
+available to bisect the unit and confirm it.
+
+=column_list= plausibly compounds it: it is built by folding =operator|= once
+per column, each step instantiating an =append=, an =append_at= and a fresh
+=column_list<Bindings..., Binding>= that nests the previous one. That is a
+reading of the generated code, not a measurement.
+
+What can be said with confidence is negative and useful: trimming the trade
+entity would not have prevented this failure, because a much wider entity
+compiles in the same unit.
+
+* Recommendations
+
+1. Flatten the column list so a column costs a binding rather than a nesting
+   level. The entities are generated, so this is one template change and a
+   regeneration. It is unproven until an MSVC leg runs it.
+2. Meanwhile, take the widest entities out of the unity batch --
+   =SKIP_UNITY_BUILD_INCLUSION= on the sources that instantiate them, or a lower
+   batch size for =ores.trading.core.lib=. This buys the Windows leg at the cost
+   of build time and does not depend on the hypothesis being right.
+3. Do not trim the entity as a fix. Column count is still a factor -- a very
+   wide list adds nesting -- but it is not what this failure is measuring.
+
+* See also
+
+- [[https://github.com/OreStudio/OreStudio/pull/4895][PR #4895]] -- the export fix in the same nightly leg.
+- [[https://github.com/OreStudio/OreStudio/pull/4897][PR #4897]] -- this investigation.
+- [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]]

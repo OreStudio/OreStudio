@@ -1,0 +1,283 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: CECBCC1D-6C47-49F8-A7E1-93D0DDEB17F1
+:END:
+#+title: ores.trading.cbo_basket_member
+#+description: Codegen entity model for the trading =cbo_basket_member= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: cbo_basket_member
+#+entity_plural: cbo_basket_members
+#+entity_title: CBO Basket Member
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+One bond of the basket a CBO structure stated inline holds, in the order the
+basket states it. The bond names its issue by its security id.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+The CBO this row belongs to.
+
+** sequence_number
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+1-based ordinal of this row, in the order the document states it.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 2)
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:group:        identity
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+The activity that wrote this version.
+
+** sub_trade_id
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The id of the basket's sub-trade, as the =id= of =SubTrade= states it.
+
+#+begin_src cpp :name generator
+std::string("US15135BAW19")
+#+end_src
+
+** security_id
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The bond's security id, as =SecurityId= states it.
+
+#+begin_src cpp :name generator
+std::string("ISIN:US15135BAW19")
+#+end_src
+
+** bond_notional
+:PROPERTIES:
+:type:         numeric(38, 12)
+:cpp_type:     ores::utility::decimal::decimal
+:nullable:     false
+:END:
+
+The notional held of the bond, as =BondNotional= states it.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("1000000").value()
+#+end_src
+
+** counterparty
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The counterparty the sub-trade's =Envelope= names, when it states one.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:list_by:  true
+:END:
+
+The CBO that carries this row.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_cbo_basket_members_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "security_id" <> '' |
+| "bond_notional" > 0 |
+| "sequence_number" >= 1 |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| trade_id | tenant_id, trade_id | false | true | |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+The C++ domain class is flat: the row is narrow, so no sub-struct
+decomposition is needed.
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cbo_basket_member
+:entity_plural_short:   cbo_basket_members
+:entity_singular_words: cbo basket member
+:entity_plural_words:   cbo basket members
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: row
+:END:
+
+** Table display
+
+| column                  | header      |
+|-------------------------+-------------|
+| trade_id                | Instrument  |
+| sequence_number         | Sequence    |
+| security_id             | Security    |
+| bond_notional           | Notional    |
+| recorded_at             | Recorded At |
+
+** Custom repository methods
+
+The trade read path fetches the cbo basket members of many instruments at
+once, and no generated read covers that: the generated reads address one key
+group at a time. The batch read below is one statement over the instrument
+set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: EA1705F5-D2F0-45F7-B6A1-1DA931188A81
+:END:
+
+Reads every current cbo basket member of the given instruments, in one statement. An empty input
+reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::cbo_basket_member>
+read_by_instruments_batch(const context& ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::cbo_basket_member>
+cbo_basket_member_repository::read_by_instruments_batch(
+    const context& ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<cbo_basket_member_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max) |
+                       query_builder::order_by("trade_id"_c, "sequence_number"_c);
+    return query_builder::execute_read_query<cbo_basket_member_entity,
+                                             domain::cbo_basket_member>(
+        ctx,
+        query,
+        [](const auto& entities) { return cbo_basket_member_mapper::map(entities); },
+        lg(),
+        "Reading cbo basket members for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

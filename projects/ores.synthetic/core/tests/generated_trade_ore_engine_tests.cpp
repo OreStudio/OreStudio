@@ -201,6 +201,10 @@ const std::vector<error_pattern>& error_patterns() {
         {"market_data",
          std::regex(
              R"(BondFactory: could not build bond '.*': no reference data given or no suitable builder)")},
+        // A bond that names its security with no reference data for it in the
+        // run, as a CBO's basket bond does, states none of the security's terms.
+        {"market_data",
+         std::regex(R"(^BondData invalid: missing .* - check if reference data is set up for )")},
         /*
          * A CBO takes its structure from the reference data its structure id
          * names. When the run holds none, ORE lists every structure element as

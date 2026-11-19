@@ -42,6 +42,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <filesystem>
+#include <format>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -925,18 +926,41 @@ subscription client::queue_subscribe(std::string_view subject,
 
 void client::js_publish(std::string_view subject,
                         std::span<const std::byte> data,
-                        std::unordered_map<std::string, std::string> headers) {
+                        std::unordered_map<std::string, std::string> headers,
+                        std::chrono::milliseconds ack_wait) {
 
     const std::string full_subject(make_subject(subject));
     log_publish(*impl_, "NATS js-publish", full_subject);
 
     const auto msg = make_msg(full_subject, data, headers);
+    jsPubOptions opts;
+    jsPubOptions_Init(&opts);
+    opts.MaxWait = ack_wait.count();
     jsPubAck* received = nullptr;
+    // The JetStream error explains a refusal to store, so a full store reads as
+    // a full store rather than as the timeout an absent ack looks like. A
+    // timeout says only that no acknowledgement came back: the store may have
+    // refused the message, or written it and lost the reply.
+    jsErrCode jerr = static_cast<jsErrCode>(0);
     // js_PublishMsg(jsPubAck**, jsCtx*, natsMsg*, jsPubOptions*, jsErrCode*)
-    const natsStatus s = js_PublishMsg(&received, impl_->js, msg.get(), nullptr, nullptr);
+    const natsStatus s = js_PublishMsg(&received, impl_->js, msg.get(), &opts, &jerr);
     const pub_ack_handle ack(received);
 
-    ensure_result(s, "JetStream publish failed");
+    if (s == NATS_TIMEOUT && jerr == 0) {
+        // A store that cannot write withholds the acknowledgement rather than
+        // refusing it, so the caller learns nothing from the library's bare
+        // "Timeout". Naming the wait and the absence of a confirmation says
+        // what is known: the message was not stored, and nothing here can say
+        // why, because only the server knows.
+        throw std::runtime_error(
+            std::format("JetStream publish failed: no acknowledgement within {}ms, so {} was "
+                        "not confirmed stored; the store's own log states why it could not "
+                        "accept it",
+                        ack_wait.count(),
+                        full_subject));
+    }
+
+    ensure_result(s, jerr, "JetStream publish failed");
 }
 
 namespace {

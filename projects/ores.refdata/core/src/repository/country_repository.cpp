@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/domain/country_json_io.hpp" // IWYU pragma: keep.
@@ -119,6 +120,21 @@ bool country_claim_reads_current(const ores::utility::domain::precondition& clai
 using country_rows_by_key = std::map<std::tuple<std::string>, std::vector<domain::country>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::country> country_claim_rows(const ores::database::context& ctx,
+                                                std::vector<domain::country> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -133,7 +149,7 @@ country_rows_by_key country_current_rows(country_repository& repo,
         alpha2_codes.push_back(row.alpha2_code);
     }
     country_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, alpha2_codes))
+    for (auto& item : country_claim_rows(ctx, repo.read_latest(ctx, alpha2_codes)))
         current[std::make_tuple(item.alpha2_code)].push_back(std::move(item));
     return current;
 }
@@ -194,7 +210,7 @@ domain::country country_apply_claim(const domain::country& v,
 }
 
 void country_repository::write(const context& ctx, const domain::country& v) {
-    write(ctx, v, country_replace_claim(read_latest(ctx, v.alpha2_code)));
+    write(ctx, v, country_replace_claim(country_claim_rows(ctx, read_latest(ctx, v.alpha2_code))));
 }
 
 void country_repository::write(const context& ctx, const std::vector<domain::country>& v) {
@@ -213,8 +229,9 @@ void country_repository::write(const context& ctx,
     const auto t =
         country_apply_claim(v,
                             claim,
-                            country_claim_reads_current(claim) ? read_latest(ctx, v.alpha2_code) :
-                                                                 std::vector<domain::country>{});
+                            country_claim_reads_current(claim) ?
+                                country_claim_rows(ctx, read_latest(ctx, v.alpha2_code)) :
+                                std::vector<domain::country>{});
     query_builder::execute_write_query(
         ctx, country_mapper::map(t), lg(), "Writing country to database.");
 }
@@ -242,8 +259,10 @@ void country_repository::write(const context& ctx,
 std::vector<domain::country> country_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<country_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("alpha2_code"_c);
 
     return query_builder::execute_read_query<country_entity, domain::country>(
@@ -259,8 +278,9 @@ std::vector<domain::country> country_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest country. " << "alpha2_code: " << alpha2_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<country_entity>> |
-                       query_builder::where("tenant_id"_c == tid &&
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
                                             "alpha2_code"_c == alpha2_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<country_entity, domain::country>(
@@ -277,10 +297,11 @@ std::vector<domain::country> country_repository::read_all(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading all country versions. "
                                << "alpha2_code: " << alpha2_code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<country_entity>> |
-        query_builder::where("tenant_id"_c == tid && "alpha2_code"_c == alpha2_code) |
-        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<country_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "alpha2_code"_c == alpha2_code) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<country_entity, domain::country>(
         ctx,
@@ -296,10 +317,11 @@ std::optional<domain::country> country_repository::read_at_version(const context
     BOOST_LOG_SEV(lg(), debug) << "Reading country at version. " << "alpha2_code: " << alpha2_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<country_entity>> |
-        query_builder::where("tenant_id"_c == tid && "alpha2_code"_c == alpha2_code &&
-                             "version"_c == version) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "alpha2_code"_c == alpha2_code && "version"_c == version) |
         query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<country_entity, domain::country>(
@@ -359,9 +381,10 @@ country_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest countries with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<country_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<country_entity, domain::country>(
         ctx,
@@ -380,8 +403,9 @@ std::uint32_t country_repository::get_total_country_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active country count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<country_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<country_entity>(
         ctx,
@@ -413,10 +437,11 @@ country_repository::read_latest(const context& ctx, const std::vector<std::strin
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<country_entity>> |
-        query_builder::where("tenant_id"_c == tid && "alpha2_code"_c.in(alpha2_codes) &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "alpha2_code"_c.in(alpha2_codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<country_entity, domain::country>(
         ctx,
         query,

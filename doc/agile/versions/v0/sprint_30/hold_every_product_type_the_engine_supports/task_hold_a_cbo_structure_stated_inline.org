@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 70A950DD-F516-44D3-8859-6FEA30766589
+:END:
+#+title: Task: Hold a CBO structure stated inline
+#+description: A CBO may state its structure inline: a bond basket, its tranches, fees and payment schedule. Hold the structure in rows, so such a CBO is read and written instead of refused.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch: feature/hold-a-cbo-structure-stated-inline
+#+pr: 4896
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A CBO that states its structure inline is held in full: its bond basket, its
+tranches, its fees and its payment schedule are rows and columns, so such a CBO
+is read and written rather than refused.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- the structure's scalars (day counter, payment convention, currency, senior
+  and subordinated fees, equity kicker, fee day counter, reinvestment end date)
+  are columns of a table keyed by the trade
+- each tranche (name, notional, IC and OC ratios) is a row, in document order
+- the payment schedule is instrument schedule rows
+- each bond in the basket is held as a bond issue, as the bond family holds a
+  security, and the basket names its members by issue
+- the reader no longer refuses a CBO that states its structure, and a round-trip
+  test reads ORE's example and writes it back
+- the generator can book a CBO with a structure stated inline, and the ORE
+  engine builds it with no error of the trade kind
+
+* Plan
+
+Decided with the user on 2026-11-19: each tranche's =LegData= is held as the
+shared swap leg rows (=swap_leg= with its amounts and rates), keyed by the
+tranche's ordinal, as every other leg in the system is held, rather than as a
+coupon column, so a tranche of any leg kind is read.
+
+- A =cbo_structure= table keyed by the trade holds the structure's scalars:
+  day counter, payment convention, currency, reinvestment end date, senior and
+  subordinated fees, fee day counter and equity kicker.
+- A =cbo_tranche= row per tranche holds its name, notional and IC and OC ratios,
+  in document order; its leg is swap leg rows under the tranche's ordinal.
+- The payment =ScheduleData= is instrument schedule rows.
+- Each =SubTrade= of the =BondBasketData= is a bond issue, as the bond family
+  holds a security, and a =cbo_basket_member= row names the issue, the sub-trade
+  id and the bond notional, in document order.
+- The reader stops refusing an inline structure; the round trip reads a CBO
+  that states ORE's reference structure inline and writes it back.
+- The builder states the rows and the generator books a CBO with its structure
+  inline.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ores.trading.api.tests | 5568 test cases, all pass | =./ores.trading.api.tests= | e2dc8df1e8 |
+| ores.trading.core.tests, on a recreated database | 276 test cases, all pass | =./ores.trading.core.tests= | e2dc8df1e8 |
+| ores.shell.trading.tests | 1738 test cases, all pass | =./ores.shell.trading.tests= | e2dc8df1e8 |
+| ores.ore.core.tests, with the ORE engine | 566 test cases, all pass | =./ores.ore.core.tests= | e2dc8df1e8 |
+| ores.synthetic.core.tests, with the ORE engine | 149 test cases, all pass | =./ores.synthetic.core.tests= | e2dc8df1e8 |
+| Generated trades after two refreshes | no file changed | =ORES_UPDATE_GENERATED_TRADES=1 ./ores.synthetic.core.tests "[generated]"= | e2dc8df1e8 |
+
+* Notes
+
+Split out of "Hold the native rates, bond and credit types on their tables",
+which holds the CBO investment (tranche, notional, structure id) on
+=cbo_instruments=. A structure stated inline carries a basket of full bond
+definitions, which is a piece of work of its own; until this task lands, the
+reader refuses such a CBO with a message rather than read it without its
+structure.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4896][#4896]] | [trading] Hold a CBO structure stated inline |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A non-Bond sub-trade is dropped | credit_instrument_projection.cpp | Accepted | It is refused with a message. |
+| 2 | The basket envelope does not round-trip | credit_instrument_projection.cpp | Accepted | A stated netting set is refused; the counterparty is held. |
+| 3 | FixedLegData beyond Rates is dropped | credit_instrument_projection.cpp | Accepted | It is refused with a message. |
+| 4 | Duplicate basket bonds | credit_builders.cpp | Accepted | The builder refuses a bond named twice. |
+| 5 | The builder validates less | credit_builders.cpp | Accepted | It refuses a tranche named twice or with no notional. |
+| 6 | Unrelated re-wrapping | credit_instrument_projection.cpp | Declined | The format check requires clang-format on a changed file. |
+| 7 | Ratios as doubles | models | Declined | The continuous-quantity rule requires it; the round trip checks the values. |
+| 8 | The leg group check edited in place | SQL | Declined | The database is recreated from the schema scripts. |
+| 9 | The market-data pattern must be narrow | engine test | Declined | It is anchored to the start of ORE's message and names the reference-data cause. |
+
+* Result
+
+A CBO that states its structure inline is read and written rather than refused.
+The structure's scalars are a =cbo_structures= row; each tranche is a
+=cbo_tranches= row in the structure's order, with its =FixedLegData= as swap leg
+rows under the tranche's ordinal and the =tranche= leg group; the payment
+schedule is instrument schedule rows; each basket bond is a
+=cbo_basket_members= row naming its sub-trade id, security id, notional and the
+counterparty its envelope states. The round trip reads a CBO that states its
+structure inline and checks every row before and after a rebuild. The builder
+states the rows and the generator books ORE's Pegasus structure inline; ORE
+builds the CBO from it and stops at the basket bonds, whose reference data the
+engine run does not hold, which the engine test classifies as market data.
+
+A basket bond stated in full rather than by its security id, and a tranche
+whose coupon is not =FixedLegData=, are still refused with a message; ORE's
+examples state neither.

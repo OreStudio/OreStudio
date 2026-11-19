@@ -12,7 +12,7 @@
 #+brief: The marketdata component's domain operations.
 #+filetags: :model:operation:marketdata:
 #+created: 2026-09-30
-#+updated: 2026-11-13
+#+updated: 2026-11-19
 
 These are the component's messages that are not entity verbs. Each one acts
 on an aggregate, a live computation or a whole-tenant export rather than on
@@ -3670,6 +3670,38 @@ running this again finds nothing to do.
  */
 #+end_src
 
+*** refused_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many series the shape refused, and so were left unprojected.
+ *
+ * A series whose identity contradicts the shape its family states is a repair the
+ * caller has to make, not a projection this call can write. The count says how many
+ * were left as they are, and the series is named in the log.
+ */
+#+end_src
+
+*** unstated_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many series fall in a family no shape states, so were projected unguarded.
+ *
+ * The catalogue grows: a family nothing has stated yet is projected rather than refused,
+ * because refusing would stop an ingest over a gap that is the catalogue's. The count says
+ * how many identities that tolerance covered, so the gap is visible instead of silent.
+ */
+#+end_src
+
 ** key_manual_point_request
 :PROPERTIES:
 :subject: marketdata.v1.ops.key_manual_point
@@ -4074,6 +4106,70 @@ The end of the span, exclusive. Null means now.
 The coordinate URIs to read, or empty for every coordinate of the series. A client that
 plots one pillar of a curve names it.
 
+** get_provider_ticks_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_provider_ticks
+:response: get_series_ticks_response
+:END:
+
+Asks for every tick of one series of one provider in a span of time, in one reply. The series is
+named by the provider and the series URI, as the live subject and the store name it, so a view
+of a vendor's quotes reads it with no series of its own; the system tenant reads every provider.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for every tick of one provider's series in a span of time.
+ *
+ * The span is half open, as get_series_ticks_request's is, and a span over the ceiling is
+ * refused, never cut. The subscription is the door: a party must subscribe to the provider with
+ * the right the use needs, and the system tenant reads every provider.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The provider whose ticks to read.
+
+*** series_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The oresmd URI of the series. A point URI names its series, so either serves.
+
+*** from_instant
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The first instant of the span, inclusive.
+
+*** to_instant
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+The end of the span, exclusive. Null means now.
+
+*** coordinates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The coordinate URIs to read, or empty for every coordinate of the series.
+
+*** for_display
+:PROPERTIES:
+:cpp_type: bool
+:default: true
+:END:
+
+Whether the ticks are shown to a person, which needs the display right. A service that uses
+them with no screen asks with false, and the display or the non-display right serves it.
+
 ** get_series_ticks_response
 
 Every tick of the span, as parallel arrays that state the coordinates and the first instant once.
@@ -4131,6 +4227,89 @@ For each tick, the index of its coordinate in =coordinates=.
 :END:
 
 For each tick, its value.
+
+** watchable_feed
+
+One feed a party may watch: the provider and the feed that its live subject names.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One feed a party may watch.
+ *
+ * The two codes are the first two tokens of the feed's live subject after the
+ * market_tick base, so a watcher builds every subject of the feed from them.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The code of the provider that publishes the feed.
+
+*** feed_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The id of the feed.
+
+** list_watchable_feeds_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.list_watchable_feeds
+:response: list_watchable_feeds_response
+:END:
+
+Asks which feeds the session's party may watch live. The broker does not check subjects, so a
+watcher asks this before it subscribes, and asks again when a route or a subscription changes.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks which feeds the session's party may watch.
+ *
+ * The answer follows the rule of the history read: the party's route picks the feed of a
+ * provider, and its subscription to the provider holds the right the use needs. The system
+ * tenant may watch every feed.
+ */
+#+end_src
+
+*** for_display
+:PROPERTIES:
+:cpp_type: bool
+:default: true
+:END:
+
+Whether the ticks are shown to a person. A watch for a screen needs the display right. A
+service that uses the ticks with no screen asks with false, and the display or the non-display
+right serves it.
+
+** list_watchable_feeds_response
+
+The feeds the party may watch, in the order of the provider code and then the feed id.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The feeds the session's party may watch.
+ *
+ * A party with no route, or with no subscription that holds the right, gets an empty list,
+ * which is not a refusal. A session with no party and no system tenant is refused.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+How the call ended. A session with no party is refused here.
+
+*** feeds
+:PROPERTIES:
+:cpp_type: std::vector<watchable_feed>
+:END:
+
+The feeds, each once.
 
 ** store_market_state_request
 :PROPERTIES:

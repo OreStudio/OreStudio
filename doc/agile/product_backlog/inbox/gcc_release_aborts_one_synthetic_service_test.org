@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: C377D370-B80B-4272-9F51-8C5F3EAB52EC
+:END:
+#+title: The nightly gcc-release leg has failed every night this week…
+#+description: The nightly gcc-release leg has failed every night this week on one test: ores.synthetic.service.tests aborts with SIGABRT inside request_sync on the synthetic calibrate subject, while the same suite passes on clang-release.
+#+type: capture
+#+level: cross
+#+filetags: :ci:gcc:tests:synthetic:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The nightly's =linux-gcc-release= leg has failed every night since at least 2026-11-13 on one test:
+
+=ores.synthetic.service.tests=, case =feed_config_calibrate_writes_only_with_the_write_permissions=,
+aborts with =SIGABRT - Abort (abnormal termination) signal= at the first =send(true)=, which is a
+=request_sync= on the synthetic calibrate subject. 127 of 128 assertions pass. The clang-release leg
+runs the same suite and passes.
+
+The abort is deterministic: run 44031657981 (2026-11-17) failed the same statement one line earlier
+in the file, run 44247260644 (2026-11-18) failed it again at line 851. It is not a flake.
+
+* Why
+
+=nightly-linux.yml= is the only scheduled gate, so one aborted test keeps the whole nightly red,
+which hides a real regression behind a known one. A =SIGABRT= rather than a failed =CHECK= means
+something calls =std::terminate=: an exception escaping a =noexcept= boundary, or an assertion
+inside the C NATS client. Catch2 cannot report which, because the process dies before it can.
+
+Clang and gcc differ on exactly this class of bug, which is why only one leg sees it.
+
+* References
+
+- The failing statement: =projects/ores.synthetic/service/tests/feed_config_handler_tests.cpp:851=.
+- Logs: =gh run view --job <linux-gcc-release job> --log=, grep for =fatal error condition=.
+- Reproduce: build =--preset linux-gcc-release-ninja=, then run that case under =gdb= for the stack.
+
+* References
+
+-
+
+* See also
+
+-

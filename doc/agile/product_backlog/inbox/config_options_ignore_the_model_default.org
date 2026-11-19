@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: AAA470A4-D202-4E6B-B56B-490E5EE54174
+:END:
+#+title: The service config options ignore the default a model states
+#+description: The options template never emits :default:, so a config member with a model default is generated uninitialised and the tree is hand-patched instead.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:config:sprint_30:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+=cpp_service_config_options.hpp.mustache= renders a config member's type and never its
+=:default:=, so a model that states a default gets a struct member with no initialiser.
+=ores.marketdata.service/config/options.hpp= is the live example: the model declares
+=:default: 0= on =stale_seconds_ir= and =stale_seconds_fx=, the generated header carries
+=std::int64_t stale_seconds_ir = 0;= because someone added it by hand, and regenerating the
+component deletes the initialiser. The two members are read in =application.cpp= behind
+=> 0=, so an uninitialised read is undefined behaviour.
+
+The drift also hides a second hand edit in the same component: a four-argument
+=market_fixing_repository::read_latest_for_series(ctx, tenant, party, series_ids)= that no
+caller uses. Regenerating deletes it, which is the right outcome for dead code but not one
+to land by accident while fixing something else.
+
+Found while a branch that touches the marketdata models made =component-drift= render that
+component; the check had been quiet because it only renders the components a branch changes.
+
+* Acceptance
+
+- The options template emits a member's =:default:=, and the marketdata options header
+  generates its two initialisers rather than carrying them by hand.
+- =component-drift= passes for the marketdata component with no hand-edited generated file.
+- The dead fixing-repository overload is removed, and the change says so.
+
+* References
+
+-
+
+* See also
+
+-

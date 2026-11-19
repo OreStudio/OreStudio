@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 67AF2BC8-0FD7-4382-A4B3-C2407C408708
+:END:
+#+title: Task: Retire the Python gates and generators compass replaces
+#+description: Delete the Python gates, generator scripts and baseline files compass replaces, once the two tools have agreed for an agreed period.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: one week of merges on which compass-ng and the Python gates agree, from the switch-over on 2026-11-18
+#+blocked_since: 2026-11-18
+#+created: 2026-11-17
+#+updated: 2026-11-18
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One tool, not two, owns each build-free gate and each generated artefact.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Blocked. |
+| Waiting on   | One week of merges on which compass-ng and the Python gates agree, from the switch-over on 2026-11-18, so 2026-11-25 at the earliest. |
+| Next         | On or after 2026-11-25, confirm the week of agreement and delete the scripts. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- Each deleted script has a compass codec that gave the same verdict on main for at least one week of merges.
+- The baseline files and their readers are deleted.
+- local_checks.py lists only the gates compass does not cover.
+- The compass repository's Retire legacy tooling targets table is updated for each removal.
+- Exception reasons that name a retired baseline file or script name what stays instead.
+- Until this task lands, a new accepted violation goes both into a compass exception and into the baseline its Python gate reads, so the fallback agrees.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

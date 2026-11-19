@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 6EEF6F65-3CCF-435F-8C28-1973F2FCBC9D
+:END:
+#+title: Task: Publish the ticks of a feed that no party routes to
+#+description: The ingest publishes each tick of a feed that no route names once on the feed's subject and stores nothing, so the system tenant's quotes view shows every feed while the store and the bill stay unchanged.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:ticks:routing:see_the_market_as_vendor_quotes:sprint_30:v0:
+#+owner: marco
+#+branch: feature/publish-the-ticks-of-an-unrouted-feed
+#+pr: 4869
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every feed the installation has carries its ticks on its feed subject, whether or not a party routes to it, so the system tenant can watch every vendor.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+- A tick of a feed that no route names is published once on the feed subject, after the age gate.
+- It is not stored, not metered and not counted in any party's stats.
+- A test shows a tick of an unrouted feed on its feed subject and no row in the tick table.
+
+* Plan
+
+1. Model a source as =source_feed=: the catalogue feed's provider and id, and
+   the consumers its routes make. =refresh()= makes one for every feed of the
+   catalogue, so a feed with no route is a source with no consumers.
+2. =plan_tick= drops a tick only when the catalogue names no feed for its source
+   (=tick_drop::unknown_source=). A tick of an unrouted feed gets a delivery with
+   the feed subject and no targets, so it makes no item and no row.
+3. =announce()= publishes each planned tick that has no target once on its feed
+   subject, after the age gate. It is not stored, metered or counted.
+4. Test the plan and the loop: the tick arrives once on its feed, makes no
+   series and leaves no row in the tick table.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4869][#4869]] | [marketdata] Publish the ticks of a feed that no party routes to |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The late counter now counts two kinds of tick | feed_ingest_loop.hpp | Accept | Kept one counter and stated on it that a routed late tick stays in the store and an unrouted one is gone. |
+| 2 | The feed publish is written twice | feed_ingest_loop.cpp | Accept | One publish_on_feed in announce() for both paths. |
+| 3 | The unrouted loop walks the batch again | feed_ingest_loop.cpp | Decline | One pass over the batch's plans; no cost seen at today's volume. |
+| 4 | Two feeds could share a name | feed_ingest_loop.cpp | Decline | The catalogue has a unique index on the feed name, feeds_name_uniq_idx. |
+| 5 | No test of an aged-out unrouted tick | app_feed_ingest_loop_tests.cpp | Accept | Added; with the age gate removed the test fails, so it detects the defect. |
+| 6 | Old names in docs or dashboards | - | Decline | A search finds no unbound_source and no old log text left. |
+
+* Result
+
+- Every catalogue feed is a source of the ingest (=source_feed=). A tick of a
+  feed that no route names is published once on its feed subject, after the age
+  gate, and is not stored, metered or counted. Only a tick from a source the
+  catalogue does not name is dropped (=tick_drop::unknown_source=).
+- Tests: the plan of a tick of an unrouted feed has the feed subject and no
+  target; the loop publishes such a tick once on its feed, makes no series and
+  writes no row. The market data service suite passes (316 cases), and the ticks
+  smoke test passes.
+- On the demonstration fleet the only real unrouted feed, =composite-derived=,
+  produced no tick in the smoke run, so no live tick of an unrouted feed was
+  seen; the loop test covers the path.

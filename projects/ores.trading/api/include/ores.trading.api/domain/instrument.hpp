@@ -20,10 +20,15 @@
 #ifndef ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 
+#include "ores.trading.api/domain/autocallable_instrument.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
 #include "ores.trading.api/domain/basket_swap_period.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
+#include "ores.trading.api/domain/cbo_basket_member.hpp"
+#include "ores.trading.api/domain/cbo_instrument.hpp"
+#include "ores.trading.api/domain/cbo_structure.hpp"
+#include "ores.trading.api/domain/cbo_tranche.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
@@ -31,19 +36,28 @@
 #include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/credit_linked_swap_instrument.hpp"
+#include "ores.trading.api/domain/double_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
+#include "ores.trading.api/domain/european_option_barrier_instrument.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_asian_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_basket_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_basket_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_best_entry_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_forward_volatility_agreement_instrument.hpp"
 #include "ores.trading.api/domain/fx_pairwise_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_strike_resettable_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_window_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_worst_of_basket_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include "ores.trading.api/domain/instrument_barrier.hpp"
@@ -57,6 +71,8 @@
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/instrument_underlying.hpp"
+#include "ores.trading.api/domain/instrument_value.hpp"
+#include "ores.trading.api/domain/performance_option_instrument.hpp"
 #include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
@@ -265,10 +281,19 @@ struct credit_instrument_data {
     std::vector<synthetic_cdo_instrument> synthetic_cdo_instruments;
     std::vector<credit_linked_swap_instrument> credit_linked_swap_instruments;
     std::vector<risk_participation_agreement_instrument> risk_participation_agreement_instruments;
+    std::vector<cbo_instrument> cbo_instruments;
     std::vector<swap_leg> legs;
     std::vector<swap_leg_amount> leg_amounts;
     std::vector<swap_leg_rate> leg_rates;
     std::vector<credit_basket_constituent> constituents;
+    /**
+     * @brief The structure a CBO states inline: its scalars, its tranches in
+     * the structure's order and the bonds of its basket. A CBO that names its
+     * structure by id leaves them empty.
+     */
+    std::vector<cbo_structure> cbo_structures;
+    std::vector<cbo_tranche> cbo_tranches;
+    std::vector<cbo_basket_member> cbo_basket_members;
     std::vector<instrument_strike> strikes;
     std::vector<instrument_schedule> schedules;
     std::vector<instrument_schedule_date> schedule_dates;
@@ -294,7 +319,8 @@ using credit_fact_types = std::tuple<credit_default_swap_instrument,
                                      index_credit_default_swap_option_instrument,
                                      synthetic_cdo_instrument,
                                      credit_linked_swap_instrument,
-                                     risk_participation_agreement_instrument>;
+                                     risk_participation_agreement_instrument,
+                                     cbo_instrument>;
 
 inline constexpr auto credit_fact_arrays =
     std::tuple{&credit_instrument_data::credit_default_swap_instruments,
@@ -302,7 +328,8 @@ inline constexpr auto credit_fact_arrays =
                &credit_instrument_data::index_credit_default_swap_option_instruments,
                &credit_instrument_data::synthetic_cdo_instruments,
                &credit_instrument_data::credit_linked_swap_instruments,
-               &credit_instrument_data::risk_participation_agreement_instruments};
+               &credit_instrument_data::risk_participation_agreement_instruments,
+               &credit_instrument_data::cbo_instruments};
 
 namespace detail {
 
@@ -511,6 +538,41 @@ struct fx_instrument_data {
     std::vector<fx_pairwise_variance_swap_instrument> pairwise_variance_swaps;
 
     /**
+     * @brief The fx_basket_option_instrument rows: FxBasketOption and FxRainbowOption.
+     */
+    std::vector<fx_basket_option_instrument> basket_options;
+
+    /**
+     * @brief The fx_basket_variance_swap_instrument rows: FxBasketVarianceSwap.
+     */
+    std::vector<fx_basket_variance_swap_instrument> basket_variance_swaps;
+
+    /**
+     * @brief The fx_forward_volatility_agreement_instrument rows: FxForwardVolatilityAgreement.
+     */
+    std::vector<fx_forward_volatility_agreement_instrument> forward_volatility_agreements;
+
+    /**
+     * @brief The fx_best_entry_option_instrument rows: FxBestEntryOption.
+     */
+    std::vector<fx_best_entry_option_instrument> best_entry_options;
+
+    /**
+     * @brief The fx_strike_resettable_option_instrument rows: FxStrikeResettableOption.
+     */
+    std::vector<fx_strike_resettable_option_instrument> strike_resettable_options;
+
+    /**
+     * @brief The fx_window_barrier_option_instrument rows: FxWindowBarrierOption.
+     */
+    std::vector<fx_window_barrier_option_instrument> window_barrier_options;
+
+    /**
+     * @brief The fx_worst_of_basket_swap_instrument rows: FxWorstOfBasketSwap.
+     */
+    std::vector<fx_worst_of_basket_swap_instrument> worst_of_basket_swaps;
+
+    /**
      * @brief The range_bound rows: the RangeBounds list an accumulator states.
      *
      * A child of the product rather than a product, so it states no type and
@@ -540,6 +602,10 @@ struct fx_instrument_data {
      * @brief The product's Underlying blocks, one row per block.
      */
     std::vector<instrument_underlying> instrument_underlyings;
+    /**
+     * @brief The values of the lists the product states, one row per value.
+     */
+    std::vector<instrument_value> values;
 
     /**
      * @brief Value equality.
@@ -570,7 +636,14 @@ inline constexpr auto fx_instrument_arrays =
                &fx_instrument_data::accumulators,
                &fx_instrument_data::variance_swaps,
                &fx_instrument_data::asian_options,
-               &fx_instrument_data::pairwise_variance_swaps};
+               &fx_instrument_data::pairwise_variance_swaps,
+               &fx_instrument_data::basket_options,
+               &fx_instrument_data::basket_variance_swaps,
+               &fx_instrument_data::forward_volatility_agreements,
+               &fx_instrument_data::best_entry_options,
+               &fx_instrument_data::strike_resettable_options,
+               &fx_instrument_data::window_barrier_options,
+               &fx_instrument_data::worst_of_basket_swaps};
 
 /**
  * @brief The family's child arrays: rows a product owns rather than rows a
@@ -591,7 +664,8 @@ inline constexpr auto fx_instrument_child_arrays =
                &fx_instrument_data::schedule_dates,
                &fx_instrument_data::barriers,
                &fx_instrument_data::barrier_levels,
-               &fx_instrument_data::instrument_underlyings};
+               &fx_instrument_data::instrument_underlyings,
+               &fx_instrument_data::values};
 
 /**
  * @brief Calls a function on the first row the carrier holds, and on no other.
@@ -640,6 +714,58 @@ auto visit_fx_products(Visitor visitor, const fx_instrument_data& data) {
         return result.value_or(Result{});
     }
 }
+
+/**
+ * @brief The multi-asset family: the products whose underlyings each trade names.
+ *
+ * @details Autocallable_01, DoubleDigitalOption, EuropeanOptionBarrier and
+ * PerformanceOption_01 may state equity, FX or commodity underlyings, and one
+ * trade may mix them, so no asset family holds them. As the FX family does, the
+ * carrier states one array per product beside the child rows they share, and
+ * each underlying row keeps its own type.
+ */
+struct multi_asset_instrument_data {
+    std::vector<autocallable_instrument> autocallables;
+    std::vector<double_digital_option_instrument> double_digital_options;
+    std::vector<european_option_barrier_instrument> european_option_barriers;
+    std::vector<performance_option_instrument> performance_options;
+    /**
+     * @brief The Premiums block a European option barrier states.
+     */
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
+    /**
+     * @brief The product's underlyings, one row per block, each with its own type.
+     */
+    std::vector<instrument_underlying> instrument_underlyings;
+    /**
+     * @brief The values of the lists the product states, one row per value.
+     */
+    std::vector<instrument_value> values;
+
+    friend bool operator==(const multi_asset_instrument_data&,
+                           const multi_asset_instrument_data&) = default;
+};
+
+namespace detail {
+
+/// The family's product arrays, in the order the family states its products.
+inline constexpr auto multi_asset_instrument_arrays =
+    std::tuple{&multi_asset_instrument_data::autocallables,
+               &multi_asset_instrument_data::double_digital_options,
+               &multi_asset_instrument_data::european_option_barriers,
+               &multi_asset_instrument_data::performance_options};
+
+/// The family's child arrays, keyed by the same trade as the product row.
+inline constexpr auto multi_asset_instrument_child_arrays =
+    std::tuple{&multi_asset_instrument_data::option_premiums,
+               &multi_asset_instrument_data::schedules,
+               &multi_asset_instrument_data::schedule_dates,
+               &multi_asset_instrument_data::instrument_underlyings,
+               &multi_asset_instrument_data::values};
+
+} // namespace detail
 
 // The trade id is the instrument's own key, so there is one id to stamp
 // rather than a trade id and an instrument id that can disagree.
@@ -831,6 +957,12 @@ inline void stamp_ids(credit_instrument_data& data,
         constituent.trade_id = trade_id;
         constituent.trade_activity_id = activity_id;
     }
+    for (auto& row : data.cbo_structures)
+        stamp_ids(row, trade_id, activity_id);
+    for (auto& row : data.cbo_tranches)
+        stamp_ids(row, trade_id, activity_id);
+    for (auto& row : data.cbo_basket_members)
+        stamp_ids(row, trade_id, activity_id);
     for_each_credit_fact_array(data, [&](auto& rows) {
         for (auto& fact : rows)
             stamp_ids(fact, trade_id, activity_id);
@@ -918,6 +1050,19 @@ inline void stamp_ids(fx_instrument_data& data,
     };
     std::apply([&](const auto... member) { (stamp_one(data.*member), ...); },
                std::tuple_cat(detail::fx_instrument_arrays, detail::fx_instrument_child_arrays));
+}
+
+inline void stamp_ids(multi_asset_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows) {
+            stamp_ids(row, trade_id, activity_id);
+        }
+    };
+    std::apply([&](const auto... member) { (stamp_one(data.*member), ...); },
+               std::tuple_cat(detail::multi_asset_instrument_arrays,
+                              detail::multi_asset_instrument_child_arrays));
 }
 
 } // namespace ores::trading::domain

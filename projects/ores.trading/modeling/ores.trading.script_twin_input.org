@@ -1,0 +1,230 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: C0D2BFF8-3742-4FAE-92C0-3BD185147CCF
+:END:
+#+title: ores.trading.script_twin_input
+#+description: One input of the generic ScriptedTrade that twins a native trade.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One input of a scripted twin: the native type, the script, the input, and where its value comes from.
+#+entity_singular: script_twin_input
+#+entity_plural: script_twin_inputs
+#+entity_title: Script Twin Input
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+One input of the generic ScriptedTrade that twins a native trade: the native
+trade type, the library script that carries its scripted form, the script input
+the row states, and where in the native trade's rows its value comes from.
+
+The generator books a product ORE carries in both forms twice, once as its own
+element and once as a generic ScriptedTrade on the same terms. The second form's
+variables are read from the first form's rows through these recipes, so the two
+state the same economics and can be compared. The rows are generated from the
+=Scripted twin recipes= table of the trade type catalogue.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** trade_type_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The native trade type the recipe twins, as the catalogue names it.
+
+#+begin_src cpp :name generator
+std::string("EquityBasketOption")
+#+end_src
+
+** script_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: false
+:END:
+
+The library script that carries the type's scripted form.
+
+#+begin_src cpp :name generator
+std::string("VanillaBasketOption")
+#+end_src
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+Ordinal of the input within the recipe, in the library's order.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** input_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+The input variable, as a scripted trade names it.
+
+#+begin_src cpp :name generator
+std::string("Strike")
+#+end_src
+
+** data_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+The type ORE reads the input as: Number, Event, Index, Currency or Daycounter.
+
+#+begin_src cpp :name generator
+std::string("Number")
+#+end_src
+
+** is_array
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable:    false
+:economic: true
+:END:
+
+Whether the input is a list rather than one value.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** source
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+Where the value comes from: =product.<column>= for a column of the native
+product row, =<rows>[<role>].<column>= for a column of the shared rows under a
+role, =<rows>.<column>= for a column of the shared rows, or a quoted literal.
+
+#+begin_src cpp :name generator
+std::string("product.strike")
+#+end_src
+
+** transform
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:economic: true
+:END:
+
+How the value is turned into the one the script reads: =sign= turns =Long=,
+=Call= or =true= into =1= and =Short=, =Put= or =false= into =-1=; =flag= turns
+=true= into =1= and =false= into =0=.
+
+#+begin_src cpp :name generator
+std::optional<std::string>(std::string("sign"))
+#+end_src
+
+* Foreign keys
+
+** script_name
+:PROPERTIES:
+:table:         ores_trading_scripts_tbl
+:target_column: name
+:nullable:      false
+:error_message: Invalid script_name: %. No active script found with this name.
+:END:
+
+The script the row belongs to.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_script_twin_inputs_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "data_type" in ('Number', 'Event', 'Index', 'Currency', 'Daycounter') |
+| "transform" is null or "transform" in ('sign', 'flag') |
+| "source" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: input
+:entity_plural_short:   inputs
+:entity_singular_words: script twin input
+:entity_plural_words:   script twin inputs
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sti
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| trade_type_code | Trade type |
+| script_name | Script |
+| input_name | Input |
+| source | Source |
+| data_type | Type |
+| is_array | Array |
+| modified_by | Modified By |
+| version | Version |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 86DB6342-7255-42F3-9E2A-6E3C121E22C5
+:END:
+#+title: Task: Keep the grid poller on its cadence while the service is busy
+#+description: compute_grid_poller runs poll_once synchronously on the io_context and only arms its steady timer afterwards, so any blocking work elsewhere in the service pushes the sample interval out. In the incident the chart lost every bucket between samples. Sample on a timer that measures from the previous expiry rather than from the end of the work, and run the sampling where a busy executor cannot delay it.
+#+type: task
+#+level: s1
+#+filetags: :handle_the_backlog_when_the_compute_path_stalls:sprint_30:v0:
+#+owner: eager_maxwell
+#+branch: feature/keep-the-grid-poller-on-its-cadence-while-the-service-is-busy
+#+pr: 4881
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle-the-backlog-when-the-compute-path-stalls]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle-the-backlog-when-the-compute-path-stalls]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4881][#4881]] | [compute] Keep the grid sampler on its schedule, not on its speed |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compute_grid_poller= expires its timer at the next point on a fixed
+steady-clock schedule instead of after each read, so a slow read no longer
+displaces the samples that follow it, and an interval a read overran is
+skipped rather than caught up on.
+
+PR #4881. =compass check --exclude-heavy=: 28/28 passed and the compute
+service unit builds clean. The cadence is verified against the incident's
+timings by reading the loop; no unit test covers the scheduling arithmetic.
+The bridge and the lease reaper still measure from the end of their work,
+which the chart does not show.

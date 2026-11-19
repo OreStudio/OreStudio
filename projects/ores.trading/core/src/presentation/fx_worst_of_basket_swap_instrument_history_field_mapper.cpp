@@ -1,0 +1,107 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_history_field_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.trading.core/presentation/fx_worst_of_basket_swap_instrument_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.history.api/domain/provenance_fields.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include "ores.trading.api/domain/fx_worst_of_basket_swap_instrument.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <string>
+#include <vector>
+
+namespace ores::trading::presentation {
+
+std::vector<ores::diff::domain::field_value> render_fx_worst_of_basket_swap_instrument_fields(
+    const domain::fx_worst_of_basket_swap_instrument& v) {
+    using ores::diff::domain::field_value;
+    std::vector<field_value> fields;
+
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
+    fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
+    fields.push_back({.name = "Trade Activity ID",
+                      .value = boost::uuids::to_string(v.identity.trade_activity_id)});
+    fields.push_back({.name = "Long Short", .value = v.long_short});
+    fields.push_back({.name = "Currency", .value = v.currency});
+    fields.push_back({.name = "Quantity", .value = std::to_string(v.quantity)});
+    fields.push_back({.name = "Fixed Rate", .value = v.fixed_rate.to_string()});
+    fields.push_back({.name = "Floating Index", .value = v.floating_index});
+    fields.push_back(
+        {.name = "Floating Day Count Fraction", .value = v.floating_day_count_fraction});
+    fields.push_back(
+        {.name = "Initial Fixed Rate",
+         .value = v.initial_fixed_rate ? v.initial_fixed_rate->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Initial Fixed Pay Date",
+         .value = v.initial_fixed_pay_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.initial_fixed_pay_date) :
+                      std::string{}});
+    fields.push_back(
+        {.name = "Knock In Pay Date",
+         .value = v.knock_in_pay_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.knock_in_pay_date) :
+                      std::string{}});
+    fields.push_back(
+        {.name = "Bermudan Knock In",
+         .value = v.bermudan_knock_in ? (*v.bermudan_knock_in ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Knock In Level",
+                      .value = v.knock_in_level ? v.knock_in_level->to_string() : std::string{}});
+    fields.push_back({.name = "Accumulating Fixed Coupons",
+                      .value = v.accumulating_fixed_coupons ?
+                                   (*v.accumulating_fixed_coupons ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Accruing Fixed Coupons",
+                      .value = v.accruing_fixed_coupons ?
+                                   (*v.accruing_fixed_coupons ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Floating Spread",
+                      .value = v.floating_spread ? v.floating_spread->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Floating Lookback", .value = v.floating_lookback.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Floating Rate Cutoff", .value = v.floating_rate_cutoff.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Is Averaged",
+         .value = v.is_averaged ? (*v.is_averaged ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Include Spread",
+         .value = v.include_spread ? (*v.include_spread ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Strike", .value = v.strike ? v.strike->to_string() : std::string{}});
+    fields.push_back({.name = "Description", .value = v.description});
+    using ores::history::domain::provenance_fields;
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});
+    fields.push_back(
+        {.name = provenance_fields::change_reason_code, .value = v.audit.change_reason_code});
+    fields.push_back(
+        {.name = provenance_fields::change_commentary, .value = v.audit.change_commentary});
+    fields.push_back(
+        {.name = provenance_fields::recorded_at,
+         .value = ores::platform::time::datetime::to_iso8601_utc(v.audit.recorded_at)});
+
+    return fields;
+}
+
+}

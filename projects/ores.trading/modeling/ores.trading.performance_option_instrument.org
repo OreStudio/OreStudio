@@ -1,0 +1,368 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 7AD8F80A-F44B-4CEE-ACED-87FC860D3025
+:ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.performance_option_instrument
+#+description: Codegen entity model for the trading =performance_option_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: performance_option_instrument
+#+entity_plural: performance_option_instruments
+#+entity_title: Performance Option Instrument
+#+brief: Performance option (variant 01).
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+Represents PerformanceOption_01 trades: an option paying the participation
+in a basket's performance against a ladder of strikes. ORE states it as an element of its own, and its underlyings may be
+equities, FX rates or commodities, so it is held in the multi-asset
+family, where each underlying row keeps its own type. The
+basket members are instrument underlying rows under the role =underlying=;
+the strike prices are instrument value rows under =strike_price=.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:   trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+Routes ORE product types: PerformanceOption_01.
+
+#+begin_src cpp :name generator
+std::string("PerformanceOption_01")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:       identity
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The trade this instrument belongs to, and the instrument's own key.
+
+The trade id identifies both the trade and its instrument, so the
+instrument carries no identity of its own: this column is the key, and the
+trade it names gives the instrument its scope.
+
+** trade_activity_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
+** notional_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: ores::utility::decimal::decimal
+:nullable: false
+:economic: true
+:END:
+
+The notional, as =NotionalAmount= states it.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("1000000").value()
+#+end_src
+
+** participation_rate
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:economic: true
+:END:
+
+The share of the performance paid, as =ParticipationRate= states it.
+
+#+begin_src cpp :name generator
+1.0
+#+end_src
+
+** valuation_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:economic: true
+:END:
+
+The date the performance is measured, as =ValuationDate= states it.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2027}, std::chrono::month{12}, std::chrono::day{31}}
+#+end_src
+
+** settlement_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:economic: true
+:END:
+
+The date the option pays, as =SettlementDate= states it.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2028}, std::chrono::month{1}, std::chrono::day{4}}
+#+end_src
+
+** strike
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: ores::utility::decimal::decimal
+:nullable: false
+:economic: true
+:END:
+
+The strike on the performance, as =Strike= states it.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("1").value()
+#+end_src
+
+** strike_included
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether the strike is part of the payoff, as =StrikeIncluded= states it.
+
+** long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+Long or Short, as =Position= states it.
+
+#+begin_src cpp :name generator
+std::string("Long")
+#+end_src
+
+** pay_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+The currency the product pays in, as =PayCcy= states it.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:economic: false
+:END:
+
+Optional free-text description.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.identity.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.identity.trade_activity_id = activity.id;
+    }
+#+end_src
+
+** long_short
+:PROPERTIES:
+:table:             ores_trading_long_short_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid long_short: %. No active long/short type found with this code.
+:END:
+
+A foreign key to =ores_trading_long_short_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_performance_option_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "pay_currency" <> '' |
+| "notional_amount" > 0 |
+| "settlement_date" >= "valuation_date" |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| trade_type | tenant_id, trade_type_code | false | true | |
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, the primary key) and the
+columns marked =:group: identity= above fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: performance_option_instrument
+:entity_plural_short:   performance_option_instruments
+:entity_singular_words: performance option instrument
+:entity_plural_words:   performance option instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: poi
+:END:
+
+** Table display
+
+|  column                    |  header       |
+|--------------------------|-------------|
+|  identity.trade_id    |  ID           |
+|  identity.trade_type_code  |  Type         |
+|  long_short                |  L/S          |
+|  pay_currency              |  Ccy          |
+|  notional_amount           |  Notional     |
+|  strike                    |  Strike       |
+|  audit.recorded_at         |  Recorded At  |
+
+** Custom repository methods
+
+** Write observation
+
+The trade's economic digest observes every write of this component. The
+observer's specialisation must be visible where the repository writes, so the
+repository includes it.
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.trading.core/repository/trade_write_observation.hpp"
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] -- component group overview.

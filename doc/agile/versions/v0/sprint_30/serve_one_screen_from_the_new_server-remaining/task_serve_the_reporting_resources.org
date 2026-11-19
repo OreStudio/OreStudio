@@ -26,11 +26,11 @@ The gateway has no part for the reporting area. Add the part with the adapter re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The part answers the form's codes, the whole definitions family, a report's start and its runs, one run's page and the problems it recorded, the first family, the cuts and their kinds, the two schedule writes and the health tally. The reporting area's 44 routes are paired in the inventory. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The eight tasks the last family is split into, in their order. The first is [[id:42084FE1-9A9B-49CC-9E50-F48426DFA6C3][Read the ORE value sets, and serve the documentation page]]. |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -218,3 +218,25 @@ delivered in the row below, and the task stays open until the last family.
 |--------------+-----------|
 | #4685 | The part, stood up by the adapter recipe, and ten routes: the form's codes, the definitions list, one definition by id or by an older name, its configurations, its write, a report's start, its runs, one run's page and the problems it recorded. The design note for a run's files and results. |
 | the branch =feature/serve-the-reporting-schedules= | The run's files and results, the first family: four routes, and the three service reads they stand on. =ores.storage.core= reads and streams one file out of a package, =list_archive_entries= answers what a set of packages holds, the file service answers =?entry== and =Range= with a 206 or a 416, and =ores.compute= answers =list_run_files=: the batch a run drove, its workunits and the package each read and wrote. The gateway then serves the tree, the bytes of one file, what a file is, and the run's figures at the trade, book or counterparty level, with the roll-up as its own tested unit. |
+| #4749 | The pricing engines' reads: the collection with its parties' names, one configuration with the reports bound to it, and its history. |
+| #4769 | The pricing engines' writes: the document save across the header, its products and its parameters, the update, and the removal. |
+| #4783 | The ORE import and its preview, both the service's: the preview states what importing a document would change, and the import acts on the same answer. |
+| #4787 | The ORE schema as a zip at the engine version asked for, with a missing include a 404 that names it. |
+| #4791 | The curve configuration screen's three routes, moved here from the reference data task: the collection, one configuration drawn from its document, and the amendment that changes the leaves it names. |
+| #4820 | The convention documents, moved here from the same task: one family's convention with the terms the screen draws, and the write of those terms. |
+
+All nine tasks the last family was split into are done, and every route the
+reporting area holds is paired: 44 of 44 in the reporting area and 30 of 30 in
+the reference data area, measured at =da9ee3cece=. The part answers the form's
+codes, the definitions family, a report's start, its runs and its files, the
+first family, the cuts and their kinds, the schedules, the health tally, the
+engine settings, the pricing engines, the ORE import, the ORE schema as a zip,
+and the curve configurations and convention documents the last two tasks carried.
+
+What the area does not prove is what needs a live estate: the happy paths of each
+route are proved against documents and rows the tests build, and the browser is
+still on the BFF until the switch task moves it.
+
+The reporting family's own gaps are the seven composed views, which are their own
+task: the report board, the queue, the run views and the pages that join several
+readers into one answer.

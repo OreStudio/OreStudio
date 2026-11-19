@@ -18,12 +18,16 @@
  *
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
+#include "ores.ore.core/domain/barrier_product_projection.hpp"
+#include "ores.ore.core/domain/basket_option_projection.hpp"
+#include "ores.ore.core/domain/entry_reset_option_projection.hpp"
 #include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/pairwise_variance_swap_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/underlying_block_projection.hpp"
+#include "ores.ore.core/domain/volatility_product_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
@@ -50,6 +54,14 @@ using trading::domain::fx_instrument_data;
 using trading::domain::fx_vanilla_option_instrument;
 using trading::domain::fx_variance_swap_instrument;
 using trading::domain::fx_asian_option_instrument;
+using trading::domain::fx_basket_option_instrument;
+using trading::domain::fx_basket_variance_swap_instrument;
+using trading::domain::fx_forward_volatility_agreement_instrument;
+using trading::domain::fx_best_entry_option_instrument;
+using trading::domain::fx_strike_resettable_option_instrument;
+using trading::domain::fx_window_barrier_option_instrument;
+using trading::domain::fx_worst_of_basket_swap_instrument;
+using trading::domain::instrument_value;
 using trading::domain::fx_pairwise_variance_swap_instrument;
 using trading::domain::range_bound;
 
@@ -74,7 +86,11 @@ constexpr bool is_fx_trade_type(std::string_view type) {
            type == "FxAverageForward" || type == "FxAccumulator" || type == "FxTaRF" ||
            type == "FxGenericBarrierOption" || type == "FxDoubleBarrierOption" ||
            type == "FxEuropeanBarrierOption" || type == "FxKIKOBarrierOption" ||
-           type == "FxAsianOption" || type == "FxPairwiseVarianceSwap";
+           type == "FxAsianOption" || type == "FxPairwiseVarianceSwap" ||
+           type == "FxBasketOption" || type == "FxRainbowOption" ||
+           type == "FxBasketVarianceSwap" || type == "FxForwardVolatilityAgreement" ||
+           type == "FxBestEntryOption" || type == "FxStrikeResettableOption" ||
+           type == "FxWindowBarrierOption" || type == "FxWorstOfBasketSwap";
 }
 
 template <typename Row>
@@ -121,15 +137,15 @@ auto fx_instrument_projection_to_ore_date(const std::optional<std::chrono::year_
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto fx_instrument_projection_text_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto fx_instrument_projection_text_of(const record_reader& r,
+                                      std::string_view name) -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto fx_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto fx_instrument_projection_spelling_of(const record_reader& r,
+                                          std::string_view name) -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -142,8 +158,8 @@ auto fx_instrument_projection_decimal_of(const record_reader& r, std::string_vie
     return decimal{};
 }
 
-auto fx_instrument_projection_optional_decimal_of(const record_reader& r, std::string_view name)
-    -> std::optional<decimal> {
+auto fx_instrument_projection_optional_decimal_of(const record_reader& r,
+                                                  std::string_view name) -> std::optional<decimal> {
     return r.decimal(name);
 }
 
@@ -242,8 +258,8 @@ auto underlying_code_of(const record_reader& data) -> std::string {
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_fx_forward(const record_reader& trade, std::string_view trade_type)
-    -> fx_forward_instrument {
+auto read_fx_forward(const record_reader& trade,
+                     std::string_view trade_type) -> fx_forward_instrument {
     auto r = fx_instrument_projection_make_row<fx_forward_instrument>(trade_type);
     const auto data = trade.child("FxForwardData");
     if (!data)
@@ -379,8 +395,8 @@ auto read_fx_digital_fields(const record_reader& data, fx_digital_option_instrum
     r.expiry_date = fx_instrument_projection_expiry_date_of(option);
 }
 
-auto read_fx_digital_option(const record_reader& trade, std::string_view trade_type)
-    -> fx_digital_option_instrument {
+auto read_fx_digital_option(const record_reader& trade,
+                            std::string_view trade_type) -> fx_digital_option_instrument {
     auto r = fx_instrument_projection_make_row<fx_digital_option_instrument>(trade_type);
     r.long_short = "Long";
     if (const auto data = trade.child("FxDigitalOptionData"))
@@ -413,8 +429,8 @@ auto read_fx_digital_barrier_option(const record_reader& trade) -> fx_digital_op
     return r;
 }
 
-auto read_fx_touch_option(const record_reader& trade, std::string_view trade_type)
-    -> fx_digital_option_instrument {
+auto read_fx_touch_option(const record_reader& trade,
+                          std::string_view trade_type) -> fx_digital_option_instrument {
     auto r = fx_instrument_projection_make_row<fx_digital_option_instrument>(trade_type);
     r.long_short = "Long";
 
@@ -504,6 +520,127 @@ auto read_fx_asian_option(const record_reader& trade) -> fx_asian_option_instrum
     return r;
 }
 
+auto read_fx_basket_option(const record_reader& trade,
+                           std::string_view trade_type) -> fx_basket_option_instrument {
+    auto r =
+        fx_instrument_projection_make_row<fx_basket_option_instrument>(std::string(trade_type));
+    if (const auto data = trade.child(std::string(trade_type) + "Data"))
+        basket_option::read(*data, r);
+    return r;
+}
+
+auto read_fx_basket_variance_swap(const record_reader& trade)
+    -> fx_basket_variance_swap_instrument {
+    auto r = fx_instrument_projection_make_row<fx_basket_variance_swap_instrument>(
+        "FxBasketVarianceSwap");
+    if (const auto data = trade.child("FxBasketVarianceSwapData"))
+        volatility_product::read_basket_variance_swap(*data, r);
+    return r;
+}
+
+auto read_fx_forward_volatility_agreement(const record_reader& trade)
+    -> fx_forward_volatility_agreement_instrument {
+    auto r = fx_instrument_projection_make_row<fx_forward_volatility_agreement_instrument>(
+        "FxForwardVolatilityAgreement");
+    if (const auto data = trade.child("FxForwardVolatilityAgreementData"))
+        volatility_product::read_forward_volatility_agreement(*data, r);
+    return r;
+}
+
+auto read_fx_best_entry_option(const record_reader& trade) -> fx_best_entry_option_instrument {
+    auto r =
+        fx_instrument_projection_make_row<fx_best_entry_option_instrument>("FxBestEntryOption");
+    if (const auto data = trade.child("FxBestEntryOptionData"))
+        entry_reset_option::read_best_entry(*data, r);
+    return r;
+}
+
+auto read_fx_strike_resettable_option(const record_reader& trade)
+    -> fx_strike_resettable_option_instrument {
+    auto r = fx_instrument_projection_make_row<fx_strike_resettable_option_instrument>(
+        "FxStrikeResettableOption");
+    if (const auto data = trade.child("FxStrikeResettableOptionData"))
+        entry_reset_option::read_strike_resettable(*data, r);
+    return r;
+}
+
+auto read_fx_window_barrier_option(const record_reader& trade)
+    -> fx_window_barrier_option_instrument {
+    auto r = fx_instrument_projection_make_row<fx_window_barrier_option_instrument>(
+        "FxWindowBarrierOption");
+    if (const auto data = trade.child("FxWindowBarrierOptionData"))
+        barrier_product::read_window_barrier(*data, r);
+    return r;
+}
+
+/// The worst-of basket swap's optional scalars.
+constexpr scalar_terms::term<fx_worst_of_basket_swap_instrument> fx_worst_of_basket_swap_terms[] = {
+    {"InitialFixedRate", &fx_worst_of_basket_swap_instrument::initial_fixed_rate},
+    {"InitialFixedPayDate", &fx_worst_of_basket_swap_instrument::initial_fixed_pay_date},
+    {"KnockInPayDate", &fx_worst_of_basket_swap_instrument::knock_in_pay_date},
+    {"BermudanKnockIn", &fx_worst_of_basket_swap_instrument::bermudan_knock_in},
+    {"KnockInLevel", &fx_worst_of_basket_swap_instrument::knock_in_level},
+    {"AccumulatingFixedCoupons", &fx_worst_of_basket_swap_instrument::accumulating_fixed_coupons},
+    {"AccruingFixedCoupons", &fx_worst_of_basket_swap_instrument::accruing_fixed_coupons},
+    {"FloatingSpread", &fx_worst_of_basket_swap_instrument::floating_spread},
+    {"FloatingLookback", &fx_worst_of_basket_swap_instrument::floating_lookback},
+    {"FloatingRateCutoff", &fx_worst_of_basket_swap_instrument::floating_rate_cutoff},
+    {"IsAveraged", &fx_worst_of_basket_swap_instrument::is_averaged},
+    {"IncludeSpread", &fx_worst_of_basket_swap_instrument::include_spread},
+    {"Strike", &fx_worst_of_basket_swap_instrument::strike},
+};
+
+/// The lists of plain numbers the worst-of basket swap states, and the role each value row keeps.
+struct fx_value_list {
+    std::string_view element;
+    std::string_view leaf;
+    std::string_view role;
+};
+
+constexpr fx_value_list fx_worst_of_value_lists[] = {
+    {"InitialPrices", "InitialPrice", "initial_price"},
+    {"KnockOutLevels", "KnockOutLevel", "knock_out_level"},
+    {"FixedTriggerLevels", "FixedTriggerLevel", "fixed_trigger_level"},
+};
+
+auto read_fx_worst_of_basket_swap(const record_reader& trade)
+    -> fx_worst_of_basket_swap_instrument {
+    auto r = fx_instrument_projection_make_row<fx_worst_of_basket_swap_instrument>(
+        "FxWorstOfBasketSwap");
+    const auto data = trade.child("FxWorstOfBasketSwapData");
+    if (!data)
+        return r;
+    r.long_short = scalar_terms::read_text(*data, "LongShort").value_or("");
+    r.currency = scalar_terms::read_text(*data, "Currency").value_or("");
+    r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
+    r.fixed_rate = volatility_product::read_decimal(*data, "FixedRate").value_or(decimal{});
+    r.floating_index = scalar_terms::read_text(*data, "FloatingIndex").value_or("");
+    r.floating_day_count_fraction =
+        scalar_terms::read_text(*data, "FloatingDayCountFraction").value_or("");
+    scalar_terms::read_terms(r, *data, fx_worst_of_basket_swap_terms);
+    return r;
+}
+
+/// Reads each value of the product's lists into a value row under the list's role.
+void read_fx_worst_of_values(fx_instrument_data& carrier, const record_reader& trade) {
+    const auto data = trade.child("FxWorstOfBasketSwapData");
+    if (!data)
+        return;
+    for (const auto& list : fx_worst_of_value_lists) {
+        const auto rows = data->child(list.element);
+        if (!rows)
+            continue;
+        int sequence = 0;
+        for (const auto& value : rows->decimals(list.leaf)) {
+            instrument_value row;
+            row.value_role = std::string(list.role);
+            row.sequence_number = ++sequence;
+            row.value = value;
+            carrier.values.push_back(std::move(row));
+        }
+    }
+}
+
 auto read_fx_pairwise_variance_swap(const record_reader& trade)
     -> fx_pairwise_variance_swap_instrument {
     auto r = fx_instrument_projection_make_row<fx_pairwise_variance_swap_instrument>(
@@ -513,8 +650,8 @@ auto read_fx_pairwise_variance_swap(const record_reader& trade)
     return r;
 }
 
-auto read_fx_accumulator(fx_instrument_data& result, const record_reader& trade)
-    -> fx_accumulator_instrument {
+auto read_fx_accumulator(fx_instrument_data& result,
+                         const record_reader& trade) -> fx_accumulator_instrument {
     auto r = fx_instrument_projection_make_row<fx_accumulator_instrument>("FxAccumulator");
     r.long_short = "Long";
     const auto data = trade.child("FxAccumulatorData");
@@ -841,6 +978,63 @@ void write_fx_asian_option(record_writer& trade,
     option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
 }
 
+void write_fx_basket_option(record_writer& trade,
+                            std::string_view trade_type,
+                            const fx_basket_option_instrument& v,
+                            const fx_instrument_data& carrier) {
+    auto data = trade.child(std::string(trade_type) + "Data");
+    basket_option::write(data, v);
+    auto members = data.child("Underlyings");
+    underlying_block::write_underlyings(members, "Underlying", carrier, "underlying");
+    option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
+}
+
+void write_fx_basket_variance_swap(record_writer& trade,
+                                   const fx_basket_variance_swap_instrument& v,
+                                   const fx_instrument_data& carrier) {
+    auto data = trade.child("FxBasketVarianceSwapData");
+    volatility_product::write_basket_variance_swap(data, v);
+    auto members = data.child("Underlyings");
+    underlying_block::write_underlyings(members, "Underlying", carrier, "underlying");
+    option_block::write_product_schedule(data, carrier, "ValuationSchedule", "valuation_schedule");
+}
+
+void write_fx_forward_volatility_agreement(record_writer& trade,
+                                           const fx_forward_volatility_agreement_instrument& v,
+                                           const fx_instrument_data& carrier) {
+    auto data = trade.child("FxForwardVolatilityAgreementData");
+    volatility_product::write_forward_volatility_agreement(data, v);
+    underlying_block::write_underlyings(data, "Underlying", carrier, "underlying");
+}
+
+void write_fx_best_entry_option(record_writer& trade,
+                                const fx_best_entry_option_instrument& v,
+                                const fx_instrument_data& carrier) {
+    auto data = trade.child("FxBestEntryOptionData");
+    entry_reset_option::write_best_entry(data, v);
+    underlying_block::write_underlyings(data, "Underlying", carrier, "underlying");
+    option_block::write_product_schedule(
+        data, carrier, "StrikeObservationDates", "strike_observation_schedule");
+}
+
+void write_fx_strike_resettable_option(record_writer& trade,
+                                       const fx_strike_resettable_option_instrument& v,
+                                       const fx_instrument_data& carrier) {
+    auto data = trade.child("FxStrikeResettableOptionData");
+    entry_reset_option::write_strike_resettable(data, v);
+    underlying_block::write_underlyings(data, "Underlying", carrier, "underlying");
+    option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
+}
+
+void write_fx_window_barrier_option(record_writer& trade,
+                                    const fx_window_barrier_option_instrument& v,
+                                    const fx_instrument_data& carrier) {
+    auto data = trade.child("FxWindowBarrierOptionData");
+    barrier_product::write_window_barrier(data, v);
+    underlying_block::write_underlyings(data, "Underlying", carrier, "underlying");
+    barrier_block::write_kept_barriers(data, "", carrier, "barrier");
+}
+
 void write_fx_pairwise_variance_swap(record_writer& trade,
                                      const fx_pairwise_variance_swap_instrument& v,
                                      const fx_instrument_data& carrier) {
@@ -943,6 +1137,14 @@ constexpr underlying_block::underlying_holder fx_underlying_holders[] = {
     {"FxAccumulator", "", "Underlying", "underlying"},
     {"FxTaRF", "", "Underlying", "underlying"},
     {"FxAsianOption", "", "Underlying", "underlying"},
+    {"FxBasketOption", "Underlyings", "Underlying", "underlying"},
+    {"FxRainbowOption", "Underlyings", "Underlying", "underlying"},
+    {"FxBasketVarianceSwap", "Underlyings", "Underlying", "underlying"},
+    {"FxForwardVolatilityAgreement", "", "Underlying", "underlying"},
+    {"FxBestEntryOption", "", "Underlying", "underlying"},
+    {"FxStrikeResettableOption", "", "Underlying", "underlying"},
+    {"FxWindowBarrierOption", "", "Underlying", "underlying"},
+    {"FxWorstOfBasketSwap", "Underlyings", "Underlying", "underlying"},
 };
 
 /// The single-valued terms each FX product row keeps, by its element.
@@ -984,6 +1186,7 @@ constexpr barrier_block::barrier_holder fx_barrier_holders[] = {
     {"FxGenericBarrierOption", "TransatlanticBarrier", "transatlantic"},
     {"FxAccumulator", "Barriers", "barrier"},
     {"FxTaRF", "Barriers", "barrier"},
+    {"FxWindowBarrierOption", "", "barrier"},
 };
 
 /// The schedules an FX product states on its own element.
@@ -992,9 +1195,50 @@ constexpr option_block::product_schedule fx_product_schedules[] = {
     {"FxAccumulator", "ObservationDates", "observation_schedule"},
     {"FxTaRF", "ScheduleData", "product_schedule"},
     {"FxAsianOption", "ObservationDates", "observation_schedule"},
+    {"FxBasketOption", "ObservationDates", "observation_schedule"},
+    {"FxBasketVarianceSwap", "ValuationSchedule", "valuation_schedule"},
+    {"FxWorstOfBasketSwap", "FloatingPeriodSchedule", "floating_period_schedule"},
+    {"FxWorstOfBasketSwap", "FloatingFixingSchedule", "floating_fixing_schedule"},
+    {"FxWorstOfBasketSwap", "FixedDeterminationSchedule", "fixed_determination_schedule"},
+    {"FxWorstOfBasketSwap", "FloatingPayDates", "floating_pay_schedule"},
+    {"FxWorstOfBasketSwap", "FixedPayDates", "fixed_pay_schedule"},
+    {"FxWorstOfBasketSwap", "KnockOutDeterminationSchedule", "knock_out_determination_schedule"},
+    {"FxWorstOfBasketSwap", "FixedAccrualSchedule", "fixed_accrual_schedule"},
+    {"FxWorstOfBasketSwap", "KnockInDeterminationSchedule", "knock_in_determination_schedule"},
+    {"FxBestEntryOption", "StrikeObservationDates", "strike_observation_schedule"},
+    {"FxStrikeResettableOption", "ObservationDates", "observation_schedule"},
     {"FxPairwiseVarianceSwap", "ValuationSchedule", "valuation_schedule"},
     {"FxPairwiseVarianceSwap", "LaggedValuationSchedule", "lagged_valuation_schedule"},
 };
+
+void write_fx_worst_of_basket_swap(record_writer& trade,
+                                   const fx_worst_of_basket_swap_instrument& v,
+                                   const fx_instrument_data& carrier) {
+    auto data = trade.child("FxWorstOfBasketSwapData");
+    scalar_terms::write_text(data, "LongShort", v.long_short);
+    scalar_terms::write_text(data, "Currency", v.currency);
+    set_decimal_from_double(data, "Quantity", v.quantity);
+    volatility_product::write_decimal(data, "FixedRate", v.fixed_rate);
+    scalar_terms::write_text(data, "FloatingIndex", v.floating_index);
+    scalar_terms::write_text(data, "FloatingDayCountFraction", v.floating_day_count_fraction);
+    scalar_terms::write_terms(data, v, fx_worst_of_basket_swap_terms);
+    auto members = data.child("Underlyings");
+    underlying_block::write_underlyings(members, "Underlying", carrier, "underlying");
+    for (const auto& list : fx_worst_of_value_lists) {
+        std::vector<const instrument_value*> rows;
+        for (const auto& row : carrier.values)
+            if (row.value_role == list.role)
+                rows.push_back(&row);
+        if (rows.empty())
+            continue;
+        std::ranges::sort(rows, {}, &instrument_value::sequence_number);
+        auto element = data.child(list.element);
+        for (const auto* row : rows)
+            element.append_decimal(list.leaf, row->value);
+    }
+    option_block::write_product_schedules(
+        data, carrier, "FxWorstOfBasketSwap", fx_product_schedules);
+}
 
 std::optional<std::string> fx_option_data_element(std::string_view trade_type) {
     static constexpr std::string_view with_option_data[] = {
@@ -1011,6 +1255,9 @@ std::optional<std::string> fx_option_data_element(std::string_view trade_type) {
         "FxAccumulator",
         "FxTaRF",
         "FxAsianOption",
+        "FxBasketOption",
+        "FxRainbowOption",
+        "FxWindowBarrierOption",
     };
     for (const auto type : with_option_data)
         if (type == trade_type)
@@ -1047,6 +1294,21 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
         data.asian_options.push_back(read_fx_asian_option(trade));
     } else if (trade_type == "FxPairwiseVarianceSwap") {
         data.pairwise_variance_swaps.push_back(read_fx_pairwise_variance_swap(trade));
+    } else if (trade_type == "FxBasketOption" || trade_type == "FxRainbowOption") {
+        data.basket_options.push_back(read_fx_basket_option(trade, trade_type));
+    } else if (trade_type == "FxBasketVarianceSwap") {
+        data.basket_variance_swaps.push_back(read_fx_basket_variance_swap(trade));
+    } else if (trade_type == "FxForwardVolatilityAgreement") {
+        data.forward_volatility_agreements.push_back(read_fx_forward_volatility_agreement(trade));
+    } else if (trade_type == "FxBestEntryOption") {
+        data.best_entry_options.push_back(read_fx_best_entry_option(trade));
+    } else if (trade_type == "FxStrikeResettableOption") {
+        data.strike_resettable_options.push_back(read_fx_strike_resettable_option(trade));
+    } else if (trade_type == "FxWindowBarrierOption") {
+        data.window_barrier_options.push_back(read_fx_window_barrier_option(trade));
+    } else if (trade_type == "FxWorstOfBasketSwap") {
+        data.worst_of_basket_swaps.push_back(read_fx_worst_of_basket_swap(trade));
+        read_fx_worst_of_values(data, trade);
     } else if (trade_type == "FxAccumulator") {
         // The range bounds are the product's child, so they land beside the
         // fact row rather than inside it.
@@ -1175,6 +1437,27 @@ auto write_fx_instrument(xml::record_writer& trade,
             } else if constexpr (std::is_same_v<Row, fx_pairwise_variance_swap_instrument>) {
                 write_fx_pairwise_variance_swap(trade, row, *v);
                 matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_basket_option_instrument>) {
+                write_fx_basket_option(trade, trade_type, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_basket_variance_swap_instrument>) {
+                write_fx_basket_variance_swap(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_forward_volatility_agreement_instrument>) {
+                write_fx_forward_volatility_agreement(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_best_entry_option_instrument>) {
+                write_fx_best_entry_option(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_strike_resettable_option_instrument>) {
+                write_fx_strike_resettable_option(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_window_barrier_option_instrument>) {
+                write_fx_window_barrier_option(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_worst_of_basket_swap_instrument>) {
+                write_fx_worst_of_basket_swap(trade, row, *v);
+                matched = true;
             }
         },
         *v);
@@ -1184,6 +1467,9 @@ auto write_fx_instrument(xml::record_writer& trade,
             if (auto product = trade.chosen_child(*element)) {
                 auto option = product->child("OptionData");
                 option_block::write_option_block(option, *v);
+                if (basket_option::is_basket_product(trade_type) ||
+                    barrier_product::keeps_exercise_dates(trade_type))
+                    basket_option::write_exercise_dates(option, *v);
             }
         }
     }

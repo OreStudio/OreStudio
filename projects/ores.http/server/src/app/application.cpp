@@ -35,6 +35,7 @@
 #include "ores.http.core/stream/change_ticker.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
+#include "ores.http/routes/compute/compute_routes.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
 #include "ores.http/routes/iam/browser_session_routes.hpp"
@@ -45,6 +46,7 @@
 #include "ores.http/routes/reporting/reporting_routes.hpp"
 #include "ores.http/routes/synthetic/synthetic_routes.hpp"
 #include "ores.http/routes/trading/trading_routes.hpp"
+#include "ores.http/routes/workflow/workflow_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
@@ -205,6 +207,9 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     }
     ores::http::routes::site_routes::register_routes(router, registry, std::move(site));
 
+    ores::http::routes::compute::compute_routes::register_routes(
+        router, registry, service_nats, cfg.storage_dir);
+    ores::http::routes::workflow::workflow_routes::register_routes(router, registry, service_nats);
     ores::http::routes::synthetic::synthetic_routes::register_routes(
         router, registry, service_nats);
     ores::http::routes::marketdata::marketdata_routes::register_routes(

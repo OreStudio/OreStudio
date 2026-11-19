@@ -544,11 +544,11 @@ TEST_CASE("an_auto_delta_hedged_option_states_its_hedge_and_one_row_a_batch", eq
     const auto* row =
         std::get_if<ores::trading::domain::equity_position_instrument>(&hedged->instrument);
     REQUIRE(row != nullptr);
-    CHECK(row->volatility == equity_amount("0.2"));
+    CHECK(row->volatility == std::optional(0.2));
     CHECK(row->payment_date == std::optional(2027y / 1 / 12));
     REQUIRE(hedged->underlyings.size() == 2);
     CHECK(hedged->underlyings[1].option_type == "Put");
-    CHECK(hedged->underlyings[1].quantity == equity_amount("100"));
+    CHECK(hedged->underlyings[1].quantity == std::optional(100.0));
     CHECK(hedged->underlyings[1].currency == std::optional<std::string>("USD"));
     CHECK(hedged->underlyings[1].premium_amount == equity_amount("9.36"));
 }

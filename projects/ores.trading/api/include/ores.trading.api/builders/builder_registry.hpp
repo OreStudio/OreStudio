@@ -20,15 +20,21 @@
 #ifndef ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 #define ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 
+#include "ores.trading.api/builders/barrier_product_builders.hpp"
+#include "ores.trading.api/builders/basket_option_builders.hpp"
 #include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/commodity_builders.hpp"
 #include "ores.trading.api/builders/composite_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
+#include "ores.trading.api/builders/entry_reset_option_builders.hpp"
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
+#include "ores.trading.api/builders/multi_asset_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/builders/scripted_builders.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
+#include "ores.trading.api/builders/volatility_product_builders.hpp"
+#include "ores.trading.api/builders/worst_of_basket_swap_builders.hpp"
 #include <set>
 #include <string_view>
 #include <tuple>
@@ -63,19 +69,19 @@ using all_builders =
                basket_option_builder<basket_product::fx_basket>,
                basket_option_builder<basket_product::equity_rainbow>,
                basket_option_builder<basket_product::fx_rainbow>,
-               best_entry_option_builder<scripted_family::equity>,
-               best_entry_option_builder<scripted_family::fx>,
-               strike_resettable_option_builder<scripted_family::equity>,
-               strike_resettable_option_builder<scripted_family::fx>,
-               window_barrier_option_builder<scripted_family::equity>,
-               window_barrier_option_builder<scripted_family::fx>,
+               equity_best_entry_option_builder,
+               fx_best_entry_option_builder,
+               equity_strike_resettable_option_builder,
+               fx_strike_resettable_option_builder,
+               equity_window_barrier_option_builder,
+               fx_window_barrier_option_builder,
                equity_generic_barrier_option_builder,
-               basket_variance_swap_builder<scripted_family::equity>,
-               basket_variance_swap_builder<scripted_family::fx>,
+               equity_basket_variance_swap_builder,
+               fx_basket_variance_swap_builder,
                equity_pairwise_variance_swap_builder,
                fx_pairwise_variance_swap_builder,
-               forward_volatility_agreement_builder<scripted_family::equity>,
-               forward_volatility_agreement_builder<scripted_family::fx>,
+               equity_forward_volatility_agreement_builder,
+               fx_forward_volatility_agreement_builder,
                european_option_barrier_builder,
                fx_worst_of_basket_swap_builder,
                equity_future_option_builder,

@@ -160,6 +160,14 @@
 \ir ./trading_instrument_barriers_notify_trigger_create.sql
 \ir ./trading_instrument_barrier_levels_create.sql
 \ir ./trading_instrument_barrier_levels_notify_trigger_create.sql
+\ir ./trading_instrument_values_create.sql
+\ir ./trading_instrument_values_notify_trigger_create.sql
+\ir ./trading_cbo_structures_create.sql
+\ir ./trading_cbo_structures_notify_trigger_create.sql
+\ir ./trading_cbo_tranches_create.sql
+\ir ./trading_cbo_tranches_notify_trigger_create.sql
+\ir ./trading_cbo_basket_members_create.sql
+\ir ./trading_cbo_basket_members_notify_trigger_create.sql
 
 -- An underlying is a child of the trade any product that states an
 -- Underlying block states it for.
@@ -186,6 +194,8 @@
 \ir ./trading_script_coarsenings_notify_trigger_create.sql
 \ir ./trading_script_inputs_create.sql
 \ir ./trading_script_inputs_notify_trigger_create.sql
+\ir ./trading_script_twin_inputs_create.sql
+\ir ./trading_script_twin_inputs_notify_trigger_create.sql
 
 -- Rates instruments (depend on swap_legs and reference data above). The
 -- header goes first: it owns the family's rows, and its delete rule's cascade
@@ -201,6 +211,8 @@
 
 \ir ./trading_cap_floor_instruments_create.sql
 \ir ./trading_cap_floor_instruments_notify_trigger_create.sql
+\ir ./trading_rate_digital_option_instruments_create.sql
+\ir ./trading_rate_digital_option_instruments_notify_trigger_create.sql
 
 \ir ./trading_swaption_instruments_create.sql
 \ir ./trading_swaption_instruments_notify_trigger_create.sql
@@ -365,6 +377,8 @@
 \ir ./trading_index_credit_default_swap_option_instruments_notify_trigger_create.sql
 \ir ./trading_synthetic_cdo_instruments_create.sql
 \ir ./trading_synthetic_cdo_instruments_notify_trigger_create.sql
+\ir ./trading_cbo_instruments_create.sql
+\ir ./trading_cbo_instruments_notify_trigger_create.sql
 \ir ./trading_credit_linked_swap_instruments_create.sql
 \ir ./trading_credit_linked_swap_instruments_notify_trigger_create.sql
 \ir ./trading_risk_participation_agreement_instruments_create.sql
@@ -403,6 +417,42 @@
 \ir ./trading_fx_pairwise_variance_swap_instruments_notify_trigger_create.sql
 \ir ./trading_fx_asian_option_instruments_create.sql
 \ir ./trading_fx_asian_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_basket_option_instruments_create.sql
+\ir ./trading_equity_basket_option_instruments_notify_trigger_create.sql
+\ir ./trading_fx_basket_option_instruments_create.sql
+\ir ./trading_fx_basket_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_basket_variance_swap_instruments_create.sql
+\ir ./trading_equity_basket_variance_swap_instruments_notify_trigger_create.sql
+\ir ./trading_equity_forward_volatility_agreement_instruments_create.sql
+\ir ./trading_equity_forward_volatility_agreement_instruments_notify_trigger_create.sql
+\ir ./trading_fx_basket_variance_swap_instruments_create.sql
+\ir ./trading_fx_basket_variance_swap_instruments_notify_trigger_create.sql
+\ir ./trading_fx_forward_volatility_agreement_instruments_create.sql
+\ir ./trading_fx_forward_volatility_agreement_instruments_notify_trigger_create.sql
+\ir ./trading_equity_best_entry_option_instruments_create.sql
+\ir ./trading_equity_best_entry_option_instruments_notify_trigger_create.sql
+\ir ./trading_fx_best_entry_option_instruments_create.sql
+\ir ./trading_fx_best_entry_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_strike_resettable_option_instruments_create.sql
+\ir ./trading_equity_strike_resettable_option_instruments_notify_trigger_create.sql
+\ir ./trading_fx_strike_resettable_option_instruments_create.sql
+\ir ./trading_fx_strike_resettable_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_window_barrier_option_instruments_create.sql
+\ir ./trading_equity_window_barrier_option_instruments_notify_trigger_create.sql
+\ir ./trading_fx_window_barrier_option_instruments_create.sql
+\ir ./trading_fx_window_barrier_option_instruments_notify_trigger_create.sql
+\ir ./trading_fx_worst_of_basket_swap_instruments_create.sql
+\ir ./trading_fx_worst_of_basket_swap_instruments_notify_trigger_create.sql
+\ir ./trading_autocallable_instruments_create.sql
+\ir ./trading_autocallable_instruments_notify_trigger_create.sql
+\ir ./trading_double_digital_option_instruments_create.sql
+\ir ./trading_double_digital_option_instruments_notify_trigger_create.sql
+\ir ./trading_european_option_barrier_instruments_create.sql
+\ir ./trading_european_option_barrier_instruments_notify_trigger_create.sql
+\ir ./trading_performance_option_instruments_create.sql
+\ir ./trading_performance_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_generic_barrier_option_instruments_create.sql
+\ir ./trading_equity_generic_barrier_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_variance_swap_instruments_create.sql
 \ir ./trading_equity_variance_swap_instruments_notify_trigger_create.sql
 \ir ./trading_equity_swap_instruments_create.sql

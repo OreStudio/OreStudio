@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/series_identity_shapes/series_identity_shape.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-series_identity_shapes delete __none__ __none__ __none__ __none__ system.new_record generated_script
+series_identity_shapes delete __none__ system.new_record generated_script

@@ -49,11 +49,10 @@ namespace ores::marketdata::domain {
     return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &series_identity_shape::version},
         utility::codec::field{"tenant_id", &series_identity_shape::tenant_id},
+        utility::codec::field{"code", &series_identity_shape::code},
         utility::codec::field{"asset_class", &series_identity_shape::asset_class},
         utility::codec::field{"series_subclass", &series_identity_shape::series_subclass},
         utility::codec::field{"index_family", &series_identity_shape::index_family},
-        utility::codec::field{"field", &series_identity_shape::field},
-        utility::codec::field{"requirement", &series_identity_shape::requirement},
         utility::codec::field{"description", &series_identity_shape::description},
         utility::codec::field{"modified_by", &series_identity_shape::modified_by},
         utility::codec::field{"performed_by", &series_identity_shape::performed_by},

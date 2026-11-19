@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 5811BEEE-5EEE-593C-AC1E-0377036D8DD5
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the series_identity_shape_entries commands from the shell?
+#+description: Every command the series_identity_shape_entries submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:series_identity_shape_entries:
+
+This file documents the series_identity_shape_entries resource at the shell, one section per command. Every command is a subcommand of =series_identity_shape_entries=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 03D1CB55-86ED-5770-91EF-62D362CD6B95
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries.list=.
+
+#+name: series_identity_shape_entries-list
+#+begin_src ores-shell :tangle series_identity_shape_entries-list.ores :exports none
+series_identity_shape_entries list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 3FD41AC7-3706-5524-A3C3-51AEF822B7B0
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries get <id>
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries.get=.
+
+#+name: series_identity_shape_entries-get
+#+begin_src ores-shell :tangle series_identity_shape_entries-get.ores :exports none
+series_identity_shape_entries get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 8A127A5B-A953-5B03-9A6C-6183EA0083B2
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries get-many <id>
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries.get_many=.
+
+#+name: series_identity_shape_entries-get-many
+#+begin_src ores-shell :tangle series_identity_shape_entries-get-many.ores :exports none
+series_identity_shape_entries get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 78F880EA-3C2B-5214-AABF-0EB46EFF77E7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries add <shape_code> <field> <requirement> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries.put=.
+
+#+name: series_identity_shape_entries-add
+#+begin_src ores-shell :tangle series_identity_shape_entries-add.ores :exports none
+series_identity_shape_entries add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D38FAB05-D913-5A56-A4E3-06CAE8A52EFF
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries set <id> <shape_code> <field> <requirement> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries.put=.
+
+#+name: series_identity_shape_entries-set
+#+begin_src ores-shell :tangle series_identity_shape_entries-set.ores :exports none
+series_identity_shape_entries set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0E05A264-0861-5582-B44C-6DBF8F9EB279
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries put-many --count <n> <id> <shape_code> <field> <requirement> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries.put_many=.
+
+#+name: series_identity_shape_entries-put-many
+#+begin_src ores-shell :tangle series_identity_shape_entries-put-many.ores :exports none
+series_identity_shape_entries put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 45774FF7-604C-57C1-BC5F-B6D839761AA6
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries.delete=.
+
+#+name: series_identity_shape_entries-delete
+#+begin_src ores-shell :tangle series_identity_shape_entries-delete.ores :exports none
+series_identity_shape_entries delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8BA01157-077E-594B-957F-F57BF8AE0642
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries.delete_many=.
+
+#+name: series_identity_shape_entries-delete-many
+#+begin_src ores-shell :tangle series_identity_shape_entries-delete-many.ores :exports none
+series_identity_shape_entries delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-shape-code=
+:PROPERTIES:
+:ID: 3CC05D95-724A-504F-BCCF-C12A2B65724D
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries by-shape-code <shape_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries.list_by_shape_code=.
+
+#+name: series_identity_shape_entries-by-shape-code
+#+begin_src ores-shell :tangle series_identity_shape_entries-by-shape-code.ores :exports none
+series_identity_shape_entries by-shape-code __none__ --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A895269F-03C2-54EE-8F88-8F48C7F16B9B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries_versions.list=.
+
+#+name: series_identity_shape_entries-versions
+#+begin_src ores-shell :tangle series_identity_shape_entries-versions.ores :exports none
+series_identity_shape_entries versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 53A5193B-E3D9-5C94-B01E-2AF9B4AB07FD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_identity_shape_entries version <id> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.series_identity_shape_entries_versions.get=.
+
+#+name: series_identity_shape_entries-version
+#+begin_src ores-shell :tangle series_identity_shape_entries-version.ores :exports none
+series_identity_shape_entries version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

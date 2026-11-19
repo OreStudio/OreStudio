@@ -83,6 +83,8 @@
 #include "ores.marketdata.core/messaging/series_classification_rule_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_evolution_handler.hpp"
 #include "ores.marketdata.core/messaging/series_identity_handler.hpp"
+#include "ores.marketdata.core/messaging/series_identity_shape_entry_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/series_identity_shape_entry_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_identity_shape_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_identity_shape_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_slice_handler.hpp"
@@ -158,6 +160,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_observation_lineage_handlers(nats, ctx, verifier));
     fold(register_series_classification_rule_handlers(nats, ctx, verifier));
     fold(register_series_identity_shape_handlers(nats, ctx, verifier));
+    fold(register_series_identity_shape_entry_handlers(nats, ctx, verifier));
     fold(register_market_series_asset_class_handlers(nats, ctx, verifier));
     fold(register_curve_publish_handlers(nats, ctx, verifier));
     fold(register_fx_forward_publish_handlers(nats, ctx, verifier));
@@ -411,6 +414,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_observation_lineage_history_provider(hist_registry);
         register_series_classification_rule_history_provider(hist_registry);
         register_series_identity_shape_history_provider(hist_registry);
+        register_series_identity_shape_entry_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "marketdata", queue, ctx, verifier));

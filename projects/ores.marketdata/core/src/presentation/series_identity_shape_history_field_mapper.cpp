@@ -36,8 +36,10 @@ render_series_identity_shape_fields(const domain::series_identity_shape& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
+    fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Asset Class", .value = v.asset_class});
-    fields.push_back({.name = "Requirement", .value = v.requirement});
+    fields.push_back({.name = "Series Subclass", .value = v.series_subclass});
+    fields.push_back({.name = "Index Family", .value = v.index_family});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

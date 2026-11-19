@@ -30,6 +30,7 @@ import {
     rebuildCalendar,
     recordResource,
     removeRecord,
+    resourceComponent,
     resourceName,
     saveRecord,
 } from './records.js';
@@ -67,13 +68,24 @@ function resource(key: string): NonNullable<ReturnType<typeof recordResource>> {
 }
 
 describe('the record registry', () => {
-    it('names each resource once, each with refdata subjects', () => {
+    it('names each resource once, each with the subjects of one component', () => {
         const keys = REFDATA_RECORDS.map((entry) => entry.key);
         expect(new Set(keys).size).toBe(keys.length);
         for (const entry of REFDATA_RECORDS) {
-            expect(entry.subjects.list).toMatch(/^refdata\.v1\./);
-            expect(entry.subjects.put).toMatch(/^refdata\.v1\./);
+            const component = resourceComponent(entry);
+            expect(['refdata', 'marketdata']).toContain(component);
+            for (const subject of Object.values(entry.subjects)) {
+                expect(subject.startsWith(`${component}.v1.`)).toBe(true);
+            }
         }
+    });
+
+    it('serves the identity shapes from market data, and every other resource from refdata', () => {
+        expect(
+            REFDATA_RECORDS.filter((entry) => resourceComponent(entry) === 'marketdata').map(
+                (entry) => entry.key,
+            ),
+        ).toEqual(['series-identity-shapes', 'series-identity-shape-entries']);
     });
 
     it('reads every junction by its parent, and keeps no versions only for a junction', () => {
@@ -134,6 +146,8 @@ describe('the record registry', () => {
             'party-identifiers': 'party_identifiers',
             'ir-curve-bootstrap-configs': 'ir_curve_bootstrap_configs',
             'ir-curve-bootstrap-pillars': 'ir_curve_bootstrap_pillars',
+            'series-identity-shapes': 'series_identity_shapes',
+            'series-identity-shape-entries': 'series_identity_shape_entries',
         });
     });
 });

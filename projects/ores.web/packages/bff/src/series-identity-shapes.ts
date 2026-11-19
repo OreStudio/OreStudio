@@ -20,68 +20,30 @@
  */
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { z } from 'zod';
-import { SYSTEM_TENANT_ID } from '@ores/wire-protocol';
 import {
     subjects as shapeSubjects,
     type ListSeriesIdentityShapesResponse,
-    type ListSeriesIdentityShapeVersionsResponse,
 } from '@ores/wire-protocol/generated/marketdata/protocol/series_identity_shape_protocol';
+import {
+    subjects as entrySubjects,
+    type ListSeriesIdentityShapeEntriesResponse,
+} from '@ores/wire-protocol/generated/marketdata/protocol/series_identity_shape_entry_protocol';
 import {
     subjects as ruleSubjects,
     type ListSeriesClassificationRulesResponse,
 } from '@ores/wire-protocol/generated/marketdata/protocol/series_classification_rule_protocol';
-import { input, intentSchema, readAll, resultSchema, text } from './refdata-calls.js';
+import { readAll, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /*
- * The identity shapes: the fields each market series family requires and
- * forbids. A family is an asset class and a series subclass, narrowed by the
- * index family for a fixing, and a row states one field of one family.
+ * What the oresmd editor needs to mark a URI's fields: the classification rules
+ * that name a URI's family, and each field a family requires or forbids.
  *
- * The catalogue is the system tenant's, and every tenant reads it beside its
- * own rows, so each row says whose it is. A tenant writes and removes only its
- * own rows; the service refuses the rest.
+ * A shape names a family by code, and its entries name the fields. The editor
+ * reads them joined, one row per field with its family's parts, so it never
+ * holds a code. The shapes and their entries are read and written as records
+ * through the record routes; this module only reads.
  */
-
-const partSchema = z.string().trim().max(100);
-
-/** The four parts that name one row. The index family is empty for a family that is not a fixing. */
-const keySchema = z.object({
-    asset_class: partSchema.min(1),
-    series_subclass: partSchema.min(1),
-    index_family: partSchema,
-    field: partSchema.min(1),
-});
-
-const writeSchema = keySchema.extend({
-    requirement: z.enum(['required', 'forbidden']),
-    description: z.string().trim().min(1).max(2000),
-});
-
-/** A write: the row, and the version the person read. No version claims the row is new. */
-const writeBodySchema = z.object({
-    write: writeSchema,
-    version: z.int().min(1).nullable(),
-    intent: intentSchema,
-});
-
-const removeBodySchema = z.object({
-    key: keySchema,
-    version: z.int().min(1),
-    intent: intentSchema,
-});
-
-function precondition(version: number | null): unknown {
-    return version === null
-        ? { kind: 'must_not_exist', version: null }
-        : { kind: 'must_match_version', version };
-}
-
-/** A row as the screen reads it, with whether it is the shared catalogue's. */
-function shapeOf(row: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
-    return { ...row, system: text(row['tenant_id']) === SYSTEM_TENANT_ID };
-}
 
 export function registerSeriesIdentityShapeRoutes(
     server: FastifyInstance,
@@ -109,66 +71,40 @@ export function registerSeriesIdentityShapeRoutes(
         };
     });
 
-    server.get('/api/marketdata/series-identity-shapes', async (request) => {
+    /** Every field a family requires or forbids, each with its family's parts. */
+    server.get('/api/marketdata/series-identity-shape-fields', async (request) => {
         const session = requireSession(request);
-        const rows = await readAll<ListSeriesIdentityShapesResponse>(
-            session,
-            shapeSubjects.list_series_identity_shapes_request,
-            'shapes',
-            { as_of: null },
-        );
-        return { shapes: rows.map(shapeOf) };
-    });
-
-    /** The versions of one row, newest first. */
-    server.get('/api/marketdata/series-identity-shapes/versions', async (request) => {
-        const session = requireSession(request);
-        const key = input(keySchema, request.query);
-        const rows = await readAll<ListSeriesIdentityShapeVersionsResponse>(
-            session,
-            shapeSubjects.list_series_identity_shape_versions_request,
-            'versions',
-            { key, filter: null },
-        );
+        const [shapes, entries] = await Promise.all([
+            readAll<ListSeriesIdentityShapesResponse>(
+                session,
+                shapeSubjects.list_series_identity_shapes_request,
+                'shapes',
+                { as_of: null, filter: null },
+            ),
+            readAll<ListSeriesIdentityShapeEntriesResponse>(
+                session,
+                entrySubjects.list_series_identity_shape_entries_request,
+                'entries',
+                { as_of: null, filter: null },
+            ),
+        ]);
+        const families = new Map(shapes.map((shape) => [text(shape['code']), shape]));
         return {
-            versions: [...rows]
-                .map(shapeOf)
-                .sort((left, right) => Number(right['version']) - Number(left['version'])),
+            fields: entries.flatMap((entry) => {
+                const shape = families.get(text(entry['shape_code']));
+                return shape === undefined
+                    ? []
+                    : [
+                          {
+                              asset_class: text(shape['asset_class']),
+                              series_subclass: text(shape['series_subclass']),
+                              index_family: text(shape['index_family']),
+                              field: text(entry['field']),
+                              requirement: text(entry['requirement']),
+                              description: text(entry['description']),
+                          },
+                      ];
+            }),
         };
-    });
-
-    server.put('/api/marketdata/series-identity-shapes', async (request) => {
-        const session = requireSession(request);
-        const body = input(writeBodySchema, request.body);
-        const reply = await session.client.callAuthenticated(
-            shapeSubjects.put_series_identity_shape_request,
-            {
-                change: { write: body.write, precondition: precondition(body.version) },
-                intent: body.intent,
-            },
-            z.looseObject({ result: resultSchema }),
-        );
-        const written = reply['series_identity_shape'];
-        return {
-            result: reply.result,
-            shape:
-                written === null || written === undefined
-                    ? null
-                    : shapeOf(written as Record<string, unknown>),
-        };
-    });
-
-    server.delete('/api/marketdata/series-identity-shapes', async (request) => {
-        const session = requireSession(request);
-        const body = input(removeBodySchema, request.body);
-        const reply = await session.client.callAuthenticated(
-            shapeSubjects.delete_series_identity_shape_request,
-            {
-                removal: { key: body.key, precondition: precondition(body.version) },
-                intent: body.intent,
-            },
-            z.looseObject({ result: resultSchema }),
-        );
-        return { result: reply.result };
     });
 }

@@ -33,35 +33,28 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief One field of one series family's identity, and whether the family requires it or forbids
- * it.
+ * @brief The identity shape of one series family, named by a code and described in words.
  *
- * The shape of a market series identity, one row per field per family.
+ * The shape of a market series identity, one row per family.
  *
  * A family is the pair of codes the taxonomy already carries -- the asset class
  * and the series subclass -- narrowed, for an index series, by the index family.
  * index_fixing is not one shape but several: an IBOR fixing states a currency
  * and an index name, a swap fixing a currency and a tenor, an FX fixing a currency
- * and the currency it is quoted in. A rule keyed on the subclass alone would be
- * wrong about all but one of them, so the key carries the index family too.
+ * and the currency it is quoted in. A shape keyed on the subclass alone would be
+ * wrong about all but one of them, so the family carries the index family too.
  *
- * A row says what the family makes of one field: required means a row of this
- * family that leaves it empty is not an identity, forbidden means the field says
- * nothing about this family and a row that fills it states something untrue. A
- * field a family does not mention is neither: the family does not use it, and the
- * writer leaves it as the URI parse left it.
+ * A shape is named by a code, such as ir.index_fixing.ibor, so a person and a
+ * screen can refer to it by one key, and it says in words what the family is for.
+ * What the family makes of each field is stated by its entries,
+ * series_identity_shape_entries: one row per field, required or forbidden.
  *
- * The table is read by the writer that projects an identity row from an oresmd
- * URI, which refuses a row that misses a required field or carries a forbidden
- * one, naming the family and the field. It sits beside
- * series_classification_rules because the two are the same kind of statement --
- * what a series of this identity is -- and because a family the taxonomy gains
- * gains its shape in the same place rather than in a second mechanism.
- *
- * A family with no row here is not enforced: the writer projects its series
- * unguarded, and the backfill counts them as unstated. The catalogue grows family by
- * family, and refusing every family nobody has stated yet would stop an ingest for a
- * reason that is the catalogue's.
+ * The writer that projects an identity row from an oresmd URI reads the shapes
+ * and their entries, and refuses a row that misses a required field or carries a
+ * forbidden one, naming the family and the field. A family with no shape is not
+ * enforced: the writer projects its series unguarded, and the backfill counts them
+ * as unstated. The catalogue grows family by family, and refusing every family
+ * nobody has stated yet would stop an ingest for a reason that is the catalogue's.
  */
 struct series_identity_shape final {
     /**
@@ -75,14 +68,22 @@ struct series_identity_shape final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
+     * @brief The shape's code: the asset class, the series subclass and, for an index series, the
+     * index family, joined by dots, such as ir.index_fixing.ibor or fx.spot. The entries name their
+     * shape by it. A check holds the code to the family's parts, so a code never names one family
+     * while the row states another.
+     *
+     * A generated shape takes its index family from the generator's counter, and its code from the
+     * same parts, so each one holds the check and a family of its own.
+     */
+    std::string code;
+
+    /**
      * @brief The family's asset class, as the oresmd authority spells it and as the identity row
      * carries it: ir, fx, credit. This is the codec's spelling and not
      * ores.refdata.asset_class_code's -- refdata calls the same class interest_rates -- so the
      * column is checked against the oresmd schema rather than against that catalogue, and a family
      * keyed by one spelling and looked up by the other would never match.
-     *
-     * The same subclass of two classes is two families, so this column is half of the key rather
-     * than a description of it.
      */
     std::string asset_class;
 
@@ -97,28 +98,14 @@ struct series_identity_shape final {
      * swap, fx. A datum family has no index and holds the empty string.
      *
      * ir/index_fixing is two shapes, not one: an IBOR fixing is named by its index, a swap fixing
-     * by its tenor, and a row that stated one of them for both would be wrong about one of them. So
-     * the key carries the family.
+     * by its tenor, and a shape that stated one of them for both would be wrong about one of them.
+     * So the family carries the index family too.
      */
     std::string index_family;
 
     /**
-     * @brief The identity column the row speaks about, named as market_series_identity holds it:
-     * ccy, unit_ccy, index, instrument_type.
-     *
-     * A name that is no column of that table is a statement nobody can act on, so
-     * build/scripts/check_marketdata_identity_columns.py checks every seeded row against the
-     * table's columns at build time.
-     */
-    std::string field;
-
-    /**
-     * @brief Whether the family requires the field or forbids it: required or forbidden.
-     */
-    std::string requirement;
-
-    /**
-     * @brief Why the family makes that of the field, in one sentence.
+     * @brief What the family is and what a series of it is for, in words a person reads on the
+     * shapes screen.
      */
     std::string description;
 

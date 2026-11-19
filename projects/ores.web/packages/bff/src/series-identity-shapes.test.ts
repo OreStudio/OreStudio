@@ -107,171 +107,73 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
 function send(
     server: ReturnType<typeof buildServer>,
     sessionId: string,
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    method: 'GET',
     url: string,
-    payload?: unknown,
 ): ReturnType<ReturnType<typeof buildServer>['inject']> {
-    return server.inject({
-        method,
-        url,
-        cookies: { [SESSION_COOKIE]: sessionId },
-        ...(payload === undefined ? {} : { payload: payload as Record<string, unknown> }),
-    });
+    return server.inject({ method, url, cookies: { [SESSION_COOKIE]: sessionId } });
 }
 
-const INTENT = { reason_code: 'common.correction', commentary: '' };
-
-const SYSTEM = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
-const OWN = '44444444-4444-4444-4444-444444444444';
-
-const IBOR_CCY = {
+const IBOR = {
+    code: 'ir.index_fixing.ibor',
     asset_class: 'ir',
     series_subclass: 'index_fixing',
     index_family: 'ibor',
-    field: 'ccy',
+    description: 'A fixing of an interbank offered rate.',
 };
 
-describe('series identity shape routes', () => {
-    it("lists every shape and says which are the shared catalogue's", async () => {
+describe('series identity shape field route', () => {
+    it('serves each entry with the family parts of its shape', async () => {
         const { server, sessionId } = buildTestServer({
-            'marketdata.v1.series_identity_shapes.list': {
+            'marketdata.v1.series_identity_shapes.list': { result: ok, shapes: [IBOR], total: 1 },
+            'marketdata.v1.series_identity_shape_entries.list': {
                 result: ok,
-                shapes: [
-                    { ...IBOR_CCY, tenant_id: SYSTEM, requirement: 'required', version: 1 },
-                    { ...IBOR_CCY, field: 'tenor', tenant_id: OWN, requirement: 'forbidden' },
+                entries: [
+                    {
+                        shape_code: IBOR.code,
+                        field: 'ccy',
+                        requirement: 'required',
+                        description: 'Named by its currency.',
+                        version: 1,
+                    },
                 ],
+                total: 1,
             },
         });
         const response = await send(
             server,
             sessionId,
             'GET',
-            '/api/marketdata/series-identity-shapes',
+            '/api/marketdata/series-identity-shape-fields',
         );
         expect(response.statusCode).toBe(200);
-        expect(
-            response
-                .json()
-                .shapes.map((shape: { field: string; system: boolean }) => [
-                    shape.field,
-                    shape.system,
-                ]),
-        ).toEqual([
-            ['ccy', true],
-            ['tenor', false],
+        expect(response.json().fields).toEqual([
+            {
+                asset_class: 'ir',
+                series_subclass: 'index_fixing',
+                index_family: 'ibor',
+                field: 'ccy',
+                requirement: 'required',
+                description: 'Named by its currency.',
+            },
         ]);
     });
 
-    it('reads the versions of one row by its four key parts, newest first', async () => {
-        const { server, sessionId, calls } = buildTestServer({
-            'marketdata.v1.series_identity_shapes_versions.list': {
+    it('leaves out an entry whose shape the session does not read', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.series_identity_shapes.list': { result: ok, shapes: [], total: 0 },
+            'marketdata.v1.series_identity_shape_entries.list': {
                 result: ok,
-                versions: [
-                    { ...IBOR_CCY, tenant_id: SYSTEM, version: 1 },
-                    { ...IBOR_CCY, tenant_id: SYSTEM, version: 2 },
-                ],
+                entries: [{ shape_code: IBOR.code, field: 'ccy', requirement: 'required' }],
+                total: 1,
             },
         });
         const response = await send(
             server,
             sessionId,
             'GET',
-            '/api/marketdata/series-identity-shapes/versions?asset_class=ir&series_subclass=index_fixing&index_family=ibor&field=ccy',
+            '/api/marketdata/series-identity-shape-fields',
         );
-        expect(response.json().versions.map((row: { version: number }) => row.version)).toEqual([
-            2, 1,
-        ]);
-        expect(calls[0]?.body).toMatchObject({ key: IBOR_CCY });
-    });
-
-    it('reads the versions of a family with no index family', async () => {
-        const { server, sessionId, calls } = buildTestServer({
-            'marketdata.v1.series_identity_shapes_versions.list': { result: ok, versions: [] },
-        });
-        const response = await send(
-            server,
-            sessionId,
-            'GET',
-            '/api/marketdata/series-identity-shapes/versions?asset_class=ir&series_subclass=yield&index_family=&field=ccy',
-        );
-        expect(response.statusCode).toBe(200);
-        expect(calls[0]?.body).toMatchObject({ key: { index_family: '' } });
-    });
-
-    it('writes a new row and corrects one against the version read', async () => {
-        const { server, sessionId, calls } = buildTestServer({
-            'marketdata.v1.series_identity_shapes.put': {
-                result: ok,
-                series_identity_shape: { ...IBOR_CCY, tenant_id: OWN, version: 1 },
-            },
-        });
-        const write = {
-            ...IBOR_CCY,
-            requirement: 'required',
-            description: 'Named by its currency.',
-        };
-        const created = await send(
-            server,
-            sessionId,
-            'PUT',
-            '/api/marketdata/series-identity-shapes',
-            {
-                write,
-                version: null,
-                intent: INTENT,
-            },
-        );
-        expect(created.json().shape.system).toBe(false);
-        await send(server, sessionId, 'PUT', '/api/marketdata/series-identity-shapes', {
-            write,
-            version: 3,
-            intent: INTENT,
-        });
-        expect(calls[0]?.body).toMatchObject({
-            change: { write, precondition: { kind: 'must_not_exist' } },
-        });
-        expect(calls[1]?.body).toMatchObject({
-            change: { precondition: { kind: 'must_match_version', version: 3 } },
-        });
-    });
-
-    it('refuses a requirement the table does not hold, before asking the service', async () => {
-        const { server, sessionId, calls } = buildTestServer({});
-        const response = await send(
-            server,
-            sessionId,
-            'PUT',
-            '/api/marketdata/series-identity-shapes',
-            {
-                write: { ...IBOR_CCY, requirement: 'optional', description: 'x' },
-                version: null,
-                intent: INTENT,
-            },
-        );
-        expect(response.statusCode).toBe(400);
-        expect(calls).toHaveLength(0);
-    });
-
-    it("removes a row by its key and the version read, and passes the service's refusal on", async () => {
-        const denied = { outcome: 'denied', code: '', message: 'The row is the system tenant.' };
-        const { server, sessionId, calls } = buildTestServer({
-            'marketdata.v1.series_identity_shapes.delete': { result: denied },
-        });
-        const response = await send(
-            server,
-            sessionId,
-            'DELETE',
-            '/api/marketdata/series-identity-shapes',
-            {
-                key: IBOR_CCY,
-                version: 2,
-                intent: INTENT,
-            },
-        );
-        expect(response.json().result.outcome).toBe('denied');
-        expect(calls[0]?.body).toMatchObject({
-            removal: { key: IBOR_CCY, precondition: { kind: 'must_match_version', version: 2 } },
-        });
+        expect(response.json().fields).toEqual([]);
     });
 });
 

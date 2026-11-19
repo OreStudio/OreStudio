@@ -3,43 +3,37 @@
 :ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.series_identity_shape
-#+description: The identity fields each series family requires and forbids, stated as data so the writer can refuse a row that misses one.
+#+description: The shape of a series family's identity: which family it is, and what it is for. Its entries state the fields it requires and forbids.
 #+type: ores.codegen.entity
 #+component: marketdata
 #+filetags: :model:entity:marketdata:
 #+entity_singular: series_identity_shape
 #+entity_plural: series_identity_shapes
 #+entity_title: Series Identity Shape
-#+brief: One field of one series family's identity, and whether the family requires it or forbids it.
+#+brief: The identity shape of one series family, named by a code and described in words.
 #+created: 2026-11-15
-#+updated: 2026-11-15
+#+updated: 2026-11-19
 
-The shape of a market series identity, one row per field per family.
+The shape of a market series identity, one row per family.
 
 A family is the pair of codes the taxonomy already carries -- the asset class
 and the series subclass -- narrowed, for an index series, by the index family.
 =index_fixing= is not one shape but several: an IBOR fixing states a currency
 and an index name, a swap fixing a currency and a tenor, an FX fixing a currency
-and the currency it is quoted in. A rule keyed on the subclass alone would be
-wrong about all but one of them, so the key carries the index family too.
+and the currency it is quoted in. A shape keyed on the subclass alone would be
+wrong about all but one of them, so the family carries the index family too.
 
-A row says what the family makes of one field: =required= means a row of this
-family that leaves it empty is not an identity, =forbidden= means the field says
-nothing about this family and a row that fills it states something untrue. A
-field a family does not mention is neither: the family does not use it, and the
-writer leaves it as the URI parse left it.
+A shape is named by a code, such as =ir.index_fixing.ibor=, so a person and a
+screen can refer to it by one key, and it says in words what the family is for.
+What the family makes of each field is stated by its entries,
+=series_identity_shape_entries=: one row per field, =required= or =forbidden=.
 
-The table is read by the writer that projects an identity row from an oresmd
-URI, which refuses a row that misses a required field or carries a forbidden
-one, naming the family and the field. It sits beside
-=series_classification_rules= because the two are the same kind of statement --
-what a series of this identity is -- and because a family the taxonomy gains
-gains its shape in the same place rather than in a second mechanism.
-
-A family with no row here is not enforced: the writer projects its series
-unguarded, and the backfill counts them as unstated. The catalogue grows family by
-family, and refusing every family nobody has stated yet would stop an ingest for a
-reason that is the catalogue's.
+The writer that projects an identity row from an oresmd URI reads the shapes
+and their entries, and refuses a row that misses a required field or carries a
+forbidden one, naming the family and the field. A family with no shape is not
+enforced: the writer projects its series unguarded, and the backfill counts them
+as unstated. The catalogue grows family by family, and refusing every family
+nobody has stated yet would stop an ingest for a reason that is the catalogue's.
 
 * Flags
 :PROPERTIES:
@@ -51,11 +45,34 @@ reason that is the catalogue's.
 
 * Columns
 
-** asset_class
+** code
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:sortable:    true
+:searchable:  true
+:no_generator_suffix: true
+:END:
+
+The shape's code: the asset class, the series subclass and, for an index
+series, the index family, joined by dots, such as =ir.index_fixing.ibor= or
+=fx.spot=. The entries name their shape by it. A check holds the code to the
+family's parts, so a code never names one family while the row states another.
+
+A generated shape takes its index family from the generator's counter, and its
+code from the same parts, so each one holds the check and a family of its own.
+
+#+begin_src cpp :name generator
+std::string("ir.index_fixing.g") + std::to_string(idx)
+#+end_src
+
+** asset_class
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:sortable:    true
 :END:
 
 The family's asset class, as the oresmd authority spells it and as the identity
@@ -65,9 +82,6 @@ row carries it: =ir=, =fx=, =credit=. This is the codec's spelling and not
 against that catalogue, and a family keyed by one spelling and looked up by the
 other would never match.
 
-The same subclass of two classes is two families, so this column is half of the
-key rather than a description of it.
-
 #+begin_src cpp :name generator
 std::string("ir")
 #+end_src
@@ -76,7 +90,8 @@ std::string("ir")
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
-:primary_key: true
+:nullable:    false
+:sortable:    true
 :END:
 
 The family's series subclass, as =ores.refdata.series_subclass_code= spells it:
@@ -90,51 +105,21 @@ std::string("index_fixing")
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
-:primary_key: true
+:nullable:    false
 :default:     ''
 :skip_empty_check: true
+:sortable:    true
 :END:
 
 The index family the shape is for, as the identity's =index= column spells it:
 =ibor=, =swap=, =fx=. A datum family has no index and holds the empty string.
 
 =ir=/=index_fixing= is two shapes, not one: an IBOR fixing is named by its
-index, a swap fixing by its tenor, and a row that stated one of them for both
-would be wrong about one of them. So the key carries the family.
+index, a swap fixing by its tenor, and a shape that stated one of them for both
+would be wrong about one of them. So the family carries the index family too.
 
 #+begin_src cpp :name generator
-std::string("ibor")
-#+end_src
-
-** field
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::string
-:primary_key: true
-:END:
-
-The identity column the row speaks about, named as =market_series_identity=
-holds it: =ccy=, =unit_ccy=, =index=, =instrument_type=.
-
-A name that is no column of that table is a statement nobody can act on, so
-=build/scripts/check_marketdata_identity_columns.py= checks every seeded row
-against the table's columns at build time.
-
-#+begin_src cpp :name generator
-std::string("ccy")
-#+end_src
-
-** requirement
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Whether the family requires the field or forbids it: =required= or =forbidden=.
-
-#+begin_src cpp :name generator
-std::string("required")
+std::string("g") + std::to_string(idx)
 #+end_src
 
 ** description
@@ -142,12 +127,14 @@ std::string("required")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:searchable: true
 :END:
 
-Why the family makes that of the field, in one sentence.
+What the family is and what a series of it is for, in words a person reads on
+the shapes screen.
 
 #+begin_src cpp :name generator
-std::string("The currency the rate is quoted in.")
+std::string("A fixing of an interbank offered rate, named by its currency and index.")
 #+end_src
 
 * SQL
@@ -161,9 +148,16 @@ std::string("The currency the rate is quoted in.")
 
 ** Checks
 
-| expression                                 |
-|--------------------------------------------|
-| "requirement" in ('required', 'forbidden') |
+| expression                                                                              |
+|-----------------------------------------------------------------------------------------|
+| "description" <> ''                                                                     |
+| "code" = concat_ws('.', "asset_class", "series_subclass", nullif("index_family", ''))   |
+
+** Indexes
+
+| name   | columns                                                  | unique | current_only | where_extra |
+|--------+----------------------------------------------------------+--------+--------------+-------------|
+| family | tenant_id, asset_class, series_subclass, index_family    | true   | true         |             |
 
 * Insert trigger
 
@@ -211,11 +205,10 @@ std::string("The currency the rate is quoted in.")
 
 | column          | header      |
 |-----------------+-------------|
+| code            | Code        |
 | asset_class     | Asset Class |
 | series_subclass | Subclass    |
 | index_family    | Index       |
-| field           | Field       |
-| requirement     | Requirement |
 | description     | Description |
 | modified_by     | Modified By |
 | version         | Version     |
@@ -224,6 +217,8 @@ std::string("The currency the rate is quoted in.")
 
 * See also
 
+- [[id:31ADA72E-B724-40A0-8360-8348B8FE4439][ores.marketdata.series_identity_shape_entry]]
+  — the fields the shape requires and forbids.
 - [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market
   series it reads]] — the identity this table states the shape of.
 - =series_classification_rules= — the taxonomy that names the family this

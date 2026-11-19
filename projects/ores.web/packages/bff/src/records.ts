@@ -29,6 +29,7 @@ import {
     readCalendarYear,
     rebuildCalendar,
     recordResource,
+    resourceComponent,
     resourceName,
     removeRecord,
     saveRecord,
@@ -57,6 +58,8 @@ import type { PartyCounterpartyWrite } from '@ores/wire-protocol/generated/refda
 import type { BusinessUnitWrite } from '@ores/wire-protocol/generated/refdata/protocol/business_unit_protocol';
 import type { IrCurveBootstrapConfigWrite } from '@ores/wire-protocol/generated/refdata/protocol/ir_curve_bootstrap_config_protocol';
 import type { IrCurveBootstrapPillarWrite } from '@ores/wire-protocol/generated/refdata/protocol/ir_curve_bootstrap_pillar_protocol';
+import type { SeriesIdentityShapeWrite } from '@ores/wire-protocol/generated/marketdata/protocol/series_identity_shape_protocol';
+import type { SeriesIdentityShapeEntryWrite } from '@ores/wire-protocol/generated/marketdata/protocol/series_identity_shape_entry_protocol';
 import { storeUuidSchema } from '@ores/contracts';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import { pageQuerySchema } from './refdata-calls.js';
@@ -342,6 +345,32 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         curve_role_code: z.enum(['DEPOSIT', 'FRA', 'SWAP']),
         market_series_id: anyUuid,
     }) satisfies z.ZodType<IrCurveBootstrapPillarWrite>,
+    'series-identity-shapes': z
+        .object({
+            code: z.string().trim().min(1).max(200),
+            asset_class: z.string().trim().min(1).max(100),
+            series_subclass: z.string().trim().min(1).max(100),
+            index_family: z.string().trim().max(100),
+            description: z.string().trim().min(1).max(2000),
+        })
+        .refine(
+            (shape) =>
+                shape.code ===
+                [shape.asset_class, shape.series_subclass, shape.index_family]
+                    .filter((part) => part !== '')
+                    .join('.'),
+            {
+                message:
+                    'The code is the asset class, the subclass and the index family, joined by dots.',
+            },
+        ) satisfies z.ZodType<SeriesIdentityShapeWrite>,
+    'series-identity-shape-entries': z.object({
+        id: z.uuid(),
+        shape_code: z.string().trim().min(1).max(200),
+        field: z.string().trim().min(1).max(100),
+        requirement: z.enum(['required', 'forbidden']),
+        description: z.string().trim().min(1).max(2000),
+    }) satisfies z.ZodType<SeriesIdentityShapeEntryWrite>,
 };
 
 const intentSchema = z.object({
@@ -508,11 +537,11 @@ export function registerRecordRoutes(
                 search: resource.search,
                 sortable: resource.sortable,
                 events: {
-                    component: resource.subjects.put.split('.')[0] ?? '',
+                    component: resourceComponent(resource),
                     entity: resourceName(resource),
                 },
-                writePermission: `refdata::${resourceName(resource)}:write`,
-                deletePermission: `refdata::${resourceName(resource)}:delete`,
+                writePermission: `${resourceComponent(resource)}::${resourceName(resource)}:write`,
+                deletePermission: `${resourceComponent(resource)}::${resourceName(resource)}:delete`,
             })),
         };
     });

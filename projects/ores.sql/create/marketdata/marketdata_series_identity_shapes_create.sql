@@ -24,42 +24,35 @@
  *
  * Series Identity Shape Table
  *
- * The shape of a market series identity, one row per field per family.
+ * The shape of a market series identity, one row per family.
  *
  * A family is the pair of codes the taxonomy already carries -- the asset class
  * and the series subclass -- narrowed, for an index series, by the index family.
  * index_fixing is not one shape but several: an IBOR fixing states a currency
  * and an index name, a swap fixing a currency and a tenor, an FX fixing a currency
- * and the currency it is quoted in. A rule keyed on the subclass alone would be
- * wrong about all but one of them, so the key carries the index family too.
+ * and the currency it is quoted in. A shape keyed on the subclass alone would be
+ * wrong about all but one of them, so the family carries the index family too.
  *
- * A row says what the family makes of one field: required means a row of this
- * family that leaves it empty is not an identity, forbidden means the field says
- * nothing about this family and a row that fills it states something untrue. A
- * field a family does not mention is neither: the family does not use it, and the
- * writer leaves it as the URI parse left it.
+ * A shape is named by a code, such as ir.index_fixing.ibor, so a person and a
+ * screen can refer to it by one key, and it says in words what the family is for.
+ * What the family makes of each field is stated by its entries,
+ * series_identity_shape_entries: one row per field, required or forbidden.
  *
- * The table is read by the writer that projects an identity row from an oresmd
- * URI, which refuses a row that misses a required field or carries a forbidden
- * one, naming the family and the field. It sits beside
- * series_classification_rules because the two are the same kind of statement --
- * what a series of this identity is -- and because a family the taxonomy gains
- * gains its shape in the same place rather than in a second mechanism.
- *
- * A family with no row here is not enforced: the writer projects its series
- * unguarded, and the backfill counts them as unstated. The catalogue grows family by
- * family, and refusing every family nobody has stated yet would stop an ingest for a
- * reason that is the catalogue's.
+ * The writer that projects an identity row from an oresmd URI reads the shapes
+ * and their entries, and refuses a row that misses a required field or carries a
+ * forbidden one, naming the family and the field. A family with no shape is not
+ * enforced: the writer projects its series unguarded, and the backfill counts them
+ * as unstated. The catalogue grows family by family, and refusing every family
+ * nobody has stated yet would stop an ingest for a reason that is the catalogue's.
  */
 
 create table if not exists "ores_marketdata_series_identity_shapes_tbl" (
+    "code" text not null,
+    "tenant_id" uuid not null,
+    "version" integer not null,
     "asset_class" text not null,
     "series_subclass" text not null,
     "index_family" text not null default '',
-    "field" text not null,
-    "tenant_id" uuid not null,
-    "version" integer not null,
-    "requirement" text not null,
     "description" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -67,33 +60,33 @@ create table if not exists "ores_marketdata_series_identity_shapes_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, asset_class, series_subclass, index_family, field, valid_from, valid_to),
+    primary key (tenant_id, code, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        asset_class WITH =,
-        series_subclass WITH =,
-        index_family WITH =,
-        field WITH =,
+        code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("asset_class" <> ''),
-    check ("series_subclass" <> ''),
-    check ("field" <> ''),
-    check ("requirement" in ('required', 'forbidden'))
+    check ("code" <> ''),
+    check ("description" <> ''),
+    check ("code" = concat_ws('.', "asset_class", "series_subclass", nullif("index_family", '')))
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists series_identity_shapes_version_uniq_idx
-on "ores_marketdata_series_identity_shapes_tbl" (tenant_id, asset_class, series_subclass, index_family, field, version)
+on "ores_marketdata_series_identity_shapes_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists series_identity_shapes_asset_class_series_subclass_index_family_field_uniq_idx
-on "ores_marketdata_series_identity_shapes_tbl" (tenant_id, asset_class, series_subclass, index_family, field)
+create unique index if not exists series_identity_shapes_code_uniq_idx
+on "ores_marketdata_series_identity_shapes_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists series_identity_shapes_tenant_idx
 on "ores_marketdata_series_identity_shapes_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists series_identity_shapes_family_idx
+on "ores_marketdata_series_identity_shapes_tbl" (tenant_id, asset_class, series_subclass, index_family)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_marketdata_series_identity_shapes_insert_fn()
@@ -119,7 +112,7 @@ begin
     select version into current_version
     from "ores_marketdata_series_identity_shapes_tbl"
     where tenant_id = NEW.tenant_id
-      and asset_class = NEW.asset_class and series_subclass = NEW.series_subclass and index_family = NEW.index_family and field = NEW.field
+      and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -133,13 +126,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'series_identity_shape',
-                    'asset_class');
+                    'code');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'series_identity_shape',
-                'asset_class',
+                'code',
                 NEW.version::text,
                 current_version::text);
         end if;
@@ -152,7 +145,7 @@ begin
         update "ores_marketdata_series_identity_shapes_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and asset_class = NEW.asset_class and series_subclass = NEW.series_subclass and index_family = NEW.index_family and field = NEW.field
+          and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -176,7 +169,7 @@ on delete to "ores_marketdata_series_identity_shapes_tbl" do instead (
     update "ores_marketdata_series_identity_shapes_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and asset_class = OLD.asset_class and series_subclass = OLD.series_subclass and index_family = OLD.index_family and field = OLD.field
+      and code = OLD.code
       -- A tenant reads the shared rows of the system tenant, so OLD can be one.
       -- The rule runs with the owner's rights, which row-level security does
       -- not bind, so the rule states the own-tenant limit that the delete

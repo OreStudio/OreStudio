@@ -29,18 +29,14 @@ import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface SeriesIdentityShapeKey {
-    asset_class: string;
-    series_subclass: string;
-    index_family: string;
-    field: string;
+    code: string;
 }
 
 export interface SeriesIdentityShapeWrite {
+    code: string;
     asset_class: string;
     series_subclass: string;
     index_family: string;
-    field: string;
-    requirement: string;
     description: string;
 }
 
@@ -57,6 +53,11 @@ export interface SeriesIdentityShapeRemoval {
 export interface SeriesIdentityShapeLookup {
     key: SeriesIdentityShapeKey;
     series_identity_shape: SeriesIdentityShape | null;
+}
+
+export interface SeriesIdentityShapesFilter {
+    code_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface SeriesIdentityShapeEvent {
@@ -83,6 +84,7 @@ export interface ListSeriesIdentityShapesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SeriesIdentityShapesFilter | null;
     as_of: string | null;
 }
 

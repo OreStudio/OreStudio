@@ -50,6 +50,8 @@ import { subjects as partyIdSchemeSubjects } from './generated/refdata/protocol/
 import { subjects as counterpartySubjects } from './generated/refdata/protocol/counterparty_protocol.js';
 import { subjects as irCurveBootstrapConfigSubjects } from './generated/refdata/protocol/ir_curve_bootstrap_config_protocol.js';
 import { subjects as irCurveBootstrapPillarSubjects } from './generated/refdata/protocol/ir_curve_bootstrap_pillar_protocol.js';
+import { subjects as seriesIdentityShapeSubjects } from './generated/marketdata/protocol/series_identity_shape_protocol.js';
+import { subjects as seriesIdentityShapeEntrySubjects } from './generated/marketdata/protocol/series_identity_shape_entry_protocol.js';
 import { resultEnvelopeSchema } from './operations.js';
 
 /**
@@ -553,6 +555,40 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
             remove: irCurveBootstrapPillarSubjects.delete_ir_curve_bootstrap_pillar_request,
         },
     },
+    {
+        key: 'series-identity-shapes',
+        entityType: 'ores.marketdata.series_identity_shape',
+        keyFields: ['code'],
+        rows: 'shapes',
+        versioned: true,
+        writable: true,
+        search: true,
+        sortable: ['code', 'asset_class', 'series_subclass', 'index_family'],
+        asOf: true,
+        subjects: {
+            list: seriesIdentityShapeSubjects.list_series_identity_shapes_request,
+            put: seriesIdentityShapeSubjects.put_series_identity_shape_request,
+            remove: seriesIdentityShapeSubjects.delete_series_identity_shape_request,
+        },
+    },
+    {
+        key: 'series-identity-shape-entries',
+        entityType: 'ores.marketdata.series_identity_shape_entry',
+        keyFields: ['id'],
+        rows: 'entries',
+        versioned: true,
+        writable: true,
+        search: false,
+        sortable: [],
+        asOf: true,
+        listBy: 'shape_code',
+        subjects: {
+            list: seriesIdentityShapeEntrySubjects.list_series_identity_shape_entries_request,
+            put: seriesIdentityShapeEntrySubjects.put_series_identity_shape_entry_request,
+            remove: seriesIdentityShapeEntrySubjects.delete_series_identity_shape_entry_request,
+            listBy: seriesIdentityShapeEntrySubjects.list_by_shape_code_series_identity_shape_entries_request,
+        },
+    },
 ];
 
 export function recordResource(key: string): RecordResource | undefined {
@@ -562,6 +598,11 @@ export function recordResource(key: string): RecordResource | undefined {
 /** The name a resource's subjects and permissions share, such as `currencies`. */
 export function resourceName(resource: RecordResource): string {
     return resource.subjects.put.split('.')[2] ?? '';
+}
+
+/** The component that serves a resource, such as `refdata` or `marketdata`. */
+export function resourceComponent(resource: RecordResource): string {
+    return resource.subjects.put.split('.')[0] ?? '';
 }
 
 /** Why a write is made: the reason code and the person's commentary. */

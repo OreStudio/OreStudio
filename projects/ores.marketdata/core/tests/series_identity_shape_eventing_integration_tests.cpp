@@ -114,13 +114,7 @@ TEST_CASE("write_series_identity_shape_publishes_an_event", "[eventing][integrat
     // the chain wired above -> NATS.
     auto v = generate_synthetic_series_identity_shape(ctx);
     v.change_reason_code = "system.test";
-    // The row's storage key in text: every key parameter the repository and
-    // the service take is text, so each part states its own conversion here,
-    // a uuid through to_string and a number through std::to_string. The notify
-    // trigger emits one entity_id per key column, so a notification belongs to
-    // this row only when every key part is in it.
-    const auto id_str = v.asset_class;
-    const std::vector<std::string> key_parts = {id_str, v.series_subclass, v.index_family, v.field};
+    const auto id_str = v.code;
     BOOST_LOG_SEV(lg, debug) << "Series Identity Shape: " << v;
 
     series_identity_shape_repository repo;
@@ -149,9 +143,7 @@ TEST_CASE("write_series_identity_shape_publishes_an_event", "[eventing][integrat
                 auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
                 // The event carries the row's own key record, so the row under
                 // test is recognised by comparing it with the row written.
-                if (decoded && decoded->key.asset_class == v.asset_class &&
-                    decoded->key.series_subclass == v.series_subclass &&
-                    decoded->key.index_family == v.index_family && decoded->key.field == v.field)
+                if (decoded && decoded->key.code == v.code)
                     received.push_back(msg);
             }
         }
@@ -163,8 +155,7 @@ TEST_CASE("write_series_identity_shape_publishes_an_event", "[eventing][integrat
         // Exhausted the budget: report what the observer did see so a
         // genuinely broken chain is diagnosable, not a bare empty check.
         const auto final_snapshot = observer.snapshot();
-        BOOST_LOG_SEV(lg, error) << "No notification for series_identity_shape " << id_str << "/"
-                                 << v.series_subclass << "/" << v.index_family << "/" << v.field
+        BOOST_LOG_SEV(lg, error) << "No notification for series_identity_shape " << id_str
                                  << " after " << max_attempts << " writes; observer received "
                                  << final_snapshot.size() << " message(s) in total";
         for (const auto& msg : final_snapshot)
@@ -176,8 +167,8 @@ TEST_CASE("write_series_identity_shape_publishes_an_event", "[eventing][integrat
     // event on only to a reader of that tenant.
     REQUIRE(received.front().headers.contains(std::string(ores::nats::headers::x_tenant_id)));
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
-                            << " matching NATS notification(s) for series_identity_shape " << id_str
-                            << "/" << v.series_subclass << "/" << v.index_family << "/" << v.field;
+                            << " matching NATS notification(s) for series_identity_shape "
+                            << id_str;
 
     // 5. CRUD round trip on the same row: update through the
     // repository, read the version history through the service, and
@@ -193,17 +184,15 @@ TEST_CASE("write_series_identity_shape_publishes_an_event", "[eventing][integrat
         v.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_shape_history(id_str, v.series_subclass, v.index_family, v.field);
+        auto versions = svc.get_shape_history(id_str);
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_shape(id_str, v.series_subclass, v.index_family, v.field);
+        svc.delete_shape(id_str);
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(
-            svc.get_shape(id_str, v.series_subclass, v.index_family, v.field).has_value());
-        REQUIRE(svc.get_shape_history(id_str, v.series_subclass, v.index_family, v.field).size() ==
-                versions.size());
+        REQUIRE_FALSE(svc.get_shape(id_str).has_value());
+        REQUIRE(svc.get_shape_history(id_str).size() == versions.size());
     }
 }

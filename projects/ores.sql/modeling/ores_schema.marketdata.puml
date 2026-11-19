@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 37
+Tables: 38
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1243,15 +1243,49 @@ package "marketdata" #E3F2FD {
     series it met.
     end note
 
-    entity ores_marketdata_series_identity_shapes_tbl <<temporal>> #C6F0D8 {
+    entity ores_marketdata_series_identity_shape_entries_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * asset_class : text <<PK>>
-        * series_subclass : text <<PK>>
-        * index_family : text <<PK>>
-        * field : text <<PK>>
+        * id : uuid <<PK>>
         --
         * version : integer
+        * shape_code : text <<FK>>
+        * field : text
         * requirement : text
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_series_identity_shape_entries_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Series Identity Shape Entry Table
+    An entry of an identity shape, one row per field the shape speaks about.
+    The shape it belongs to is named by its code, and the shape holds the family:
+    the asset class, the series subclass and the index family. The entry says what
+    the family makes of one field: required means a row of this family that
+    leaves it empty is not an identity, forbidden means the field says nothing
+    about this family and a row that fills it states something untrue. A field a
+    shape does not mention is neither: the family does not use it, and the writer
+    leaves it as the URI parse left it.
+    The writer that projects an identity row from an oresmd URI reads the shapes
+    and their entries together, and refuses a row that misses a required field or
+    carries a forbidden one, naming the family and the field.
+    end note
+
+    entity ores_marketdata_series_identity_shapes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * asset_class : text
+        * series_subclass : text
+        * index_family : text
         * description : text
         * modified_by : text
         * performed_by : text
@@ -1266,28 +1300,23 @@ package "marketdata" #E3F2FD {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Series Identity Shape Table
-    The shape of a market series identity, one row per field per family.
+    The shape of a market series identity, one row per family.
     A family is the pair of codes the taxonomy already carries -- the asset class
     and the series subclass -- narrowed, for an index series, by the index family.
     index_fixing is not one shape but several: an IBOR fixing states a currency
     and an index name, a swap fixing a currency and a tenor, an FX fixing a currency
-    and the currency it is quoted in. A rule keyed on the subclass alone would be
-    wrong about all but one of them, so the key carries the index family too.
-    A row says what the family makes of one field: required means a row of this
-    family that leaves it empty is not an identity, forbidden means the field says
-    nothing about this family and a row that fills it states something untrue. A
-    field a family does not mention is neither: the family does not use it, and the
-    writer leaves it as the URI parse left it.
-    The table is read by the writer that projects an identity row from an oresmd
-    URI, which refuses a row that misses a required field or carries a forbidden
-    one, naming the family and the field. It sits beside
-    series_classification_rules because the two are the same kind of statement --
-    what a series of this identity is -- and because a family the taxonomy gains
-    gains its shape in the same place rather than in a second mechanism.
-    A family with no row here is not enforced: the writer projects its series
-    unguarded, and the backfill counts them as unstated. The catalogue grows family by
-    family, and refusing every family nobody has stated yet would stop an ingest for a
-    reason that is the catalogue's.
+    and the currency it is quoted in. A shape keyed on the subclass alone would be
+    wrong about all but one of them, so the family carries the index family too.
+    A shape is named by a code, such as ir.index_fixing.ibor, so a person and a
+    screen can refer to it by one key, and it says in words what the family is for.
+    What the family makes of each field is stated by its entries,
+    series_identity_shape_entries: one row per field, required or forbidden.
+    The writer that projects an identity row from an oresmd URI reads the shapes
+    and their entries, and refuses a row that misses a required field or carries a
+    forbidden one, naming the family and the field. A family with no shape is not
+    enforced: the writer projects its series unguarded, and the backfill counts them
+    as unstated. The catalogue grows family by family, and refusing every family
+    nobody has stated yet would stop an ingest for a reason that is the catalogue's.
     end note
 
     entity ores_marketdata_sessions_tbl <<temporal>> #C6F0D8 {
@@ -1495,6 +1524,7 @@ package "marketdata" #E3F2FD {
 '
 ores_marketdata_market_series_tbl ||--o{ ores_marketdata_curve_publishes_tbl : "has"
 ores_marketdata_market_series_tbl ||--o{ ores_marketdata_market_series_asset_classes_tbl : "has"
+ores_marketdata_series_identity_shapes_tbl ||--o{ ores_marketdata_series_identity_shape_entries_tbl : "has"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.marketdata.puml"

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 9366D329-61FA-48E6-B347-B219A9667001
+:END:
+#+title: Story: Browse identity shapes as records
+#+description: An identity shape becomes a record with a code and a description, and its field rules become its entries, so the shapes screen follows the usual paged list and detail pattern.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:identity:web:sprint_30:v0:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person browses the identity shapes as they browse any other record: a paged list of shapes, each saying what its family is for, and a page per shape with its entries and its history.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Nothing. The shapes are records with entries, and the screen follows the record pattern. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-19                               |
+
+* Acceptance
+
+- The shapes screen is a paged record list, and a shape opens on its own page.
+- Every seeded shape says what its family is for.
+- The identity writer enforces the shapes as before.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A535E477-3597-4FBD-AC81-AE6ECB5B1977][Make an identity shape a record with entries]] | DONE | 2026-11-19 | 2026-11-19 | Add a series identity shape header with a code and a description, move the field rules under it as entries, and show the shapes as a paged list with a detail page. |
+
+* Decisions
+
+- An identity shape is a record keyed by a code: the asset class, the series
+  subclass and the index family joined by dots. A check holds the code to the
+  parts, so a code always names the family the row states.
+- A shape's field rules are its entries, keyed by a uuid as a calendar rule is,
+  and unique per shape and field. A two-part key would have left the entries with
+  no history.
+- An entry whose shape was removed speaks for no family. Refusing it would stop
+  the projection of every family because of one removal.
+- The record registry serves a resource of any component: its permissions take
+  the component from its subject.
+
+* Out of scope
+
+- A removal of a shape that takes its entries with it on the server. The screen
+  removes the entries first; the shell does not.

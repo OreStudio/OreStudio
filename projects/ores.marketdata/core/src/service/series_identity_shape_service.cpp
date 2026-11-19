@@ -76,7 +76,7 @@ std::vector<domain::series_identity_shape>
 series_identity_shape_read_one(repository::series_identity_shape_repository& repo,
                                const ores::database::context& ctx,
                                const messaging::series_identity_shape_key& key) {
-    return repo.read_latest(ctx, key.asset_class, key.series_subclass, key.index_family, key.field);
+    return repo.read_latest(ctx, key.code);
 }
 
 /**
@@ -99,31 +99,20 @@ series_identity_shape_read_many(repository::series_identity_shape_repository& re
                                 const ores::database::context& ctx,
                                 const std::vector<messaging::series_identity_shape_key>& keys) {
     std::vector<std::vector<domain::series_identity_shape>> found(keys.size());
-    using key_tuple = std::tuple<std::string, std::string, std::string, std::string>;
-    std::vector<std::string> asset_class_keys;
-    asset_class_keys.reserve(keys.size());
-    std::vector<std::string> series_subclass_keys;
-    series_subclass_keys.reserve(keys.size());
-    std::vector<std::string> index_family_keys;
-    index_family_keys.reserve(keys.size());
-    std::vector<std::string> field_keys;
-    field_keys.reserve(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    std::vector<std::string> code_keys;
+    code_keys.reserve(keys.size());
     for (const auto& key : keys) {
-        asset_class_keys.push_back(key.asset_class);
-        series_subclass_keys.push_back(key.series_subclass);
-        index_family_keys.push_back(key.index_family);
-        field_keys.push_back(key.field);
+        code_keys.push_back(key.code);
     }
     std::map<key_tuple, std::vector<domain::series_identity_shape>> by_key;
-    for (auto& row : repo.read_latest(
-             ctx, asset_class_keys, series_subclass_keys, index_family_keys, field_keys)) {
-        key_tuple named(row.asset_class, row.series_subclass, row.index_family, row.field);
+    for (auto& row : repo.read_latest(ctx, code_keys)) {
+        key_tuple named(row.code);
         by_key[std::move(named)].push_back(std::move(row));
     }
     for (std::size_t i = 0; i < keys.size(); ++i) {
         const auto& key = keys[i];
-        const auto rows = by_key.find(
-            key_tuple(key.asset_class, key.series_subclass, key.index_family, key.field));
+        const auto rows = by_key.find(key_tuple(key.code));
         if (rows != by_key.end())
             found[i] = rows->second;
     }
@@ -139,10 +128,7 @@ series_identity_shape_read_many(repository::series_identity_shape_repository& re
 messaging::series_identity_shape_key
 series_identity_shape_key_from(const domain::series_identity_shape& v) {
     messaging::series_identity_shape_key key;
-    key.asset_class = v.asset_class;
-    key.series_subclass = v.series_subclass;
-    key.index_family = v.index_family;
-    key.field = v.field;
+    key.code = v.code;
     return key;
 }
 
@@ -156,11 +142,10 @@ series_identity_shape_key_from(const domain::series_identity_shape& v) {
 domain::series_identity_shape
 series_identity_shape_to_domain(const messaging::series_identity_shape_write& write) {
     domain::series_identity_shape v;
+    v.code = write.code;
     v.asset_class = write.asset_class;
     v.series_subclass = write.series_subclass;
     v.index_family = write.index_family;
-    v.field = write.field;
-    v.requirement = write.requirement;
     v.description = write.description;
     return v;
 }
@@ -179,6 +164,17 @@ series_identity_shape_service::list_series_identity_shapes(
                    {.entity = "series identity shapes", .field = request.order.field});
         return response;
     }
+    if (request.filter && request.filter->code_one_of &&
+        request.filter->code_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "code_one_of", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
+    if (request.filter && request.filter->search && request.filter->search->size() > 256) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "search", .limit = "256"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -190,8 +186,9 @@ series_identity_shape_service::list_series_identity_shapes(
             return response;
         }
     }
-    response.shapes = repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
-    response.total = repo_.get_total_shape_count(ctx_, as_of);
+    response.shapes = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_shape_count(ctx_, request.filter, as_of);
     return response;
 }
 
@@ -321,12 +318,7 @@ series_identity_shape_service::delete_series_identity_shape(
         }
         expected = request.removal.precondition.version;
     }
-    switch (repo_.remove(ctx_,
-                         request.removal.key.asset_class,
-                         request.removal.key.series_subclass,
-                         request.removal.key.index_family,
-                         request.removal.key.field,
-                         expected)) {
+    switch (repo_.remove(ctx_, request.removal.key.code, expected)) {
         case repository::series_identity_shape_repository::remove_status::removed:
             break;
         case repository::series_identity_shape_repository::remove_status::missing:
@@ -340,7 +332,7 @@ series_identity_shape_service::delete_series_identity_shape(
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "series_identity_shape",
-                 .field = "asset_class",
+                 .field = "code",
                  .expected = expected ? std::to_string(*expected) : std::string{},
                  .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
             break;
@@ -376,23 +368,11 @@ series_identity_shape_service::delete_many_series_identity_shapes(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> asset_class_keys;
-    asset_class_keys.reserve(request.removals.size());
+    std::vector<std::string> code_keys;
+    code_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        asset_class_keys.push_back(removal.key.asset_class);
-    std::vector<std::string> series_subclass_keys;
-    series_subclass_keys.reserve(request.removals.size());
-    for (const auto& removal : request.removals)
-        series_subclass_keys.push_back(removal.key.series_subclass);
-    std::vector<std::string> index_family_keys;
-    index_family_keys.reserve(request.removals.size());
-    for (const auto& removal : request.removals)
-        index_family_keys.push_back(removal.key.index_family);
-    std::vector<std::string> field_keys;
-    field_keys.reserve(request.removals.size());
-    for (const auto& removal : request.removals)
-        field_keys.push_back(removal.key.field);
-    repo_.remove(ctx_, asset_class_keys, series_subclass_keys, index_family_keys, field_keys);
+        code_keys.push_back(removal.key.code);
+    repo_.remove(ctx_, code_keys);
     return response;
 }
 
@@ -411,11 +391,7 @@ series_identity_shape_service::list_series_identity_shape_versions(
             refuse(outcome_code::filter_not_supported, {.entity = "series identity shapes"});
         return response;
     }
-    auto all = repo_.read_all(ctx_,
-                              request.key.asset_class,
-                              request.key.series_subclass,
-                              request.key.index_family,
-                              request.key.field);
+    auto all = repo_.read_all(ctx_, request.key.code);
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -431,12 +407,8 @@ messaging::get_series_identity_shape_version_response
 series_identity_shape_service::get_series_identity_shape_version(
     const messaging::get_series_identity_shape_version_request& request) {
     messaging::get_series_identity_shape_version_response response;
-    auto found = repo_.read_at_version(ctx_,
-                                       request.key.series_identity_shape.asset_class,
-                                       request.key.series_identity_shape.series_subclass,
-                                       request.key.series_identity_shape.index_family,
-                                       request.key.series_identity_shape.field,
-                                       request.key.version);
+    auto found =
+        repo_.read_at_version(ctx_, request.key.series_identity_shape.code, request.key.version);
     if (!found) {
         response.result = refuse(outcome_code::not_found, {.entity = "series_identity_shape"});
         return response;
@@ -458,7 +430,7 @@ ores::utility::domain::result series_identity_shape_service::prepare_change(
         case precondition_kind::must_not_exist:
             if (!current.empty())
                 return refuse(outcome_code::already_exists,
-                              {.entity = "series_identity_shape", .field = "asset_class"});
+                              {.entity = "series_identity_shape", .field = "code"});
             break;
         case precondition_kind::must_match_version:
             if (current.empty())
@@ -470,7 +442,7 @@ ores::utility::domain::result series_identity_shape_service::prepare_change(
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
                               {.entity = "series_identity_shape",
-                               .field = "asset_class",
+                               .field = "code",
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
@@ -506,74 +478,42 @@ std::uint32_t series_identity_shape_service::count_shapes() {
 
 
 std::optional<domain::series_identity_shape>
-series_identity_shape_service::get_shape_at_version(const std::string& asset_class,
-                                                    const std::string& series_subclass,
-                                                    const std::string& index_family,
-                                                    const std::string& field,
+series_identity_shape_service::get_shape_at_version(const std::string& code,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting series identity shape at version. "
-                               << "asset_class: " << asset_class
-                               << " series_subclass: " << series_subclass
-                               << " index_family: " << index_family << " field: " << field
+    BOOST_LOG_SEV(lg(), debug) << "Getting series identity shape at version. " << "code: " << code
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, asset_class, series_subclass, index_family, field, version);
+    return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::series_identity_shape>
-series_identity_shape_service::get_shape(const std::string& asset_class,
-                                         const std::string& series_subclass,
-                                         const std::string& index_family,
-                                         const std::string& field) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting series identity shape. "
-                               << "asset_class: " << asset_class
-                               << " series_subclass: " << series_subclass
-                               << " index_family: " << index_family << " field: " << field;
-    auto results = repo_.read_latest(ctx_, asset_class, series_subclass, index_family, field);
+series_identity_shape_service::get_shape(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting series identity shape. " << "code: " << code;
+    auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::series_identity_shape>
-series_identity_shape_service::get_shapes(const std::vector<std::string>& asset_classs,
-                                          const std::vector<std::string>& series_subclasss,
-                                          const std::vector<std::string>& index_familys,
-                                          const std::vector<std::string>& fields) {
-    return repo_.read_latest(ctx_, asset_classs, series_subclasss, index_familys, fields);
+series_identity_shape_service::get_shapes(const std::vector<std::string>& codes) {
+    return repo_.read_latest(ctx_, codes);
 }
 
 void series_identity_shape_service::save_shape(const domain::series_identity_shape& v) {
-    if (v.asset_class.empty())
-        throw std::invalid_argument("Series Identity Shape asset_class cannot be empty.");
-    if (v.series_subclass.empty())
-        throw std::invalid_argument("Series Identity Shape series_subclass cannot be empty.");
-    if (v.index_family.empty())
-        throw std::invalid_argument("Series Identity Shape index_family cannot be empty.");
-    if (v.field.empty())
-        throw std::invalid_argument("Series Identity Shape field cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving series identity shape. "
-                               << "asset_class: " << v.asset_class
-                               << " series_subclass: " << v.series_subclass
-                               << " index_family: " << v.index_family << " field: " << v.field;
+    if (v.code.empty())
+        throw std::invalid_argument("Series Identity Shape code cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving series identity shape. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved series identity shape. " << "asset_class: " << v.asset_class
-                              << " series_subclass: " << v.series_subclass
-                              << " index_family: " << v.index_family << " field: " << v.field;
+    BOOST_LOG_SEV(lg(), info) << "Saved series identity shape. " << "code: " << v.code;
 }
 
 void series_identity_shape_service::save_shapes(
     const std::vector<domain::series_identity_shape>& shapes) {
     for (const auto& e : shapes) {
-        if (e.asset_class.empty())
-            throw std::invalid_argument("Series Identity Shape asset_class cannot be empty.");
-        if (e.series_subclass.empty())
-            throw std::invalid_argument("Series Identity Shape series_subclass cannot be empty.");
-        if (e.index_family.empty())
-            throw std::invalid_argument("Series Identity Shape index_family cannot be empty.");
-        if (e.field.empty())
-            throw std::invalid_argument("Series Identity Shape field cannot be empty.");
+        if (e.code.empty())
+            throw std::invalid_argument("Series Identity Shape code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << shapes.size() << " series identity shapes";
     auto ts = shapes;
@@ -583,37 +523,20 @@ void series_identity_shape_service::save_shapes(
     repo_.write(ctx_, ts);
 }
 
-void series_identity_shape_service::delete_shape(const std::string& asset_class,
-                                                 const std::string& series_subclass,
-                                                 const std::string& index_family,
-                                                 const std::string& field) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing series identity shape. "
-                               << "asset_class: " << asset_class
-                               << " series_subclass: " << series_subclass
-                               << " index_family: " << index_family << " field: " << field;
-    repo_.remove(ctx_, asset_class, series_subclass, index_family, field);
-    BOOST_LOG_SEV(lg(), info) << "Removed series identity shape. " << "asset_class: " << asset_class
-                              << " series_subclass: " << series_subclass
-                              << " index_family: " << index_family << " field: " << field;
+void series_identity_shape_service::delete_shape(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing series identity shape. " << "code: " << code;
+    repo_.remove(ctx_, code);
+    BOOST_LOG_SEV(lg(), info) << "Removed series identity shape. " << "code: " << code;
 }
 
-void series_identity_shape_service::delete_shapes(const std::vector<std::string>& asset_classs,
-                                                  const std::vector<std::string>& series_subclasss,
-                                                  const std::vector<std::string>& index_familys,
-                                                  const std::vector<std::string>& fields) {
-    repo_.remove(ctx_, asset_classs, series_subclasss, index_familys, fields);
+void series_identity_shape_service::delete_shapes(const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
 }
 
 std::vector<domain::series_identity_shape>
-series_identity_shape_service::get_shape_history(const std::string& asset_class,
-                                                 const std::string& series_subclass,
-                                                 const std::string& index_family,
-                                                 const std::string& field) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for series identity shape. "
-                               << "asset_class: " << asset_class
-                               << " series_subclass: " << series_subclass
-                               << " index_family: " << index_family << " field: " << field;
-    return repo_.read_all(ctx_, asset_class, series_subclass, index_family, field);
+series_identity_shape_service::get_shape_history(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for series identity shape. " << "code: " << code;
+    return repo_.read_all(ctx_, code);
 }
 
 }

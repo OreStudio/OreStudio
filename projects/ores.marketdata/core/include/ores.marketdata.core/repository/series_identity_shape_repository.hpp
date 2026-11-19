@@ -28,6 +28,7 @@
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape.hpp"
+#include "ores.marketdata.api/messaging/series_identity_shape_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -102,16 +103,9 @@ public:
     /**@{*/
     std::vector<domain::series_identity_shape> read_latest(const context& ctx);
     std::vector<domain::series_identity_shape> read_latest(const context& ctx,
-                                                           const std::string& asset_class,
-                                                           const std::string& series_subclass,
-                                                           const std::string& index_family,
-                                                           const std::string& field);
-    std::vector<domain::series_identity_shape>
-    read_latest(const context& ctx,
-                const std::vector<std::string>& asset_classs,
-                const std::vector<std::string>& series_subclasss,
-                const std::vector<std::string>& index_familys,
-                const std::vector<std::string>& fields);
+                                                           const std::string& code);
+    std::vector<domain::series_identity_shape> read_latest(const context& ctx,
+                                                           const std::vector<std::string>& codes);
     /**@}*/
 
 
@@ -119,10 +113,7 @@ public:
      * @brief Reads all series identity shapes, possibly filtered by primary key.
      */
     std::vector<domain::series_identity_shape> read_all(const context& ctx,
-                                                        const std::string& asset_class,
-                                                        const std::string& series_subclass,
-                                                        const std::string& index_family,
-                                                        const std::string& field);
+                                                        const std::string& code);
 
     /**
      * @brief Reads a single series identity shape as it stood at a specific
@@ -133,12 +124,8 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::series_identity_shape> read_at_version(const context& ctx,
-                                                                 const std::string& asset_class,
-                                                                 const std::string& series_subclass,
-                                                                 const std::string& index_family,
-                                                                 const std::string& field,
-                                                                 std::uint32_t version);
+    std::optional<domain::series_identity_shape>
+    read_at_version(const context& ctx, const std::string& code, std::uint32_t version);
 
     /**
      * @brief Whether a list of series identity shapes can be ordered by a field.
@@ -156,29 +143,28 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::series_identity_shape>
-    read_latest(const context& ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {},
-                const std::optional<std::string>& as_of = std::nullopt);
+    std::vector<domain::series_identity_shape> read_latest(
+        const context& ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::series_identity_shapes_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active series identity shapes.
      * @param ctx Repository context with database connection
      * @return Total number of active series identity shapes
      */
-    std::uint32_t get_total_shape_count(const context& ctx,
-                                        const std::optional<std::string>& as_of = std::nullopt);
+    std::uint32_t get_total_shape_count(
+        const context& ctx,
+        const std::optional<messaging::series_identity_shapes_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a series identity shape by closing its temporal validity.
      */
-    void remove(const context& ctx,
-                const std::string& asset_class,
-                const std::string& series_subclass,
-                const std::string& index_family,
-                const std::string& field);
+    void remove(const context& ctx, const std::string& code);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -200,21 +186,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(const context& ctx,
-                         const std::string& asset_class,
-                         const std::string& series_subclass,
-                         const std::string& index_family,
-                         const std::string& field,
-                         std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& code, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes series identity shapes by closing their temporal validity.
      */
-    void remove(const context& ctx,
-                const std::vector<std::string>& asset_classs,
-                const std::vector<std::string>& series_subclasss,
-                const std::vector<std::string>& index_familys,
-                const std::vector<std::string>& fields);
+    void remove(const context& ctx, const std::vector<std::string>& codes);
 };
 
 }

@@ -49,13 +49,12 @@ struct series_identity_shape_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_marketdata_series_identity_shapes_tbl";
 
+    std::string code;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    int version = 0;
     std::string asset_class;
     std::string series_subclass;
     std::string index_family;
-    std::string field;
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-    int version = 0;
-    std::string requirement;
     std::string description;
     std::string modified_by;
     std::string performed_by;
@@ -70,13 +69,12 @@ struct series_identity_shape_entity {
     static constexpr auto columns() {
         using e = series_identity_shape_entity;
         namespace query_builder = ores::database::query_builder;
-        return query_builder::columns<e>() | query_builder::key("asset_class", &e::asset_class) |
-               query_builder::key("series_subclass", &e::series_subclass) |
-               query_builder::key("index_family", &e::index_family) |
-               query_builder::key("field", &e::field) |
+        return query_builder::columns<e>() | query_builder::key("code", &e::code) |
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
-               query_builder::bind("requirement", &e::requirement) |
+               query_builder::bind("asset_class", &e::asset_class) |
+               query_builder::bind("series_subclass", &e::series_subclass) |
+               query_builder::bind("index_family", &e::index_family) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

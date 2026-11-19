@@ -193,19 +193,13 @@ describe('the composer and the shape of the family', () => {
         field,
         requirement,
         description: '',
-        version: 1,
-        system: true,
-        modified_by: '',
-        recorded_at: '',
-        change_reason_code: '',
-        change_commentary: '',
     });
 
     function withShapes(state: EditorState, shapes: readonly unknown[]): string {
         const client = new QueryClient({
             defaultOptions: { queries: { retry: false, retryOnMount: false } },
         });
-        client.setQueryData(['series-identity-shapes'], shapes);
+        client.setQueryData(['series-identity-shape-fields'], shapes);
         client.setQueryData(
             ['series-classification-rules'],
             [

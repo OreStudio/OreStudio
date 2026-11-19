@@ -43,11 +43,10 @@ series_identity_shape_mapper::map(const series_identity_shape_entity& v) {
     domain::series_identity_shape r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
+    r.code = v.code;
     r.asset_class = v.asset_class;
     r.series_subclass = v.series_subclass;
     r.index_family = v.index_family;
-    r.field = v.field;
-    r.requirement = v.requirement;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -64,13 +63,12 @@ series_identity_shape_mapper::map(const domain::series_identity_shape& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     series_identity_shape_entity r;
+    r.code = v.code;
+    r.tenant_id = v.tenant_id;
+    r.version = v.version;
     r.asset_class = v.asset_class;
     r.series_subclass = v.series_subclass;
     r.index_family = v.index_family;
-    r.field = v.field;
-    r.tenant_id = v.tenant_id;
-    r.version = v.version;
-    r.requirement = v.requirement;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

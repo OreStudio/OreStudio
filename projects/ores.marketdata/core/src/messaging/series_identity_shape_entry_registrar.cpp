@@ -1,0 +1,107 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.marketdata.core/messaging/series_identity_shape_entry_registrar.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.marketdata.api/messaging/series_identity_shape_entry_protocol.hpp"
+#include "ores.marketdata.core/messaging/series_identity_shape_entry_handler.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <memory>
+#include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
+
+namespace ores::marketdata::messaging {
+
+namespace {
+static constexpr std::string_view series_identity_shape_entry_queue_group =
+    "ores.marketdata.service";
+}
+
+std::vector<ores::nats::service::subscription> register_series_identity_shape_entry_handlers(
+    ores::nats::service::client& nats,
+    const ores::database::context& ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+    std::vector<ores::nats::service::subscription> subs;
+    auto h = std::make_shared<series_identity_shape_entry_handler>(nats, ctx, std::move(verifier));
+    subs.push_back(nats.queue_subscribe(
+        list_series_identity_shape_entries_request::nats_subject,
+        series_identity_shape_entry_queue_group,
+        [h](ores::nats::message msg) { h->list_series_identity_shape_entries(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_series_identity_shape_entry_request::nats_subject,
+        series_identity_shape_entry_queue_group,
+        [h](ores::nats::message msg) { h->get_series_identity_shape_entry(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_many_series_identity_shape_entries_request::nats_subject,
+                             series_identity_shape_entry_queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->get_many_series_identity_shape_entries(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        put_series_identity_shape_entry_request::nats_subject,
+        series_identity_shape_entry_queue_group,
+        [h](ores::nats::message msg) { h->put_series_identity_shape_entry(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(put_many_series_identity_shape_entries_request::nats_subject,
+                             series_identity_shape_entry_queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->put_many_series_identity_shape_entries(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        delete_series_identity_shape_entry_request::nats_subject,
+        series_identity_shape_entry_queue_group,
+        [h](ores::nats::message msg) { h->delete_series_identity_shape_entry(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(delete_many_series_identity_shape_entries_request::nats_subject,
+                             series_identity_shape_entry_queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->delete_many_series_identity_shape_entries(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        list_by_shape_code_series_identity_shape_entries_request::nats_subject,
+        series_identity_shape_entry_queue_group,
+        [h](ores::nats::message msg) {
+            h->list_by_shape_code_series_identity_shape_entries(std::move(msg));
+        }));
+    subs.push_back(
+        nats.queue_subscribe(list_series_identity_shape_entry_versions_request::nats_subject,
+                             series_identity_shape_entry_queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_series_identity_shape_entry_versions(std::move(msg));
+                             }));
+    subs.push_back(
+        nats.queue_subscribe(get_series_identity_shape_entry_version_request::nats_subject,
+                             series_identity_shape_entry_queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->get_series_identity_shape_entry_version(std::move(msg));
+                             }));
+    return subs;
+}
+
+}

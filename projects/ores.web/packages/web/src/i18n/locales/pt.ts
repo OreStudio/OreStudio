@@ -4504,6 +4504,7 @@ const pt: SourceCatalogue = {
                 authorisation: 'Autorização',
                 runs: 'Execuções',
                 cuts: 'Cortes',
+                entries: 'Entradas',
             },
         },
         fields: {
@@ -4620,6 +4621,10 @@ const pt: SourceCatalogue = {
             curve_role_code: 'Papel da curva',
         },
         choices: {
+            requirement: {
+                required: 'Obrigatório',
+                forbidden: 'Proibido',
+            },
             ore_currency_type: { Major: 'Principal', Metal: 'Metal', Crypto: 'Cripto' },
             curve_family_role: {
                 FUNDING: 'Financiamento',
@@ -5363,33 +5368,37 @@ const pt: SourceCatalogue = {
         },
         identityShapes: {
             title: 'Formas de identidade',
-            lead: 'Os campos que cada família de séries de mercado exige e proíbe. A escrita recusa uma série cuja identidade viola a forma da sua família.',
-            add: 'Adicionar uma linha',
-            none: 'Nenhuma família indica ainda uma forma.',
-            field: 'Campo',
-            requirement: 'Exigência',
-            description: 'Porquê',
-            owner: 'Dono',
-            shared: 'Partilhada',
-            own: 'Própria',
-            history: 'Histórico',
-            edit: 'Alterar',
-            remove: 'Remover',
-            version: 'Versão',
-            changedBy: 'Alterado por',
-            reason: 'Motivo',
-            recorded: 'Registado',
-            assetClass: 'Classe de ativos',
-            seriesSubclass: 'Subclasse de série',
-            indexFamily: 'Família de índice (vazia exceto num fixing)',
-            addTitle: 'Adicionar uma linha de forma',
-            editTitle: 'Alterar {field} de {family}',
-            removeTitle: 'Remover {field} de {family}',
-            removeLead:
-                'A família deixa de exigir ou proibir este campo. As identidades escritas depois deixam de estar sujeitas a ele.',
-            requirements: {
-                required: 'Exigido',
-                forbidden: 'Proibido',
+            lead: 'A forma de identidade de cada família de séries de mercado: para que serve a família, e os campos que a sua identidade exige e proíbe. O escritor recusa uma série cuja identidade não respeita a forma da sua família.',
+            add: 'Adicionar uma forma',
+            addTitle: 'Adicionar uma forma de identidade',
+            addEntry: 'Adicionar um campo',
+            entry: 'Campo',
+            removeEntry: 'Remover o campo',
+            entriesLead:
+                'Os campos que esta família exige e proíbe. Um campo que a forma não nomeia não é verificado.',
+            removeWarning:
+                'A forma e todos os seus campos são removidos. As séries desta família passam a ser escritas sem verificação.',
+            fields: {
+                code: 'Código',
+                asset_class: 'Classe de ativo',
+                series_subclass: 'Subclasse de série',
+                index_family: 'Família de índice',
+                description: 'Para que serve',
+                field: 'Campo',
+                requirement: 'Exigência',
+                entry_description: 'Porquê',
+            },
+            help: {
+                asset_class: 'Como o URI oresmd a escreve: ir, fx, credit.',
+                series_subclass: 'Como a taxonomia de séries a escreve: index_fixing, yield, spot.',
+                index_family:
+                    'Só para um fixing: ibor, swap, fx. Deixe vazio para qualquer outra família.',
+                description: 'O que é a família, e para que serve uma série dela.',
+                field: 'A coluna de identidade, como ccy, unit_ccy, index_name ou tenor.',
+                requirement: {
+                    required: 'Uma série desta família tem de dar este campo.',
+                    forbidden: 'Uma série desta família não pode dar este campo.',
+                },
             },
         },
         connectivity: {

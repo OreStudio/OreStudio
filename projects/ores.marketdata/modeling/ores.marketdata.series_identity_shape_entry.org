@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: 31ADA72E-B724-40A0-8360-8348B8FE4439
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.series_identity_shape_entry
+#+description: One identity field an identity shape requires or forbids, stated as data so the writer can refuse a row that misses one.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: series_identity_shape_entry
+#+entity_plural: series_identity_shape_entries
+#+entity_title: Series Identity Shape Entry
+#+brief: One field of an identity shape, and whether the shape requires it or forbids it.
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+An entry of an identity shape, one row per field the shape speaks about.
+
+The shape it belongs to is named by its code, and the shape holds the family:
+the asset class, the series subclass and the index family. The entry says what
+the family makes of one field: =required= means a row of this family that
+leaves it empty is not an identity, =forbidden= means the field says nothing
+about this family and a row that fills it states something untrue. A field a
+shape does not mention is neither: the family does not use it, and the writer
+leaves it as the URI parse left it.
+
+The writer that projects an identity row from an oresmd URI reads the shapes
+and their entries together, and refuses a row that misses a required field or
+carries a forbidden one, naming the family and the field.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:profile:       simple-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID that names this entry. An entry is one field of one shape, so the pair of
+=shape_code= and =field= is unique among the current rows, by the declared index
+below. A surrogate key names the row by one value, so its history reads as any
+other record's.
+
+** shape_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+The code of the identity shape the entry belongs to, such as
+=ir.index_fixing.ibor=.
+
+#+begin_src cpp :name generator
+std::string("ir.index_fixing.ibor")
+#+end_src
+
+** field
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+The identity column the row speaks about, named as =market_series_identity=
+holds it: =ccy=, =unit_ccy=, =index=, =instrument_type=.
+
+A name that is no column of that table is a statement nobody can act on, so
+=build/scripts/check_marketdata_identity_columns.py= checks every seeded row
+against the table's columns at build time.
+
+#+begin_src cpp :name generator
+std::string("ccy")
+#+end_src
+
+** requirement
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether the shape requires the field or forbids it: =required= or =forbidden=.
+
+#+begin_src cpp :name generator
+std::string("required")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Why the shape makes that of the field, in one sentence.
+
+#+begin_src cpp :name generator
+std::string("The currency the rate is quoted in.")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_series_identity_shape_entries_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression                                 |
+|--------------------------------------------|
+| "requirement" in ('required', 'forbidden') |
+| "field" <> ''                              |
+
+** Indexes
+
+| name        | columns                       | unique | current_only | where_extra |
+|-------------+-------------------------------+--------+--------------+-------------|
+| shape_field | tenant_id, shape_code, field  | true   | true         |             |
+
+* Foreign keys
+
+** shape_code
+:PROPERTIES:
+:table:                 ores_marketdata_series_identity_shapes_tbl
+:system_tenant_visible: true
+:target_column:         code
+:parent_entity:         series_identity_shape
+:nullable:              false
+:error_message:         Invalid shape_code: %. No active identity shape has this code.
+:list_by:               true
+:list_by_as_of:         true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: entry
+:entity_plural_short:   entries
+:entity_singular_words: series identity shape entry
+:entity_plural_words:   series identity shape entries
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sise
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| shape_code      | Shape       |
+| field           | Field       |
+| requirement     | Requirement |
+| description     | Description |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D5C3B146-66FC-4EDA-83B4-A6BAF3F67BD7][ores.marketdata.series_identity_shape]]
+  — the shape the entry belongs to.
+- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market
+  series it reads]] — the identity the shape states.

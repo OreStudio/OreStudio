@@ -29,19 +29,13 @@ declare
     notification_payload jsonb;
     change_action text;
     changed_version integer := 0;
-    changed_asset_class text;
-    changed_series_subclass text;
-    changed_index_family text;
-    changed_field text;
+    changed_code text;
     changed_key jsonb;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
-        changed_asset_class := OLD.asset_class;
-        changed_series_subclass := OLD.series_subclass;
-        changed_index_family := OLD.index_family;
-        changed_field := OLD.field;
+        changed_code := OLD.code;
         changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
     elsif TG_OP = 'UPDATE' then
@@ -59,14 +53,11 @@ begin
             change_action := 'updated';
         end if;
         changed_version := NEW.version;
-        changed_asset_class := NEW.asset_class;
-        changed_series_subclass := NEW.series_subclass;
-        changed_index_family := NEW.index_family;
-        changed_field := NEW.field;
+        changed_code := NEW.code;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
-    changed_key := jsonb_build_object('asset_class', changed_asset_class, 'series_subclass', changed_series_subclass, 'index_family', changed_index_family, 'field', changed_field);
+    changed_key := jsonb_build_object('code', changed_code);
 
     notification_payload := jsonb_build_object(
         'event_id', gen_random_uuid()::text,

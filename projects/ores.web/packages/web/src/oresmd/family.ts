@@ -19,7 +19,12 @@
  *
  */
 
-import type { ClassificationRule, Requirement, Shape, ShapeKey } from '../api/identityShapes.js';
+import type {
+    ClassificationRule,
+    FamilyKey,
+    Requirement,
+    ShapeField,
+} from '../api/identityShapes.js';
 import type { EditorRow, EditorState } from './editor.js';
 
 /**
@@ -30,7 +35,7 @@ import type { EditorRow, EditorState } from './editor.js';
  * family of a fixing. The shapes are stated per identity column, so each field
  * the editor offers is named by the column the writer projects it into.
  */
-export type FamilyKey = Omit<ShapeKey, 'field'>;
+export type { FamilyKey };
 
 /** The subclass every fixing has, which the identity kind rule requires. */
 const FIXING_SUBCLASS = 'index_fixing';
@@ -86,10 +91,10 @@ export function familyOfEditor(
     };
 }
 
-/** What the shape of a family says, by identity column. Empty when no row states the family. */
+/** What the shape of a family says, by identity column. Empty when no shape states the family. */
 export function marksOf(
     family: FamilyKey | null,
-    shapes: readonly Shape[],
+    shapes: readonly ShapeField[],
 ): ReadonlyMap<string, Requirement> {
     if (family === null) return new Map();
     return new Map(

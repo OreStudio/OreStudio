@@ -33,12 +33,12 @@ std::string convert_to_table(const std::vector<series_identity_shape>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Asset Class" << "Subclass" << "Index" << "Field" << "Requirement"
-          << "Description" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Asset Class" << "Subclass" << "Index" << "Description"
+          << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& sis : v) {
-        table << sis.asset_class << sis.series_subclass << sis.index_family << sis.field
-              << sis.requirement << sis.description << sis.modified_by << sis.version << fort::endr;
+        table << sis.code << sis.asset_class << sis.series_subclass << sis.index_family
+              << sis.description << sis.modified_by << sis.version << fort::endr;
     }
     return table.to_string();
 }

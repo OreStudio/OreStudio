@@ -43,21 +43,17 @@
 namespace ores::marketdata::messaging {
 
 struct series_identity_shape_key {
-    std::string asset_class;
-    std::string series_subclass;
-    std::string index_family;
-    std::string field;
+    std::string code;
 
     friend bool operator==(const series_identity_shape_key&,
                            const series_identity_shape_key&) = default;
 };
 
 struct series_identity_shape_write {
+    std::string code;
     std::string asset_class;
     std::string series_subclass;
     std::string index_family;
-    std::string field;
-    std::string requirement;
     std::string description;
 
     friend bool operator==(const series_identity_shape_write&,
@@ -86,6 +82,14 @@ struct series_identity_shape_lookup {
 
     friend bool operator==(const series_identity_shape_lookup&,
                            const series_identity_shape_lookup&) = default;
+};
+
+struct series_identity_shapes_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+    std::optional<std::string> search;
+
+    friend bool operator==(const series_identity_shapes_filter&,
+                           const series_identity_shapes_filter&) = default;
 };
 
 struct series_identity_shape_event {
@@ -130,6 +134,7 @@ struct list_series_identity_shapes_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<series_identity_shapes_filter> filter;
     std::optional<std::string> as_of;
 
     friend bool operator==(const list_series_identity_shapes_request&,
@@ -372,10 +377,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.series_identit
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_identity_shape_key>) {
     return ::ores::utility::codec::field_list{
-        utility::codec::field{"asset_class", &series_identity_shape_key::asset_class},
-        utility::codec::field{"series_subclass", &series_identity_shape_key::series_subclass},
-        utility::codec::field{"index_family", &series_identity_shape_key::index_family},
-        utility::codec::field{"field", &series_identity_shape_key::field},
+        utility::codec::field{"code", &series_identity_shape_key::code},
     };
 }
 
@@ -389,11 +391,10 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.series_identit
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_identity_shape_write>) {
     return ::ores::utility::codec::field_list{
+        utility::codec::field{"code", &series_identity_shape_write::code},
         utility::codec::field{"asset_class", &series_identity_shape_write::asset_class},
         utility::codec::field{"series_subclass", &series_identity_shape_write::series_subclass},
         utility::codec::field{"index_family", &series_identity_shape_write::index_family},
-        utility::codec::field{"field", &series_identity_shape_write::field},
-        utility::codec::field{"requirement", &series_identity_shape_write::requirement},
         utility::codec::field{"description", &series_identity_shape_write::description},
     };
 }
@@ -441,6 +442,21 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.series_identit
         utility::codec::field{"key", &series_identity_shape_lookup::key},
         utility::codec::field{"series_identity_shape",
                               &series_identity_shape_lookup::series_identity_shape},
+    };
+}
+
+/**
+ * @brief The members of series_identity_shapes_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<series_identity_shapes_filter>) {
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"code_one_of", &series_identity_shapes_filter::code_one_of},
+        utility::codec::field{"search", &series_identity_shapes_filter::search},
     };
 }
 
@@ -509,6 +525,7 @@ wire_fields(std::type_identity<series_identity_shape_versions_filter>) {
         utility::codec::field{"offset", &list_series_identity_shapes_request::offset},
         utility::codec::field{"limit", &list_series_identity_shapes_request::limit},
         utility::codec::field{"order", &list_series_identity_shapes_request::order},
+        utility::codec::field{"filter", &list_series_identity_shapes_request::filter},
         utility::codec::field{"as_of", &list_series_identity_shapes_request::as_of},
     };
 }
@@ -851,6 +868,20 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::series_identity_shape_lookup& v);
     static ores::marketdata::messaging::series_identity_shape_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::series_identity_shapes_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::series_identity_shapes_filter& v);
+    static ores::marketdata::messaging::series_identity_shapes_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::series_identity_shapes_filter& v);
+    static ores::marketdata::messaging::series_identity_shapes_filter
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

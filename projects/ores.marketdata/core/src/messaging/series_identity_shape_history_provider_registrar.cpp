@@ -23,17 +23,25 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/messaging/series_identity_shape_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.marketdata.core/presentation/series_identity_shape_history_field_mapper.hpp"
+#include "ores.marketdata.core/service/series_identity_shape_service.hpp"
 
 namespace ores::marketdata::messaging {
 
 void register_series_identity_shape_history_provider(
     ores::history::service::dispatch_registry& registry) {
-    // A compound-key row has no single-string id on the history_provider
-    // interface, so nothing is registered for it yet. The direct service
-    // call carries the full key; a provider shape is a composite-key
-    // representation decision that stays open until a consumer exists.
-    (void)registry;
+    registry.register_history_provider(
+        "ores.marketdata.series_identity_shape",
+        "marketdata::series_identity_shapes:read",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::series_identity_shape_service svc(scoped_ctx);
+            auto versions = svc.get_shape_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_series_identity_shape_fields);
+        });
 }
 
 }

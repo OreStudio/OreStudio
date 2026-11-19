@@ -46,9 +46,22 @@
 
 begin;
 
-select plan(12);
+select plan(16);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+-- A shape names a family by code, and its entries name the fields. Every claim
+-- below is about a family and a field, so the two are read joined, from the rows
+-- the session can see: its own and the system tenant's.
+create temporary view stated_entries as
+select e.tenant_id, sh.asset_class, sh.series_subclass, sh.index_family,
+       e.field, e.requirement
+from ores_marketdata_series_identity_shape_entries_tbl e
+join ores_marketdata_series_identity_shapes_tbl sh
+  on sh.code = e.shape_code
+ and sh.tenant_id in (e.tenant_id, ores_utility_system_tenant_id_fn())
+ and sh.valid_to = ores_utility_infinity_timestamp_fn()
+where e.valid_to = ores_utility_infinity_timestamp_fn();
 
 -- One row per identity a shape speaks for. The shape is joined by the same key
 -- the projection uses: the class and the index family from the identity row, and
@@ -75,12 +88,11 @@ join ores_marketdata_market_series_tbl s
   on s.id = i.series_id
  and s.tenant_id = i.tenant_id
  and s.valid_to = ores_utility_infinity_timestamp_fn()
-join ores_marketdata_series_identity_shapes_tbl st
+join stated_entries st
   on st.tenant_id in (i.tenant_id, ores_utility_system_tenant_id_fn())
  and st.asset_class = to_jsonb(i) ->> 'asset_class'
  and st.series_subclass = s.series_subclass
- and st.index_family = coalesce(to_jsonb(i) ->> 'index', '')
- and st.valid_to = ores_utility_infinity_timestamp_fn();
+ and st.index_family = coalesce(to_jsonb(i) ->> 'index', '');
 
 -- On a database that has not imported a market series yet there is nothing to
 -- contradict, so this count reads 0 whatever the shapes say. The claims about
@@ -92,6 +104,21 @@ select is(
         or (requirement = 'forbidden' and held <> '')),
     0,
     'no identity contradicts the shape its family states'
+);
+
+-- The writer reads an entry whose shape is gone as speaking for no family, so a
+-- catalogue that holds one has lost a rule without a word. The seed holds none.
+select is(
+    (select string_agg(e.shape_code || '/' || e.field, ', ' order by e.shape_code, e.field)
+     from ores_marketdata_series_identity_shape_entries_tbl e
+     where e.valid_to = ores_utility_infinity_timestamp_fn()
+       and not exists (
+           select 1 from ores_marketdata_series_identity_shapes_tbl sh
+           where sh.code = e.shape_code
+             and sh.tenant_id in (e.tenant_id, ores_utility_system_tenant_id_fn())
+             and sh.valid_to = ores_utility_infinity_timestamp_fn())),
+    null,
+    'every entry names a shape that is stated'
 );
 
 -- A fixing is keyed by its index family and by nothing else, so one rule speaks
@@ -108,11 +135,10 @@ select is(
 
 select results_eq(
     $$select field || ' ' || requirement
-      from ores_marketdata_series_identity_shapes_tbl
+      from stated_entries
       where asset_class = 'ir'
         and series_subclass = 'index_fixing'
         and index_family = 'ibor'
-        and valid_to = ores_utility_infinity_timestamp_fn()
       order by field$$,
     $$values ('ccy required'), ('index required'), ('index_name required'),
              ('unit_ccy forbidden')$$,
@@ -149,8 +175,9 @@ create temporary table t_unguarded_on_purpose (
     reason text not null
 ) on commit drop;
 
--- The shapes are copied so the cases below can take a family's rows away without
--- touching the catalogue. The copy reads what the writer reads.
+-- The shapes are copied so the cases below can take a family away without touching
+-- the catalogue. The copy reads what the writer reads: a shape states its family
+-- whether or not it has entries yet.
 create temporary table t_stated_shapes on commit drop as
 select distinct asset_class, series_subclass, index_family
 from ores_marketdata_series_identity_shapes_tbl
@@ -238,8 +265,7 @@ end;
 -- security does not bind, so the two sets can be compared side by side.
 create temporary table t_system_shapes on commit drop as
 select asset_class, series_subclass, index_family, field, requirement
-from ores_marketdata_series_identity_shapes_tbl
-where valid_to = ores_utility_infinity_timestamp_fn();
+from stated_entries;
 
 create temporary table t_other on commit drop as
 select tenant_id as id from ores_iam_provision_tenant_fn(
@@ -252,8 +278,7 @@ select cmp_ok((select count(*) from t_system_shapes), '>', 0::bigint,
 select set_config('app.current_tenant_id', (select id::text from t_other), true);
 
 select is(
-    (select count(*)::int from ores_marketdata_series_identity_shapes_tbl
-     where valid_to = ores_utility_infinity_timestamp_fn()),
+    (select count(*)::int from stated_entries),
     (select count(*)::int from t_system_shapes),
     'a provisioned tenant reads as many shapes as the system tenant states'
 );
@@ -264,12 +289,10 @@ select is(
          from t_system_shapes
          except
          select asset_class, series_subclass, index_family, field, requirement
-         from ores_marketdata_series_identity_shapes_tbl
-         where valid_to = ores_utility_infinity_timestamp_fn())
+         from stated_entries)
         union all
         (select asset_class, series_subclass, index_family, field, requirement
-         from ores_marketdata_series_identity_shapes_tbl
-         where valid_to = ores_utility_infinity_timestamp_fn()
+         from stated_entries
          except
          select asset_class, series_subclass, index_family, field, requirement
          from t_system_shapes)) seen),
@@ -285,12 +308,47 @@ select is(
 );
 
 select is(
+    (select count(*)::int from ores_marketdata_series_identity_shape_entries_tbl
+     where tenant_id = (select id from t_other)),
+    0,
+    'a provisioned tenant holds no copy of the shape entries'
+);
+
+select is(
     (select count(*)::int
      from ores_marketdata_series_classification_rules_tbl
      where key_kind = 'index'
        and valid_to = ores_utility_infinity_timestamp_fn()),
     1,
     'a provisioned tenant holds one rule for the index keys, so its fixings classify'
+);
+
+-- A code is the family's parts joined by dots, so a person who reads a code reads
+-- the family. A shape whose code names another family is refused.
+select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+select throws_ok(
+    $$insert into ores_marketdata_series_identity_shapes_tbl (
+          tenant_id, code, asset_class, series_subclass, index_family, description,
+          version, modified_by, performed_by, change_reason_code, change_commentary)
+      values (ores_utility_system_tenant_id_fn(), 'ir.yield', 'fx', 'spot', '',
+              'A code that names another family.',
+              0, current_user, current_user, 'system.initial_load', 'test')$$,
+    '23514',
+    null,
+    'a shape whose code names another family is refused'
+);
+
+select throws_ok(
+    $$insert into ores_marketdata_series_identity_shape_entries_tbl (
+          tenant_id, id, shape_code, field, requirement, description,
+          version, modified_by, performed_by, change_reason_code, change_commentary)
+      values (ores_utility_system_tenant_id_fn(), gen_random_uuid(), 'ir.no_such_shape', 'ccy', 'required',
+              'An entry of a shape nobody stated.',
+              0, current_user, current_user, 'system.initial_load', 'test')$$,
+    null,
+    'Invalid shape_code: ir.no_such_shape. No active identity shape has this code.',
+    'an entry that names no stated shape is refused'
 );
 
 select * from finish();

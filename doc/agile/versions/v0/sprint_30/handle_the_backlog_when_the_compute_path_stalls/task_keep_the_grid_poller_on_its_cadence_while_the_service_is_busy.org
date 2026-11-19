@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle-the-backlog-when-the-compute-path-stalls]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
@@ -83,3 +83,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compute_grid_poller= expires its timer at the next point on a fixed
+steady-clock schedule instead of after each read, so a slow read no longer
+displaces the samples that follow it, and an interval a read overran is
+skipped rather than caught up on.
+
+PR #4881. =compass check --exclude-heavy=: 28/28 passed and the compute
+service unit builds clean. The cadence is verified against the incident's
+timings by reading the loop; no unit test covers the scheduling arithmetic.
+The bridge and the lease reaper still measure from the end of their work,
+which the chart does not show.

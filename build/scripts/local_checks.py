@@ -422,6 +422,18 @@ CATALOGUE: tuple[Check, ...] = (
                "build/scripts/generate_trade_type_coverage.py"),
         fix="Run python3 build/scripts/generate_trade_type_coverage.py --write and commit the page.",
     ),
+    Check(
+        id="script-twins",
+        title="The scripted twin recipes' seed and compiled table match the catalogue",
+        argv=("python3", "projects/ores.sql/utility/generate_script_twins.py", "--check"),
+        classes=("modeling", "sql", "cpp", "tooling"),
+        paths=("projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org",
+               "projects/ores.sql/populate/trading/trading_script_library_populate.sql",
+               "projects/ores.sql/populate/trading/trading_script_twin_inputs_populate.sql",
+               "projects/ores.synthetic/core/src/service/script_twin_recipes.hpp",
+               "projects/ores.sql/utility/generate_script_twins.py"),
+        fix="Run python3 projects/ores.sql/utility/generate_script_twins.py and commit the result.",
+    ),
     # The generated tables are the only copy of the schema's shape we keep, so
     # a hand edit or a schema change that the tables did not follow is the same
     # failure from here.

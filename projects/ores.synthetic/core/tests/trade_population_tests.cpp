@@ -18,6 +18,7 @@
  *
  */
 #include "ore_example_conventions.hpp"
+#include "ores.synthetic.core/service/scripted_twins.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
@@ -413,10 +414,17 @@ TEST_CASE("a_credit_scope_whose_conventions_lack_the_cds_convention_is_refused",
  * past that position are never drawn. A config that wants every code states one
  * slot per code, which is what the seeded profiles do.
  */
+/// Whether the slot is the scripted twin of a native slot.
+bool is_scripted_twin(const domain::trade_population_slot& slot) {
+    return slot.internal_identifier.ends_with("-scripted");
+}
+
+/// The codes the planner draws: the native slots' codes, without their twins.
 std::set<std::string> codes_of(const domain::trade_population_plan& plan) {
     std::set<std::string> codes;
     for (const auto& slot : plan.slots)
-        codes.insert(slot.trade_type_code);
+        if (!is_scripted_twin(slot))
+            codes.insert(slot.trade_type_code);
     return codes;
 }
 
@@ -448,7 +456,12 @@ TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[t
 
     std::set<std::string> types;
     std::size_t held = 0;
+    std::size_t twins = 0;
     for (const auto& slot : plan.slots) {
+        if (is_scripted_twin(slot)) {
+            ++twins;
+            continue;
+        }
         types.insert(slot.trade_type_code);
         if (slot.structure_role == "sub_trade")
             ++held;
@@ -463,7 +476,7 @@ TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[t
     REQUIRE(types.size() == 33u);
     const auto books = wide.book_ids.size();
     CHECK(held == 4u * books);
-    CHECK(plan.slots.size() == 37u * books);
+    CHECK(plan.slots.size() - twins == 37u * books);
     CHECK(plan.structures.size() == 3u * books);
 }
 
@@ -916,7 +929,8 @@ TEST_CASE("a_rate_config_that_states_one_slot_per_routed_code_draws_every_code",
     seeded.trades_per_book = static_cast<std::uint32_t>(routed.size());
 
     const auto plan = plan_of(seeded);
-    REQUIRE(plan.slots.size() == routed.size());
+    REQUIRE(static_cast<std::size_t>(std::ranges::count_if(
+                plan.slots, [](const auto& s) { return !is_scripted_twin(s); })) == routed.size());
     CHECK(codes_of(plan) == routed);
     CHECK(codes_of(plan).contains("KnockOutSwap"));
 }
@@ -1055,11 +1069,7 @@ TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", "[trade
     scope.trades_per_book = 26;
     const auto plan = plan_of(scope);
 
-    std::set<std::string> types;
-    for (const auto& slot : plan.slots)
-        types.insert(slot.trade_type_code);
-
-    CHECK(types.size() == 26);
+    CHECK(codes_of(plan).size() == 26);
 }
 
 TEST_CASE("an_fx_config_that_states_one_slot_per_routed_code_draws_every_code",
@@ -1079,7 +1089,8 @@ TEST_CASE("an_fx_config_that_states_one_slot_per_routed_code_draws_every_code",
     seeded.trades_per_book = static_cast<std::uint32_t>(routed.size());
 
     const auto plan = plan_of(seeded);
-    REQUIRE(plan.slots.size() == routed.size());
+    REQUIRE(static_cast<std::size_t>(std::ranges::count_if(
+                plan.slots, [](const auto& s) { return !is_scripted_twin(s); })) == routed.size());
     CHECK(codes_of(plan) == routed);
     CHECK(codes_of(plan).contains("FxVarianceSwap"));
     CHECK(codes_of(plan).contains("FxAccumulator"));
@@ -1879,4 +1890,137 @@ TEST_CASE("a_cap_floor_population_states_every_kind_with_every_position", "[trad
                       instruments.cap_floor_instruments.front().long_short.value_or(""));
     }
     CHECK(pairs.size() == 4u);
+}
+
+TEST_CASE("a_product_with_a_scripted_form_is_booked_again_as_its_scripted_twin",
+          "[trade_population]") {
+    auto scope = fx_scope();
+    scope.trades_per_book = 64;
+    const auto plan = plan_of(scope);
+
+    const auto native = std::ranges::find_if(
+        plan.slots, [](const auto& s) { return s.trade_type_code == "FxBasketOption"; });
+    REQUIRE(native != plan.slots.end());
+    const auto twin = std::ranges::find_if(plan.slots, [&](const auto& s) {
+        return s.internal_identifier == native->internal_identifier + "-scripted";
+    });
+    REQUIRE(twin != plan.slots.end());
+    CHECK(twin->trade_type_code == "ScriptedTrade");
+    CHECK(twin->trade_id != native->trade_id);
+    CHECK(twin->book_id == native->book_id);
+
+    REQUIRE(twin->instruments.scripted_instruments.size() == 1u);
+    CHECK(twin->instruments.scripted_instruments[0].script_name == "VanillaBasketOption");
+    const auto& parameters = twin->instruments.scripted_parameters;
+    const auto value_of = [&](const char* name) -> std::string {
+        for (const auto& p : parameters)
+            if (p.name == name)
+                return p.value.value_or("");
+        return "<absent>";
+    };
+    // The twin states the native trade's own terms, read from its rows.
+    REQUIRE(native->instruments.fx_basket_option_instruments.size() == 1u);
+    const auto& basket = native->instruments.fx_basket_option_instruments[0];
+    REQUIRE(basket.strike.has_value());
+    CHECK(value_of("Strike") == basket.strike->to_string());
+    CHECK(value_of("Notional") == basket.notional.to_string());
+    CHECK(value_of("PayCcy") == basket.currency);
+    REQUIRE(native->instruments.instrument_options.size() == 1u);
+    CHECK(value_of("LongShort") ==
+          (native->instruments.instrument_options[0].long_short == "Long" ? "1" : "-1"));
+    // The basket's members are the twin's underlyings, in the native order.
+    std::vector<std::string> members;
+    for (const auto& u : native->instruments.instrument_underlyings)
+        members.push_back(u.name);
+    const auto list =
+        std::ranges::find_if(parameters, [](const auto& p) { return p.name == "Underlyings"; });
+    REQUIRE(list != parameters.end());
+    std::vector<std::string> stated;
+    for (const auto& value : twin->instruments.scripted_parameter_values)
+        if (value.parameter_sequence_number == list->sequence_number)
+            stated.push_back(value.value);
+    CHECK(stated == members);
+}
+
+TEST_CASE("every_basket_and_rainbow_option_has_a_twin_over_its_library_script",
+          "[trade_population]") {
+    const std::map<std::string, std::string> script_of = {
+        {"EquityBasketOption", "VanillaBasketOption"},
+        {"EquityRainbowOption", "MaxRainbowOption"},
+        {"FxBasketOption", "VanillaBasketOption"},
+        {"FxRainbowOption", "MaxRainbowOption"}};
+    for (auto scope : {equity_scope(), fx_scope()}) {
+        scope.trades_per_book = 64;
+        const auto plan = plan_of(scope);
+        std::set<boost::uuids::uuid> ids;
+        for (const auto& slot : plan.slots)
+            ids.insert(slot.trade_id);
+        // A twin's id is drawn by name from its native trade's, so no two trades share one.
+        CHECK(ids.size() == plan.slots.size());
+        for (const auto& native : plan.slots) {
+            const auto script = script_of.find(native.trade_type_code);
+            if (script == script_of.end())
+                continue;
+            INFO("trade type " << native.trade_type_code);
+            const auto twin = std::ranges::find_if(plan.slots, [&](const auto& s) {
+                return s.internal_identifier == native.internal_identifier + "-scripted";
+            });
+            REQUIRE(twin != plan.slots.end());
+            // The twin is the same trade on the same terms: book and counterparty too.
+            CHECK(twin->book_id == native.book_id);
+            CHECK(twin->counterparty_id == native.counterparty_id);
+            REQUIRE(twin->instruments.scripted_instruments.size() == 1u);
+            CHECK(twin->instruments.scripted_instruments[0].script_name == script->second);
+        }
+    }
+}
+
+TEST_CASE("a_twin_source_reads_a_column_a_role_a_fallback_and_a_literal", "[trade_population]") {
+    namespace td = ores::trading::domain;
+    td::instrument_batch batch;
+    td::fx_basket_option_instrument basket;
+    basket.identity.trade_type_code = "FxBasketOption";
+    basket.currency = "USD";
+    basket.strike = ores::utility::decimal::decimal::from_string("1.1").value();
+    batch.fx_basket_option_instruments.push_back(basket);
+    for (const auto* role : {"underlying", "underlying", "other"}) {
+        td::instrument_underlying row;
+        row.underlying_role = role;
+        row.name = std::string(role) + std::to_string(batch.instrument_underlyings.size());
+        batch.instrument_underlyings.push_back(row);
+    }
+    td::instrument_schedule_date date;
+    date.schedule_role = "exercise_dates";
+    date.schedule_date = std::chrono::year{2027} / 1 / 5;
+    batch.instrument_schedule_dates.push_back(date);
+
+    using ores::synthetic::service::twin_source_values;
+    CHECK(twin_source_values(batch, "FxBasketOption", "product.currency") ==
+          std::vector<std::string>{"USD"});
+    CHECK(twin_source_values(batch, "FxBasketOption", "instrument_underlyings[underlying].name") ==
+          std::vector<std::string>{"underlying0", "underlying1"});
+    CHECK(twin_source_values(batch, "FxBasketOption", "instrument_underlyings.name").size() == 3u);
+    // The settlement date is absent, so the fallback names the exercise date.
+    CHECK(
+        twin_source_values(
+            batch,
+            "FxBasketOption",
+            "product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date") ==
+        std::vector<std::string>{"2027-01-05"});
+    CHECK(twin_source_values(batch, "FxBasketOption", "'a or b'") ==
+          std::vector<std::string>{"a or b"});
+    CHECK(twin_source_values(batch, "EquityBasketOption", "product.currency").empty());
+}
+
+TEST_CASE("a_twin_that_finds_no_value_for_an_input_is_refused", "[trade_population]") {
+    auto scope = fx_scope();
+    scope.trades_per_book = 64;
+    auto plan = plan_of(scope);
+    const auto native = std::ranges::find_if(
+        plan.slots, [](const auto& s) { return s.trade_type_code == "FxBasketOption"; });
+    REQUIRE(native != plan.slots.end());
+    auto broken = *native;
+    // A basket with no option row states no direction, which the twin's LongShort reads.
+    broken.instruments.instrument_options.clear();
+    CHECK_THROWS_AS(ores::synthetic::service::scripted_twin_of(broken), trade_population_error);
 }

@@ -194,6 +194,8 @@
 \ir ./trading_script_coarsenings_notify_trigger_create.sql
 \ir ./trading_script_inputs_create.sql
 \ir ./trading_script_inputs_notify_trigger_create.sql
+\ir ./trading_script_twin_inputs_create.sql
+\ir ./trading_script_twin_inputs_notify_trigger_create.sql
 
 -- Rates instruments (depend on swap_legs and reference data above). The
 -- header goes first: it owns the family's rows, and its delete rule's cascade

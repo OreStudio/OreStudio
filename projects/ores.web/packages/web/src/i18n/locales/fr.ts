@@ -5862,6 +5862,27 @@ const fr: SourceCatalogue = {
         },
 
         curveAnalytics: {
+            teaches: {
+                title: 'Ce que les deux courbes enseignent',
+                lead: "{funding} et {projection} répondent à des questions différentes. L'une dit ce que rapporte un dépôt garanti au jour le jour ; l'autre dit ce que le marché attend d'un taux à terme {tenor}.",
+                underlying: {
+                    title: 'Sous-jacent',
+                    body: '{funding} fait la moyenne des transactions au jour le jour. {projection} est un taux à terme, il porte donc le crédit et la liquidité des banques qui le cotent.',
+                },
+                fixing: {
+                    title: 'Comment il se fixe',
+                    body: "Un taux au jour le jour se fixe à rebours : chaque jour est connu après le jour. Un taux à terme se fixe en avance : le taux {tenor} est fixé aujourd'hui pour une période qui commence aujourd'hui.",
+                },
+                use: {
+                    title: 'À quoi il sert',
+                    body: '{funding} actualise : il donne la valeur présente des flux. {projection} projette : il prévoit le taux que paie une jambe variable.',
+                },
+                shape: {
+                    title: 'Pourquoi la forme diffère',
+                    body: "L'écart n'est pas seulement une anticipation. Une courbe à terme ajoute une prime de terme et le crédit de son panel ; une courbe au jour le jour composée, non.",
+                },
+                lesson: "Aucune courbe n'est le taux. Lisez les deux ensemble : laquelle actualise, laquelle projette, et de quoi est fait l'écart.",
+            },
             title: 'Analyse de courbe',
             lead: "Les conventions d'une courbe, les piliers cotés par le marché et ce que le bootstrap en fait.",
             curve: 'Courbe',

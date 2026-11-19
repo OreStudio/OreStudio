@@ -589,7 +589,66 @@ export function CurveAnalyticsPage(): ReactNode {
                     )}
                 </>
             )}
+            <WhatThePairTeaches pair={pairOf(chosen, beside)} />
         </div>
+    );
+}
+
+/** A funding curve and a projection curve drawn together, or undefined for any other pair. */
+export function pairOf(
+    chosen: CurveOption | undefined,
+    beside: CurveOption | undefined,
+): { readonly funding: CurveOption; readonly projection: CurveOption } | undefined {
+    if (chosen === undefined || beside === undefined) return undefined;
+    if (chosen.role === 'FUNDING' && beside.role === 'PROJECTION') {
+        return { funding: chosen, projection: beside };
+    }
+    if (chosen.role === 'PROJECTION' && beside.role === 'FUNDING') {
+        return { funding: beside, projection: chosen };
+    }
+    return undefined;
+}
+
+/**
+ * What reading an overnight curve beside a term curve teaches: the two answer
+ * different questions, so the gap between them is not only expectation. Drawn
+ * only when the pair on screen is a funding curve and a projection curve.
+ */
+function WhatThePairTeaches({ pair }: { readonly pair: ReturnType<typeof pairOf> }): ReactNode {
+    const { t } = useTranslation();
+    if (pair === undefined) return null;
+    const names = {
+        funding: pair.funding.name,
+        projection: pair.projection.name,
+        tenor: pair.projection.indexTenor,
+    };
+    const points = ['underlying', 'fixing', 'use', 'shape'] as const;
+    return (
+        <section
+            className="space-y-3 rounded-md border border-line p-4"
+            aria-label={t('marketdata.curveAnalytics.teaches.title')}
+            data-pair-teaches
+        >
+            <h2 className="font-medium">{t('marketdata.curveAnalytics.teaches.title')}</h2>
+            <p className="text-sm text-ink-muted">
+                {t('marketdata.curveAnalytics.teaches.lead', names)}
+            </p>
+            <dl className="grid gap-3 text-sm md:grid-cols-2">
+                {points.map((point) => (
+                    <div key={point}>
+                        <dt className="font-medium">
+                            {t(`marketdata.curveAnalytics.teaches.${point}.title`)}
+                        </dt>
+                        <dd className="text-ink-muted">
+                            {t(`marketdata.curveAnalytics.teaches.${point}.body`, names)}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
+            <p className="text-sm text-ink-muted">
+                {t('marketdata.curveAnalytics.teaches.lesson')}
+            </p>
+        </section>
     );
 }
 

@@ -5780,6 +5780,27 @@ export const en: SourceCatalogue = {
         },
 
         curveAnalytics: {
+            teaches: {
+                title: 'What the two curves teach',
+                lead: '{funding} and {projection} answer different questions. One says what a secured overnight deposit earns; the other says what the market expects a {tenor} term rate to be.',
+                underlying: {
+                    title: 'Underlying',
+                    body: '{funding} averages overnight transactions. {projection} is a term rate, so it carries the credit and liquidity of the banks that quote it.',
+                },
+                fixing: {
+                    title: 'How it fixes',
+                    body: 'An overnight rate fixes backwards: each day is known after the day. A term rate fixes forwards: the {tenor} rate is set today for a period that starts today.',
+                },
+                use: {
+                    title: 'What it is for',
+                    body: '{funding} discounts: it present-values cash flows. {projection} projects: it forecasts the rate a floating leg pays.',
+                },
+                shape: {
+                    title: 'Why the shape differs',
+                    body: 'The gap is not only expectation. A term curve adds a term premium and the credit of its panel; a compounded overnight curve does not.',
+                },
+                lesson: 'No curve is the rate. Read the two together: which one discounts, which one projects, and what the gap is made of.',
+            },
             title: 'Curve analytics',
             lead: "One curve's conventions, the pillars the market quoted and what the bootstrap makes of them.",
             curve: 'Curve',

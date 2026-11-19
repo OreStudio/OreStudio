@@ -5821,6 +5821,27 @@ const pt: SourceCatalogue = {
         },
 
         curveAnalytics: {
+            teaches: {
+                title: 'O que as duas curvas ensinam',
+                lead: '{funding} e {projection} respondem a perguntas diferentes. Uma diz quanto rende um depósito garantido overnight; a outra diz o que o mercado espera de uma taxa a prazo de {tenor}.',
+                underlying: {
+                    title: 'Subjacente',
+                    body: '{funding} faz a média das transações overnight. {projection} é uma taxa a prazo, por isso carrega o crédito e a liquidez dos bancos que a cotam.',
+                },
+                fixing: {
+                    title: 'Como se fixa',
+                    body: 'Uma taxa overnight fixa-se para trás: cada dia é conhecido depois do dia. Uma taxa a prazo fixa-se para a frente: a taxa de {tenor} é fixada hoje para um período que começa hoje.',
+                },
+                use: {
+                    title: 'Para que serve',
+                    body: '{funding} desconta: dá o valor presente dos fluxos. {projection} projeta: prevê a taxa que uma perna variável paga.',
+                },
+                shape: {
+                    title: 'Porque a forma difere',
+                    body: 'A diferença não é só expectativa. Uma curva a prazo acrescenta um prémio de prazo e o crédito do seu painel; uma curva overnight composta não.',
+                },
+                lesson: 'Nenhuma curva é a taxa. Leia as duas juntas: qual desconta, qual projeta, e de que é feita a diferença.',
+            },
             title: 'Análise da curva',
             lead: 'As convenções de uma curva, os pilares cotados pelo mercado e o que o bootstrap deles faz.',
             curve: 'Curva',

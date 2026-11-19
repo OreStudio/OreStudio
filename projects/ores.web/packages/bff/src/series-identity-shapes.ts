@@ -27,6 +27,10 @@ import {
     type ListSeriesIdentityShapesResponse,
     type ListSeriesIdentityShapeVersionsResponse,
 } from '@ores/wire-protocol/generated/marketdata/protocol/series_identity_shape_protocol';
+import {
+    subjects as ruleSubjects,
+    type ListSeriesClassificationRulesResponse,
+} from '@ores/wire-protocol/generated/marketdata/protocol/series_classification_rule_protocol';
 import { input, intentSchema, readAll, resultSchema, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
@@ -83,6 +87,28 @@ export function registerSeriesIdentityShapeRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
+    /**
+     * The rules that give a series its subclass, which the oresmd editor reads
+     * to name the family of the URI on screen and so the shape it is held to.
+     */
+    server.get('/api/marketdata/series-classification-rules', async (request) => {
+        const session = requireSession(request);
+        const rows = await readAll<ListSeriesClassificationRulesResponse>(
+            session,
+            ruleSubjects.list_series_classification_rules_request,
+            'rules',
+            { as_of: null },
+        );
+        return {
+            rules: rows.map((rule) => ({
+                instrument: text(rule['instrument']),
+                quote: text(rule['quote']),
+                key_kind: text(rule['key_kind']),
+                series_subclass_code: text(rule['series_subclass_code']),
+            })),
+        };
+    });
+
     server.get('/api/marketdata/series-identity-shapes', async (request) => {
         const session = requireSession(request);
         const rows = await readAll<ListSeriesIdentityShapesResponse>(

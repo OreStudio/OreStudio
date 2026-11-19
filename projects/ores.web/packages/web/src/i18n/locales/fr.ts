@@ -1443,6 +1443,13 @@ const fr: SourceCatalogue = {
         optional: 'Facultatif',
         required: 'Obligatoire',
         coordinate: 'Coordonnée',
+        familyStated: "Famille {family} : sa forme marque les champs qu'elle exige et interdit.",
+        familyUnstated:
+            "Famille {family} : aucune forme ne la décrit encore, donc l'écriture ne l'y soumet pas.",
+        familyUnreachable:
+            "La forme de cette famille exige {fields}, que ce type d'URL n'écrit pas.",
+        shapeRequires: 'Exigé par la famille',
+        shapeForbids: 'Interdit par la famille',
         preview: 'URL',
         kinds: {
             quote: 'Cotation',

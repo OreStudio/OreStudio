@@ -274,3 +274,32 @@ describe('series identity shape routes', () => {
         });
     });
 });
+
+describe('series classification rule route', () => {
+    it('serves the rules as the four fields the editor reads', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.series_classification_rules.list': {
+                result: ok,
+                rules: [
+                    {
+                        instrument: 'zero',
+                        quote: '',
+                        key_kind: 'datum',
+                        series_subclass_code: 'yield',
+                        description: 'A zero rate.',
+                        version: 1,
+                    },
+                ],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/marketdata/series-classification-rules',
+        );
+        expect(response.json().rules).toEqual([
+            { instrument: 'zero', quote: '', key_kind: 'datum', series_subclass_code: 'yield' },
+        ]);
+    });
+});

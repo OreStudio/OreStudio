@@ -22,6 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import type { OresmdComposeRequest, OresmdSchema } from '@ores/contracts';
+import { familyOf, identityShapes, type Requirement } from '../api/identityShapes.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Input, Notice, Select, Tag } from '../ui/Primitives.js';
 import {
@@ -37,6 +38,7 @@ import {
     type EditorField,
     type EditorState,
 } from './editor.js';
+import { columnOf, familyOfEditor, marksOf, unreachableOf } from './family.js';
 import { oresmdQueries } from './queries.js';
 import { useCopyToClipboard } from './useCopyToClipboard.js';
 
@@ -242,6 +244,23 @@ export function Composer({
     const { t } = useTranslation();
     const row = rowOf(schema, state);
     const fixing = state.kind === 'fixing';
+    // The shape of the family is advice: a person who may not read the shapes
+    // still composes, and sees no marks.
+    const shapes = useQuery({
+        queryKey: ['series-identity-shapes'],
+        queryFn: identityShapes.list,
+        enabled: row !== null,
+        retry: false,
+    });
+    const rules = useQuery({
+        queryKey: ['series-classification-rules'],
+        queryFn: identityShapes.classificationRules,
+        enabled: row !== null,
+        retry: false,
+    });
+    const family = familyOfEditor(row, state, rules.data ?? []);
+    const marks = marksOf(family, shapes.data ?? []);
+    const unreachable = unreachableOf(marks, row, state);
     const instruments = schema.assets.map((asset) => ({
         asset,
         items: schema.instruments.filter((instrument) => instrument.asset === asset),
@@ -316,6 +335,18 @@ export function Composer({
                     <p className="text-xs text-ink-faint">
                         {t('oresmd.authority', { asset: row.asset })}
                     </p>
+                    {family !== null && shapes.data !== undefined && (
+                        <p className="text-xs text-ink-faint">
+                            {marks.size === 0
+                                ? t('oresmd.familyUnstated', { family: familyOf(family) })
+                                : t('oresmd.familyStated', { family: familyOf(family) })}
+                        </p>
+                    )}
+                    {unreachable.length > 0 && (
+                        <Notice tone="warn">
+                            {t('oresmd.familyUnreachable', { fields: unreachable.join(', ') })}
+                        </Notice>
+                    )}
                     <FieldInput
                         field={{
                             name: row.subject,
@@ -325,6 +356,7 @@ export function Composer({
                             codes: [],
                         }}
                         label={t('oresmd.path', { name: row.subject })}
+                        mark={marks.get(columnOf(state, row.subject))}
                         value={state.subject}
                         onChange={(text) => onChange({ ...state, subject: text })}
                     />
@@ -333,6 +365,7 @@ export function Composer({
                             key={field.name}
                             field={field}
                             label={field.name}
+                            mark={marks.get(columnOf(state, field.name))}
                             value={state.values[field.name] ?? ''}
                             onChange={(text) => onChange(withValue(state, field.name, text))}
                         />
@@ -346,11 +379,14 @@ export function Composer({
 function FieldInput({
     field,
     label,
+    mark,
     value,
     onChange,
 }: {
     readonly field: EditorField;
     readonly label: string;
+    /** What the shape of the URI's family says of the field, when it says anything. */
+    readonly mark?: Requirement | undefined;
     readonly value: string;
     readonly onChange: (text: string) => void;
 }): ReactNode {
@@ -387,6 +423,16 @@ function FieldInput({
                     {field.optional ? t('oresmd.optional') : t('oresmd.required')}
                 </Tag>
                 {field.role === 'coordinate' && <Tag small>{t('oresmd.coordinate')}</Tag>}
+                {mark === 'required' && (
+                    <Tag small tone={value === '' ? 'warn' : 'up'}>
+                        {t('oresmd.shapeRequires')}
+                    </Tag>
+                )}
+                {mark === 'forbidden' && (
+                    <Tag small tone={value === '' ? 'muted' : 'warn'}>
+                        {t('oresmd.shapeForbids')}
+                    </Tag>
+                )}
             </span>
         </div>
     );

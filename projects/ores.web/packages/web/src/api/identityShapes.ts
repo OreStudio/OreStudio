@@ -86,10 +86,29 @@ const resultSchema: z.ZodType<ShapeResult> = z.object({
     message: z.string().default(''),
 });
 
+/**
+ * A rule that gives a series its subclass. A datum rule is keyed by the
+ * instrument and quote of the URI, and an empty quote applies to every quote of
+ * its instrument. The one index rule gives every fixing its subclass.
+ */
+export interface ClassificationRule {
+    readonly instrument: string;
+    readonly quote: string;
+    readonly key_kind: string;
+    readonly series_subclass_code: string;
+}
+
+const ruleSchema: z.ZodType<ClassificationRule> = z.object({
+    instrument: z.string(),
+    quote: z.string(),
+    key_kind: z.string(),
+    series_subclass_code: z.string(),
+});
+
 const PATH = '/api/marketdata/series-identity-shapes';
 
 /** The family a row belongs to, as one text: class, subclass and, for a fixing, index family. */
-export function familyOf(key: ShapeKey): string {
+export function familyOf(key: Omit<ShapeKey, 'field'>): string {
     return [key.asset_class, key.series_subclass, key.index_family]
         .filter((part) => part !== '')
         .join(' / ');
@@ -101,6 +120,14 @@ export const identityShapes = {
         return z
             .object({ shapes: z.array(shapeSchema) })
             .parse(await request(PATH, { method: 'GET' })).shapes;
+    },
+
+    /** The rules that give a series its subclass, by the instrument and quote of its URI. */
+    async classificationRules(): Promise<readonly ClassificationRule[]> {
+        return z
+            .object({ rules: z.array(ruleSchema) })
+            .parse(await request('/api/marketdata/series-classification-rules', { method: 'GET' }))
+            .rules;
     },
 
     /** The versions of one row, newest first. */

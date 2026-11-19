@@ -1429,6 +1429,13 @@ export const en: SourceCatalogue = {
         optional: 'Optional',
         required: 'Required',
         coordinate: 'Coordinate',
+        familyStated: 'Family {family}: its shape marks the fields it requires and forbids.',
+        familyUnstated:
+            'Family {family}: no shape states it yet, so the writer does not hold it to one.',
+        familyUnreachable:
+            'The shape of this family requires {fields}, which this kind of URL does not write.',
+        shapeRequires: 'Family requires',
+        shapeForbids: 'Family forbids',
         preview: 'URL',
         kinds: {
             quote: 'Quote',

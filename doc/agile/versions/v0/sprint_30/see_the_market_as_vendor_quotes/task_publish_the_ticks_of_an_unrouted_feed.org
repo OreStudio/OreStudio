@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:ticks:routing:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/publish-the-ticks-of-an-unrouted-feed
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Every feed the installation has carries its ticks on its feed subject, whether o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,16 @@ Every feed the installation has carries its ticks on its feed subject, whether o
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Model a source as =source_feed=: the catalogue feed's provider and id, and
+   the consumers its routes make. =refresh()= makes one for every feed of the
+   catalogue, so a feed with no route is a source with no consumers.
+2. =plan_tick= drops a tick only when the catalogue names no feed for its source
+   (=tick_drop::unknown_source=). A tick of an unrouted feed gets a delivery with
+   the feed subject and no targets, so it makes no item and no row.
+3. =announce()= publishes each planned tick that has no target once on its feed
+   subject, after the age gate. It is not stored, metered or counted.
+4. Test the plan and the loop: the tick arrives once on its feed, makes no
+   series and leaves no row in the tick table.
 
 * Measurements
 

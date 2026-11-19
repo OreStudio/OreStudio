@@ -37,8 +37,8 @@ namespace ores::marketdata::service::app {
  * @brief Why the ingest loop drops a tick rather than storing it.
  */
 enum class tick_drop {
-    /// No route names the tick's source.
-    unbound_source,
+    /// The catalogue names no feed for the tick's source.
+    unknown_source,
     /// The tick's URI names no datum the oresmd URI codec can read and write.
     unnameable_datum,
     /// The tick's value is not a number.
@@ -99,6 +99,17 @@ struct tick_target final {
 };
 
 /**
+ * @brief A source as the ingest sees it: the feed of the catalogue it is, and the consumers its
+ * routes make. A feed that no route names has no consumers, and its ticks are published and not
+ * stored.
+ */
+struct source_feed final {
+    std::string provider_code;
+    boost::uuids::uuid feed_id;
+    std::vector<consumer> consumers;
+};
+
+/**
  * @brief Where a tick of one datum from one source goes: once on the subject of the source's
  * feed, and to each consumer the routes name.
  */
@@ -109,16 +120,15 @@ struct tick_delivery final {
 };
 
 /**
- * @brief The delivery of a tick of @p named from the source that @p consumers consume: the feed
- * subject, and one target for each consumer, each with the republish subject for that consumer's
- * tenant and party. @p consumers must not be empty, and every consumer names the same feed.
+ * @brief The delivery of a tick of @p named from @p source: the feed subject, and one target for
+ * each consumer, each with the republish subject for that consumer's tenant and party.
  *
- * The delivery depends on the consumers and the datum alone, so the loop builds it once for each
- * source and datum and shares it. It is a delivery plan: the store writes one row for each tick,
- * whatever the number of targets.
+ * The delivery depends on the source and the datum alone, so the loop builds it once for each
+ * source and datum and shares it. It is a delivery plan: the store writes one row for each tick
+ * that has a target, whatever the number of targets.
  */
 ORES_MARKETDATA_SERVICE_EXPORT std::shared_ptr<const tick_delivery>
-make_delivery(const std::vector<consumer>& consumers, const named_datum& named);
+make_delivery(const source_feed& source, const named_datum& named);
 
 /**
  * @brief What the ingest loop does with a tick it accepts: the datum it names,
@@ -132,19 +142,19 @@ struct tick_plan final {
 };
 
 /**
- * @brief Decides what happens to @p tick, given the consumers of its source.
+ * @brief Decides what happens to @p tick, given its source.
  *
- * The checks run in the order the loop reports them: an empty @p consumers is an
- * unbound source, then the URI must name a datum, then the value must be a
- * number. A tick that passes gets one target per consumer, each with the
- * republish subject for that consumer's tenant and party.
+ * The checks run in the order the loop reports them: a null @p source is a source
+ * the catalogue does not name, then the URI must name a datum, then the value must
+ * be a number. A tick that passes gets the feed subject and one target per
+ * consumer, each with the republish subject for that consumer's tenant and party.
  *
  * A caller that has read the URI already passes @p named, and the URI is not read again. A
  * caller that has built the delivery for this source and datum passes @p delivery.
  */
 ORES_MARKETDATA_SERVICE_EXPORT std::expected<tick_plan, tick_drop>
 plan_tick(const messaging::market_tick& tick,
-          const std::vector<consumer>& consumers,
+          const source_feed* source,
           std::shared_ptr<const named_datum> named = nullptr,
           std::shared_ptr<const tick_delivery> delivery = nullptr);
 

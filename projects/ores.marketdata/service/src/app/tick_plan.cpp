@@ -41,15 +41,16 @@ std::expected<std::shared_ptr<const named_datum>, tick_drop> name_datum(std::str
         named_datum{std::move(*datum), std::move(*canonical), std::move(*series)});
 }
 
-std::shared_ptr<const tick_delivery> make_delivery(const std::vector<consumer>& consumers,
+std::shared_ptr<const tick_delivery> make_delivery(const source_feed& source,
                                                    const named_datum& named) {
     auto delivery = std::make_shared<tick_delivery>();
-    const auto& feed = consumers.front();
-    delivery->feed_subject = domain::feed_tick_subject(
-        feed.provider_code, boost::uuids::to_string(feed.feed_id), named.datum, named.series_uri);
+    delivery->feed_subject = domain::feed_tick_subject(source.provider_code,
+                                                       boost::uuids::to_string(source.feed_id),
+                                                       named.datum,
+                                                       named.series_uri);
     auto& targets = delivery->targets;
-    targets.reserve(consumers.size());
-    for (const auto& c : consumers) {
+    targets.reserve(source.consumers.size());
+    for (const auto& c : source.consumers) {
         auto tenant = c.tenant_id.to_string();
         auto party = boost::uuids::to_string(c.party_id);
         auto subject = domain::market_tick_subject(tenant, party, named.uri);
@@ -61,11 +62,11 @@ std::shared_ptr<const tick_delivery> make_delivery(const std::vector<consumer>& 
 }
 
 std::expected<tick_plan, tick_drop> plan_tick(const ores::marketdata::messaging::market_tick& tick,
-                                              const std::vector<consumer>& consumers,
+                                              const source_feed* source,
                                               std::shared_ptr<const named_datum> named,
                                               std::shared_ptr<const tick_delivery> delivery) {
-    if (consumers.empty())
-        return std::unexpected(tick_drop::unbound_source);
+    if (!source)
+        return std::unexpected(tick_drop::unknown_source);
 
     if (!named) {
         auto read = name_datum(tick.oresmd_uri);
@@ -79,7 +80,7 @@ std::expected<tick_plan, tick_drop> plan_tick(const ores::marketdata::messaging:
         return std::unexpected(tick_drop::not_a_number);
 
     if (!delivery)
-        delivery = make_delivery(consumers, *named);
+        delivery = make_delivery(*source, *named);
     return tick_plan{std::move(named), *value, std::move(delivery)};
 }
 

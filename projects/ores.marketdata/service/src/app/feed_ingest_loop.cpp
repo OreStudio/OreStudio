@@ -98,7 +98,7 @@ feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
         std::lock_guard lock(mu_);
         const auto found = consumers_by_source_->by_source.find(source);
         return found == consumers_by_source_->by_source.end() ? std::vector<consumer>{} :
-                                                                found->second;
+                                                                found->second.consumers;
     })) {}
 
 feed_ingest_loop::~feed_ingest_loop() {
@@ -197,12 +197,16 @@ void feed_ingest_loop::refresh() {
     auto mappings = repository::market_data_mapping_repository{}.read_latest(system_ctx);
     auto routes = repository::route_repository{}.read_latest_all_tenants(ctx_);
     keep_live_tenants(routes, repository::live_tenant_repository{}.read(ctx_));
+    // Every feed of the catalogue is a source, routed or not: the system tenant watches every
+    // feed, so a feed that no route names still publishes its ticks, and stores none.
+    for (const auto& source : sources)
+        wanted->by_source[source.name] = source_feed{source.publisher_code, source.id, {}};
     std::size_t routed = 0;
     for (const auto& route : routes) {
         const auto source = std::ranges::find(sources, route.feed_id, &domain::feed::id);
         if (source == sources.end())
             continue;
-        wanted->by_source[source->name].push_back(consumer_of(route, source->name));
+        wanted->by_source[source->name].consumers.push_back(consumer_of(route, source->name));
         ++routed;
     }
     auto translator = std::make_shared<adapter_tick_translator>(
@@ -213,15 +217,15 @@ void feed_ingest_loop::refresh() {
     translator_ = std::move(translator);
     adapter_drop_warned_.clear();
     series_ids_.clear();
-    unbound_warned_.clear();
+    unknown_warned_.clear();
     unnameable_warned_.clear();
     bad_value_warned_.clear();
     classifiers_.clear();
 
     // A stats entry per consumer, so a route that never ticks still shows in INGEST STATUS.
     std::map<consumer_key, std::shared_ptr<feed_stats>> kept;
-    for (const auto& [source_name, source_consumers] : consumers_by_source_->by_source) {
-        for (const auto& c : source_consumers) {
+    for (const auto& [source_name, source] : consumers_by_source_->by_source) {
+        for (const auto& c : source.consumers) {
             const consumer_key key{
                 c.source_name, c.tenant_id.to_string(), boost::uuids::to_string(c.party_id)};
             const auto it = stats_.find(key);
@@ -231,7 +235,7 @@ void feed_ingest_loop::refresh() {
     stats_ = std::move(kept);
 
     BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << consumers_by_source_->by_source.size()
-                              << " bound source(s), " << routed << " route(s), "
+                              << " source(s), " << routed << " route(s), "
                               << translator_->source_count() << " catalogue source(s)";
 }
 
@@ -426,10 +430,10 @@ void feed_ingest_loop::warn_dropped(const ores::marketdata::messaging::market_ti
                                     tick_drop reason) {
     std::lock_guard lock(mu_);
     switch (reason) {
-        case tick_drop::unbound_source:
-            if (unbound_warned_.insert(tick.source).second)
-                BOOST_LOG_SEV(lg(), warn) << "Dropping ticks for unbound source '" << tick.source
-                                          << "': no route names it";
+        case tick_drop::unknown_source:
+            if (unknown_warned_.insert(tick.source).second)
+                BOOST_LOG_SEV(lg(), warn) << "Dropping ticks for unknown source '" << tick.source
+                                          << "': the catalogue names no feed for it";
             break;
         case tick_drop::unnameable_datum:
             if (unnameable_warned_.insert(tick.oresmd_uri).second)
@@ -457,19 +461,17 @@ feed_ingest_loop::prepare(std::vector<ores::marketdata::messaging::market_tick> 
         std::lock_guard lock(mu_);
         consumers = consumers_by_source_;
     }
-    static const std::vector<consumer> no_consumers;
 
-    // Plan every tick against one snapshot of the consumers.
+    // Plan every tick against one snapshot of the sources.
     batch->plans.resize(ticks.size());
     for (std::size_t i = 0; i < ticks.size(); ++i) {
         const auto found = consumers->by_source.find(ticks[i].source);
-        const auto& source_consumers =
-            found != consumers->by_source.end() ? found->second : no_consumers;
-        // The URI is read only for a bound source, as plan_tick does, and once for each
+        const source_feed* source = found != consumers->by_source.end() ? &found->second : nullptr;
+        // The URI is read only for a known source, as plan_tick does, and once for each
         // distinct URI.
         std::shared_ptr<const named_datum> named;
         std::shared_ptr<const tick_delivery> delivery;
-        if (!source_consumers.empty()) {
+        if (source) {
             auto read = name_of(ticks[i].oresmd_uri);
             if (!read) {
                 warn_dropped(ticks[i], read.error());
@@ -480,7 +482,7 @@ feed_ingest_loop::prepare(std::vector<ores::marketdata::messaging::market_tick> 
             named = std::move(*read);
             delivery = consumers->delivery_for(ticks[i].source, *named);
         }
-        auto plan = plan_tick(ticks[i], source_consumers, std::move(named), std::move(delivery));
+        auto plan = plan_tick(ticks[i], source, std::move(named), std::move(delivery));
         if (!plan) {
             warn_dropped(ticks[i], plan.error());
             if (outcomes)
@@ -670,6 +672,26 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Failed to republish a tick on '" << it.target->subject << "': " << e.what();
+        }
+    }
+
+    // A tick of a feed that no route names has no target, so it has no item above. It is not
+    // stored and not metered, and goes out on its feed alone.
+    for (std::size_t i = 0; i < ticks.size(); ++i) {
+        const auto& plan = batch.plans[i];
+        if (!plan || !plan->delivery->targets.empty())
+            continue;
+        const auto& tick = ticks[i];
+        if (now - tick.observation_time > ages->max_quote_age(tick.source)) {
+            late_unpublished_.fetch_add(1, std::memory_order_relaxed);
+            continue;
+        }
+        const auto& subject = plan->delivery->feed_subject;
+        try {
+            nats_.publish(subject, ores::nats::default_wire_codec().encode(tick));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to publish a tick on '" << subject << "': " << e.what();
         }
     }
 

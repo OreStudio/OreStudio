@@ -72,9 +72,10 @@ namespace ores::marketdata::service::app {
  * tick table on the stream its provider and series URI name, published once on
  * feed_tick_subject() for the source's feed, and republished on
  * market_tick_subject() for each consumer and the datum's canonical oresmd URI.
- * A tick from a source that no route names is dropped, with one warning per
- * source, and so is a tick whose URI names no datum or whose value is not a
- * number. The routes say whom to deliver the ticks to; the store does not read
+ * A tick of a feed that no route names is published on its feed subject and not
+ * stored. A tick from a source the catalogue does not name is dropped, with one
+ * warning per source, and so is a tick whose URI names no datum or whose value is
+ * not a number. The routes say whom to deliver the ticks to; the store does not read
  * them.
  *
  * A series a tick lands in for the first time is created for the party that
@@ -310,15 +311,15 @@ private:
     /// Adapter and reason pairs already reported as dropped, so each is reported once per
     /// refresh().
     std::set<std::string> adapter_drop_warned_;
-    using consumers_map = std::map<std::string, std::vector<consumer>>;
+    using sources_map = std::map<std::string, source_feed>;
 
     /// The routes by source, and the delivery built from them for each source and
     /// datum. The delivery is a function of the consumers and the datum, so it lives and dies
     /// with the snapshot, and a refresh() leaves none that is stale.
     struct consumers_snapshot {
-        consumers_map by_source;
+        sources_map by_source;
 
-        /// The delivery of a tick of @p named from @p source, which must be a bound source.
+        /// The delivery of a tick of @p named from @p source, which must be a known source.
         [[nodiscard]] std::shared_ptr<const tick_delivery>
         delivery_for(const std::string& source, const named_datum& named) const;
 
@@ -356,7 +357,7 @@ private:
     std::map<std::string, std::shared_ptr<const core::series_classifier>> classifiers_;
     /// Sources and URIs already reported as dropped, so each is reported once
     /// per refresh().
-    std::set<std::string> unbound_warned_;
+    std::set<std::string> unknown_warned_;
     std::set<std::string> unnameable_warned_;
     std::set<std::string> bad_value_warned_;
     /// The datums that the URIs of ticks name. A URI names the same datum for as long as the

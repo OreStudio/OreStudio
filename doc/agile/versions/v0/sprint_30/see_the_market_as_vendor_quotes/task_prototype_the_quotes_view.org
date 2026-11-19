@@ -29,7 +29,7 @@ The product owner signs off the quotes view before it is built.
 | State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
 | Now          | Nothing. |
-| Waiting on   | The product owner: the sign-off of the prototype. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
@@ -97,3 +97,14 @@ via its "Verifies task" field.
 | 7 | Two statements on one line; a class name | index.html | Accept in part | The statements are split; the class name stays. |
 
 * Result
+
+- Signed off by the product owner on 2026-11-19: variant C, the source rail, with
+  the /All quotes/ panel for the picked row, the two layouts (every datum, by
+  series), and the asset class codes table as the class filter. The verdict and
+  the rounds before it are on the prototype page.
+- Four rounds: flat or grouped (both kept as layouts); an across-vendors layout
+  (replaced: the vendors are a choice); vendor cards as health and toggle
+  (replaced: the two jobs confused each other); three idiomatic choices, of which
+  C was chosen.
+- The journey's steps and wireframe follow variant C, and the story records the
+  decision.

@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle-the-backlog-when-the-compute-path-stalls]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
@@ -83,3 +83,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=js_publish= takes the wait it allows for the acknowledgement, defaulting to
+=client::default_js_publish_ack_wait=, and passes the server's JetStream error
+code into the failure it throws. The batch workflow bridge allows one second
+per completion and ends its poll on the first failure, so a store that cannot
+acknowledge costs the service's shared thread one second rather than five
+seconds once per pending link.
+
+This bounds the damage but does not remove the cause: a link the store never
+accepts still holds the ones behind it, and the store's own reason for
+refusing is only visible once =js_publish= reports it. Both are covered by
+the story's remaining tasks.
+
+PR #4879. =compass check --exclude-heavy=: 47/47 passed. The nats and compute
+service unity units build clean. No test drives a stream into refusing an
+acknowledgement, so the bound and the early exit rest on inspection and the
+gate.
+

@@ -5964,6 +5964,29 @@ const fr: SourceCatalogue = {
         },
 
         curveAnalytics: {
+            currency: 'Devise',
+            sameCurrency: 'Courbes {currency}',
+            otherCurrencies: 'Autres devises, au jour le jour',
+            across: 'Comparer avec une autre devise',
+            acrossOnlyOvernight:
+                'Seule une courbe au jour le jour se compare avec une autre devise.',
+            differential: {
+                title: 'Ce que montrent les deux devises',
+                lead: "{left} et {right} sont les courbes au jour le jour de {leftCurrency} et {rightCurrency}. Aucune n'actualise ni ne projette l'autre : elles donnent le prix de l'argent dans deux économies.",
+                gap: {
+                    title: "L'écart",
+                    body: "L'écart entre les courbes est le différentiel de taux : ce que rapporte un prêt en {leftCurrency} de plus qu'un prêt en {rightCurrency}, période par période.",
+                },
+                forward: {
+                    title: 'Changes à terme',
+                    body: "La parité des taux d'intérêt couverte fait du différentiel des points de terme : la devise au taux le plus élevé cote en déport.",
+                },
+                carry: {
+                    title: 'Portage',
+                    body: "Le différentiel est aussi le portage d'une devise contre l'autre, avant que le cours au comptant ne bouge.",
+                },
+                lesson: "Lisez les formes autant que les niveaux : des courbes qui s'écartent sur les échéances longues disent que le marché attend que les deux banques centrales divergent.",
+            },
             teaches: {
                 title: 'Ce que les deux courbes enseignent',
                 lead: "{funding} et {projection} répondent à des questions différentes. L'une dit ce que rapporte un dépôt garanti au jour le jour ; l'autre dit ce que le marché attend d'un taux à terme {tenor}.",

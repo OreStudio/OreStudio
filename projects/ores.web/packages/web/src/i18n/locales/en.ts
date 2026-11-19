@@ -5879,6 +5879,28 @@ export const en: SourceCatalogue = {
         },
 
         curveAnalytics: {
+            currency: 'Currency',
+            sameCurrency: '{currency} curves',
+            otherCurrencies: 'Other currencies, overnight',
+            across: 'Compare with another currency',
+            acrossOnlyOvernight: 'Only an overnight curve compares with another currency.',
+            differential: {
+                title: 'What the two currencies show',
+                lead: '{left} and {right} are the overnight curves of {leftCurrency} and {rightCurrency}. Neither discounts or projects off the other: they price money in two economies.',
+                gap: {
+                    title: 'The gap',
+                    body: 'The gap between the curves is the rate differential: what lending {leftCurrency} earns over lending {rightCurrency}, period by period.',
+                },
+                forward: {
+                    title: 'FX forwards',
+                    body: 'Covered interest parity turns the differential into forward points: the currency with the higher rate trades at a forward discount.',
+                },
+                carry: {
+                    title: 'Carry',
+                    body: 'The differential is also the carry of holding one currency against the other, before the spot rate moves.',
+                },
+                lesson: 'Read the shapes as well as the levels: curves that move apart further out say the market expects the two central banks to move apart.',
+            },
             teaches: {
                 title: 'What the two curves teach',
                 lead: '{funding} and {projection} answer different questions. One says what a secured overnight deposit earns; the other says what the market expects a {tenor} term rate to be.',

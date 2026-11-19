@@ -5921,6 +5921,28 @@ const pt: SourceCatalogue = {
         },
 
         curveAnalytics: {
+            currency: 'Moeda',
+            sameCurrency: 'Curvas {currency}',
+            otherCurrencies: 'Outras moedas, overnight',
+            across: 'Comparar com outra moeda',
+            acrossOnlyOvernight: 'Só uma curva overnight se compara com outra moeda.',
+            differential: {
+                title: 'O que as duas moedas mostram',
+                lead: '{left} e {right} são as curvas overnight de {leftCurrency} e {rightCurrency}. Nenhuma desconta nem projeta a outra: dão o preço do dinheiro em duas economias.',
+                gap: {
+                    title: 'A diferença',
+                    body: 'A diferença entre as curvas é o diferencial de taxas: o que emprestar em {leftCurrency} rende a mais do que emprestar em {rightCurrency}, período a período.',
+                },
+                forward: {
+                    title: 'Câmbio a prazo',
+                    body: 'A paridade coberta das taxas de juro faz do diferencial pontos a prazo: a moeda com a taxa mais alta negoceia com desconto a prazo.',
+                },
+                carry: {
+                    title: 'Carry',
+                    body: 'O diferencial é também o carry de deter uma moeda contra a outra, antes de a taxa à vista se mover.',
+                },
+                lesson: 'Leia as formas tanto quanto os níveis: curvas que se afastam nos prazos longos dizem que o mercado espera que os dois bancos centrais divirjam.',
+            },
             teaches: {
                 title: 'O que as duas curvas ensinam',
                 lead: '{funding} e {projection} respondem a perguntas diferentes. Uma diz quanto rende um depósito garantido overnight; a outra diz o que o mercado espera de uma taxa a prazo de {tenor}.',

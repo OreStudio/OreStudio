@@ -366,26 +366,28 @@ projection project_one(const ores::database::context& ctx, const domain::market_
 
 }
 
-std::size_t
+std::vector<domain::market_series_identity>
 market_series_identity_projector::project(const ores::database::context& ctx,
                                           const std::vector<domain::market_series>& series) {
-    if (series.empty())
-        return 0;
-    const shape_book shapes(ctx);
     std::vector<domain::market_series_identity> rows;
+    if (series.empty())
+        return rows;
+    const shape_book shapes(ctx);
     rows.reserve(series.size());
-    std::size_t unknown = 0;
     for (const auto& s : series) {
         auto p = project_one(ctx, s);
-        if (!p.understood)
-            ++unknown;
         // A series written through the repository is refused here or nowhere: the
         // store's own columns cannot say which fields a family requires.
         shapes.check(s, p.row);
         rows.push_back(std::move(p.row));
     }
-    market_series_identity_repository{}.write(ctx, rows);
-    return unknown;
+    return rows;
+}
+
+void market_series_identity_projector::write(
+    const ores::database::context& ctx, const std::vector<domain::market_series_identity>& rows) {
+    if (!rows.empty())
+        market_series_identity_repository{}.write(ctx, rows);
 }
 
 market_series_identity_projector::backfill_result

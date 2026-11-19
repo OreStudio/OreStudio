@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/domain/market_series_identity.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
@@ -95,16 +96,26 @@ public:
                                            const std::optional<boost::uuids::uuid>& party = {});
 
     /**
-     * @brief Projects @p series, replacing the identity of any series already
-     * projected.
+     * @brief The identity rows of @p series, each held to the shape of its family.
      *
-     * @return How many of @p series carried a URI neither codec reads. Their
-     * rows are still written, with their kind and no field value, so the count
-     * says how many identities the codec could not state rather than how many
-     * were dropped -- a write path ignores it, and the backfill reports it.
+     * Writes nothing, so the write path calls it before the series is stored and a
+     * series the shape refuses is never stored. A URI neither codec reads still gets a
+     * row, with its kind and no field value.
+     *
+     * @throws std::invalid_argument when the shape refuses a row; the message names the
+     * series, its family and the field.
      */
-    static std::size_t project(const ores::database::context& ctx,
-                               const std::vector<domain::market_series>& series);
+    static std::vector<domain::market_series_identity>
+    project(const ores::database::context& ctx, const std::vector<domain::market_series>& series);
+
+    /**
+     * @brief Writes the rows @ref project returned, replacing the identity of any
+     * series already projected.
+     *
+     * An identity row names its series, so it is written once the series is stored.
+     */
+    static void write(const ores::database::context& ctx,
+                      const std::vector<domain::market_series_identity>& rows);
 
     /**
      * @brief Projects @p series and writes only the rows whose projection

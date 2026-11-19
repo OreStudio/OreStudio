@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :marketdata:market_data:identity:sprint_30:build_ir_curves_from_public_data-remaining:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-a-series-and-its-identity-in-one-act
+#+pr: 4867
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
-#+updated: 2026-11-15
+#+updated: 2026-11-19
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,24 +26,18 @@ A series write the identity shape refuses stores nothing at all: the projection 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
 
 * Acceptance
 
 - The repository template pastes a block before the generated write, and the market series model states the projection there.
 - A write the shape refuses leaves the series row count unchanged.
 - A write that is not refused stores the series and its identity in that order, and a batch does the same.
-
-* Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
 
 * Plan
 
@@ -76,9 +70,36 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Generated files the template change alters | 1 of 32,609: =market_series_repository.cpp= | =compass diff= | 3cb56219eb |
+| New repository cases | 3 cases, pass | =ores.marketdata.core.tests= through =ctest= | 509164c564 |
+| Market data core suite, services stopped | 396 of 456 cases pass; the 60 failures are all =NATS connect failed= | =ctest --preset linux-clang-release-ninja -R 'ores\.marketdata\.core\.tests'= | 509164c564 |
+| The 60 NATS cases, services started | 541 assertions in 60 cases, pass | =ores.marketdata.core.tests --input-file= with the failed names, in the =ctest= environment | 509164c564 |
+| Component documentation | all 40 components pass | =projects/ores.codegen/validate_docs.sh= | 509164c564 |
 
 * Notes
+
+The single write applied the claim twice in the template, once in each
+=current_state= branch, with the same statement. It is now applied once above
+the branches, which the new paste point needs: the block reads =t= whichever
+branch follows. =compass diff= confirms no other generated repository changes.
+
+=project= no longer writes and no longer counts the URIs neither codec reads: no
+caller read that count. The rows it returns are written by =write= once the
+series is stored.
+
+A caller without a transaction can still store a series whose identity write
+then fails for a database reason, such as a lost connection. The task closes the
+refusal path, which the acceptance names. The database path needs the caller's
+transaction and is not changed here.
+
+The red-first run of the two refusal cases on the old code was not taken: the
+machine was overloaded and the build that would have produced it was stopped.
+The old code stored the series before it projected, and the write commits on its
+own without a transaction, so both cases would see a stored series.
+
+The ER diagrams =ores_schema.iam.puml= and =ores_schema.dq_datasets.puml= were
+regenerated after the rebase. Main changed the dq bundle notes and did not
+regenerate them.
 
 * Test Scenarios
 
@@ -95,12 +116,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4867][#4867]] | [marketdata] Write a series and its identity in one act |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: without a transaction, a series can be stored and its identity write then fail for a database reason | =market_series_repository.cpp= | Decline | Outside the acceptance, which names the refusal path; recorded in Notes |
+| 2 | Local review: the class comment of the projector still describes a write in the caller's transaction | =market_series_identity_projector.hpp= | Decline | Still true: =write= joins the transaction the context carries |
+| 3 | PR #4867 review 1: =project= no longer returns the count of URIs neither codec reads; check the backfill still counts them | =market_series_identity_projector.cpp= | Decline | =project_missing= and =reproject= count =unreadable= in their own loops, and =a_series_with_an_unreadable_uri_is_projected_once_and_not_retried= asserts it |
+| 4 | PR #4867 review 1: a database failure of the identity write still leaves a series without its identity when the caller holds no transaction; say so in the model | =ores.marketdata.market_series.org= | Accept | The hook's prose now says that only a refusal is kept out, and that a writer that needs both or neither holds a transaction |
+| 5 | PR #4867 review 1: an optional test for an empty batch | =repository_market_series_repository_tests.cpp= | Decline | =project= and =write= both return early on an empty vector; the case adds no defect it could catch |
+| 6 | PR #4867 review 1: no red-first run, and the tests ran on a database built before the rebase | PR | Decline | GitHub runs no checks; the user runs the build. Recorded in Notes and the PR's Limitations |
+| 7 | PR #4867 review 1: the ER diagram regeneration is outside the topic | =ores_schema.*.puml= | Decline | Kept: the drift gate fails without it, and the summary names it |
 
 * Result
+
+A series write the identity shape refuses now stores nothing, with or without a
+transaction. The repository template pastes a block after the claim is applied
+and before the row is written, in the single and the batch write. The market
+series model takes the projection there and writes the identity rows after the
+series. =market_series_identity_projector= splits into =project=, which checks
+and writes nothing, and =write=.
+
+All three acceptance points are met. Three repository cases prove them: a refused
+series stores nothing, a batch with a refused series stores none of its series,
+and an accepted batch stores each series and its identity. The market data core
+suite passes: 396 cases with the services stopped, and the 60 cases that need
+NATS with the services started.

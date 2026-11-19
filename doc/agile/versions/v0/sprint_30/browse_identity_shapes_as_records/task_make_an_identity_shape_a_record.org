@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: A535E477-3597-4FBD-AC81-AE6ECB5B1977
+:END:
+#+title: Task: Make an identity shape a record with entries
+#+description: Add a series identity shape header with a code and a description, move the field rules under it as entries, and show the shapes as a paged list with a detail page.
+#+type: task
+#+level: s1
+#+filetags: :browse_identity_shapes_as_records:sprint_30:v0:
+#+owner: marco
+#+branch: feature/browse-identity-shapes-as-records
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9366D329-61FA-48E6-B347-B219A9667001][Browse identity shapes as records]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person browses identity shapes the way they browse any other record: a paged list, and a detail page per shape that states what the shape is for and lists its entries.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:9366D329-61FA-48E6-B347-B219A9667001][Browse identity shapes as records]] |
+| Now          | Implemented; the local gate runs.      |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR and stop for the owner to try it. |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+- The shapes screen is a paged record list of shapes, with code, family parts and description.
+- Opening a shape shows its details, its entries and its history.
+- Every seeded shape has a description that says what it is for.
+- The identity writer enforces the shape entries as before, and the shape suite still names every family in use that no shape states.
+
+* Plan
+
+The shapes screen read every field row of every family into one page. A family
+had no row of its own, so it had no place for a description and no single key
+a record page could open it by. The record framework opens a page by one key
+and lists a page's parts by one parent field.
+
+1. Split the entity in two. =series_identity_shape= becomes the header: a code
+   such as =ir.index_fixing.ibor=, the asset class, the series subclass, the
+   index family and a description. A check holds the code to the family's parts,
+   and a unique index keeps one shape per family. The field rows become
+   =series_identity_shape_entry=, named by a uuid like a calendar rule, with the
+   shape code as a foreign key and listed by it, and a unique index on
+   (shape code, field). A two-part key would leave the entries with no history
+   provider, which the generated registrar says outright.
+2. Regenerate the whole stack from the two models, and wire the new handlers,
+   history provider, events and shell commands.
+3. Move the hand-written readers: the shape guard joins shapes and entries by
+   code into the same family map it held before; the pgTAP suite reads them
+   joined through a view; the build check reads the entry seed.
+4. Split the seed into seven shapes, each with a description, and their 29
+   entries.
+5. Serve both as record resources. The registry took only refdata, so the
+   permission prefix now comes from the resource's subject. The BFF's own shape
+   routes shrink to one joined read for the oresmd editor.
+6. Rebuild the screen as a record list and a record page with details, entries
+   and history tabs, as the calendars are.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

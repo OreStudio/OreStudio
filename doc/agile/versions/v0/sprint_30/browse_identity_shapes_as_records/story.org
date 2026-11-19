@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 9366D329-61FA-48E6-B347-B219A9667001
+:END:
+#+title: Story: Browse identity shapes as records
+#+description: An identity shape becomes a record with a code and a description, and its field rules become its entries, so the shapes screen follows the usual paged list and detail pattern.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:identity:web:sprint_30:v0:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-19                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A535E477-3597-4FBD-AC81-AE6ECB5B1977][Make an identity shape a record with entries]] | STARTED | 2026-11-19 | | Add a series identity shape header with a code and a description, move the field rules under it as entries, and show the shapes as a paged list with a detail page. |
+
+* Decisions
+
+* Out of scope
+
+-

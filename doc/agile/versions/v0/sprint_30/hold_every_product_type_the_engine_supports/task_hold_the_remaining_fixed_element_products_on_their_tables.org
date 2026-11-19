@@ -125,3 +125,10 @@ via its "Verifies task" field.
 | 4887.7 | Follow up the equity worst-of | backlog | Accepted | Filed the capture Hold the whole equity worst-of basket swap. |
 
 * Result
+
+First of two PRs (#4887): FxWorstOfBasketSwap is held natively on
+=fx_worst_of_basket_swap_instruments=, with every scalar as a column, its members
+as underlying rows, its eight schedules as schedule rows and its three level
+lists as rows of the new shared =instrument_value= table. The round trip, the
+builder and the generator cover it, and the recorded trades are unchanged. The
+four multi-asset products are the second PR, in a new multi-asset family.

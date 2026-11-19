@@ -27,6 +27,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol_feed.hpp"
+#include "ores.synthetic.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <atomic>
 #include <chrono>
@@ -64,7 +65,7 @@ struct derived_fx_vol_timing final {
  * adapter's four messages.
  * It fetches nothing from outside: every input is already stored.
  */
-class derived_fx_vol_adapter final {
+class ORES_SYNTHETIC_SERVICE_EXPORT derived_fx_vol_adapter final {
 private:
     static auto& lg() {
         static auto instance =

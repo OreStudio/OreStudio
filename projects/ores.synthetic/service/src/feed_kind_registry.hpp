@@ -30,6 +30,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <functional>
@@ -225,7 +226,7 @@ struct feed_kind final {
  * enabled flag) and the synthetic folder subtree walk. Because it owns them, no
  * handler includes an ores.synthetic.core repository header.
  */
-class feed_kind_registry final {
+class ORES_SYNTHETIC_SERVICE_EXPORT feed_kind_registry final {
 public:
     /** Every folder id in the subtree rooted at the second argument. */
     using folder_subtree_fn = std::function<std::set<boost::uuids::uuid>(

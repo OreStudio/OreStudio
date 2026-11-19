@@ -1926,19 +1926,6 @@ ores::marketdata::datum::market_reference fx_index_of(const domain::currency_pai
     return std::move(*reference);
 }
 
-/// The rows of a product ORE reads through a class of its own, as a batch.
-ores::trading::domain::instrument_batch
-scripted_batch_of(ores::trading::builders::scripted_result built,
-                  const std::string& trade_type_code) {
-    if (!built)
-        throw trade_population_error("The " + trade_type_code + " builder refuses the drawn " +
-                                     built.error().term + ": " + built.error().message);
-    ores::trading::domain::instrument_batch batch;
-    ores::trading::domain::append_instrument(
-        batch, ores::trading::domain::trade_instrument{std::move(*built)});
-    return batch;
-}
-
 ores::trading::domain::instrument_batch
 fx_batch_of(std::expected<ores::trading::domain::fx_instrument_data,
                           ores::trading::builders::build_error> built,

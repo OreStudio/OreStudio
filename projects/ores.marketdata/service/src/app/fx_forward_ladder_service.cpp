@@ -24,6 +24,7 @@
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/provider_repository.hpp"
 #include "ores.marketdata.service/app/catalogue_page.hpp"
 #include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
@@ -35,6 +36,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -70,7 +72,8 @@ std::chrono::year_month_day date_of(time_point t) {
     return std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(t)};
 }
 
-/// The latest spot of a pair at or before the as-of, or nothing when no series holds one.
+/// The latest spot of a pair at or before the as-of, from the party's highest-ranked source that
+/// holds one, or nothing when no source does.
 std::optional<spot_reading> find_spot(const context& ctx,
                                       const fx_pair_codes& pair,
                                       time_point as_of,
@@ -80,19 +83,33 @@ std::optional<spot_reading> find_spot(const context& ctx,
     repository::market_series_repository series_repo;
     repository::market_observation_repository observation_repo;
 
-    std::optional<domain::market_observation> latest;
+    std::map<std::string, int> ranks;
+    for (const auto& provider : repository::provider_repository{}.read_latest(ctx))
+        ranks.emplace(provider.code, provider.precedence);
+
+    std::vector<spot_source> sources;
+    std::vector<std::optional<domain::market_observation>> latest;
     for (const auto& series : series_repo.read_latest_by_uri(ctx, uri)) {
         if (party_id && series.party_id != *party_id)
             continue;
+        std::optional<domain::market_observation> newest;
         for (auto& observation : observation_repo.read_as_of(ctx, series.id, as_of))
-            if (!latest || observation.observation_datetime > latest->observation_datetime)
-                latest = std::move(observation);
+            if (!newest || observation.observation_datetime > newest->observation_datetime)
+                newest = std::move(observation);
+        const auto rank = ranks.find(series.provider_code);
+        sources.push_back(
+            {.provider_code = series.provider_code,
+             .precedence = rank == ranks.end() ? 1000 : rank->second,
+             .latest = newest ? std::optional(newest->observation_datetime) : std::nullopt});
+        latest.push_back(std::move(newest));
     }
-    if (!latest)
+    const auto chosen = preferred_spot_source(sources);
+    if (!chosen)
         return std::nullopt;
-    return spot_reading{observation_value(*latest),
-                        latest->observation_datetime,
-                        boost::uuids::to_string(latest->series_id)};
+    const auto& observation = *latest[*chosen];
+    return spot_reading{observation_value(observation),
+                        observation.observation_datetime,
+                        boost::uuids::to_string(observation.series_id)};
 }
 
 spot_reading read_spot(const context& ctx,

@@ -79,6 +79,19 @@ select_published_set(std::span<const domain::curve_publish> sets,
     return best ? std::optional(*best) : std::nullopt;
 }
 
+std::optional<std::size_t> preferred_spot_source(std::span<const spot_source> sources) {
+    std::optional<std::size_t> best;
+    for (std::size_t i = 0; i < sources.size(); ++i) {
+        const auto& s = sources[i];
+        if (!s.latest)
+            continue;
+        if (!best || std::pair(s.precedence, s.provider_code) <
+                         std::pair(sources[*best].precedence, sources[*best].provider_code))
+            best = i;
+    }
+    return best;
+}
+
 fx_ladder_dates build_ladder_dates(std::chrono::year_month_day as_of_date,
                                    int spot_days,
                                    const quant::service::fx_expiry_date_rule& rule) {

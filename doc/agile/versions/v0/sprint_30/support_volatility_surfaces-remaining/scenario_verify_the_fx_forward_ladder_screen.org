@@ -233,6 +233,8 @@ now offers crosses, as designed
 The layout, rows, dates and refusals above were read from the screen on this
 environment, signed in to ACME Corporation UK plc. The spot values of ACME
 Corporation US Inc come from its published sets in the database. ACME Corporation UK plc
-publishes a EUR/GBP set of about 0.704, from legs that disagree with its own
-EUR/USD and GBP/USD sets; that is a defect filed on its own, and the reason this
-scenario uses ACME Corporation US Inc.
+published a EUR/GBP set of about 0.704 at provisioning, from demo legs that
+disagree with its own bloomberg EUR/USD and GBP/USD sets. A spot now reads the
+party's highest-ranked source (see the story's Decisions), and a set UK plc
+publishes today reads bloomberg for both. The provisioned set keeps the legs it
+was approved with, which is why this scenario uses ACME Corporation US Inc.

@@ -30,6 +30,7 @@
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "published_curve.hpp"
 #include <chrono>
+#include <cstddef>
 #include <expected>
 #include <optional>
 #include <span>
@@ -85,6 +86,25 @@ struct usd_leg final {
 ORES_MARKETDATA_SERVICE_EXPORT std::optional<domain::curve_publish>
 select_published_set(std::span<const domain::curve_publish> sets,
                      std::chrono::system_clock::time_point as_of);
+
+/// One source of a party's spot of a pair: its provider, the provider's rank, and the source's
+/// latest observation at or before the as-of, if it has one.
+struct spot_source final {
+    std::string provider_code;
+    int precedence = 1000;
+    std::optional<std::chrono::system_clock::time_point> latest;
+};
+
+/**
+ * @brief The source a spot reads: the highest-ranked source with an observation, the lowest
+ * precedence first and the provider code among equals.
+ *
+ * The rank decides, not the time of the latest tick. A party with two sources of a pair would
+ * otherwise read whichever ticked last, so a cross and its own USD pair could read two sources
+ * at one instant.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::optional<std::size_t>
+preferred_spot_source(std::span<const spot_source> sources);
 
 struct fx_ladder_dates final {
     std::chrono::year_month_day spot_date{};

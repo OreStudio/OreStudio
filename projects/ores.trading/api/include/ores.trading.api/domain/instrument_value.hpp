@@ -64,7 +64,8 @@ struct instrument_value final {
     /**
      * @brief Which list of the product states the value: initial_price for a basket member's
      * InitialPrice, knock_out_level for a KnockOutLevel, fixed_trigger_level for a
-     * FixedTriggerLevel.
+     * FixedTriggerLevel, strike_price for a StrikePrice and accumulation_factor for a Factor of
+     * AccumulationFactors.
      */
     std::string value_role;
 

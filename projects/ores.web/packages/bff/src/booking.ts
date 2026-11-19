@@ -178,6 +178,10 @@ function emptyBatch(): InstrumentBatch {
         equity_generic_barrier_option_instruments: [],
         fx_worst_of_basket_swap_instruments: [],
         instrument_values: [],
+        autocallable_instruments: [],
+        double_digital_option_instruments: [],
+        european_option_barrier_instruments: [],
+        performance_option_instruments: [],
     };
 } /** The intent every write of a booking carries. */
 function intent(): { readonly reason_code: string; readonly commentary: string } {

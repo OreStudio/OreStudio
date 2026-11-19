@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 8DD80372-03A2-5733-B06B-C8F20E03BA13
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the double_digital_option_instruments commands from the shell?
+#+description: Every command the double_digital_option_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:double_digital_option_instruments:
+
+This file documents the double_digital_option_instruments resource at the shell, one section per command. Every command is a subcommand of =double_digital_option_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: EC950E31-13F9-5323-B271-0BC040E86835
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+double_digital_option_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.double_digital_option_instruments.list=.
+
+#+name: double_digital_option_instruments-list
+#+begin_src ores-shell :tangle double_digital_option_instruments-list.ores :exports none
+double_digital_option_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 8FAE4814-18E2-50C2-9555-66E52EFB863C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+double_digital_option_instruments get <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.double_digital_option_instruments.get=.
+
+#+name: double_digital_option_instruments-get
+#+begin_src ores-shell :tangle double_digital_option_instruments-get.ores :exports none
+double_digital_option_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 9363835C-E0A8-5F4C-8989-0A3C18789E12
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+double_digital_option_instruments get-many <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.double_digital_option_instruments.get_many=.
+
+#+name: double_digital_option_instruments-get-many
+#+begin_src ores-shell :tangle double_digital_option_instruments-get-many.ores :exports none
+double_digital_option_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4C84EE06-51AD-5C6C-A7C9-B2E834CF5160
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+double_digital_option_instruments add <trade_id> <trade_type_code> <trade_activity_id> <expiry> <settlement> <binary_payout> <binary_level_1> <binary_level_2> <binary_level_upper_1> <binary_level_upper_2> <type_1> <type_2> <long_short> <name_1> <name_2> <pay_currency> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.double_digital_option_instruments.put=.
+
+#+name: double_digital_option_instruments-add
+#+begin_src ores-shell :tangle double_digital_option_instruments-add.ores :exports none
+double_digital_option_instruments add 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01 1970-01-01 1 1 1 - - __none__ __none__ __none__ - - __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6B45CA89-A314-5A9B-AE18-3ED321C8C2A9
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+double_digital_option_instruments set <trade_id> <trade_type_code> <trade_activity_id> <expiry> <settlement> <binary_payout> <binary_level_1> <binary_level_2> <binary_level_upper_1> <binary_level_upper_2> <type_1> <type_2> <long_short> <name_1> <name_2> <pay_currency> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.double_digital_option_instruments.put=.
+
+#+name: double_digital_option_instruments-set
+#+begin_src ores-shell :tangle double_digital_option_instruments-set.ores :exports none
+double_digital_option_instruments set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01 1970-01-01 1 1 1 - - __none__ __none__ __none__ - - __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: E43A9FA5-D8BF-50EF-A174-A7D42C86B895
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+double_digital_option_instruments put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <expiry> <settlement> <binary_payout> <binary_level_1> <binary_level_2> <binary_level_upper_1> <binary_level_upper_2> <type_1> <type_2> <long_short> <name_1> <name_2> <pay_currency> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.double_digital_option_instruments.put_many=.
+
+#+name: double_digital_option_instruments-put-many
+#+begin_src ores-shell :tangle double_digital_option_instruments-put-many.ores :exports none
+double_digital_option_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01 1970-01-01 1 1 1 - - __none__ __none__ __none__ - - __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 955AF718-27F0-509B-930A-B254A420665C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+double_digital_option_instruments delete <trade_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.double_digital_option_instruments.delete=.
+
+#+name: double_digital_option_instruments-delete
+#+begin_src ores-shell :tangle double_digital_option_instruments-delete.ores :exports none
+double_digital_option_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 937F68DE-A697-5FE2-9078-3A336B7845EA
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+double_digital_option_instruments delete-many <trade_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.double_digital_option_instruments.delete_many=.
+
+#+name: double_digital_option_instruments-delete-many
+#+begin_src ores-shell :tangle double_digital_option_instruments-delete-many.ores :exports none
+double_digital_option_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D748BBE6-D0CF-5CC0-8267-626BAA70CA92
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+double_digital_option_instruments versions <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.double_digital_option_instruments_versions.list=.
+
+#+name: double_digital_option_instruments-versions
+#+begin_src ores-shell :tangle double_digital_option_instruments-versions.ores :exports none
+double_digital_option_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 5311BC3F-7422-516C-BBA0-AFEF0FBF4BCC
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+double_digital_option_instruments version <trade_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.double_digital_option_instruments_versions.get=.
+
+#+name: double_digital_option_instruments-version
+#+begin_src ores-shell :tangle double_digital_option_instruments-version.ores :exports none
+double_digital_option_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

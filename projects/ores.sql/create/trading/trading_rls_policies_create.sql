@@ -737,6 +737,110 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
+-- Autocallable Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_autocallable_instruments_tbl enable row level security;
+
+drop policy if exists autocallable_instruments_tenant_isolation_policy
+    on ores_trading_autocallable_instruments_tbl;
+
+create policy autocallable_instruments_tenant_isolation_policy on ores_trading_autocallable_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists autocallable_instruments_party_isolation_policy
+    on ores_trading_autocallable_instruments_tbl;
+
+create policy autocallable_instruments_party_isolation_policy
+on ores_trading_autocallable_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Double Digital Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_double_digital_option_instruments_tbl enable row level security;
+
+drop policy if exists double_digital_option_instruments_tenant_isolation_policy
+    on ores_trading_double_digital_option_instruments_tbl;
+
+create policy double_digital_option_instruments_tenant_isolation_policy on ores_trading_double_digital_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists double_digital_option_instruments_party_isolation_policy
+    on ores_trading_double_digital_option_instruments_tbl;
+
+create policy double_digital_option_instruments_party_isolation_policy
+on ores_trading_double_digital_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- European Option Barrier Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_european_option_barrier_instruments_tbl enable row level security;
+
+drop policy if exists european_option_barrier_instruments_tenant_isolation_policy
+    on ores_trading_european_option_barrier_instruments_tbl;
+
+create policy european_option_barrier_instruments_tenant_isolation_policy on ores_trading_european_option_barrier_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists european_option_barrier_instruments_party_isolation_policy
+    on ores_trading_european_option_barrier_instruments_tbl;
+
+create policy european_option_barrier_instruments_party_isolation_policy
+on ores_trading_european_option_barrier_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Performance Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_performance_option_instruments_tbl enable row level security;
+
+drop policy if exists performance_option_instruments_tenant_isolation_policy
+    on ores_trading_performance_option_instruments_tbl;
+
+create policy performance_option_instruments_tenant_isolation_policy on ores_trading_performance_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists performance_option_instruments_party_isolation_policy
+    on ores_trading_performance_option_instruments_tbl;
+
+create policy performance_option_instruments_party_isolation_policy
+on ores_trading_performance_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
 -- Equity Generic Barrier Option Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_generic_barrier_options_tbl enable row level security;

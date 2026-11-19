@@ -31,6 +31,7 @@
 #include "ores.trading.api/builders/entry_reset_option_builders.hpp"
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
+#include "ores.trading.api/builders/multi_asset_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/builders/scripted_builders.hpp"
 #include "ores.trading.api/builders/volatility_product_builders.hpp"
@@ -2731,7 +2732,7 @@ build_scripted_trade(const domain::trade_generation_scope& scope,
         first_way(entry) ? tb::option_position::long_option : tb::option_position::short_option;
     const auto settlement = add_months(end, 2);
 
-    const auto built = [&](tb::scripted_result result) {
+    const auto built = [&](auto result) {
         if (!result)
             throw trade_population_error("The " + type + " builder refuses the drawn " +
                                          result.error().term + ": " + result.error().message);

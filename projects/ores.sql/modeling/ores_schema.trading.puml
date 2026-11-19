@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 157
+Tables: 161
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -175,6 +175,45 @@ package "trading" #E8F5E9 {
     schedule tables of the parent story. The deliverable leaves Ascot
     import coverage to a recorded decision in the mapping task; this row
     carries what the ER names, no more.
+    end note
+
+    entity ores_trading_autocallable_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * notional_amount : numeric(38, 12)
+        * determination_level : numeric(38, 12)
+        * trigger_level : numeric(38, 12)
+        * long_short : text <<FK>>
+        * pay_currency : text
+        * cap : numeric(38, 12)
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_autocallable_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Autocallable Instrument Table
+    Represents Autocallable_01 trades: a note that redeems early once the
+    underlying fixes at or above the trigger, paying the factors accrued to
+    that date. ORE reads it through a class of its own, and its underlyings may be
+    equities, FX rates or commodities, so it is held in the multi-asset
+    family, where each underlying row keeps its own type. The underlying is an instrument underlying row under
+    the role underlying; the fixing and settlement dates are instrument
+    schedule rows under fixing_schedule and settlement_schedule; the
+    accumulation factors are instrument value rows under
+    accumulation_factor.
     end note
 
     entity ores_trading_average_types_tbl <<temporal>> #C6F0D8 {
@@ -1807,6 +1846,49 @@ package "trading" #E8F5E9 {
     only the product's own fields, and joins the header by trade_id.
     end note
 
+    entity ores_trading_double_digital_option_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * expiry : date
+        * settlement : date
+        * binary_payout : numeric(38, 12)
+        * binary_level_1 : numeric(38, 12)
+        * binary_level_2 : numeric(38, 12)
+          binary_level_upper_1 : numeric(38, 12)
+          binary_level_upper_2 : numeric(38, 12)
+        * type_1 : text
+        * type_2 : text
+        * long_short : text <<FK>>
+          name_1 : text
+          name_2 : text
+        * pay_currency : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_double_digital_option_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Double Digital Option Instrument Table
+    Represents DoubleDigitalOption trades: a binary option paying a fixed
+    amount when two underlyings are in the money together. ORE reads it through a class of its own, and its underlyings may be
+    equities, FX rates or commodities, so it is held in the multi-asset
+    family, where each underlying row keeps its own type.
+    Underlying1 to Underlying4 are instrument underlying rows under the roles
+    underlying1 to underlying4.
+    end note
+
     entity ores_trading_draft_reasons_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -2850,6 +2932,51 @@ package "trading" #E8F5E9 {
     dates; the BarrierData block is an instrument barrier row under the role
     barrier; the underlying is an instrument underlying row under the role
     underlying; an equity is named EQ- and its address.
+    end note
+
+    entity ores_trading_european_option_barrier_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * quantity : double
+        * option_type : text <<FK>>
+        * long_short : text <<FK>>
+        * strike : numeric(38, 12)
+        * premium_amount : numeric(38, 12)
+        * premium_currency : text
+        * premium_date : date
+        * option_expiry : date
+        * barrier_level : numeric(38, 12)
+        * barrier_type : text
+        * barrier_style : text
+        * settlement_date : date
+        * pay_currency : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_european_option_barrier_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    European Option Barrier Instrument Table
+    Represents EuropeanOptionBarrier trades: a European option on one
+    underlying that knocks in or out on another's level. ORE reads it through a class of its own, and its underlyings may be
+    equities, FX rates or commodities, so it is held in the multi-asset
+    family, where each underlying row keeps its own type. The option
+    underlying and the barrier underlying are instrument underlying rows under
+    the roles optionunderlying and barrierunderlying; the Premiums block
+    is instrument option premium rows; the BarrierSchedule is an instrument
+    schedule row under barrier_schedule.
     end note
 
     entity ores_trading_exercise_types_tbl <<temporal>> #C6F0D8 {
@@ -4512,6 +4639,44 @@ package "trading" #E8F5E9 {
     document states.
     end note
 
+    entity ores_trading_performance_option_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * notional_amount : numeric(38, 12)
+        * participation_rate : double
+        * valuation_date : date
+        * settlement_date : date
+        * strike : numeric(38, 12)
+          strike_included : boolean
+        * long_short : text <<FK>>
+        * pay_currency : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_performance_option_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Performance Option Instrument Table
+    Represents PerformanceOption_01 trades: an option paying the participation
+    in a basket's performance against a ladder of strikes. ORE reads it through a class of its own, and its underlyings may be
+    equities, FX rates or commodities, so it is held in the multi-asset
+    family, where each underlying row keeps its own type. The
+    basket members are instrument underlying rows under the role underlying;
+    the strike prices are instrument value rows under strike_price.
+    end note
+
     entity ores_trading_price_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -6104,6 +6269,9 @@ package "trading" #E8F5E9 {
 '
 ores_trading_trades_tbl ||--o{ ores_trading_ascots_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_ascots_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_autocallable_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_autocallable_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_autocallable_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_balance_guaranteed_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_balance_guaranteed_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_bg_swap_tranche_notionals_tbl : "has"
@@ -6176,6 +6344,9 @@ ores_trading_trades_tbl ||--o{ ores_trading_credit_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_credit_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_credit_linked_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_credit_linked_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_double_digital_option_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_double_digital_option_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_double_digital_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_accumulator_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_accumulator_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_asian_option_instruments_tbl : "has"
@@ -6235,6 +6406,10 @@ ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_variance_swap_instr
 ores_trading_moment_types_tbl ||--o{ ores_trading_equity_variance_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_window_barrier_options_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_window_barrier_options_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_european_option_barrier_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_european_option_barrier_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_european_option_barrier_instruments_tbl : "has"
+ores_trading_option_types_tbl ||--o{ ores_trading_european_option_barrier_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_flexi_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_flexi_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_flexi_swap_lower_notionals_tbl : "has"
@@ -6337,6 +6512,9 @@ ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_values_tbl : "h
 ores_trading_trades_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
 ores_trading_barrier_types_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_performance_option_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_performance_option_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_performance_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_range_bounds_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_range_bounds_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_rate_digital_option_instruments_tbl : "has"

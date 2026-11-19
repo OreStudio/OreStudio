@@ -57,6 +57,7 @@ set(files
     "domain/curve_configuration_projection.cpp"
     "domain/equity_instrument_projection.cpp"
     "domain/fx_instrument_projection.cpp"
+    "domain/multi_asset_instrument_projection.cpp"
     "domain/portfolio_projection.cpp"
     "domain/pricing_engine_projection.cpp"
     "domain/pricing_engines_import.cpp"

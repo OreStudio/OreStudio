@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 
+#include "ores.trading.api/domain/autocallable_instrument.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
 #include "ores.trading.api/domain/basket_swap_period.hpp"
@@ -32,9 +33,11 @@
 #include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/credit_linked_swap_instrument.hpp"
+#include "ores.trading.api/domain/double_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
+#include "ores.trading.api/domain/european_option_barrier_instrument.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
@@ -66,6 +69,7 @@
 #include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/instrument_underlying.hpp"
 #include "ores.trading.api/domain/instrument_value.hpp"
+#include "ores.trading.api/domain/performance_option_instrument.hpp"
 #include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
@@ -700,6 +704,58 @@ auto visit_fx_products(Visitor visitor, const fx_instrument_data& data) {
     }
 }
 
+/**
+ * @brief The multi-asset family: the products whose underlyings each trade names.
+ *
+ * @details Autocallable_01, DoubleDigitalOption, EuropeanOptionBarrier and
+ * PerformanceOption_01 may state equity, FX or commodity underlyings, and one
+ * trade may mix them, so no asset family holds them. As the FX family does, the
+ * carrier states one array per product beside the child rows they share, and
+ * each underlying row keeps its own type.
+ */
+struct multi_asset_instrument_data {
+    std::vector<autocallable_instrument> autocallables;
+    std::vector<double_digital_option_instrument> double_digital_options;
+    std::vector<european_option_barrier_instrument> european_option_barriers;
+    std::vector<performance_option_instrument> performance_options;
+    /**
+     * @brief The Premiums block a European option barrier states.
+     */
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
+    /**
+     * @brief The product's underlyings, one row per block, each with its own type.
+     */
+    std::vector<instrument_underlying> instrument_underlyings;
+    /**
+     * @brief The values of the lists the product states, one row per value.
+     */
+    std::vector<instrument_value> values;
+
+    friend bool operator==(const multi_asset_instrument_data&,
+                           const multi_asset_instrument_data&) = default;
+};
+
+namespace detail {
+
+/// The family's product arrays, in the order the family states its products.
+inline constexpr auto multi_asset_instrument_arrays =
+    std::tuple{&multi_asset_instrument_data::autocallables,
+               &multi_asset_instrument_data::double_digital_options,
+               &multi_asset_instrument_data::european_option_barriers,
+               &multi_asset_instrument_data::performance_options};
+
+/// The family's child arrays, keyed by the same trade as the product row.
+inline constexpr auto multi_asset_instrument_child_arrays =
+    std::tuple{&multi_asset_instrument_data::option_premiums,
+               &multi_asset_instrument_data::schedules,
+               &multi_asset_instrument_data::schedule_dates,
+               &multi_asset_instrument_data::instrument_underlyings,
+               &multi_asset_instrument_data::values};
+
+} // namespace detail
+
 // The trade id is the instrument's own key, so there is one id to stamp
 // rather than a trade id and an instrument id that can disagree.
 template <Instrument T>
@@ -977,6 +1033,19 @@ inline void stamp_ids(fx_instrument_data& data,
     };
     std::apply([&](const auto... member) { (stamp_one(data.*member), ...); },
                std::tuple_cat(detail::fx_instrument_arrays, detail::fx_instrument_child_arrays));
+}
+
+inline void stamp_ids(multi_asset_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows) {
+            stamp_ids(row, trade_id, activity_id);
+        }
+    };
+    std::apply([&](const auto... member) { (stamp_one(data.*member), ...); },
+               std::tuple_cat(detail::multi_asset_instrument_arrays,
+                              detail::multi_asset_instrument_child_arrays));
 }
 
 } // namespace ores::trading::domain

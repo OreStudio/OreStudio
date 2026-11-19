@@ -58,7 +58,7 @@ create table if not exists "ores_trading_instrument_values_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("value_role" <> ''),
-    check ("value_role" in ('initial_price', 'knock_out_level', 'fixed_trigger_level')),
+    check ("value_role" in ('initial_price', 'knock_out_level', 'fixed_trigger_level', 'strike_price', 'accumulation_factor')),
     check ("sequence_number" >= 1)
 );
 

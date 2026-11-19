@@ -175,10 +175,10 @@ absent: it is a placeholder, not a product.
 | CommodityPosition | Commodity Position | position | native | commodity! | false | false | commodity_instrument |
 | CashPosition | Cash Position | position | native | equity! | false | false | cash_position_instrument |
 | ScriptedTrade | Scripted Trade (ORE generic payoff engine) |   | script |  | false | false | scripted_instrument |
-| Autocallable_01 | Autocallable (variant 01) |   | scripted |  | false | false | scripted_instrument |
-| DoubleDigitalOption | Double Digital Option | option | scripted |  | false | false | scripted_instrument |
-| EuropeanOptionBarrier | European Option with Barrier | option | scripted |  | false | false | scripted_instrument |
-| PerformanceOption_01 | Performance Option (variant 01) |   | scripted |  | false | false | scripted_instrument |
+| Autocallable_01 | Autocallable (variant 01) |   | scripted |  | false | false | autocallable_instrument |
+| DoubleDigitalOption | Double Digital Option | option | scripted |  | false | false | double_digital_option_instrument |
+| EuropeanOptionBarrier | European Option with Barrier | option | scripted |  | false | false | european_option_barrier_instrument |
+| PerformanceOption_01 | Performance Option (variant 01) |   | scripted |  | false | false | performance_option_instrument |
 
 * Unsupported trade types
 
@@ -566,6 +566,10 @@ hold no row for the trade and read as empty.
 | fx_strike_resettable_option_instrument | fx_strike_resettable_option_instrument |
 | fx_window_barrier_option_instrument | fx_window_barrier_option_instrument |
 | fx_worst_of_basket_swap_instrument | fx_worst_of_basket_swap_instrument |
+| autocallable_instrument | autocallable_instrument |
+| double_digital_option_instrument | double_digital_option_instrument |
+| european_option_barrier_instrument | european_option_barrier_instrument |
+| performance_option_instrument | performance_option_instrument |
 | fx_digital_option_instrument     | fx_digital_option_instrument       |
 | fx_forward_instrument            | fx_forward_instrument              |
 | fx_vanilla_option_instrument     | fx_vanilla_option_instrument       |

@@ -22,11 +22,13 @@
  * Template: ts_trade_type_batch.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { AutocallableInstrument } from './domain/autocallable_instrument.js';
 import type { BondInstrumentData } from './domain/bond_instrument_data.js';
 import type { CashPositionInstrument } from './domain/cash_position_instrument.js';
 import type { CommodityInstrument } from './domain/commodity_instrument.js';
 import type { CompositeInstrument } from './domain/composite_instrument.js';
 import type { CreditInstrument } from './domain/credit_instrument.js';
+import type { DoubleDigitalOptionInstrument } from './domain/double_digital_option_instrument.js';
 import type { EquityAccumulatorInstrument } from './domain/equity_accumulator_instrument.js';
 import type { EquityAsianOptionInstrument } from './domain/equity_asian_option_instrument.js';
 import type { EquityBarrierOptionInstrument } from './domain/equity_barrier_option_instrument.js';
@@ -44,6 +46,7 @@ import type { EquityStrikeResettableOptionInstrument } from './domain/equity_str
 import type { EquitySwapInstrument } from './domain/equity_swap_instrument.js';
 import type { EquityVarianceSwapInstrument } from './domain/equity_variance_swap_instrument.js';
 import type { EquityWindowBarrierOptionInstrument } from './domain/equity_window_barrier_option_instrument.js';
+import type { EuropeanOptionBarrierInstrument } from './domain/european_option_barrier_instrument.js';
 import type { FxAccumulatorInstrument } from './domain/fx_accumulator_instrument.js';
 import type { FxAsianForwardInstrument } from './domain/fx_asian_forward_instrument.js';
 import type { FxAsianOptionInstrument } from './domain/fx_asian_option_instrument.js';
@@ -60,6 +63,7 @@ import type { FxVanillaOptionInstrument } from './domain/fx_vanilla_option_instr
 import type { FxVarianceSwapInstrument } from './domain/fx_variance_swap_instrument.js';
 import type { FxWindowBarrierOptionInstrument } from './domain/fx_window_barrier_option_instrument.js';
 import type { FxWorstOfBasketSwapInstrument } from './domain/fx_worst_of_basket_swap_instrument.js';
+import type { PerformanceOptionInstrument } from './domain/performance_option_instrument.js';
 import type { RateInstrument } from './domain/rate_instrument.js';
 import type { ScriptedInstrument } from './domain/scripted_instrument.js';
 import type { BondIssue } from './domain/bond_issue.js';
@@ -138,11 +142,13 @@ import type { VanillaSwapInstrument } from './domain/vanilla_swap_instrument.js'
  * array to its trade by that id, and the array states the element's type.
  */
 export interface InstrumentBatch {
+    autocallable_instruments: AutocallableInstrument[];
     bond_instruments: BondInstrumentData[];
     cash_position_instruments: CashPositionInstrument[];
     commodity_instruments: CommodityInstrument[];
     composite_instruments: CompositeInstrument[];
     credit_instruments: CreditInstrument[];
+    double_digital_option_instruments: DoubleDigitalOptionInstrument[];
     equity_accumulator_instruments: EquityAccumulatorInstrument[];
     equity_asian_option_instruments: EquityAsianOptionInstrument[];
     equity_barrier_option_instruments: EquityBarrierOptionInstrument[];
@@ -160,6 +166,7 @@ export interface InstrumentBatch {
     equity_swap_instruments: EquitySwapInstrument[];
     equity_variance_swap_instruments: EquityVarianceSwapInstrument[];
     equity_window_barrier_option_instruments: EquityWindowBarrierOptionInstrument[];
+    european_option_barrier_instruments: EuropeanOptionBarrierInstrument[];
     fx_accumulator_instruments: FxAccumulatorInstrument[];
     fx_asian_forward_instruments: FxAsianForwardInstrument[];
     fx_asian_option_instruments: FxAsianOptionInstrument[];
@@ -176,6 +183,7 @@ export interface InstrumentBatch {
     fx_variance_swap_instruments: FxVarianceSwapInstrument[];
     fx_window_barrier_option_instruments: FxWindowBarrierOptionInstrument[];
     fx_worst_of_basket_swap_instruments: FxWorstOfBasketSwapInstrument[];
+    performance_option_instruments: PerformanceOptionInstrument[];
     rate_instruments: RateInstrument[];
     scripted_instruments: ScriptedInstrument[];
     bond_issues: BondIssue[];

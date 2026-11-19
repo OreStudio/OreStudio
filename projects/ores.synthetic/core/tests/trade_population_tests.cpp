@@ -1206,6 +1206,24 @@ TEST_CASE("an_fx_population_without_a_pair_catalogue_is_refused", "[trade_popula
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
+namespace {
+
+/// The code of the multi-asset product the batch holds, or nothing when it holds none.
+std::optional<std::string>
+multi_asset_type_of(const ores::trading::domain::instrument_batch& batch) {
+    if (!batch.autocallable_instruments.empty())
+        return batch.autocallable_instruments.front().identity.trade_type_code;
+    if (!batch.double_digital_option_instruments.empty())
+        return batch.double_digital_option_instruments.front().identity.trade_type_code;
+    if (!batch.european_option_barrier_instruments.empty())
+        return batch.european_option_barrier_instruments.front().identity.trade_type_code;
+    if (!batch.performance_option_instruments.empty())
+        return batch.performance_option_instruments.front().identity.trade_type_code;
+    return std::nullopt;
+}
+
+}
+
 TEST_CASE("a_scripted_population_states_a_script_and_the_variables_it_reads",
           "[trade_population]") {
     const auto scope = scripted_scope();
@@ -1214,6 +1232,16 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_variables_it_reads",
     std::set<std::string> types;
     std::set<std::string> observed;
     for (const auto& slot : plan.slots) {
+        // A product held in the multi-asset family states its own row and its
+        // underlyings, and no script variables.
+        if (const auto code = multi_asset_type_of(slot.instruments)) {
+            CHECK(*code == slot.trade_type_code);
+            REQUIRE_FALSE(slot.instruments.instrument_underlyings.empty());
+            for (const auto& underlying : slot.instruments.instrument_underlyings)
+                observed.insert(underlying.name);
+            types.insert(*code);
+            continue;
+        }
         REQUIRE(slot.instruments.scripted_instruments.size() == 1u);
         const auto& row = slot.instruments.scripted_instruments.front();
         CHECK(row.identity.trade_type_code == slot.trade_type_code);
@@ -1276,10 +1304,7 @@ TEST_CASE("a_scripted_product_that_states_two_underlyings_is_given_two", "[trade
 
     std::map<std::string, std::size_t> names_by_type;
     for (const auto& slot : plan.slots) {
-        REQUIRE(slot.instruments.scripted_instruments.size() == 1u);
-        const auto& row = slot.instruments.scripted_instruments.front();
-        names_by_type[row.identity.trade_type_code] =
-            slot.instruments.instrument_underlyings.size();
+        names_by_type[slot.trade_type_code] = slot.instruments.instrument_underlyings.size();
         for (const auto& underlying : slot.instruments.instrument_underlyings) {
             INFO("underlying " << underlying.name);
             CHECK(underlying.underlying_type == "Equity");

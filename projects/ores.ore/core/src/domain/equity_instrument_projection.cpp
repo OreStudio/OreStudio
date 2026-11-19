@@ -27,6 +27,7 @@
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/underlying_block_projection.hpp"
+#include "ores.ore.core/domain/volatility_product_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
@@ -53,6 +54,8 @@ using trading::domain::equity_digital_option_instrument;
 using trading::domain::equity_forward_instrument;
 using trading::domain::cash_position_instrument;
 using trading::domain::equity_basket_option_instrument;
+using trading::domain::equity_basket_variance_swap_instrument;
+using trading::domain::equity_forward_volatility_agreement_instrument;
 using trading::domain::equity_pairwise_variance_swap_instrument;
 using trading::domain::equity_instrument_data;
 using trading::domain::equity_instrument_variant;
@@ -89,7 +92,9 @@ constexpr bool is_equity_trade_type(std::string_view type) {
            type == "EquityTaRF" || type == "EquityCliquetOption" ||
            type == "EquityWorstOfBasketSwap" || type == "EquityDoubleBarrierOption" ||
            type == "EquityEuropeanBarrierOption" || type == "EquityPairwiseVarianceSwap" ||
-           type == "CashPosition" || type == "EquityBasketOption" || type == "EquityRainbowOption";
+           type == "CashPosition" || type == "EquityBasketOption" ||
+           type == "EquityRainbowOption" || type == "EquityBasketVarianceSwap" ||
+           type == "EquityForwardVolatilityAgreement";
 }
 
 template <typename Row>
@@ -290,6 +295,24 @@ auto read_equity_basket_option(const record_reader& trade, std::string_view trad
         std::string(trade_type));
     if (const auto data = trade.child(std::string(trade_type) + "Data"))
         basket_option::read(*data, r);
+    return r;
+}
+
+auto read_equity_basket_variance_swap(const record_reader& trade)
+    -> equity_basket_variance_swap_instrument {
+    auto r = equity_instrument_projection_make_row<equity_basket_variance_swap_instrument>(
+        "EquityBasketVarianceSwap");
+    if (const auto data = trade.child("EquityBasketVarianceSwapData"))
+        volatility_product::read_basket_variance_swap(*data, r);
+    return r;
+}
+
+auto read_equity_forward_volatility_agreement(const record_reader& trade)
+    -> equity_forward_volatility_agreement_instrument {
+    auto r = equity_instrument_projection_make_row<equity_forward_volatility_agreement_instrument>(
+        "EquityForwardVolatilityAgreement");
+    if (const auto data = trade.child("EquityForwardVolatilityAgreementData"))
+        volatility_product::read_forward_volatility_agreement(*data, r);
     return r;
 }
 
@@ -892,6 +915,25 @@ void write_equity_basket_option(record_writer& trade,
     option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
 }
 
+void write_equity_basket_variance_swap(record_writer& trade,
+                                       const equity_basket_variance_swap_instrument& v,
+                                       const equity_instrument_data& carrier) {
+    auto data = trade.child("EquityBasketVarianceSwapData");
+    volatility_product::write_basket_variance_swap(data, v);
+    auto members = data.child("Underlyings");
+    underlying_block::write_underlyings(members, "Underlying", carrier, "underlying");
+    option_block::write_product_schedule(data, carrier, "ValuationSchedule", "valuation_schedule");
+}
+
+void write_equity_forward_volatility_agreement(
+    record_writer& trade,
+    const equity_forward_volatility_agreement_instrument& v,
+    const equity_instrument_data& carrier) {
+    auto data = trade.child("EquityForwardVolatilityAgreementData");
+    volatility_product::write_forward_volatility_agreement(data, v);
+    underlying_block::write_underlyings(data, "Underlying", carrier, "underlying");
+}
+
 void write_equity_pairwise_variance_swap(record_writer& trade,
                                          const equity_pairwise_variance_swap_instrument& v,
                                          const equity_instrument_data& carrier) {
@@ -1423,6 +1465,8 @@ constexpr underlying_block::underlying_holder equity_underlying_holders[] = {
     {"EquityOutperformanceOption", "", "Underlying2", "underlying2"},
     {"EquityBasketOption", "Underlyings", "Underlying", "underlying"},
     {"EquityRainbowOption", "Underlyings", "Underlying", "underlying"},
+    {"EquityBasketVarianceSwap", "Underlyings", "Underlying", "underlying"},
+    {"EquityForwardVolatilityAgreement", "", "Underlying", "underlying"},
 };
 
 /// Where an equity product states its barriers.
@@ -1442,6 +1486,7 @@ constexpr option_block::product_schedule equity_product_schedules[] = {
     {"EquityAccumulator", "PricingDates", "pricing_schedule"},
     {"EquityAsianOption", "ObservationDates", "observation_schedule"},
     {"EquityBasketOption", "ObservationDates", "observation_schedule"},
+    {"EquityBasketVarianceSwap", "ValuationSchedule", "valuation_schedule"},
     {"EquityPairwiseVarianceSwap", "ValuationSchedule", "valuation_schedule"},
     {"EquityPairwiseVarianceSwap", "LaggedValuationSchedule", "lagged_valuation_schedule"},
     {"EquityTaRF", "ScheduleData", "product_schedule"},
@@ -1497,6 +1542,10 @@ auto read_equity_product(const xml::record_reader& trade, std::string_view trade
         return wrap(read_equity_pairwise_variance_swap(trade));
     if (trade_type == "EquityBasketOption" || trade_type == "EquityRainbowOption")
         return wrap(read_equity_basket_option(trade, trade_type));
+    if (trade_type == "EquityBasketVarianceSwap")
+        return wrap(read_equity_basket_variance_swap(trade));
+    if (trade_type == "EquityForwardVolatilityAgreement")
+        return wrap(read_equity_forward_volatility_agreement(trade));
     if (trade_type == "EquitySwap")
         return trading::domain::trade_instrument{read_equity_swap(trade)};
     if (trade_type == "EquityVarianceSwap")
@@ -1631,6 +1680,13 @@ auto write_equity_instrument(xml::record_writer& trade,
                 matched = true;
             } else if constexpr (std::is_same_v<Row, equity_basket_option_instrument>) {
                 write_equity_basket_option(trade, trade_type, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, equity_basket_variance_swap_instrument>) {
+                write_equity_basket_variance_swap(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row,
+                                                equity_forward_volatility_agreement_instrument>) {
+                write_equity_forward_volatility_agreement(trade, row, *v);
                 matched = true;
             } else if constexpr (std::is_same_v<Row, equity_barrier_option_instrument>) {
                 if (trade_type == "EquityBarrierOption") {

@@ -73,7 +73,7 @@ absent: it is a placeholder, not a product.
 | KnockOutSwap | Knock-Out Swap | swap | scripted | interest_rates! | false | true | rate_instrument |
 | RiskParticipationAgreement | Risk Participation Agreement |   | native | credit! | false | true | credit_instrument |
 | InflationSwap | Inflation Swap |   | native | inflation!,interest_rates | false | true | rate_instrument |
-| FxForwardVolatilityAgreement | FX Forward Volatility Agreement |   | scripted | fx! | true | false | scripted_instrument |
+| FxForwardVolatilityAgreement | FX Forward Volatility Agreement |   | scripted | fx! | true | false | fx_forward_volatility_agreement_instrument |
 | FxForward | FX Forward | forward | native | fx! | false | false | fx_forward_instrument |
 | FxSwap | FX Swap | swap | native | fx! | false | false | fx_forward_instrument |
 | FxOption | FX Option | option | native | fx! | true | false | fx_vanilla_option_instrument |
@@ -91,7 +91,7 @@ absent: it is a placeholder, not a product.
 | FxDigitalBarrierOption | FX Digital Barrier Option | option | native | fx! | true | false | fx_digital_option_instrument |
 | FxVarianceSwap | FX Variance Swap | swap | native | fx! | false | false | fx_variance_swap_instrument |
 | FxPairwiseVarianceSwap | FX Pairwise Variance Swap |   | native | fx! | false | false | fx_pairwise_variance_swap_instrument |
-| FxBasketVarianceSwap | FX Basket Variance Swap |   | scripted | fx! | false | false | scripted_instrument |
+| FxBasketVarianceSwap | FX Basket Variance Swap |   | scripted | fx! | false | false | fx_basket_variance_swap_instrument |
 | FxAccumulator | FX Accumulator | forward | scripted | fx! | false | false | fx_accumulator_instrument |
 | FxTaRF | FX Target Redemption Forward | forward | scripted | fx! | false | false | fx_asian_forward_instrument |
 | FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false | scripted_instrument |
@@ -118,7 +118,7 @@ absent: it is a placeholder, not a product.
 | ConvertibleBond | Convertible Bond | security | native | bond!,equity | false | false | bond_instrument |
 | Ascot | Asset Swapped Convertible Option Transaction | option | native | bond!,equity | false | true | bond_instrument |
 | EquityAutoDeltaHedgedOption | Equity Auto Delta Hedged Option | option | native | equity! | true | false | equity_position_instrument |
-| EquityForwardVolatilityAgreement | Equity Forward Volatility Agreement |   | scripted | equity! | true | false | scripted_instrument |
+| EquityForwardVolatilityAgreement | Equity Forward Volatility Agreement |   | scripted | equity! | true | false | equity_forward_volatility_agreement_instrument |
 | EquityOption | Equity Option | option | native | equity! | true | false | equity_option_instrument |
 | EquityFutureOption | Equity Future Option | option | native | equity! | true | false | equity_option_instrument |
 | EquityAsianOption | Equity Asian Option | option | native | equity! | true | true | equity_asian_option_instrument |
@@ -134,7 +134,7 @@ absent: it is a placeholder, not a product.
 | EquitySwap | Equity Swap | swap | native | equity!,interest_rates | false | false | equity_swap_instrument |
 | EquityVarianceSwap | Equity Variance Swap | swap | native | equity! | false | true | equity_variance_swap_instrument |
 | EquityPairwiseVarianceSwap | Equity Pairwise Variance Swap |   | native | equity! | false | false | equity_pairwise_variance_swap_instrument |
-| EquityBasketVarianceSwap | Equity Basket Variance Swap |   | scripted | equity! | false | false | scripted_instrument |
+| EquityBasketVarianceSwap | Equity Basket Variance Swap |   | scripted | equity! | false | false | equity_basket_variance_swap_instrument |
 | EquityCliquetOption | Equity Cliquet Option | option | native | equity! | true | true | equity_option_instrument |
 | EquityAccumulator | Equity Accumulator | forward | scripted | equity! | false | true | equity_accumulator_instrument |
 | EquityTaRF | Equity Target Redemption Forward | forward | scripted | equity! | false | false | equity_accumulator_instrument |
@@ -203,14 +203,18 @@ script that books each such product in its scripted form, so the two forms can
 be booked on the same terms and compared. A product absent from it has no
 library script in ORE, and is held in its own form only.
 
-| code                       | script               |
-|----------------------------+----------------------|
-| EquityBasketOption         | VanillaBasketOption  |
-| EquityPairwiseVarianceSwap | PairwiseVarianceSwap |
-| EquityRainbowOption        | MaxRainbowOption     |
-| FxBasketOption             | VanillaBasketOption  |
-| FxPairwiseVarianceSwap     | PairwiseVarianceSwap |
-| FxRainbowOption            | MaxRainbowOption     |
+| code                             | script                     |
+|----------------------------------+----------------------------|
+| EquityBasketOption               | VanillaBasketOption        |
+| EquityBasketVarianceSwap         | BasketVarianceSwap         |
+| EquityForwardVolatilityAgreement | ForwardVolatilityAgreement |
+| EquityPairwiseVarianceSwap       | PairwiseVarianceSwap       |
+| EquityRainbowOption              | MaxRainbowOption           |
+| FxBasketOption                   | VanillaBasketOption        |
+| FxBasketVarianceSwap             | BasketVarianceSwap         |
+| FxForwardVolatilityAgreement     | ForwardVolatilityAgreement |
+| FxPairwiseVarianceSwap           | PairwiseVarianceSwap       |
+| FxRainbowOption                  | MaxRainbowOption           |
 
 * Classes
 
@@ -530,6 +534,8 @@ hold no row for the trade and read as empty.
 | equity_asian_option_instrument   | equity_asian_option_instrument     |
 | equity_barrier_option_instrument | equity_barrier_option_instrument   |
 | equity_basket_option_instrument  | equity_basket_option_instrument    |
+| equity_basket_variance_swap_instrument | equity_basket_variance_swap_instrument |
+| equity_forward_volatility_agreement_instrument | equity_forward_volatility_agreement_instrument |
 | equity_digital_option_instrument | equity_digital_option_instrument   |
 | equity_forward_instrument        | equity_forward_instrument          |
 | equity_option_instrument         | equity_option_instrument           |
@@ -542,6 +548,8 @@ hold no row for the trade and read as empty.
 | fx_asian_option_instrument       | fx_asian_option_instrument         |
 | fx_barrier_option_instrument     | fx_barrier_option_instrument       |
 | fx_basket_option_instrument      | fx_basket_option_instrument        |
+| fx_basket_variance_swap_instrument | fx_basket_variance_swap_instrument |
+| fx_forward_volatility_agreement_instrument | fx_forward_volatility_agreement_instrument |
 | fx_digital_option_instrument     | fx_digital_option_instrument       |
 | fx_forward_instrument            | fx_forward_instrument              |
 | fx_vanilla_option_instrument     | fx_vanilla_option_instrument       |

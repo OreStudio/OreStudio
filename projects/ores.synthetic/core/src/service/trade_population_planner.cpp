@@ -31,6 +31,7 @@
 #include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/builders/scripted_builders.hpp"
+#include "ores.trading.api/builders/volatility_product_builders.hpp"
 #include "ores.trading.api/domain/bond_product_batch.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
@@ -2106,8 +2107,8 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
         // A volatility strike of a fifth, observed daily over the trade's life.
         const auto strike = level(0.2);
         if (type == "FxBasketVarianceSwap")
-            return scripted_batch_of(
-                tb::basket_variance_swap_builder<tb::scripted_family::fx>(
+            return built(
+                tb::fx_basket_variance_swap_builder(
                     {.members =
                          std::vector<tb::basket_option_member>{
                              {.underlying = index, .currency = std::nullopt, .weight = level(0.5)},
@@ -2120,8 +2121,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                      .end = end,
                      .settlement = year_month_day{sys_days{end} + days{5}},
                      .position = position})
-                    .build(),
-                type);
+                    .build());
         return built(tb::fx_pairwise_variance_swap_builder(
                          {.first = tb::pairwise_member{.underlying = index,
                                                        .strike = strike,
@@ -2202,18 +2202,17 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
         // The volatility fixes halfway to the expiry, which the straddle runs to.
         const auto fva_date =
             year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2};
-        return scripted_batch_of(tb::forward_volatility_agreement_builder<tb::scripted_family::fx>(
-                                     {.underlying = index,
-                                      .pay_currency = pair.quote,
-                                      .quantity = money(notional),
-                                      .implied_vol_strike = level(0.1),
-                                      .fva_date = fva_date,
-                                      .option_expiry = end,
-                                      .premium_date = year_month_day{sys_days{fva_date} + days{2}},
-                                      .settlement = year_month_day{sys_days{end} + days{5}},
-                                      .position = position})
-                                     .build(),
-                                 type);
+        return built(tb::fx_forward_volatility_agreement_builder(
+                         {.underlying = index,
+                          .pay_currency = pair.quote,
+                          .quantity = money(notional),
+                          .implied_vol_strike = level(0.1),
+                          .fva_date = fva_date,
+                          .option_expiry = end,
+                          .premium_date = year_month_day{sys_days{fva_date} + days{2}},
+                          .settlement = year_month_day{sys_days{end} + days{5}},
+                          .position = position})
+                         .build());
     }
     if (type == "FxBasketOption" || type == "FxRainbowOption") {
         const auto* other = &second_pair();
@@ -3259,25 +3258,24 @@ build_equity_trade(const domain::trade_generation_scope& scope,
         // A volatility strike of a fifth, observed daily over the trade's life.
         const auto strike = money(0.2);
         if (type == "EquityBasketVarianceSwap")
-            return scripted_batch_of(tb::basket_variance_swap_builder<tb::scripted_family::equity>(
-                                         {.members =
-                                              std::vector<tb::basket_option_member>{
-                                                  {.underlying = equity_address_of(first->code),
-                                                   .currency = std::nullopt,
-                                                   .weight = money(0.5)},
-                                                  {.underlying = equity_address_of(second->code),
-                                                   .currency = std::nullopt,
-                                                   .weight = money(0.5)}},
-                                          .currency = pay,
-                                          .notional = money(notional / 100.0),
-                                          .strike = strike,
-                                          .squared_payoff = false,
-                                          .start = start,
-                                          .end = end,
-                                          .settlement = year_month_day{sys_days{end} + days{5}},
-                                          .position = position})
-                                         .build(),
-                                     type);
+            return built(tb::equity_basket_variance_swap_builder(
+                             {.members =
+                                  std::vector<tb::basket_option_member>{
+                                      {.underlying = equity_address_of(first->code),
+                                       .currency = std::nullopt,
+                                       .weight = money(0.5)},
+                                      {.underlying = equity_address_of(second->code),
+                                       .currency = std::nullopt,
+                                       .weight = money(0.5)}},
+                              .currency = pay,
+                              .notional = money(notional / 100.0),
+                              .strike = strike,
+                              .squared_payoff = false,
+                              .start = start,
+                              .end = end,
+                              .settlement = year_month_day{sys_days{end} + days{5}},
+                              .position = position})
+                             .build());
         return built(
             tb::equity_pairwise_variance_swap_builder(
                 {.first = tb::pairwise_member{.underlying = equity_address_of(first->code),
@@ -3304,19 +3302,17 @@ build_equity_trade(const domain::trade_generation_scope& scope,
         // The volatility fixes halfway to the expiry, which the straddle runs to.
         const auto fva_date =
             year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2};
-        return scripted_batch_of(
-            tb::forward_volatility_agreement_builder<tb::scripted_family::equity>(
-                {.underlying = address,
-                 .pay_currency = currency,
-                 .quantity = money(notional / level),
-                 .implied_vol_strike = money(0.2),
-                 .fva_date = fva_date,
-                 .option_expiry = end,
-                 .premium_date = year_month_day{sys_days{fva_date} + days{2}},
-                 .settlement = year_month_day{sys_days{end} + days{5}},
-                 .position = position})
-                .build(),
-            type);
+        return built(tb::equity_forward_volatility_agreement_builder(
+                         {.underlying = address,
+                          .pay_currency = currency,
+                          .quantity = money(notional / level),
+                          .implied_vol_strike = money(0.2),
+                          .fva_date = fva_date,
+                          .option_expiry = end,
+                          .premium_date = year_month_day{sys_days{fva_date} + days{2}},
+                          .settlement = year_month_day{sys_days{end} + days{5}},
+                          .position = position})
+                         .build());
     }
     if (type == "EquityOutperformanceOption") {
         const auto [first, second] = same_currency_pair();

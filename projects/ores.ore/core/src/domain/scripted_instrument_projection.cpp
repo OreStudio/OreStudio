@@ -85,10 +85,6 @@ constexpr class_read_product class_read_products[] = {
     {"EquityWindowBarrierOption", "EquityWindowBarrierOptionData"},
     {"FxWindowBarrierOption", "FxWindowBarrierOptionData"},
     {"EquityGenericBarrierOption", "EquityGenericBarrierOptionData"},
-    {"EquityBasketVarianceSwap", "EquityBasketVarianceSwapData"},
-    {"FxBasketVarianceSwap", "FxBasketVarianceSwapData"},
-    {"EquityForwardVolatilityAgreement", "EquityForwardVolatilityAgreementData"},
-    {"FxForwardVolatilityAgreement", "FxForwardVolatilityAgreementData"},
     {"EuropeanOptionBarrier", "EuropeanOptionBarrierData"},
     {"FxWorstOfBasketSwap", "FxWorstOfBasketSwapData"},
 };

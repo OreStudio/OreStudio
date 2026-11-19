@@ -5596,6 +5596,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f"{domain_entity.get('entity_plural', 'unknown')}"
             )
         if len(sql_name_base) + longest_suffix > 63:
+            # The C++ entity names the table by :tablename: verbatim, so a
+            # shortened SQL table would leave the repository querying a
+            # table that does not exist.
+            if table_name:
+                raise ValueError(
+                    f"{model_path}: :tablename: {table_name} leaves no room "
+                    f"for the {longest_suffix}-character identifier suffixes "
+                    "within PostgreSQL's 63-character limit; shorten it to "
+                    f"at most {63 - longest_suffix + 4} characters.")
             sql_name_base = sql_name_base[:63 - longest_suffix]
         domain_entity['sql_name_base'] = sql_name_base
         for fk in domain_entity.get('enforced_foreign_keys') or []:

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: B18C02EB-595E-5975-9EB2-A9DA996A2D44
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_forward_volatility_agreement_instruments commands from the shell?
+#+description: Every command the fx_forward_volatility_agreement_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_forward_volatility_agreement_instruments:
+
+This file documents the fx_forward_volatility_agreement_instruments resource at the shell, one section per command. Every command is a subcommand of =fx_forward_volatility_agreement_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F07CE70F-2F02-5405-9C24-F97395E5762E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_volatility_agreement_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_volatility_agreement_instruments.list=.
+
+#+name: fx_forward_volatility_agreement_instruments-list
+#+begin_src ores-shell :tangle fx_forward_volatility_agreement_instruments-list.ores :exports none
+fx_forward_volatility_agreement_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A07F533C-465B-54F7-9DB9-852B1D8A2592
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_volatility_agreement_instruments get <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_volatility_agreement_instruments.get=.
+
+#+name: fx_forward_volatility_agreement_instruments-get
+#+begin_src ores-shell :tangle fx_forward_volatility_agreement_instruments-get.ores :exports none
+fx_forward_volatility_agreement_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 63E6E6AD-E6A0-5986-961D-AA6BCA4F2D16
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_volatility_agreement_instruments get-many <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_volatility_agreement_instruments.get_many=.
+
+#+name: fx_forward_volatility_agreement_instruments-get-many
+#+begin_src ores-shell :tangle fx_forward_volatility_agreement_instruments-get-many.ores :exports none
+fx_forward_volatility_agreement_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 43AE0566-261F-50AC-BF2E-E25BE60E8B17
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_volatility_agreement_instruments add <trade_id> <trade_type_code> <trade_activity_id> <fva_date> <option_expiry> <premium_date> <long_short> <implied_vol_strike> <quantity> <pay_currency> <settlement_date> <underlying_strike> <day_count_fraction> <dividend_yield> <fixed_rate> <payoff_type> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_volatility_agreement_instruments.put=.
+
+#+name: fx_forward_volatility_agreement_instruments-add
+#+begin_src ores-shell :tangle fx_forward_volatility_agreement_instruments-add.ores :exports none
+fx_forward_volatility_agreement_instruments add 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01 1970-01-01 1970-01-01 __none__ 0 0 __none__ 1970-01-01 - - - - - __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F175C252-FF99-5BC6-8F3A-6FDEF65D847C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_volatility_agreement_instruments set <trade_id> <trade_type_code> <trade_activity_id> <fva_date> <option_expiry> <premium_date> <long_short> <implied_vol_strike> <quantity> <pay_currency> <settlement_date> <underlying_strike> <day_count_fraction> <dividend_yield> <fixed_rate> <payoff_type> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_volatility_agreement_instruments.put=.
+
+#+name: fx_forward_volatility_agreement_instruments-set
+#+begin_src ores-shell :tangle fx_forward_volatility_agreement_instruments-set.ores :exports none
+fx_forward_volatility_agreement_instruments set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01 1970-01-01 1970-01-01 __none__ 0 0 __none__ 1970-01-01 - - - - - __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 45B4AEAA-5435-5E8C-9658-90961867940B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_volatility_agreement_instruments put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <fva_date> <option_expiry> <premium_date> <long_short> <implied_vol_strike> <quantity> <pay_currency> <settlement_date> <underlying_strike> <day_count_fraction> <dividend_yield> <fixed_rate> <payoff_type> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_volatility_agreement_instruments.put_many=.
+
+#+name: fx_forward_volatility_agreement_instruments-put-many
+#+begin_src ores-shell :tangle fx_forward_volatility_agreement_instruments-put-many.ores :exports none
+fx_forward_volatility_agreement_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01 1970-01-01 1970-01-01 __none__ 0 0 __none__ 1970-01-01 - - - - - __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4E7CBAD1-8259-59C3-A433-C637DC914817
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_volatility_agreement_instruments delete <trade_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_volatility_agreement_instruments.delete=.
+
+#+name: fx_forward_volatility_agreement_instruments-delete
+#+begin_src ores-shell :tangle fx_forward_volatility_agreement_instruments-delete.ores :exports none
+fx_forward_volatility_agreement_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: CC0B76C1-3820-5F4C-A20A-FEF819426B95
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_volatility_agreement_instruments delete-many <trade_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_volatility_agreement_instruments.delete_many=.
+
+#+name: fx_forward_volatility_agreement_instruments-delete-many
+#+begin_src ores-shell :tangle fx_forward_volatility_agreement_instruments-delete-many.ores :exports none
+fx_forward_volatility_agreement_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0EA1F97C-EED8-5D0C-996C-5B6551443A39
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_volatility_agreement_instruments versions <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_volatility_agreement_instruments_versions.list=.
+
+#+name: fx_forward_volatility_agreement_instruments-versions
+#+begin_src ores-shell :tangle fx_forward_volatility_agreement_instruments-versions.ores :exports none
+fx_forward_volatility_agreement_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: AFDBDAF0-F4A8-5640-98FE-D7CBA28424D3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_volatility_agreement_instruments version <trade_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_volatility_agreement_instruments_versions.get=.
+
+#+name: fx_forward_volatility_agreement_instruments-version
+#+begin_src ores-shell :tangle fx_forward_volatility_agreement_instruments-version.ores :exports none
+fx_forward_volatility_agreement_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/hold-the-variance-swaps-and-fvas-on-their-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,11 +28,11 @@ table holds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -53,9 +53,27 @@ table holds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Follow the basket and rainbow task: one table per element per family, because
+the equity family holds one variant row and the FX family one vector per
+product.
+
+- =equity_basket_variance_swap_instrument= and
+  =fx_basket_variance_swap_instrument= hold LongShort, Strike, Notional,
+  SquaredPayoff, Cap, Floor, SettlementDate and Currency. The members are the
+  shared underlying rows under the role =underlying=, and the ValuationSchedule
+  is a shared schedule row under the role =valuation_schedule=, as the
+  commodity and pairwise variance swaps keep it.
+- =equity_forward_volatility_agreement_instrument= and
+  =fx_forward_volatility_agreement_instrument= hold every scalar the element
+  states, the optional ones as nullable columns. The underlying is a shared
+  underlying row.
+- One header, =volatility_product_projection.hpp=, reads and writes the
+  scalars for both families; the family projections add the shared rows.
+- Four builders in =volatility_product_builders.hpp= replace the two scripted
+  templates and return the family's rows. The planner books through them.
+- The catalogue routes the four types to the new tables and names the library
+  scripts =BasketVarianceSwap= and =ForwardVolatilityAgreement= as their
+  scripted forms. The class-read entries are removed.
 
 * Measurements
 
@@ -69,7 +87,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.trading.api.tests | 5062 test cases, all pass | =./ores.trading.api.tests= | 7c7e4b4ff2 |
+| ores.trading.core.tests | 264 test cases, all pass | =./ores.trading.core.tests= | 7c7e4b4ff2 |
+| ores.shell.trading.tests | 1534 test cases, all pass | =./ores.shell.trading.tests= | 7c7e4b4ff2 |
+| ores.ore.core.tests, with the ORE engine | 566 test cases, all pass | =./ores.ore.core.tests= | 7c7e4b4ff2 |
+| ores.synthetic.core.tests, with the ORE engine | 149 test cases, all pass | =./ores.synthetic.core.tests= | 7c7e4b4ff2 |
+| Generated trades after two refreshes | no file changed | =ORES_UPDATE_GENERATED_TRADES=1 ./ores.synthetic.core.tests "[generated]"= | 7c7e4b4ff2 |
 
 * Notes
 
@@ -102,3 +125,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The four types are held natively, each on a table of its own:
+=equity_basket_var_swap_instruments=, =fx_basket_variance_swap_instruments=,
+=equity_fva_instruments= and =fx_fva_instruments=. The scalars are columns;
+the FVA's implied volatility strike and quantity are doubles, as the model
+rule for continuous quantities requires. The basket members and the FVA
+underlying are underlying rows, and the basket's valuation schedule is a
+schedule row. The projection reads and writes them, and the round-trip test
+covers the user guide's FX basket variance swap and FVA plus an equity trade of
+each that states every optional term. The builders state the rows and the
+generator books them. The class-read entries are removed, and the catalogue
+names the scripted forms =BasketVarianceSwap= and =ForwardVolatilityAgreement=.
+
+Three table names were too long for the identifier budget. The codegen shortened
+the SQL tables but the C++ entities kept the full names, so the repository
+queried tables that did not exist. The codegen now refuses such a
+=:tablename:=, and the three tables have short names.

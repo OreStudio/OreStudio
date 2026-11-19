@@ -8,7 +8,7 @@
 #+filetags: :compare_curves_within_a_currency:sprint_30:v0:
 #+owner: marco
 #+branch: feature/compare-curves-within-a-currency
-#+pr:
+#+pr: 4909
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-19
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4909][#4909]] | [web] Compare curves within a currency, and across currencies overnight only |
 
 * Review
 

@@ -52,6 +52,7 @@ nobody has stated yet would stop an ingest for a reason that is the catalogue's.
 :primary_key: true
 :sortable:    true
 :searchable:  true
+:no_generator_suffix: true
 :END:
 
 The shape's code: the asset class, the series subclass and, for an index
@@ -59,8 +60,11 @@ series, the index family, joined by dots, such as =ir.index_fixing.ibor= or
 =fx.spot=. The entries name their shape by it. A check holds the code to the
 family's parts, so a code never names one family while the row states another.
 
+A generated shape takes its index family from the generator's counter, and its
+code from the same parts, so each one holds the check and a family of its own.
+
 #+begin_src cpp :name generator
-std::string("ir.index_fixing.ibor")
+std::string("ir.index_fixing.g") + std::to_string(idx)
 #+end_src
 
 ** asset_class
@@ -115,7 +119,7 @@ index, a swap fixing by its tenor, and a shape that stated one of them for both
 would be wrong about one of them. So the family carries the index family too.
 
 #+begin_src cpp :name generator
-std::string("ibor")
+std::string("g") + std::to_string(idx)
 #+end_src
 
 ** description

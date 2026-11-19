@@ -72,6 +72,9 @@ struct series_identity_shape final {
      * index family, joined by dots, such as ir.index_fixing.ibor or fx.spot. The entries name their
      * shape by it. A check holds the code to the family's parts, so a code never names one family
      * while the row states another.
+     *
+     * A generated shape takes its index family from the generator's counter, and its code from the
+     * same parts, so each one holds the check and a family of its own.
      */
     std::string code;
 

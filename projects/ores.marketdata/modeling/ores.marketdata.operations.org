@@ -4263,6 +4263,16 @@ The code of the provider that publishes the feed.
 
 The id of the feed.
 
+*** precedence
+:PROPERTIES:
+:cpp_type: int
+:default: 1000
+:END:
+
+The provider's rank when more than one quotes the same datum, as the providers
+table holds it: the lower, the more it is trusted. A watcher that compares
+vendors measures each against the highest-ranked one.
+
 ** list_watchable_feeds_request
 :PROPERTIES:
 :subject: marketdata.v1.ops.list_watchable_feeds

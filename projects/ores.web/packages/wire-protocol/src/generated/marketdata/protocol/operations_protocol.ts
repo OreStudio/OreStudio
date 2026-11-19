@@ -1510,6 +1510,7 @@ export interface GetSeriesTicksResponse {
 export interface WatchableFeed {
     provider_code: string;
     feed_id: string;
+    precedence: number;
 }
 
 /**

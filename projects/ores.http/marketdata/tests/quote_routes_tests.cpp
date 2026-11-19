@@ -264,6 +264,21 @@ TEST_CASE("the_feeds_read_names_the_source_of_a_feed_the_board_has_heard", "[quo
     CHECK(answer.body.find("\"last_at\":null") != std::string::npos);
 }
 
+TEST_CASE("the_feeds_read_states_the_rank_of_each_provider", "[quotes]") {
+    auto lg(make_logger(test_suite));
+    quotes_transport transport;
+
+    const auto answer = quotes_answer("/api/marketdata/quotes/feeds",
+                                      quotes_query({}),
+                                      transport,
+                                      {{"bloomberg", quotes_bloomberg_feed, 1},
+                                       {"ice", "082e749a-8c4d-4cc3-b2fb-8e6d3ef61aaf", 3}});
+
+    CHECK(answer.body.find("\"provider\":\"bloomberg\",\"feed\":\"" + quotes_bloomberg_feed +
+                           "\",\"precedence\":1,") != std::string::npos);
+    CHECK(answer.body.find("\"precedence\":3,") != std::string::npos);
+}
+
 TEST_CASE("a_history_read_that_names_no_series_is_refused", "[quotes]") {
     auto lg(make_logger(test_suite));
     quotes_transport transport;

@@ -40,6 +40,8 @@ const CPP = baseFor('quotes');
 export const quoteFeedSchema = z.object({
     provider: z.string(),
     feed: z.string(),
+    /** The provider's rank, the lower the more trusted. */
+    precedence: z.number().int(),
     source: z.string(),
     last_at: z.string().nullable(),
 });

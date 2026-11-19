@@ -1992,6 +1992,7 @@ struct get_series_ticks_response {
 struct watchable_feed {
     std::string provider_code;
     std::string feed_id;
+    int precedence = 1000;
 
     friend bool operator==(const watchable_feed&, const watchable_feed&) = default;
 };
@@ -3560,6 +3561,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"provider_code", &watchable_feed::provider_code},
         ::ores::utility::codec::field{"feed_id", &watchable_feed::feed_id},
+        ::ores::utility::codec::field{"precedence", &watchable_feed::precedence},
     };
 }
 

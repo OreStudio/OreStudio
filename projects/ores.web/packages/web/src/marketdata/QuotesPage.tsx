@@ -18,46 +18,47 @@
  *
  */
 
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { quotes, type Quote, type QuoteFeed } from '../api/quotes.js';
+import { quotes, type Quote } from '../api/quotes.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
-import { Pager } from '../ui/Pager.js';
-import { LineChart, SERIES_COLOURS } from './LineChart.js';
+import { Field, Input, Notice, PageHeader, Tag, cx } from '../ui/Primitives.js';
+import { useTabs } from '../ui/Tabs.js';
+import { SERIES_COLOURS } from './LineChart.js';
 import {
-    ALL_VENDORS,
-    allQuotesOf,
-    bySeries,
-    changeOf,
+    COMPARE,
+    CurveBoard,
+    DatumBoard,
+    MID,
+    QuoteBoard,
+    SurfaceBoard,
+    type Comparison,
+    type Watch,
+} from './QuoteBoards.js';
+import {
+    boardsOf,
+    CONSENSUS,
     feedKey,
     instantOf,
-    instrumentTypes,
     isStale,
     merged,
-    shownQuotes,
+    shownSeries,
+    vendorsOf,
+    type Board,
+    type Order,
+    type Vendor,
 } from './quotesView.js';
-import { DATA_CELL, HEAD_CELL } from './readScreen.js';
 
 /**
  * The market as the vendors quote it, from
- * doc/prototypes/market_data/watch-the-vendors-quotes/index.html, variant C, which
- * the product owner signed off: a rail of the sources the session may watch, the
- * quotes of the chosen one updated in place, and every vendor's quote of the
- * picked datum.
+ * doc/prototypes/market_data/read-the-quotes-by-series/, variant C, which the
+ * product owner chose: the sources on a rail, each one included or left out, and
+ * a board for each asset class and shape. A vendor is a column, never a row.
  *
  * The server holds the board and the entitlement; the screen polls the board for
  * what arrived after the last read and keeps the latest quote of each datum.
  */
-
-/** A quote's value as the screen shows it: seven significant digits, no grouping. */
-const NUMBER = new Intl.NumberFormat('en-GB', { maximumSignificantDigits: 7, useGrouping: false });
-
-function shown(value: number | string): string {
-    const n = typeof value === 'number' ? value : Number(value);
-    return Number.isFinite(n) ? NUMBER.format(n) : String(value);
-}
 
 /** How often the screen asks the board for what arrived. */
 const POLL_MS = 1000;
@@ -106,49 +107,24 @@ function useNow(): number {
 
 function age(at: string, now: number): string {
     const seconds = Math.max(0, (now - instantOf(at)) / 1000);
-    return seconds < 60 ? `${seconds.toFixed(1)}s` : `${Math.round(seconds / 60)}m`;
+    return seconds < 60 ? `${seconds.toFixed(0)}s` : `${Math.round(seconds / 60)}m`;
 }
 
-function time(at: string): string {
-    return at.slice(11, 23);
-}
-
-function Change({ q }: { readonly q: Quote }): ReactNode {
-    const c = changeOf(q);
-    if (c === 0) return <span className="text-ink-faint">0</span>;
-    return (
-        <span
-            className={c > 0 ? 'text-up' : 'text-down'}
-        >{`${c > 0 ? '+' : ''}${c.toPrecision(3)}`}</span>
-    );
-}
-
+/** The sources, in the order they are trusted, each one ticked to include it. */
 function Rail({
-    feeds,
-    source,
+    vendors,
+    left,
     now,
-    onPick,
+    colourOf,
+    onToggle,
 }: {
-    readonly feeds: readonly QuoteFeed[];
-    readonly source: string;
+    readonly vendors: readonly Vendor[];
+    readonly left: ReadonlySet<string>;
     readonly now: number;
-    readonly onPick: (source: string) => void;
+    readonly colourOf: (key: string) => string;
+    readonly onToggle: (key: string) => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const item = (key: string, label: ReactNode, aside: string, on: boolean): ReactNode => (
-        <button
-            key={key}
-            type="button"
-            onClick={() => onPick(key)}
-            className={cx(
-                'flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm',
-                on ? 'bg-accent/15 text-ink' : 'hover:bg-panel-2',
-            )}
-        >
-            <span>{label}</span>
-            <span className="text-xs text-ink-faint">{aside}</span>
-        </button>
-    );
     return (
         <nav
             aria-label={t('marketdata.quotes.sources')}
@@ -157,145 +133,72 @@ function Rail({
             <p className="px-2 py-1 text-xs uppercase tracking-wide text-ink-faint">
                 {t('marketdata.quotes.sources')}
             </p>
-            {item(
-                ALL_VENDORS,
-                t('marketdata.quotes.allVendors'),
-                String(feeds.length),
-                source === ALL_VENDORS,
-            )}
-            {feeds.map((f) => {
-                const stale = isStale(f.last_at, now);
-                return item(
-                    feedKey(f),
-                    <span>
-                        <span
-                            aria-hidden="true"
-                            className={cx(
-                                'mr-1.5 inline-block h-2 w-2 rounded-full',
-                                stale ? 'bg-warn' : 'bg-up',
-                            )}
-                        />
-                        {f.provider}
-                    </span>,
-                    f.last_at === null ? '—' : age(f.last_at, now),
-                    source === feedKey(f),
+            {vendors.map((v) => {
+                const stale = isStale(v.lastAt, now);
+                return (
+                    <label
+                        key={v.key}
+                        className="flex cursor-pointer items-center justify-between gap-2 rounded px-2 py-1.5 text-sm hover:bg-panel-2"
+                    >
+                        <span className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={!left.has(v.key)}
+                                onChange={() => onToggle(v.key)}
+                            />
+                            <span
+                                aria-hidden="true"
+                                className="inline-block h-2 w-2 rounded-full"
+                                style={{ background: colourOf(v.key) }}
+                            />
+                            {v.provider}
+                        </span>
+                        <span className={cx('text-xs', stale ? 'text-warn' : 'text-ink-faint')}>
+                            {v.lastAt === null ? '—' : age(v.lastAt, now)}
+                        </span>
+                    </label>
                 );
             })}
+            <p className="px-2 pt-1 text-xs text-ink-faint">{t('marketdata.quotes.sourcesHint')}</p>
         </nav>
     );
 }
 
-function AllQuotesPanel({
-    held,
-    feeds,
-    picked,
-    now,
-}: {
-    readonly held: ReadonlyMap<string, Quote>;
-    readonly feeds: readonly QuoteFeed[];
-    readonly picked: Quote;
-    readonly now: number;
-}): ReactNode {
-    const { t, plural } = useTranslation();
-    const all = allQuotesOf(held, feeds, picked.uri);
-    const from = useRef(new Date(Date.now() - 3_600_000).toISOString()).current;
-    const histories = useQueries({
-        queries: all.quotes.map((q) => ({
-            queryKey: ['quote-history', q.provider, picked.uri, from] as const,
-            queryFn: () => quotes.history(q.provider, picked.series_uri, picked.uri, from),
-            retry: false,
-            staleTime: Infinity,
-        })),
+/**
+ * The vendors with the newest tick the screen holds of each, which is ahead of
+ * the feeds read: that is asked every few seconds, and the board every second.
+ */
+function withLastTicks(vendors: readonly Vendor[], held: ReadonlyMap<string, Quote>): Vendor[] {
+    const newest = new Map<string, string>();
+    for (const q of held.values()) {
+        const key = feedKey(q);
+        const seen = newest.get(key);
+        if (seen === undefined || instantOf(q.at) > instantOf(seen)) newest.set(key, q.at);
+    }
+    return vendors.map((v) => {
+        const at = newest.get(v.key);
+        return at !== undefined && (v.lastAt === null || instantOf(at) > instantOf(v.lastAt))
+            ? { ...v, lastAt: at }
+            : v;
     });
-    const series = all.quotes.map((q, i) => {
-        const past = histories[i]?.data?.ticks.map((tick) => tick.value) ?? [];
-        return {
-            points: [...past, Number(q.value)],
-            colour: SERIES_COLOURS[i % SERIES_COLOURS.length] ?? '#58a6ff',
-        };
-    });
-    return (
-        <section className="space-y-2 rounded-md border border-line p-4">
-            <h2 className="text-xs uppercase tracking-wide text-ink-faint">
-                {t('marketdata.quotes.allQuotesOf', { series: picked.series, point: picked.point })}
-            </h2>
-            <table className="w-full text-sm">
-                <thead>
-                    <tr>
-                        <th className={cx(HEAD_CELL, 'text-left')}>
-                            {t('marketdata.quotes.vendor')}
-                        </th>
-                        <th className={HEAD_CELL}>{t('marketdata.quotes.value')}</th>
-                        <th className={HEAD_CELL}>{t('marketdata.quotes.toMid')}</th>
-                        <th className={HEAD_CELL}>{t('marketdata.quotes.change')}</th>
-                        <th className={HEAD_CELL}>{t('marketdata.quotes.age')}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {all.quotes.map((q, i) => (
-                        <tr key={feedKey(q)} className={isStale(q.at, now) ? 'text-ink-faint' : ''}>
-                            <td className="px-2 py-1">
-                                <span
-                                    aria-hidden="true"
-                                    className="mr-2 inline-block h-0.5 w-3 align-middle"
-                                    style={{ background: series[i]?.colour }}
-                                />
-                                {q.provider} <span className="text-ink-faint">{q.source}</span>
-                            </td>
-                            <td className={DATA_CELL}>{shown(q.value)}</td>
-                            <td className={DATA_CELL}>
-                                {all.mid === null ? '—' : shown(Number(q.value) - all.mid)}
-                            </td>
-                            <td className={DATA_CELL}>
-                                <Change q={q} />
-                            </td>
-                            <td className={DATA_CELL}>{age(q.at, now)}</td>
-                        </tr>
-                    ))}
-                    <tr className="border-t border-line">
-                        <td className="px-2 py-1">
-                            {plural('marketdata.quotes.midOf', all.quotes.length)}
-                        </td>
-                        <td className={DATA_CELL}>{all.mid === null ? '—' : shown(all.mid)}</td>
-                        <td className={DATA_CELL}>
-                            {all.spread === null
-                                ? ''
-                                : t('marketdata.quotes.spread', {
-                                      spread: shown(all.spread),
-                                  })}
-                        </td>
-                        <td colSpan={2} />
-                    </tr>
-                </tbody>
-            </table>
-            <LineChart
-                series={series}
-                format={(v) => shown(v)}
-                label={t('marketdata.quotes.lastHour', {
-                    series: picked.series,
-                    point: picked.point,
-                })}
-            />
-        </section>
-    );
 }
 
 export function QuotesPage(): ReactNode {
-    const { t, plural } = useTranslation();
+    const { t } = useTranslation();
     const [paused, setPaused] = useState(false);
-    const [source, setSource] = useState(ALL_VENDORS);
-    const [assetClass, setAssetClass] = useState('');
-    const [instrumentType, setInstrumentType] = useState('');
+    const [left, setLeft] = useState<ReadonlySet<string>>(new Set());
     const [find, setFind] = useState('');
-    const [layout, setLayout] = useState<'datum' | 'series'>('datum');
-    const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
-    const [pickedUri, setPickedUri] = useState('');
-    const [offset, setOffset] = useState(0);
-    const [pageSize, setPageSize] = useState(50);
-    // A new choice of what to show starts again at its first page.
-    useEffect(() => {
-        setOffset(0);
-    }, [source, assetClass, instrumentType, find, layout]);
+    const [order, setOrder] = useState<Order>('live');
+    const [picked, setPicked] = useState<Readonly<Record<string, string>>>({});
+    const [curveSource, setCurveSource] = useState(CONSENSUS);
+    const [surfaceMode, setSurfaceMode] = useState(MID);
+    const [point, setPoint] = useState('');
+    const [comparison, setComparison] = useState<Comparison>({
+        a: '',
+        b: CONSENSUS,
+        row: '',
+        column: '',
+    });
     const now = useNow();
     const feedsQuery = useQuery({
         queryKey: ['quote-feeds'],
@@ -310,86 +213,83 @@ export function QuotesPage(): ReactNode {
         retry: false,
     });
     const { held, failed } = useBoard(paused);
-    const feeds = feedsQuery.data ?? [];
-    const classes = classesQuery.data ?? [];
-    const nameOf = (code: string): string => classes.find((c) => c.code === code)?.name ?? code;
-    const one = source !== ALL_VENDORS;
-    const rows = shownQuotes(held, feeds, { source, assetClass, instrumentType, find });
-    const groups = layout === 'series' ? bySeries(rows) : [];
-    const total = layout === 'datum' ? rows.length : groups.length;
-    const picked = [...held.values()].find((q) => q.uri === pickedUri);
-
-    const quoteRow = (q: Quote, nested = false): ReactNode => (
-        <tr
-            key={`${feedKey(q)}|${q.uri}`}
-            onClick={() => setPickedUri(q.uri)}
-            className={cx(
-                'cursor-pointer border-t border-line/50 hover:bg-panel-2',
-                q.uri === pickedUri && 'bg-panel-2',
-                isStale(q.at, now) && 'text-ink-faint',
-            )}
-        >
-            <td className="px-2 py-1">{nameOf(q.asset_class)}</td>
-            <td className="px-2 py-1">{q.instrument_type}</td>
-            <td className={cx('px-2 py-1', nested && 'pl-6')}>{q.series}</td>
-            <td className="px-2 py-1">{q.point === '' ? '—' : q.point}</td>
-            {!one && <td className="px-2 py-1">{q.provider}</td>}
-            <td className={DATA_CELL}>{shown(q.value)}</td>
-            <td className={DATA_CELL}>
-                <Change q={q} />
-            </td>
-            <td className={DATA_CELL}>{time(q.at)}</td>
-            <td className={DATA_CELL}>{age(q.at, now)}</td>
-        </tr>
-    );
-
-    const body = (): ReactNode => {
-        if (rows.length === 0)
+    const vendors = withLastTicks(vendorsOf(feedsQuery.data ?? []), held);
+    const colourOf = (key: string): string => {
+        const i = vendors.findIndex((v) => v.key === key);
+        return SERIES_COLOURS[Math.max(0, i) % SERIES_COLOURS.length] ?? 'var(--color-accent)';
+    };
+    const shown = new Set(vendors.filter((v) => !left.has(v.key)).map((v) => v.key));
+    const watch: Watch = { vendors, shown, now, colourOf };
+    const boards = boardsOf(held, vendors);
+    const className = (code: string): string =>
+        (classesQuery.data ?? []).find((c) => c.code === code)?.name ?? code;
+    const titleOf = (b: Board): string =>
+        t(`marketdata.quotes.board.${b.shape}`, { class: className(b.assetClass) });
+    const listed = new Map(boards.map((b) => [b.key, shownSeries(b, shown, find, order, now)]));
+    const { tab, bar } = useTabs({
+        label: t('marketdata.quotes.boards'),
+        tabs: boards.map((b) => b.key),
+        titleOf: (key) => {
+            const b = boards.find((x) => x.key === key);
+            return b === undefined ? key : titleOf(b);
+        },
+        renderTitle: (key) => {
+            const b = boards.find((x) => x.key === key);
             return (
-                <tr>
-                    <td colSpan={one ? 8 : 9} className="px-2 py-3 text-ink-faint">
-                        {t('marketdata.quotes.noQuotes')}
-                    </td>
-                </tr>
+                <>
+                    {b === undefined ? key : titleOf(b)}
+                    <span className="ml-1.5 text-xs text-ink-faint">
+                        {listed.get(key)?.length ?? 0}
+                    </span>
+                </>
             );
-        if (layout === 'datum')
-            return rows.slice(offset, offset + pageSize).map((q) => quoteRow(q));
-        return groups.slice(offset, offset + pageSize).map((group) => {
-            const points = new Set(group.quotes.map((q) => q.uri)).size;
-            if (points === 1) return group.quotes.map((q) => quoteRow(q));
-            const isOpen = open.has(group.key);
-            const first = group.quotes[0];
-            if (first === undefined) return null;
-            return [
-                <tr
-                    key={group.key}
-                    onClick={() => {
-                        const next = new Set(open);
-                        if (isOpen) next.delete(group.key);
-                        else next.add(group.key);
-                        setOpen(next);
+        },
+    });
+    const board = boards.find((b) => b.key === tab);
+    const series = listed.get(tab) ?? [];
+    const pick = (key: string): void => {
+        setPicked({ ...picked, [tab]: key });
+        setPoint('');
+    };
+
+    const view = (): ReactNode => {
+        if (board === undefined)
+            return <p className="text-sm text-ink-faint">{t('marketdata.quotes.waiting')}</p>;
+        if (series.length === 0)
+            return <p className="text-sm text-ink-faint">{t('marketdata.quotes.noSeries')}</p>;
+        const chosen = picked[tab] ?? '';
+        if (board.shape === 'quote')
+            return <QuoteBoard series={series} watch={watch} picked={chosen} onPick={pick} />;
+        if (board.shape === 'curve')
+            return (
+                <CurveBoard
+                    series={series}
+                    watch={watch}
+                    picked={chosen}
+                    onPick={pick}
+                    source={curveSource}
+                    onSource={setCurveSource}
+                />
+            );
+        if (board.shape === 'surface')
+            return (
+                <SurfaceBoard
+                    series={series}
+                    watch={watch}
+                    picked={chosen}
+                    onPick={pick}
+                    mode={surfaceMode}
+                    onMode={(m) => {
+                        setSurfaceMode(m);
+                        if (m === COMPARE) setPoint('');
                     }}
-                    className="cursor-pointer border-t border-line/50 hover:bg-panel-2"
-                >
-                    <td className="px-2 py-1">{nameOf(first.asset_class)}</td>
-                    <td className="px-2 py-1">{first.instrument_type}</td>
-                    <td className="px-2 py-1">{`${isOpen ? '▾' : '▸'} ${first.series}`}</td>
-                    <td className="px-2 py-1 text-ink-faint">
-                        {plural('marketdata.quotes.points', points)}
-                    </td>
-                    {!one && <td />}
-                    <td
-                        className={cx(DATA_CELL, 'text-ink-faint')}
-                    >{`${group.newest.point}: ${shown(group.newest.value)}`}</td>
-                    <td className={DATA_CELL}>
-                        <Change q={group.newest} />
-                    </td>
-                    <td className={DATA_CELL}>{time(group.newest.at)}</td>
-                    <td className={DATA_CELL}>{age(group.newest.at, now)}</td>
-                </tr>,
-                ...(isOpen ? group.quotes.map((q) => quoteRow(q, true)) : []),
-            ];
-        });
+                    point={point}
+                    onPoint={setPoint}
+                    comparison={comparison}
+                    onCompare={setComparison}
+                />
+            );
+        return <DatumBoard series={series} watch={watch} />;
     };
 
     return (
@@ -414,42 +314,24 @@ export function QuotesPage(): ReactNode {
                 </div>
             </div>
             {failed && <Notice tone="warn">{t('marketdata.quotes.unreachable')}</Notice>}
-            {feedsQuery.isSuccess && feeds.length === 0 ? (
+            {feedsQuery.isSuccess && vendors.length === 0 ? (
                 <Notice tone="info">{t('marketdata.quotes.noFeeds')}</Notice>
             ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-[13rem_1fr]">
-                    <Rail feeds={feeds} source={source} now={now} onPick={setSource} />
-                    <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-[13rem_minmax(0,1fr)]">
+                    <Rail
+                        vendors={vendors}
+                        left={left}
+                        now={now}
+                        colourOf={colourOf}
+                        onToggle={(key) => {
+                            const next = new Set(left);
+                            if (next.has(key)) next.delete(key);
+                            else next.add(key);
+                            setLeft(next);
+                        }}
+                    />
+                    <div className="min-w-0 space-y-4">
                         <section className="flex flex-wrap items-end gap-4 rounded-md border border-line p-4">
-                            <Field label={t('marketdata.quotes.assetClass')}>
-                                <Select
-                                    value={assetClass}
-                                    onChange={(event) => {
-                                        setAssetClass(event.target.value);
-                                        setInstrumentType('');
-                                    }}
-                                >
-                                    <option value="">{t('marketdata.quotes.all')}</option>
-                                    {classes.map((c) => (
-                                        <option key={c.code} value={c.code}>
-                                            {c.name}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </Field>
-                            <Field label={t('marketdata.quotes.instrumentType')}>
-                                <Select
-                                    value={instrumentType}
-                                    onChange={(event) => setInstrumentType(event.target.value)}
-                                >
-                                    <option value="">{t('marketdata.quotes.all')}</option>
-                                    {instrumentTypes(held, assetClass).map((type) => (
-                                        <option key={type} value={type}>
-                                            {type}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </Field>
                             <Field label={t('marketdata.quotes.find')}>
                                 <Input
                                     value={find}
@@ -457,86 +339,36 @@ export function QuotesPage(): ReactNode {
                                     onChange={(event) => setFind(event.target.value)}
                                 />
                             </Field>
-                            <Field label={t('marketdata.quotes.layout')}>
-                                <div className="inline-flex overflow-hidden rounded border border-line">
-                                    {(['datum', 'series'] as const).map((l) => (
+                            <div>
+                                <span className="mb-1.5 block text-sm font-medium text-ink-muted">
+                                    {t('marketdata.quotes.order')}
+                                </span>
+                                <div
+                                    role="group"
+                                    aria-label={t('marketdata.quotes.order')}
+                                    className="inline-flex overflow-hidden rounded border border-line"
+                                >
+                                    {(['live', 'name'] as const).map((o) => (
                                         <button
-                                            key={l}
+                                            key={o}
                                             type="button"
-                                            aria-pressed={layout === l}
-                                            onClick={() => setLayout(l)}
+                                            aria-pressed={order === o}
+                                            onClick={() => setOrder(o)}
                                             className={cx(
-                                                'px-3 py-1 text-sm',
-                                                layout === l && 'bg-accent/15',
+                                                'px-3 py-2 text-sm',
+                                                order === o && 'bg-accent/15',
                                             )}
                                         >
-                                            {l === 'datum'
-                                                ? t('marketdata.quotes.everyDatum')
-                                                : t('marketdata.quotes.bySeries')}
+                                            {o === 'live'
+                                                ? t('marketdata.quotes.liveFirst')
+                                                : t('marketdata.quotes.byName')}
                                         </button>
                                     ))}
                                 </div>
-                            </Field>
+                            </div>
                         </section>
-                        {picked === undefined ? (
-                            <p className="text-sm text-ink-faint">
-                                {t('marketdata.quotes.pickRow')}
-                            </p>
-                        ) : (
-                            <AllQuotesPanel held={held} feeds={feeds} picked={picked} now={now} />
-                        )}
-                        <section className="overflow-x-auto rounded-md border border-line p-2">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr>
-                                        <th className={cx(HEAD_CELL, 'text-left')}>
-                                            {t('marketdata.quotes.assetClass')}
-                                        </th>
-                                        <th className={cx(HEAD_CELL, 'text-left')}>
-                                            {t('marketdata.quotes.type')}
-                                        </th>
-                                        <th className={cx(HEAD_CELL, 'text-left')}>
-                                            {t('marketdata.quotes.series')}
-                                        </th>
-                                        <th className={cx(HEAD_CELL, 'text-left')}>
-                                            {t('marketdata.quotes.point')}
-                                        </th>
-                                        {!one && (
-                                            <th className={cx(HEAD_CELL, 'text-left')}>
-                                                {t('marketdata.quotes.vendor')}
-                                            </th>
-                                        )}
-                                        <th className={HEAD_CELL}>
-                                            {t('marketdata.quotes.value')}
-                                        </th>
-                                        <th className={HEAD_CELL}>
-                                            {t('marketdata.quotes.change')}
-                                        </th>
-                                        <th className={HEAD_CELL}>{t('marketdata.quotes.time')}</th>
-                                        <th className={HEAD_CELL}>{t('marketdata.quotes.age')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>{body()}</tbody>
-                            </table>
-                            {total > 0 && (
-                                <Pager
-                                    offset={offset}
-                                    shown={Math.min(pageSize, total - offset)}
-                                    total={total}
-                                    pageSize={pageSize}
-                                    showing={t('marketdata.quotes.showing', {
-                                        from: offset + 1,
-                                        to: Math.min(offset + pageSize, total),
-                                        total,
-                                    })}
-                                    onMove={setOffset}
-                                    onPageSize={(size) => {
-                                        setPageSize(size);
-                                        setOffset(0);
-                                    }}
-                                />
-                            )}
-                        </section>
+                        {bar}
+                        {view()}
                     </div>
                 </div>
             )}

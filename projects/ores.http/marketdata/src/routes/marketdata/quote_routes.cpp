@@ -152,7 +152,9 @@ void quote_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                     for (const auto& f : entitled(req)) {
                         const auto found = heard.find({f.provider_code, f.feed_id});
                         rows.push_back("{\"provider\":" + json::write(f.provider_code) +
-                                       ",\"feed\":" + json::write(f.feed_id) + ",\"source\":" +
+                                       ",\"feed\":" + json::write(f.feed_id) +
+                                       ",\"precedence\":" + std::to_string(f.precedence) +
+                                       ",\"source\":" +
                                        json::write(found == heard.end() ? std::string{} :
                                                                           found->second.first) +
                                        ",\"last_at\":" +

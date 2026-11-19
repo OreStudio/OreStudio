@@ -21,30 +21,42 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * The quotes view reads the C++ server's board: the sources the session may watch
- * on the rail, the quotes updating in place, and every vendor's quote of a picked
- * row.
+ * The quotes view reads the C++ server's board: the sources on the rail, each one
+ * included or left out, and a board for each asset class and shape with each
+ * vendor a column. A picked row opens every vendor's quote of it and their hour.
  */
-test("the quotes view shows the sources, the ticking quotes and a row's all quotes", async ({
+test('the quotes view shows a board per asset class and shape, each vendor a column', async ({
     page,
 }) => {
     await page.goto('/market-data/quotes');
     await expect(page.getByRole('heading', { level: 1, name: 'Quotes' })).toBeVisible();
     const rail = page.getByRole('navigation', { name: 'Sources' });
-    await expect(rail.getByRole('button', { name: /All vendors/ })).toBeVisible();
-    await expect(rail.getByRole('button', { name: /bloomberg/ })).toBeVisible();
+    await expect(rail.getByRole('checkbox').first()).toBeChecked();
+    await expect(rail.getByText('bloomberg')).toBeVisible();
+    const boards = page.getByRole('tablist', { name: 'Boards' });
+    await expect(boards.getByRole('tab', { name: /FX quotes/ })).toBeVisible({ timeout: 30_000 });
+    await boards.getByRole('tab', { name: /FX quotes/ }).click();
     const rows = page.locator('table').first().locator('tbody tr');
     await expect.poll(async () => rows.count(), { timeout: 30_000 }).toBeGreaterThan(5);
-    // The table pages: at most one page of rows, and the pager says which.
-    await expect(page.getByText(/^1–\d+ of \d+$/)).toBeVisible();
-    expect(await rows.count()).toBeLessThanOrEqual(50);
-    await page.screenshot({ path: '../../.runtime/harness/quotes-all.png' });
-    await rows.filter({ hasText: 'fx_spot' }).first().click();
-    const allQuotes = page.getByRole('heading', { name: /All quotes/ });
-    await expect(allQuotes).toBeVisible();
-    // The panel draws each vendor's last hour once the history reads answer.
-    await expect(page.locator('section', { has: allQuotes }).locator('svg').first()).toBeVisible({
+    await expect(page.locator('table').first().locator('thead')).toContainText('bloomberg');
+    await page.screenshot({ path: '../../.runtime/harness/quotes-board.png' });
+    await rows.filter({ hasText: 'EUR/USD' }).first().click();
+    await expect(page.getByText(/^Mid of \d+$/)).toBeVisible();
+    await expect(page.getByRole('img', { name: /The last hour of EUR\/USD/ })).toBeVisible({
         timeout: 15_000,
     });
     await page.screenshot({ path: '../../.runtime/harness/quotes-picked.png' });
+
+    // Leaving a source out takes its column off every board.
+    await rail.getByRole('checkbox').first().uncheck();
+    await expect(page.locator('table').first().locator('thead')).not.toContainText('bloomberg');
+    await rail.getByRole('checkbox').first().check();
+
+    const curves = boards.getByRole('tab', { name: /curves/ });
+    if ((await curves.count()) > 0) {
+        await curves.first().click();
+        await page.locator('thead button').first().click();
+        await expect(page.getByRole('img', { name: /by tenor, each vendor/ })).toBeVisible();
+        await page.screenshot({ path: '../../.runtime/harness/quotes-curves.png' });
+    }
 });

@@ -258,7 +258,13 @@ export function labelsOf(
 
 const watchableSchema = z.looseObject({
     result: resultSchema,
-    feeds: z.array(z.object({ provider_code: z.string(), feed_id: z.string() })),
+    feeds: z.array(
+        z.object({
+            provider_code: z.string(),
+            feed_id: z.string(),
+            precedence: z.number().int().default(1000),
+        }),
+    ),
 });
 
 const schemaReplySchema = z.looseObject({
@@ -289,7 +295,9 @@ function refused(result: z.infer<typeof resultSchema>): HttpFailure {
 /** The feeds the session may watch for display, as provider|feed keys and as rows. */
 async function watchable(
     session: LiveSession,
-): Promise<{ readonly provider_code: string; readonly feed_id: string }[]> {
+): Promise<
+    { readonly provider_code: string; readonly feed_id: string; readonly precedence: number }[]
+> {
     const answer = await session.client.callAuthenticated(
         subjects.list_watchable_feeds_request,
         { for_display: true },
@@ -353,6 +361,7 @@ export function registerQuoteRoutes(
                 return {
                     provider: f.provider_code,
                     feed: f.feed_id,
+                    precedence: f.precedence,
                     source: seen?.source ?? '',
                     last_at: seen?.at ?? null,
                 };

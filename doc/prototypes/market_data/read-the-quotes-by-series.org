@@ -126,7 +126,9 @@ self-contained.
 
 ** The verdict
 
-Open. Waiting for the product owner.
+Variant C, boards by asset class, chosen by the product owner on 2026-11-19 and
+built in the task that builds the quotes view. Its compare mode reads the surface
+as quoted until the server serves vols by delta.
 
 * See also
 

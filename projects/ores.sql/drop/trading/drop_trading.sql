@@ -101,6 +101,8 @@
 \ir ./trading_instrument_underlyings_drop.sql
 \ir ./trading_instrument_barrier_levels_notify_trigger_drop.sql
 \ir ./trading_instrument_barrier_levels_drop.sql
+\ir ./trading_instrument_values_notify_trigger_drop.sql
+\ir ./trading_instrument_values_drop.sql
 \ir ./trading_instrument_barriers_notify_trigger_drop.sql
 \ir ./trading_instrument_barriers_drop.sql
 \ir ./trading_swap_leg_indexings_notify_trigger_drop.sql
@@ -296,6 +298,8 @@
 \ir ./trading_equity_window_barrier_option_instruments_drop.sql
 \ir ./trading_fx_window_barrier_option_instruments_notify_trigger_drop.sql
 \ir ./trading_fx_window_barrier_option_instruments_drop.sql
+\ir ./trading_fx_worst_of_basket_swap_instruments_notify_trigger_drop.sql
+\ir ./trading_fx_worst_of_basket_swap_instruments_drop.sql
 \ir ./trading_equity_generic_barrier_option_instruments_notify_trigger_drop.sql
 \ir ./trading_equity_generic_barrier_option_instruments_drop.sql
 \ir ./trading_fx_asian_option_instruments_notify_trigger_drop.sql

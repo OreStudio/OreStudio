@@ -160,6 +160,8 @@
 \ir ./trading_instrument_barriers_notify_trigger_create.sql
 \ir ./trading_instrument_barrier_levels_create.sql
 \ir ./trading_instrument_barrier_levels_notify_trigger_create.sql
+\ir ./trading_instrument_values_create.sql
+\ir ./trading_instrument_values_notify_trigger_create.sql
 
 -- An underlying is a child of the trade any product that states an
 -- Underlying block states it for.
@@ -431,6 +433,8 @@
 \ir ./trading_equity_window_barrier_option_instruments_notify_trigger_create.sql
 \ir ./trading_fx_window_barrier_option_instruments_create.sql
 \ir ./trading_fx_window_barrier_option_instruments_notify_trigger_create.sql
+\ir ./trading_fx_worst_of_basket_swap_instruments_create.sql
+\ir ./trading_fx_worst_of_basket_swap_instruments_notify_trigger_create.sql
 \ir ./trading_equity_generic_barrier_option_instruments_create.sql
 \ir ./trading_equity_generic_barrier_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_variance_swap_instruments_create.sql

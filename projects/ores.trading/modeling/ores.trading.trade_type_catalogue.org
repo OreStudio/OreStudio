@@ -94,7 +94,7 @@ absent: it is a placeholder, not a product.
 | FxBasketVarianceSwap | FX Basket Variance Swap |   | scripted | fx! | false | false | fx_basket_variance_swap_instrument |
 | FxAccumulator | FX Accumulator | forward | scripted | fx! | false | false | fx_accumulator_instrument |
 | FxTaRF | FX Target Redemption Forward | forward | scripted | fx! | false | false | fx_asian_forward_instrument |
-| FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false | scripted_instrument |
+| FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false | fx_worst_of_basket_swap_instrument |
 | FxBestEntryOption | FX Best Entry Option | option | scripted | fx! | true | false | fx_best_entry_option_instrument |
 | FxBasketOption | FX Basket Option | option | scripted | fx! | true | false | fx_basket_option_instrument |
 | FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false | fx_basket_option_instrument |
@@ -221,6 +221,7 @@ library script in ORE, and is held in its own form only.
 | FxPairwiseVarianceSwap           | PairwiseVarianceSwap       |
 | FxRainbowOption                  | MaxRainbowOption           |
 | FxWindowBarrierOption            | WindowBarrierOption        |
+| FxWorstOfBasketSwap              | WorstOfBasketSwap          |
 
 * Classes
 
@@ -487,6 +488,7 @@ generator and the import write it through one path.
 | instrument_schedule_date                    |
 | instrument_strike                           |
 | instrument_underlying                       |
+| instrument_value                            |
 | knock_out_swap_instrument                   |
 | range_bound                                 |
 | rate_digital_option_instrument              |
@@ -563,6 +565,7 @@ hold no row for the trade and read as empty.
 | fx_best_entry_option_instrument | fx_best_entry_option_instrument |
 | fx_strike_resettable_option_instrument | fx_strike_resettable_option_instrument |
 | fx_window_barrier_option_instrument | fx_window_barrier_option_instrument |
+| fx_worst_of_basket_swap_instrument | fx_worst_of_basket_swap_instrument |
 | fx_digital_option_instrument     | fx_digital_option_instrument       |
 | fx_forward_instrument            | fx_forward_instrument              |
 | fx_vanilla_option_instrument     | fx_vanilla_option_instrument       |

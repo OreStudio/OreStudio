@@ -81,6 +81,7 @@
 #include "ores.shell/app/commands/trading/fx_vanilla_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_variance_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_window_barrier_option_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/fx_worst_of_basket_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/index_credit_default_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/index_credit_default_swap_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/inflation_swap_instrument_commands.hpp"
@@ -187,6 +188,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     fx_vanilla_option_instrument_commands::register_commands(root_menu, session);
     fx_variance_swap_instrument_commands::register_commands(root_menu, session);
     fx_window_barrier_option_instrument_commands::register_commands(root_menu, session);
+    fx_worst_of_basket_swap_instrument_commands::register_commands(root_menu, session);
     index_credit_default_swap_instrument_commands::register_commands(root_menu, session);
     index_credit_default_swap_option_instrument_commands::register_commands(root_menu, session);
     inflation_swap_instrument_commands::register_commands(root_menu, session);

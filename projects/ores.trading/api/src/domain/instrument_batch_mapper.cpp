@@ -191,7 +191,9 @@ inline constexpr auto fx_batch_arrays = std::tuple{
     std::pair{&fx_instrument_data::strike_resettable_options,
               &instrument_batch::fx_strike_resettable_option_instruments},
     std::pair{&fx_instrument_data::window_barrier_options,
-              &instrument_batch::fx_window_barrier_option_instruments}};
+              &instrument_batch::fx_window_barrier_option_instruments},
+    std::pair{&fx_instrument_data::worst_of_basket_swaps,
+              &instrument_batch::fx_worst_of_basket_swap_instruments}};
 
 /**
  * The family's child arrays paired with the batch columns they land in, in the
@@ -216,7 +218,8 @@ inline constexpr auto fx_batch_child_arrays = std::make_tuple(
     std::pair{&fx_instrument_data::barriers, &instrument_batch::instrument_barriers},
     std::pair{&fx_instrument_data::barrier_levels, &instrument_batch::instrument_barrier_levels},
     std::pair{&fx_instrument_data::instrument_underlyings,
-              &instrument_batch::instrument_underlyings});
+              &instrument_batch::instrument_underlyings},
+    std::pair{&fx_instrument_data::values, &instrument_batch::instrument_values});
 
 /**
  * A family carrier whose parts are typed arrays rather than alternatives. Each

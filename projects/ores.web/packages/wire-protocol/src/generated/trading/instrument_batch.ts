@@ -59,6 +59,7 @@ import type { FxStrikeResettableOptionInstrument } from './domain/fx_strike_rese
 import type { FxVanillaOptionInstrument } from './domain/fx_vanilla_option_instrument.js';
 import type { FxVarianceSwapInstrument } from './domain/fx_variance_swap_instrument.js';
 import type { FxWindowBarrierOptionInstrument } from './domain/fx_window_barrier_option_instrument.js';
+import type { FxWorstOfBasketSwapInstrument } from './domain/fx_worst_of_basket_swap_instrument.js';
 import type { RateInstrument } from './domain/rate_instrument.js';
 import type { ScriptedInstrument } from './domain/scripted_instrument.js';
 import type { BondIssue } from './domain/bond_issue.js';
@@ -111,6 +112,7 @@ import type { InstrumentSchedule } from './domain/instrument_schedule.js';
 import type { InstrumentScheduleDate } from './domain/instrument_schedule_date.js';
 import type { InstrumentStrike } from './domain/instrument_strike.js';
 import type { InstrumentUnderlying } from './domain/instrument_underlying.js';
+import type { InstrumentValue } from './domain/instrument_value.js';
 import type { KnockOutSwapInstrument } from './domain/knock_out_swap_instrument.js';
 import type { RangeBound } from './domain/range_bound.js';
 import type { RateDigitalOptionInstrument } from './domain/rate_digital_option_instrument.js';
@@ -173,6 +175,7 @@ export interface InstrumentBatch {
     fx_vanilla_option_instruments: FxVanillaOptionInstrument[];
     fx_variance_swap_instruments: FxVarianceSwapInstrument[];
     fx_window_barrier_option_instruments: FxWindowBarrierOptionInstrument[];
+    fx_worst_of_basket_swap_instruments: FxWorstOfBasketSwapInstrument[];
     rate_instruments: RateInstrument[];
     scripted_instruments: ScriptedInstrument[];
     bond_issues: BondIssue[];
@@ -225,6 +228,7 @@ export interface InstrumentBatch {
     instrument_schedule_dates: InstrumentScheduleDate[];
     instrument_strikes: InstrumentStrike[];
     instrument_underlyings: InstrumentUnderlying[];
+    instrument_values: InstrumentValue[];
     knock_out_swap_instruments: KnockOutSwapInstrument[];
     range_bounds: RangeBound[];
     rate_digital_option_instruments: RateDigitalOptionInstrument[];

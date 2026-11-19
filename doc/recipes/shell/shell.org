@@ -2252,3 +2252,7 @@ tangled into the runnable script library
 * Fx Window Barrier Option Instruments
 
 - [[id:2D04D8E7-92B7-55F7-9336-F4F766747496][How do I run the fx_window_barrier_option_instruments commands from the shell?]]
+
+* Fx Worst Of Basket Swap Instruments
+
+- [[id:8C2CF700-CFA2-5795-933A-DDBFBA2F4753][How do I run the fx_worst_of_basket_swap_instruments commands from the shell?]]

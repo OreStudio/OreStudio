@@ -101,6 +101,7 @@
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_window_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_worst_of_basket_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
@@ -115,6 +116,7 @@
 #include "ores.trading.core/repository/instrument_schedule_repository.hpp"
 #include "ores.trading.core/repository/instrument_strike_repository.hpp"
 #include "ores.trading.core/repository/instrument_underlying_repository.hpp"
+#include "ores.trading.core/repository/instrument_value_repository.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/range_bound_repository.hpp"
 #include "ores.trading.core/repository/rate_digital_option_instrument_repository.hpp"
@@ -307,6 +309,8 @@ void write_instrument_batch(const ores::database::context& ctx,
         ctx, batch.fx_variance_swap_instruments, keys, stamp, claim);
     write_rows<repository::fx_window_barrier_option_instrument_repository>(
         ctx, batch.fx_window_barrier_option_instruments, keys, stamp, claim);
+    write_rows<repository::fx_worst_of_basket_swap_instrument_repository>(
+        ctx, batch.fx_worst_of_basket_swap_instruments, keys, stamp, claim);
     write_rows<repository::rate_instrument_repository>(
         ctx, batch.rate_instruments, keys, stamp, claim);
     write_rows<repository::scripted_instrument_repository>(
@@ -402,6 +406,8 @@ void write_instrument_batch(const ores::database::context& ctx,
         ctx, batch.instrument_strikes, keys, stamp, claim);
     write_rows<repository::instrument_underlying_repository>(
         ctx, batch.instrument_underlyings, keys, stamp, claim);
+    write_rows<repository::instrument_value_repository>(
+        ctx, batch.instrument_values, keys, stamp, claim);
     write_rows<repository::knock_out_swap_instrument_repository>(
         ctx, batch.knock_out_swap_instruments, keys, stamp, claim);
     write_rows<repository::range_bound_repository>(ctx, batch.range_bounds, keys, stamp, claim);
@@ -550,6 +556,9 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
     if (!batch.fx_window_barrier_option_instruments.empty() &&
         table != domain::instrument_table::fx_window_barrier_option_instrument)
         names.emplace_back("fx_window_barrier_option_instruments");
+    if (!batch.fx_worst_of_basket_swap_instruments.empty() &&
+        table != domain::instrument_table::fx_worst_of_basket_swap_instrument)
+        names.emplace_back("fx_worst_of_basket_swap_instruments");
     if (!batch.rate_instruments.empty() && table != domain::instrument_table::rate_instrument)
         names.emplace_back("rate_instruments");
     if (!batch.scripted_instruments.empty() &&
@@ -598,7 +607,8 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         !batch.fx_strike_resettable_option_instruments.empty() ||
         !batch.fx_vanilla_option_instruments.empty() ||
         !batch.fx_variance_swap_instruments.empty() ||
-        !batch.fx_window_barrier_option_instruments.empty() || !batch.rate_instruments.empty() ||
+        !batch.fx_window_barrier_option_instruments.empty() ||
+        !batch.fx_worst_of_basket_swap_instruments.empty() || !batch.rate_instruments.empty() ||
         !batch.scripted_instruments.empty() || false;
     if (headed)
         return names;
@@ -702,6 +712,8 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("instrument_strikes");
     if (!batch.instrument_underlyings.empty())
         names.emplace_back("instrument_underlyings");
+    if (!batch.instrument_values.empty())
+        names.emplace_back("instrument_values");
     if (!batch.knock_out_swap_instruments.empty())
         names.emplace_back("knock_out_swap_instruments");
     if (!batch.range_bounds.empty())

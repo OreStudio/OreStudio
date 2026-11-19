@@ -51,6 +51,7 @@
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/fx_window_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_worst_of_basket_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include "ores.trading.api/domain/instrument_barrier.hpp"
@@ -64,6 +65,7 @@
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/instrument_underlying.hpp"
+#include "ores.trading.api/domain/instrument_value.hpp"
 #include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
@@ -551,6 +553,11 @@ struct fx_instrument_data {
     std::vector<fx_window_barrier_option_instrument> window_barrier_options;
 
     /**
+     * @brief The fx_worst_of_basket_swap_instrument rows: FxWorstOfBasketSwap.
+     */
+    std::vector<fx_worst_of_basket_swap_instrument> worst_of_basket_swaps;
+
+    /**
      * @brief The range_bound rows: the RangeBounds list an accumulator states.
      *
      * A child of the product rather than a product, so it states no type and
@@ -580,6 +587,10 @@ struct fx_instrument_data {
      * @brief The product's Underlying blocks, one row per block.
      */
     std::vector<instrument_underlying> instrument_underlyings;
+    /**
+     * @brief The values of the lists the product states, one row per value.
+     */
+    std::vector<instrument_value> values;
 
     /**
      * @brief Value equality.
@@ -616,7 +627,8 @@ inline constexpr auto fx_instrument_arrays =
                &fx_instrument_data::forward_volatility_agreements,
                &fx_instrument_data::best_entry_options,
                &fx_instrument_data::strike_resettable_options,
-               &fx_instrument_data::window_barrier_options};
+               &fx_instrument_data::window_barrier_options,
+               &fx_instrument_data::worst_of_basket_swaps};
 
 /**
  * @brief The family's child arrays: rows a product owns rather than rows a
@@ -637,7 +649,8 @@ inline constexpr auto fx_instrument_child_arrays =
                &fx_instrument_data::schedule_dates,
                &fx_instrument_data::barriers,
                &fx_instrument_data::barrier_levels,
-               &fx_instrument_data::instrument_underlyings};
+               &fx_instrument_data::instrument_underlyings,
+               &fx_instrument_data::values};
 
 /**
  * @brief Calls a function on the first row the carrier holds, and on no other.

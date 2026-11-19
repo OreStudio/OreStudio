@@ -121,6 +121,7 @@
 #include "ores.trading.api/domain/fx_vanilla_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_window_barrier_option_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_worst_of_basket_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument_codec.hpp"
@@ -135,6 +136,7 @@
 #include "ores.trading.api/domain/instrument_schedule_date_codec.hpp"
 #include "ores.trading.api/domain/instrument_strike_codec.hpp"
 #include "ores.trading.api/domain/instrument_underlying_codec.hpp"
+#include "ores.trading.api/domain/instrument_value_codec.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/range_bound_codec.hpp"
 #include "ores.trading.api/domain/rate_digital_option_instrument_codec.hpp"
@@ -339,6 +341,11 @@ struct instrument_batch {
      */
     std::vector<ores::trading::domain::fx_window_barrier_option_instrument>
         fx_window_barrier_option_instruments;
+    /**
+     * @brief The fx_worst_of_basket_swap_instrument rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::fx_worst_of_basket_swap_instrument>
+        fx_worst_of_basket_swap_instruments;
     /**
      * @brief The rate_instrument rows, keyed by trade id.
      */
@@ -558,6 +565,10 @@ struct instrument_batch {
      * @brief The instrument_underlying rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::instrument_underlying> instrument_underlyings;
+    /**
+     * @brief The instrument_value rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::instrument_value> instrument_values;
     /**
      * @brief The knock_out_swap_instrument rows, keyed by trade id.
      */
@@ -899,6 +910,13 @@ inline void append(instrument_batch& batch, fx_variance_swap_instrument v) {
  */
 inline void append(instrument_batch& batch, fx_window_barrier_option_instrument v) {
     batch.fx_window_barrier_option_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one fx_worst_of_basket_swap_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, fx_worst_of_basket_swap_instrument v) {
+    batch.fx_worst_of_basket_swap_instruments.push_back(std::move(v));
 }
 
 /**
@@ -1266,6 +1284,13 @@ inline void append(instrument_batch& batch, instrument_underlying v) {
 }
 
 /**
+ * @brief Adds one instrument_value to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_value v) {
+    batch.instrument_values.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one knock_out_swap_instrument to the array that holds its type.
  */
 inline void append(instrument_batch& batch, knock_out_swap_instrument v) {
@@ -1474,6 +1499,8 @@ template <typename T>
                                       &instrument_batch::fx_variance_swap_instruments},
         ::ores::utility::codec::field{"fx_window_barrier_option_instruments",
                                       &instrument_batch::fx_window_barrier_option_instruments},
+        ::ores::utility::codec::field{"fx_worst_of_basket_swap_instruments",
+                                      &instrument_batch::fx_worst_of_basket_swap_instruments},
         ::ores::utility::codec::field{"rate_instruments", &instrument_batch::rate_instruments},
         ::ores::utility::codec::field{"scripted_instruments",
                                       &instrument_batch::scripted_instruments},
@@ -1563,6 +1590,7 @@ template <typename T>
         ::ores::utility::codec::field{"instrument_strikes", &instrument_batch::instrument_strikes},
         ::ores::utility::codec::field{"instrument_underlyings",
                                       &instrument_batch::instrument_underlyings},
+        ::ores::utility::codec::field{"instrument_values", &instrument_batch::instrument_values},
         ::ores::utility::codec::field{"knock_out_swap_instruments",
                                       &instrument_batch::knock_out_swap_instruments},
         ::ores::utility::codec::field{"range_bounds", &instrument_batch::range_bounds},

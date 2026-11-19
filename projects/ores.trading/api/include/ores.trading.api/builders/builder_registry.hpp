@@ -33,6 +33,7 @@
 #include "ores.trading.api/builders/scripted_builders.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
 #include "ores.trading.api/builders/volatility_product_builders.hpp"
+#include "ores.trading.api/builders/worst_of_basket_swap_builders.hpp"
 #include <set>
 #include <string_view>
 #include <tuple>

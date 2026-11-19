@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/hold-the-remaining-fixed-element-products-on-their-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,7 +28,7 @@ table holds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -53,9 +53,26 @@ table holds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two PRs, decided with the user on 2026-11-19.
+
+1. FxWorstOfBasketSwap. FX has no general swap table, so it gets a table of its
+   own for the element's scalars, as EquityWorstOfBasketSwap is held on
+   =equity_swap_instrument= with its constituents and periods. The members with
+   their initial prices, the per-period knock-out and fixed trigger levels and
+   the eight schedules are rows: FX constituent rows (or underlying rows), the
+   shared =basket_swap_period= rows and schedule rows.
+2. Autocallable_01, DoubleDigitalOption, EuropeanOptionBarrier and
+   PerformanceOption_01 have no home market: their underlyings may be equity,
+   FX or commodity, and one trade may mix them (a DoubleDigitalOption states up
+   to four underlyings, a EuropeanOptionBarrier one for the option and one for
+   the barrier). Routing is per type and every table so far sits in a family
+   carrier, so these four get a new multi-asset family: its own carrier, one
+   table per product, the shared underlying and schedule rows (each underlying
+   row keeps its own type), and child tables for the value lists
+   (StrikePrices, AccumulationFactors). The product type asset class junction
+   records equity, FX and commodity for each, with no home market. The user
+   chose this over an element row on the scripted carrier and over deferring
+   the four.
 
 * Measurements
 

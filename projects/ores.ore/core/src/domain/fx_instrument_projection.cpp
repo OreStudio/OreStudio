@@ -60,6 +60,8 @@ using trading::domain::fx_forward_volatility_agreement_instrument;
 using trading::domain::fx_best_entry_option_instrument;
 using trading::domain::fx_strike_resettable_option_instrument;
 using trading::domain::fx_window_barrier_option_instrument;
+using trading::domain::fx_worst_of_basket_swap_instrument;
+using trading::domain::instrument_value;
 using trading::domain::fx_pairwise_variance_swap_instrument;
 using trading::domain::range_bound;
 
@@ -88,7 +90,7 @@ constexpr bool is_fx_trade_type(std::string_view type) {
            type == "FxBasketOption" || type == "FxRainbowOption" ||
            type == "FxBasketVarianceSwap" || type == "FxForwardVolatilityAgreement" ||
            type == "FxBestEntryOption" || type == "FxStrikeResettableOption" ||
-           type == "FxWindowBarrierOption";
+           type == "FxWindowBarrierOption" || type == "FxWorstOfBasketSwap";
 }
 
 template <typename Row>
@@ -571,6 +573,86 @@ auto read_fx_window_barrier_option(const record_reader& trade)
     return r;
 }
 
+/// The worst-of basket swap's optional scalars.
+constexpr scalar_terms::term<fx_worst_of_basket_swap_instrument> fx_worst_of_basket_swap_terms[] = {
+    {"InitialFixedRate", &fx_worst_of_basket_swap_instrument::initial_fixed_rate},
+    {"InitialFixedPayDate", &fx_worst_of_basket_swap_instrument::initial_fixed_pay_date},
+    {"KnockInPayDate", &fx_worst_of_basket_swap_instrument::knock_in_pay_date},
+    {"BermudanKnockIn", &fx_worst_of_basket_swap_instrument::bermudan_knock_in},
+    {"KnockInLevel", &fx_worst_of_basket_swap_instrument::knock_in_level},
+    {"AccumulatingFixedCoupons", &fx_worst_of_basket_swap_instrument::accumulating_fixed_coupons},
+    {"AccruingFixedCoupons", &fx_worst_of_basket_swap_instrument::accruing_fixed_coupons},
+    {"FloatingSpread", &fx_worst_of_basket_swap_instrument::floating_spread},
+    {"FloatingLookback", &fx_worst_of_basket_swap_instrument::floating_lookback},
+    {"FloatingRateCutoff", &fx_worst_of_basket_swap_instrument::floating_rate_cutoff},
+    {"IsAveraged", &fx_worst_of_basket_swap_instrument::is_averaged},
+    {"IncludeSpread", &fx_worst_of_basket_swap_instrument::include_spread},
+    {"Strike", &fx_worst_of_basket_swap_instrument::strike},
+};
+
+/// The lists of plain numbers the worst-of basket swap states, and the role each value row keeps.
+struct fx_value_list {
+    std::string_view element;
+    std::string_view leaf;
+    std::string_view role;
+};
+
+constexpr fx_value_list fx_worst_of_value_lists[] = {
+    {"InitialPrices", "InitialPrice", "initial_price"},
+    {"KnockOutLevels", "KnockOutLevel", "knock_out_level"},
+    {"FixedTriggerLevels", "FixedTriggerLevel", "fixed_trigger_level"},
+};
+
+/// The schedules the worst-of basket swap states, and the role each schedule row keeps.
+constexpr std::pair<std::string_view, std::string_view> fx_worst_of_schedules[] = {
+    {"FloatingPeriodSchedule", "floating_period_schedule"},
+    {"FloatingFixingSchedule", "floating_fixing_schedule"},
+    {"FixedDeterminationSchedule", "fixed_determination_schedule"},
+    {"FloatingPayDates", "floating_pay_schedule"},
+    {"FixedPayDates", "fixed_pay_schedule"},
+    {"KnockOutDeterminationSchedule", "knock_out_determination_schedule"},
+    {"FixedAccrualSchedule", "fixed_accrual_schedule"},
+    {"KnockInDeterminationSchedule", "knock_in_determination_schedule"},
+};
+
+auto read_fx_worst_of_basket_swap(const record_reader& trade)
+    -> fx_worst_of_basket_swap_instrument {
+    auto r = fx_instrument_projection_make_row<fx_worst_of_basket_swap_instrument>(
+        "FxWorstOfBasketSwap");
+    const auto data = trade.child("FxWorstOfBasketSwapData");
+    if (!data)
+        return r;
+    r.long_short = scalar_terms::read_text(*data, "LongShort").value_or("");
+    r.currency = scalar_terms::read_text(*data, "Currency").value_or("");
+    r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
+    r.fixed_rate = volatility_product::read_decimal(*data, "FixedRate").value_or(decimal{});
+    r.floating_index = scalar_terms::read_text(*data, "FloatingIndex").value_or("");
+    r.floating_day_count_fraction =
+        scalar_terms::read_text(*data, "FloatingDayCountFraction").value_or("");
+    scalar_terms::read_terms(r, *data, fx_worst_of_basket_swap_terms);
+    return r;
+}
+
+/// Reads each value of the product's lists into a value row under the list's role.
+void read_fx_worst_of_values(fx_instrument_data& carrier, const record_reader& trade) {
+    const auto data = trade.child("FxWorstOfBasketSwapData");
+    if (!data)
+        return;
+    for (const auto& list : fx_worst_of_value_lists) {
+        const auto rows = data->child(list.element);
+        if (!rows)
+            continue;
+        int sequence = 0;
+        for (const auto& value : rows->decimals(list.leaf)) {
+            instrument_value row;
+            row.value_role = std::string(list.role);
+            row.sequence_number = ++sequence;
+            row.value = value;
+            carrier.values.push_back(std::move(row));
+        }
+    }
+}
+
 auto read_fx_pairwise_variance_swap(const record_reader& trade)
     -> fx_pairwise_variance_swap_instrument {
     auto r = fx_instrument_projection_make_row<fx_pairwise_variance_swap_instrument>(
@@ -965,6 +1047,35 @@ void write_fx_window_barrier_option(record_writer& trade,
     barrier_block::write_kept_barriers(data, "", carrier, "barrier");
 }
 
+void write_fx_worst_of_basket_swap(record_writer& trade,
+                                   const fx_worst_of_basket_swap_instrument& v,
+                                   const fx_instrument_data& carrier) {
+    auto data = trade.child("FxWorstOfBasketSwapData");
+    scalar_terms::write_text(data, "LongShort", v.long_short);
+    scalar_terms::write_text(data, "Currency", v.currency);
+    set_decimal_from_double(data, "Quantity", v.quantity);
+    volatility_product::write_decimal(data, "FixedRate", v.fixed_rate);
+    scalar_terms::write_text(data, "FloatingIndex", v.floating_index);
+    scalar_terms::write_text(data, "FloatingDayCountFraction", v.floating_day_count_fraction);
+    scalar_terms::write_terms(data, v, fx_worst_of_basket_swap_terms);
+    auto members = data.child("Underlyings");
+    underlying_block::write_underlyings(members, "Underlying", carrier, "underlying");
+    for (const auto& list : fx_worst_of_value_lists) {
+        std::vector<const instrument_value*> rows;
+        for (const auto& row : carrier.values)
+            if (row.value_role == list.role)
+                rows.push_back(&row);
+        if (rows.empty())
+            continue;
+        std::ranges::sort(rows, {}, &instrument_value::sequence_number);
+        auto element = data.child(list.element);
+        for (const auto* row : rows)
+            element.append_decimal(list.leaf, row->value);
+    }
+    for (const auto& [element, role] : fx_worst_of_schedules)
+        option_block::write_product_schedule(data, carrier, element, role);
+}
+
 void write_fx_pairwise_variance_swap(record_writer& trade,
                                      const fx_pairwise_variance_swap_instrument& v,
                                      const fx_instrument_data& carrier) {
@@ -1074,6 +1185,7 @@ constexpr underlying_block::underlying_holder fx_underlying_holders[] = {
     {"FxBestEntryOption", "", "Underlying", "underlying"},
     {"FxStrikeResettableOption", "", "Underlying", "underlying"},
     {"FxWindowBarrierOption", "", "Underlying", "underlying"},
+    {"FxWorstOfBasketSwap", "Underlyings", "Underlying", "underlying"},
 };
 
 /// The single-valued terms each FX product row keeps, by its element.
@@ -1126,6 +1238,14 @@ constexpr option_block::product_schedule fx_product_schedules[] = {
     {"FxAsianOption", "ObservationDates", "observation_schedule"},
     {"FxBasketOption", "ObservationDates", "observation_schedule"},
     {"FxBasketVarianceSwap", "ValuationSchedule", "valuation_schedule"},
+    {"FxWorstOfBasketSwap", "FloatingPeriodSchedule", "floating_period_schedule"},
+    {"FxWorstOfBasketSwap", "FloatingFixingSchedule", "floating_fixing_schedule"},
+    {"FxWorstOfBasketSwap", "FixedDeterminationSchedule", "fixed_determination_schedule"},
+    {"FxWorstOfBasketSwap", "FloatingPayDates", "floating_pay_schedule"},
+    {"FxWorstOfBasketSwap", "FixedPayDates", "fixed_pay_schedule"},
+    {"FxWorstOfBasketSwap", "KnockOutDeterminationSchedule", "knock_out_determination_schedule"},
+    {"FxWorstOfBasketSwap", "FixedAccrualSchedule", "fixed_accrual_schedule"},
+    {"FxWorstOfBasketSwap", "KnockInDeterminationSchedule", "knock_in_determination_schedule"},
     {"FxBestEntryOption", "StrikeObservationDates", "strike_observation_schedule"},
     {"FxStrikeResettableOption", "ObservationDates", "observation_schedule"},
     {"FxPairwiseVarianceSwap", "ValuationSchedule", "valuation_schedule"},
@@ -1198,6 +1318,9 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
         data.strike_resettable_options.push_back(read_fx_strike_resettable_option(trade));
     } else if (trade_type == "FxWindowBarrierOption") {
         data.window_barrier_options.push_back(read_fx_window_barrier_option(trade));
+    } else if (trade_type == "FxWorstOfBasketSwap") {
+        data.worst_of_basket_swaps.push_back(read_fx_worst_of_basket_swap(trade));
+        read_fx_worst_of_values(data, trade);
     } else if (trade_type == "FxAccumulator") {
         // The range bounds are the product's child, so they land beside the
         // fact row rather than inside it.
@@ -1343,6 +1466,9 @@ auto write_fx_instrument(xml::record_writer& trade,
                 matched = true;
             } else if constexpr (std::is_same_v<Row, fx_window_barrier_option_instrument>) {
                 write_fx_window_barrier_option(trade, row, *v);
+                matched = true;
+            } else if constexpr (std::is_same_v<Row, fx_worst_of_basket_swap_instrument>) {
+                write_fx_worst_of_basket_swap(trade, row, *v);
                 matched = true;
             }
         },

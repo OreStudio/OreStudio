@@ -74,6 +74,7 @@ enum class instrument_table {
     fx_vanilla_option_instrument,
     fx_variance_swap_instrument,
     fx_window_barrier_option_instrument,
+    fx_worst_of_basket_swap_instrument,
     rate_instrument,
     scripted_instrument
 };
@@ -155,7 +156,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "FxTaRF")
         return instrument_table::fx_asian_forward_instrument;
     if (trade_type == "FxWorstOfBasketSwap")
-        return instrument_table::scripted_instrument;
+        return instrument_table::fx_worst_of_basket_swap_instrument;
     if (trade_type == "FxBestEntryOption")
         return instrument_table::fx_best_entry_option_instrument;
     if (trade_type == "FxBasketOption")

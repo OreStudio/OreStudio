@@ -23,9 +23,9 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The curves are built, the IBOR projections publish beside their funding curves, and the identity shape of a fixing is stated, enforced and shared. A series the identity shape refuses is now stored nowhere, and the test generator writes a series the shape guards. A check names every family in use that no shape states. Two tasks are open: the two screens. |
+| Now           | The curves are built, the IBOR projections publish beside their funding curves, and the identity shape of a fixing is stated, enforced and shared. A series the identity shape refuses is now stored nowhere, and the test generator writes a series the shape guards. A check names every family in use that no shape states, and the shapes have a screen. One task is open: the IBOR curve screens. |
 | Waiting on    | Nothing. |
-| Next          | [[id:DA257967-5C16-4743-B507-167872D3765E][Show the identity shapes on a screen]], then [[id:52257743-2F40-4DFD-98B2-B08311947335][Show every IBOR curve beside its overnight curve]]. |
+| Next          | [[id:52257743-2F40-4DFD-98B2-B08311947335][Show every IBOR curve beside its overnight curve]]: the curves and coverage screens, and the page that states the difference. |
 | Last touched  | 2026-11-19 |
 
 * Acceptance
@@ -50,7 +50,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | [[id:BF673434-ABA7-473E-8550-FC0E7EDD9399][State the identity shape of a fixing]] | DONE | 2026-11-15 | 2026-11-17 | State, as data beside the series classification rules, which fields each market series family requires and which it forbids, and hold the identity writer to it. |
 | [[id:ABFE5452-57B4-4621-86A4-011CF2B03E6A][Write a series and its identity in one act]] | DONE | 2026-11-18 | 2026-11-19 | Take the identity projection before the series is stored, so a series the shape refuses leaves nothing behind. |
 | [[id:474E8968-C7B4-4740-839F-9328B93A5FEA][Generate a series that is an identity]] | DONE | 2026-11-19 | 2026-11-19 | The synthetic market series generator fabricates an oresmd URI that nothing can read, so every fixture built on it writes a series with no family. |
-| [[id:DA257967-5C16-4743-B507-167872D3765E][Show the identity shapes on a screen]] | BACKLOG | | | A person can read, change and see the history of the identity shapes in the web client, and the oresmd editor marks the fields a family requires or forbids. |
+| [[id:DA257967-5C16-4743-B507-167872D3765E][Show the identity shapes on a screen]] | DONE | 2026-11-19 | 2026-11-19 | A person can read, change and see the history of the identity shapes in the web client, and the oresmd editor marks the fields a family requires or forbids. |
 | [[id:D37ED209-460F-458B-B84B-2D728C6E28AE][Bootstrap every IBOR curve]] | DONE | 2026-11-13 | 2026-11-14 | Every IBOR feed gets a bootstrap config, its quote series and its bootstrapped output series, with the currency's overnight curve as its discount curve, so an IBOR curve builds from IBOR quotes and publishes like an overnight curve. |
 | [[id:AECE7F12-9EFB-4F3E-AFEF-0D61BEB8E811][Check every family in use has a shape]] | DONE | 2026-11-19 | 2026-11-19 | A check finds each family the stored identities use that no shape row states, so a family the taxonomy gains cannot go unguarded without anyone seeing it. |
 | [[id:15A60BBE-102B-40BA-8F6A-83E2FB92E96B][Report what the shape guard refuses]] | DONE | 2026-11-17 | 2026-11-18 | The shape guard refuses a row and reports nothing: the backfill drops the counts it makes, and the pgTAP scan reads the shapes through a tenant join the shared catalogue no longer has. |

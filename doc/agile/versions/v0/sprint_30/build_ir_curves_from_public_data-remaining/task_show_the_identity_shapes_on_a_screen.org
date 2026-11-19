@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-19
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The identity shapes are data, so a person should be able to read them and change
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-17                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
 
 * Acceptance
 
@@ -41,9 +41,24 @@ The identity shapes are data, so a person should be able to read them and change
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The service already served the shapes: list, get, put, delete and versions,
+with change events. What was missing was the web.
+
+The screen is a hand-written market data page with its own BFF module, not a
+resource of the reference data record framework. That framework reads a record
+by one key, names its permissions =refdata::=, and finds a row's history
+through a history provider. A shape has a four-part key, =marketdata::=
+permissions, and no history provider, because the provider interface takes a
+single string id. The versions come from the protocol's own versions request
+instead, which takes the whole key.
+
+The editor names a URL's family as the writer keys it. The asset class is the
+schema row's, which is the class the projector writes. The subclass is the
+classification rule's: a datum rule by instrument and quote, with an empty
+quote for every quote, and the one index rule for every fixing. The index
+family is the fixing's family, or the =index= a series holds. The shapes are
+stated per identity column, so a fixing field is named by the column the
+projector writes it into, as =name= becomes =index_name=.
 
 * Measurements
 
@@ -57,9 +72,21 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| BFF tests for the shape and rule routes | 7, pass | =npx vitest run src/series-identity-shapes.test.ts= in =packages/bff= | cb1332542e |
+| Screen tests | 5, pass | =npx vitest run src/marketdata/identityShapesScreen.test.tsx= in =packages/web= | cb1332542e |
+| Editor family tests | 7 in =family.test.ts=, 4 in =OresmdEditor.test.tsx=, pass | =npx vitest run src/oresmd= | cb1332542e |
+| Web and BFF suites | 2,586 and 1,310 tests, pass | =npx vitest run= in each package | cb1332542e |
+| Harness against the running services | 5, pass: list by family, history, add and remove an own row, rules route | =npx playwright test tests/identity-shapes.spec.ts= | fd2e695ca4 |
+| Local gate, web class | web typecheck, format and tests pass; compass-ng passes once the route inventory is classified | =compass check= | 076a66d1df |
 
 * Notes
+
+A tenant reads the shared catalogue beside its own rows and may change only its
+own, so the screen offers a change of a shared row only to the system tenant. The
+service refuses the rest whatever the screen offers.
+
+The editor's marks are advice. A person without the shape read permission
+still composes a URL, and sees no marks.
 
 * Test Scenarios
 
@@ -85,3 +112,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The identity shapes have a screen under Market data. It lists every shape the
+session reads, grouped by asset class, series subclass and index family, and says
+whether each row is the shared catalogue's or the tenant's own. A row's versions
+open beside it, with who changed it and why. A person with the shape permissions
+adds, changes and removes rows.
+
+The oresmd editor names the family of the URL on screen and marks each field
+its shape requires or forbids. It says when no shape states the family, and it
+names a required field that this kind of URL cannot write.
+
+All three acceptance points are met. The harness proves the first two against
+the running services, and the editor's tests prove the third.

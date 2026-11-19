@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/datum/ore_types.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
+#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include <string>
 #include <string_view>
 #include <utility>
@@ -72,6 +73,8 @@ messaging::oresmd_instrument describe_instrument(instrument_type type) {
     out.ore_name = std::string(ore_name(type));
     out.title = std::string(title_of(type));
     out.asset = std::string(name_of(row.asset));
+    out.asset_class =
+        std::string(domain::asset_class_for_authority(name_of(row.asset)).value_or(""));
     out.subject = std::string(name_of(row.subject));
     for (const auto& spec : row.fields)
         out.fields.push_back(describe_field(spec));

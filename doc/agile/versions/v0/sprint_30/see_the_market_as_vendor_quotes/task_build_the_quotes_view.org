@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :web:marketdata:ticks:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-quotes-view
+#+pr: 4888
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -26,24 +26,55 @@ A person opens the quotes view and sees every quote of the vendors their party s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
 
 - The screen matches the signed-off prototype.
-- The BFF reads the vendor subjects and the recent ticks for the session's party, and does not keep a buffer per synthetic feed for it.
+- Both servers answer the quotes routes, the BFF and =ores.http=, with the same shapes, and the screen asks through =baseFor('quotes')=: the BFF until the screen moves, =ores.http= after (product owner, 2026-11-19: the BFF serves the screens until it is retired). No buffer is kept per synthetic feed for it.
 - It is checked on the running fleet with a party and with the system tenant, and the vol quotes of a latent surface are among the quotes it shows.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The screen is the signed-off prototype, variant C: a source rail with /All
+vendors/, two layouts (every datum, by series), the asset class codes table as
+the class filter with the instrument type under it, and the /All quotes/ panel of
+the picked row. The routes are in =ores.http= only, under =/cpp= (product owner).
+
+1. *The quote board* (=ores.http= marketdata). One subscription to
+   =marketdata.v1.ops.market_tick.>=, through an injected subscriber as
+   =feed_tick_buffers= has, so a test feeds it by hand. It keeps the latest quote
+   of each datum on each feed: provider, feed, source name, URI, value, previous
+   value, observation time, and a board sequence number. The feed is read from
+   the subject's tokens. A cap bounds it. Each quote is labelled once, from its
+   URI read by the codec: the instrument type, the asset class code through
+   =asset_class_for_authority()=, the series URI and its words, and the point.
+2. *The routes.*
+   - =GET /api/marketdata/quotes/feeds=: =list_watchable_feeds= for display,
+     forwarded as the caller, with each feed's source name and last tick from the
+     board, and the asset class codes with their names for the filter.
+   - =GET /api/marketdata/quotes?after=<sequence>=: the board's quotes after the
+     sequence, of the feeds the caller may watch, asked again on every read, and
+     the board's sequence now. The screen polls it; the first read is the whole
+     board.
+   - =GET /api/marketdata/quotes/history?provider=&series=&from=&to=:
+     =get_provider_ticks= for display, forwarded as the caller.
+   The entitlement answer is injectable, so a test states it.
+3. *The screen* (=ores.web=): Market data, then Quotes. It calls the routes under
+   =/cpp=, polls the board each second, and draws the rail, the filters, the two
+   layouts and the All quotes panel with its chart, as the prototype does.
+4. *Tests.* The board: a quote replaces the previous one of its datum and feed,
+   the sequence orders reads, the cap holds, a subject it cannot read is ignored.
+   The routes: a caller sees only the feeds its answer holds, the system answer
+   sees all, /after/ returns only newer quotes, history refuses a missing series.
+   The screen: its tests in the web package.
+5. *The fleet.* Check with a party and with the system tenant, and see the vol
+   quotes of a latent surface among the quotes.
 
 * Measurements
 
@@ -61,6 +92,21 @@ task and name that file in the Command column.
 
 * Notes
 
+- After the sign-off, the product owner asked (2026-11-19) for paging, as the board
+  holds thousands of quotes, and for the /All quotes/ panel and its chart above the
+  table, where a picked datum is seen without scrolling. The table pages with the
+  shared =Pager=, 50 rows at first, by quote in /every datum/ and by series in /by
+  series/, and returns to its first page when the source, a filter or the layout
+  changes.
+
+- A review of the built screen (2026-11-19) found it unreadable for series: points
+  sorted as text, a surface's point one cell, groups that mixed vendors, stale
+  derived surfaces first, values with no unit, a chart by sample count, and a mid
+  that trusted the demo feed's wrong EUR/USD. The product owner chose not to merge
+  that state; a second prototype round,
+  [[id:4A9A4369-D6C1-4FF6-B9BF-47B8D87FE0DB][Read the quotes by series prototype]], with a compare mode for surfaces,
+  ended in variant C, which this task then built. The paging above went with it.
+
 - From [[id:B33AEA9B-907A-4B91-A94F-DC99A17ADDCF][the analysis]]: two web servers carry the tick routes, the TypeScript BFF and =ores.http=. Build on the one the screen is served from when the task starts.
 
 * Test Scenarios
@@ -72,18 +118,70 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:109B7D07-EA58-42D4-A304-666B37EEAC6C][Watch the vendors' quotes as a party and as the system tenant]] | PASSED | Run by the product owner on 2026-11-19; the boards that replaced the first build were checked on the running fleet the same day. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4888][#4888]] | [marketdata] Build the quotes view on ores.http |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A read over the ceiling drops quotes the next read never asks for | quote_routes.cpp | Accept | It sends the oldest and states the sequence of the last it sent; a test reads 20005 quotes in two reads. |
+| 2 | A full board drops datums silently | quote_board.cpp | Accept | It warns once and counts them (refused()). |
+| 3 | The board holds every tenant's ticks in one map | quote_board.hpp | Accept | The header states why: a feed id is unique, and a feed's ticks are the same for every party that may watch it. |
+| 4 | The client map has no bound | QuotesPage.tsx | Decline | Bounded by the server's board and by the feeds the session may watch. |
+| 5 | Each poll asks the entitlement | quote_routes.cpp | Decline | A changed subscription must take effect at the next read; one read a second for each open screen is the price. |
+| 6 | The history reply's arrays are trusted | quote_routes.cpp | Accept | A reply whose arrays differ in length is refused. |
+| 7 | A start before the transport connects is never retried (BFF) | quotes.ts | Accept | The NATS transport throws when not connected; the board now catches it, stays unstarted and tries at the next read; a test covers it. |
+| 8 | The sequence is read before the entitlement call | quotes.ts, quote_routes.cpp | Accept | Read with the rows, after the answer, in both servers. |
+| 9 | A query pair with no = loses a character | quotes.ts | Accept | Handled on purpose; a test covers it. |
+| 10 | History time loses microseconds (BFF) | quotes.ts | Accept | The first instant is read to the microsecond. |
+| 11 | The labels cache has no bound of its own | quotes.ts | Decline | Bounded by the board's capacity; it holds no tenant's data. |
+| 12 | The schema shapes are kept for the process | quotes.ts | Accept | The comment states that the schema changes with a release, which restarts the BFF. |
+| 13 | Does a history reply whose arrays differ map to a 5xx, and is the status tested? | quote_routes.cpp | Accept | guarded answers it through unanswered as 502 Bad Gateway; a new test hands the route such a reply and checks 502. |
+| 14 | instant_of has no return after its catch | quote_routes.cpp | Accept | A comment states that rr::invalid never returns. |
+| 15 | The JSON rows are built by hand | quote_routes.cpp | Decline | json::write escapes every value, and the BFF answers the same shape; one serializer per route is a change for both servers, not this PR. |
+| 16 | Confirm the trading and feed ingest failures are not this branch's | ctest | Accept | The final gate's ctest passed 105 of 105, the trading suite among them; neither suite is touched here. |
 
 * Result
+
+- =ores.http= holds the quote board (=quote_board=): one subscription to every feed
+  subject and the latest quote of each datum on each feed, labelled once from its
+  URI. Three routes read it (=quote_routes=): the feeds the caller may watch for
+  display, the board's quotes of those feeds after a sequence, and one point of a
+  provider's series over a span; every read asks =list_watchable_feeds= as the
+  caller. The BFF answers the same three routes with the same shapes from a board
+  of its own (=bff/src/quotes.ts=), labelling each quote from its URI with the
+  field roles and the asset class that =describe_oresmd_schema= now states for
+  each instrument type.
+- The screen, Market data then Quotes, is variant C of the second prototype
+  round: a rail that ticks each source in or out, in the order the providers are
+  trusted, and a tab for each asset class and shape. A quotes board has a row for
+  each series and a column for each vendor, with the mid, the spread and the age,
+  and the picked one's quotes and last hour beside it, on a time axis that starts
+  at the oldest tick held and is read again every few seconds. A curves board
+  lists the currencies, and a surfaces board the surfaces, beside one grid, tenor
+  down: a currency's curves across, or a surface's strategies, ATM first. The grid
+  shows the mid, one vendor, the spread, or two sources compared: A − B in the
+  grid, a column by tenor for every source, and a cell's every source. Every curve
+  of every currency at once, the first build, was too much to read. Tenors sort as tenors, and
+  values show in pips, % and bp, or vol points. A quote far from the others is
+  flagged and left out of the mid; the feeds read now states each provider's rank
+  (=watchable_feed.precedence=), and with fewer than three vendors the
+  highest-ranked one is the reference.
+- Checked on the running fleet as Acme Corporation Plc: four feeds on the rail
+  (bloomberg, ice, tradeweb, derived; demo in a later session), quotes of FX spot,
+  IR pillars and FX option vols from Bloomberg, ICE and Tradeweb, updating in
+  place, and the /All quotes/ panel of AUD/USD with Bloomberg and Demo and their
+  lines. A Playwright check (=packages/harness/tests/quotes.spec.ts=) drives it
+  through a Vite server whose =/api= and =/cpp= both reach =ores.http=.
+- Tests: =ores.http.marketdata.tests= 46 cases (one new, the rank in the feeds
+  read); =ores.marketdata.core.tests= =[tick_entitlement]= 5 cases, which now
+  read ore's rank; =ores.marketdata.api.tests= 1135 cases; the web package's
+  quotes view model (14) and its boards (5: quotes, a surface and a currency, each compared); every
+  web workspace's tests and type check; the Playwright check of the boards,
+  leaving a source out and a picked curve, on the running fleet as UK plc.

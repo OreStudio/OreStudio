@@ -66,8 +66,9 @@ boost::uuids::uuid routed_party(database_helper& h,
     return party;
 }
 
+/// The ore feed as a watcher sees it, with the rank the providers table gives ore.
 watchable_feed ore_feed(const boost::uuids::uuid& feed) {
-    return {"ore", boost::uuids::to_string(feed)};
+    return {"ore", boost::uuids::to_string(feed), 5};
 }
 
 }

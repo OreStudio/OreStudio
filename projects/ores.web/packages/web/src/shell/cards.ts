@@ -238,6 +238,14 @@ export const CARDS = {
         permission: 'marketdata::market_observations:read',
         screenTitleKey: 'marketdata.rateLadder.title',
     },
+    quotes: {
+        titleKey: 'marketdata.quotes.title',
+        bodyKey: 'marketdata.quotes.lead',
+        to: PATHS.quotes,
+        icon: 'chart',
+        permission: 'marketdata::market_observations:read',
+        screenTitleKey: 'marketdata.quotes.title',
+    },
     fxMontage: {
         titleKey: 'marketdata.fxMontage.title',
         bodyKey: 'marketdata.fxMontage.lead',
@@ -499,6 +507,7 @@ export const AREA_CARDS = {
     marketdata: [
         'instruments',
         'rateLadder',
+        'quotes',
         'fxMontage',
         'curveAnalytics',
         'curveBlueprints',

@@ -106,6 +106,7 @@ export interface OresmdInstrument {
     ore_name: string;
     title: string;
     asset: string;
+    asset_class: string;
     subject: string;
     fields: OresmdFieldSpec[];
 }
@@ -1509,6 +1510,7 @@ export interface GetSeriesTicksResponse {
 export interface WatchableFeed {
     provider_code: string;
     feed_id: string;
+    precedence: number;
 }
 
 /**

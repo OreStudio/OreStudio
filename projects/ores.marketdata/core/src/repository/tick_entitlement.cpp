@@ -20,9 +20,11 @@
 #include "ores.marketdata.core/repository/tick_entitlement.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.core/repository/feed_repository.hpp"
+#include "ores.marketdata.core/repository/provider_repository.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
 #include "ores.marketdata.core/repository/subscription_repository.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <map>
 #include <tuple>
 
 namespace ores::marketdata::repository {
@@ -105,10 +107,16 @@ std::vector<messaging::watchable_feed> watchable_feeds(const ores::database::con
             if (r.party_id == *party && providers.contains(r.publisher_code))
                 feeds.emplace(r.publisher_code, boost::uuids::to_string(r.feed_id));
     }
+    std::map<std::string, int> ranks;
+    if (!feeds.empty())
+        for (const auto& provider : provider_repository{}.read_latest(ctx))
+            ranks.emplace(provider.code, provider.precedence);
     std::vector<messaging::watchable_feed> out;
     out.reserve(feeds.size());
-    for (auto& [provider, feed] : feeds)
-        out.push_back({provider, feed});
+    for (auto& [provider, feed] : feeds) {
+        const auto rank = ranks.find(provider);
+        out.push_back({provider, feed, rank == ranks.end() ? 1000 : rank->second});
+    }
     return out;
 }
 

@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: C8714C54-91DF-4941-932D-303BFBB3DD0B
+:END:
+#+title: Speed up the ticks smoke gate
+#+description: The ticks-smoke check is the slowest stage of the local gate, over 16 minutes on 2026-11-19, because it recreates the database a second time after ctest and provisions a tenant before it can wait for a tick.
+#+type: capture
+#+level: cross
+#+filetags: :build:local_checks:compass:smoke:performance:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Cut the wall time of the =ticks-smoke= check in the local gate
+(=build/scripts/local_checks.py=, =compass smoke ticks --fresh=,
+=projects/ores.compass/src/compass_smoke.py=). First measure each of its four
+stages; then act on the largest. The candidates, in the order they look most
+promising:
+
+- *Clone, do not recreate.* The gate's =db= step has already built a clean
+  database before =ctest= dirties it. Snapshot it then (=CREATE DATABASE …
+  TEMPLATE …=), and have the smoke clone the snapshot in seconds instead of
+  running =db recreate= a second time, which took about 5 minutes by hand on
+  the same day.
+- *Run beside ctest, not after it.* The smoke follows =ctest= only because both
+  use the environment's database. On a database of its own, the clone above,
+  it could run in parallel with the suite.
+- *Provision less.* This is the largest. The smoke provisions a tenant with
+  =bootstrap setup … --profile= through =ores.shell=, and on 2026-11-19 its
+  =publish_party_surfaces= step alone was still running after 854 s of its
+  1200 s deadline (=ores.workflow.service= log, workflow
+  =8d9067dd-94fd-40c5-9668-d51db021900b=), while the shell waited with no CPU
+  time. Publishing surfaces proves nothing about ticks. Find which provisioning
+  steps the tick path needs (a subscription, a route, a running feed) and use a
+  profile with only those.
+- *Wait on an event, not a poll.* The evidence loop polls every 5 seconds with
+  SQL and the journal; a subscription to the first =market_tick= subject would
+  end the wait at the first tick.
+
+The check passes when the same evidence (a provisioned non-system tenant whose
+routes reach an adapter and whose ticks arrive) is proved in well under the
+current time, measured over several gate runs.
+
+* Why
+
+On 2026-11-19 the gate of the quotes view branch (PR 4888) spent about 2.5
+minutes on =web=, 12.6 on =ctest= and more than 16 on =ticks-smoke=, which ran
+last and alone. compass-ng made the document and model gates take seconds, so
+the heavy stage is now most of the wait before a push. The smoke also stops the
+environment's services and recreates its database, so the person's screen is
+down for the whole of it.
+
+* References
+
+- =build/scripts/local_checks.py=: the =ticks-smoke= check, =after=("ctest",)=,
+  timeout 2400 s.
+- =projects/ores.compass/src/compass_smoke.py=: =ticks()=, =_provision()=,
+  =_wait_evidence()=.
+- =build/output/local_checks/report.md=: the per-check wall clock of a run.
+
+* See also
+
+- [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]]

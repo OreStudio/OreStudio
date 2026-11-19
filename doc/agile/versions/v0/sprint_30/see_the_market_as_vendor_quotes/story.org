@@ -47,9 +47,10 @@ A person sees the market as the vendors quote it: every quote of every provider 
 | [[id:454D2B6D-9EC8-4801-A2AB-1C5C46338D97][Read a vendor's recent ticks through the subscription]] | DONE | 2026-11-19 | 2026-11-19 | Give the quotes view its history: the recent ticks of a vendor's series from the store, behind the party's subscription, with the system tenant reading every vendor. |
 | [[id:601953D5-1EB6-4E66-8F5F-9D56E67EAD03][Write the journey: watch the vendors' quotes]] | DONE | 2026-11-19 | 2026-11-19 | Agree the journey catalogue for the quotes view, then write the journey with its wireframe and coverage table, in the group the analysis chooses. |
 | [[id:D9CEB730-C3E2-464A-B69D-57E518C8AAA1][Prototype the quotes view for sign-off]] | DONE | 2026-11-19 | 2026-11-19 | Build a static prototype of the quotes view on mock data, with the variants and states the journey needs, and record the product owner's sign-off or the changes asked. |
-| [[id:7421F842-BD73-42CA-8EF7-D47DBA72C79B][Build the quotes view]] | BACKLOG | | | Build the signed-off quotes view in ores.web: the BFF reads the vendor subjects and the recent ticks for the party, and the screen draws them live. |
+| [[id:7421F842-BD73-42CA-8EF7-D47DBA72C79B][Build the quotes view]] | DONE | 2026-11-19 | 2026-11-19 | Build the signed-off quotes view in ores.web: the BFF reads the vendor subjects and the recent ticks for the party, and the screen draws them live. |
 | [[id:5127ACAD-A58C-4B63-922A-FA703836AFB2][Retire the synthetic display tap]] | BACKLOG | | | Move the synthetic feed screens' Ticks tabs onto the vendor subjects and remove the per-feed display subject and its BFF buffer, if the analysis confirms nothing else needs them. |
 | [[id:6EEF6F65-3CCF-435F-8C28-1973F2FCBC9D][Publish the ticks of a feed that no party routes to]] | DONE | 2026-11-19 | 2026-11-19 | The ingest publishes each tick of a feed that no route names once on the feed's subject and stores nothing, so the system tenant's quotes view shows every feed while the store and the bill stay unchanged. |
+| [[id:B903EF9A-9753-4BEF-8945-516106238842][Serve an FX vol surface's vols by delta]] | BACKLOG | | | Convert each vendor's quoted FX vol surface (ATM, risk reversals, butterflies) into vols by delta on the server, by the pair's FX option conventions, so the quotes view can compare vendors' smiles. |
 
 * Decisions
 
@@ -88,6 +89,23 @@ A person sees the market as the vendors quote it: every quote of every provider 
   row compares every vendor's quote of that datum. Every datum and by series are
   its two layouts, and the asset class filter is the asset class codes table.
   (2026-11-19, product owner, signing off the prototype.)
+- *The quotes view is a board for each asset class and shape, each vendor a
+  column.* Built as one row for each vendor's quote, a surface of 65 points from
+  four vendors became 260 rows and the board 4,373. The second round of the
+  prototype chose variant C: the rail ticks each source in or out, and the tabs
+  are the boards: quotes (series by vendor, the picked one's quotes and hour
+  beside it), curves and surfaces. A currency's curves and a surface are both
+  grids, tenor down, picked from a list beside them, and both read as the mid,
+  one vendor, the spread, or two providers compared; every curve of every
+  currency at once was too much to read. (2026-11-19, product owner, after the
+  first build.) A series' shape is the number of its coordinates. (2026-11-19,
+  product owner, replacing the source rail's sign-off.)
+- *A quote is measured against the median of three or more live vendors, or
+  else the highest-ranked one.* With two, a median cannot say which is wrong, so
+  the providers' precedence decides, the rule the FX forward sets already use; the
+  feeds read carries each provider's rank. A quote past the limit (0.5% of a
+  price, 25 bp of a rate, 0.4 vol points) is flagged and left out of the mid.
+  Compared with the consensus, a vendor is left out of it. (2026-11-19.)
 - *The synthetic display tap is not the base.* =synthetic.v1.ops.feed_tick= is
   published by the simulator's FX and IR feeds only, and a real vendor never
   publishes it.

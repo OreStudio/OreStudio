@@ -50,6 +50,8 @@ export const oresmdInstrumentSchema = z.object({
     /** The words that name a series of the type, with {subject} and {field_name} to fill. */
     title: z.string(),
     asset: z.string(),
+    /** The refdata asset class code the authority maps onto, or empty for none. */
+    asset_class: z.string(),
     subject: z.string(),
     fields: z.array(oresmdFieldSpecSchema),
 });

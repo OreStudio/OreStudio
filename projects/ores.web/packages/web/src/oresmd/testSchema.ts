@@ -38,6 +38,7 @@ export const SCHEMA: OresmdSchema = {
             ore_name: 'SEASONALITY',
             title: '{subject} inflation seasonality',
             asset: 'inflation',
+            asset_class: 'inflation',
             subject: 'index',
             fields: [
                 spec('seasonality_type', 'identity'),
@@ -50,6 +51,7 @@ export const SCHEMA: OresmdSchema = {
             ore_name: 'CAPFLOOR',
             title: '{subject} cap/floor',
             asset: 'ir',
+            asset_class: 'interest_rates',
             subject: 'index_name',
             fields: [
                 spec('index_name', 'identity'),

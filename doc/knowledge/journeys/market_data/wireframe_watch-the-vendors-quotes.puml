@@ -1,0 +1,44 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>QUOTES: party Acme Corporation Plc, 4 vendors you may watch</b> | [ Pause ]
+  --
+  {
+    Vendor | ^bloomberg (bloomberg-a)^ | Class | ^all^ | Find | "GBP              "
+    Rows | 212 datums, 37 ticked in the last second
+  }
+  --
+  {#
+    Class | Series | Point | Value | Change | Time | Age
+    fx_spot | GBP/USD | . | 1.30815 | +0.00012 | 11:30:00.412 | 0.2s
+    fx_spot | GBP/CHF | . | 1.12230 | -0.00004 | 11:30:00.398 | 0.2s
+    ir_swap | GBP 3M fwd 0D | 5Y | 4.3120 | +0.0010 | 11:29:59.904 | 0.7s
+    ir_swap | GBP 3M fwd 0D | 10Y | 4.3550 | 0.0000 | 11:29:58.120 | 2.5s
+    fx_option | GBP/USD vol | 1Y 25D RR | 0.0125 | -0.0002 | 11:29:55.002 | 5.6s
+  }
+  --
+  {
+    <b>GBP/USD, bloomberg-a, the last hour</b>
+    The series' ticks as a line: one history read, then each live tick
+  }
+}
+
+@enduml

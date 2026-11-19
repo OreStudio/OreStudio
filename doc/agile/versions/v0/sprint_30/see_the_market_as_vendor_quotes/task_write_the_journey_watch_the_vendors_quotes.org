@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :web:ux:journeys:marketdata:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-the-journey-watch-the-vendors-quotes
+#+pr: 4883
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -26,12 +26,12 @@ The quotes view is designed from the person's goal: what someone watching the ma
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-18                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
 
 * Acceptance
 
@@ -41,9 +41,16 @@ The quotes view is designed from the person's goal: what someone watching the ma
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Catalogue (J08).* One journey, /Watch the vendors' quotes/, as the product
+   owner set it out on 2026-11-18: the market as the vendors quote it, the same
+   view from any party, through the subscription, every vendor for the system
+   tenant, not specific to an asset class. The existing /Watch the market and
+   clear its exceptions/ was checked first (J06): it watches a party's scope in
+   order to clear exceptions, so it stays, and the two link.
+2. Write the journey with =compass add user_journey= in the market data group,
+   with a salt wireframe rendered beside it, and add it to the group page.
+3. Check every subject in the coverage table against the generated protocol
+   headers (X01).
 
 * Measurements
 
@@ -76,12 +83,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4883][#4883]] | [doc] Write the journey: watch the vendors' quotes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The description says subscribes, the body says may watch for display | journey_watch-the-vendors-quotes.org | Accept | One wording: the feeds the party may watch for display. |
+| 2 | Filtering is on the screen, but the table lists the schema under it | journey_watch-the-vendors-quotes.org | Accept | The schema read moved to the step that fills the rows; the step says filtering makes no call. |
+| 3 | Pause has no operation row | journey_watch-the-vendors-quotes.org | Accept | The step and the table say it makes no call. |
+| 4 | Last touched and the Result's wording | task_write_the_journey_watch_the_vendors_quotes.org | Accept | Updated. |
+| 5 | Feed age before the first tick | journey_watch-the-vendors-quotes.org | Accept | Step 5 says the age shows once the feed has ticked. |
 
 * Result
+
+- [[id:E01E9FB6-AB3D-44A4-B852-6A0CB23775F3][Watch the vendors' quotes]] is written in the market data group, with its
+  wireframe rendered beside it, and listed on the group page.
+- It states what a party sees (the feeds it may watch for display, the same for
+  any two parties with the same routes and subscriptions) and what the system
+  tenant sees (every feed), and how every asset class reads as rows of one table.
+- Every subject of its coverage table is in the generated protocol headers (X01);
+  the one missing piece is the stream from the web server to the browser.
+- The catalogue (J08) holds one journey, which the product owner set out on
+  2026-11-18; the existing /Watch the market and clear its exceptions/ stays and
+  links to it.

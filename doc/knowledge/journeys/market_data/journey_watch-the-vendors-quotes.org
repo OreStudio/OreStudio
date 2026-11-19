@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: E01E9FB6-AB3D-44A4-B852-6A0CB23775F3
+:END:
+#+title: User Journey: Watch the vendors' quotes
+#+description: A person watches the quotes each vendor sends as they tick, for any asset class, on the feeds their party may watch for display; the system tenant watches every vendor.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person watches the quotes each vendor sends as they tick, for any asset class, on the feeds their party may watch for display; the system tenant watches every vendor.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to see what each vendor is quoting right now, as it ticks, whatever the
+asset class." The journey is done when the person has seen the quotes they came
+for and leaves the screen. Nothing is changed and nothing is decided.
+
+* Actor and trigger
+
+The actor is anyone who watches the market: a trader, a quant, sales, or
+operations checking that a feed is alive. In the system tenant the actor is the
+person who runs the installation. The trigger is a question about the market as
+the vendors send it: is this feed ticking, what does Bloomberg quote for this
+series, how fast is it moving. The journey starts on the quotes screen and ends
+when the person leaves it.
+
+The view is the market as the vendors quote it, not the data a party publishes.
+It shows raw vendor quotes, and so it shows the same thing to every party that
+may watch a feed: two parties with the same routes and subscriptions see the
+same rows. A party sees only the vendors it subscribes to with the display right,
+through the feed its route picks, because vendor streams are paid for. The system
+tenant sees every feed of the catalogue, routed or not.
+
+The view is not specific to an asset class. Every quote is a series, a point in
+it and a value, so FX spot, IR pillars and volatility quotes are rows of one
+table. A layout made for one class, such as the FX montage, is a later lens over
+the same rows.
+
+* Steps
+
+1. *Open the quotes.* The person opens *Market data*, then *Quotes*. The system
+   asks which feeds the session may watch for display, and shows them as the
+   vendor list: the provider and the feed. A party with no subscription sees an
+   empty list and a line that says so.
+2. *Choose a vendor.* The person picks a vendor and feed, or all of them. The
+   system watches the live ticks of the chosen feeds and fills one row for each
+   datum it receives: the instrument type, the series, the point within the
+   series, the value, the change from the datum's previous tick, the time and
+   the age. A row updates in place when its datum ticks again, and briefly marks
+   the change.
+3. *Narrow it.* The person narrows by asset class or instrument type, or types
+   part of a series to find it. The screen filters the rows it holds, with no
+   call. Narrowing to one series is the exception: the system then asks the
+   broker for that series alone.
+4. *Read one series.* The person selects a row. The system reads the series'
+   ticks of the last hour from the store in one call and draws them as a line,
+   then extends the line with each live tick. The rows above keep ticking.
+5. *Notice a silent feed.* A row whose age grows marks itself stale. A feed with
+   no tick for a while shows its age in the vendor list, once it has ticked. The person sees that a
+   vendor stopped without leaving the screen.
+6. *Pause.* The person pauses the view to read it. The screen stops updating the
+   rows and keeps watching, and resumes from the newest values. No call is made.
+
+When a route or a subscription of the party changes while the screen is open, the
+system asks again which feeds the session may watch: a vendor that is no longer
+allowed leaves the list and its rows go, and a new one appears.
+
+The journey carries no server state. Every step is a read or a watch.
+
+* Screens and wireframes
+
+One screen. The vendor and the filters sit at the top, the ticking rows in the
+middle, and the selected series' line at the bottom.
+
+#+caption: Quotes: the vendors the party may watch, one row for each datum a vendor quotes, updated in place as it ticks, and one series drawn from its history and its live ticks.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_watch-the-vendors-quotes.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_tick= | Each row: the oresmd URI, the value, the vendor time, the provider and the source | [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]] |
+| =feed= | The vendor list: the provider and the feed a subject names | |
+| =subscription= and =route= | Which feeds the session may watch; read by the service, not shown | [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data subscriptions]] |
+
+The instrument type, the series and the point of a row come from the tick's
+oresmd URI, read by the codec; the schema the client needs to split it is
+=describe_oresmd_schema=.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the quotes | Ask which feeds the session may watch | =marketdata.v1.ops.list_watchable_feeds= | exists |
+| Open the quotes | Read the feeds' names | =marketdata.v1.feeds.list= | exists |
+| Choose a vendor | Watch a feed's ticks | =marketdata.v1.ops.market_tick.<provider>.<feed>.>= | exists |
+| Choose a vendor | Carry the watched ticks to the browser | none | missing |
+| Choose a vendor | Split a URI into its type, series and point | =marketdata.v1.ops.describe_oresmd_schema= | exists |
+| Narrow it | Watch one series | =marketdata.v1.ops.market_tick.<provider>.<feed>.<type>.<series>.*= | exists |
+| Read one series | Read the series' recent ticks | =marketdata.v1.ops.get_provider_ticks= | exists |
+| A route or subscription changes | Learn of the change | =marketdata.v1.events.routes.>=, =marketdata.v1.events.subscriptions.>= | exists |
+
+Narrowing by class or text and pausing are done on the screen and need no
+operation. The live subject and the two operations are in
+[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]].
+
+* What is missing
+
+- *A stream from the web server to the browser.* The broker checks no subject, so
+  the browser never reaches it: the web server asks =list_watchable_feeds= for the
+  session, watches those feed subjects, and streams the ticks to the page. No route
+  does this today. The feed pages read a display tap that only the simulator
+  publishes, and the task that builds the quotes view adds the route; the tap then
+  goes.
+- *A feed's age.* No read says when a feed last ticked. The screen measures it from
+  the ticks it receives, so a feed that was silent before the screen opened shows
+  no age until its first tick.
+
+* Related journeys
+
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — a trader who sees a quote that is
+  wrong goes there to clear it with a fallback. That journey watches a party's scope
+  in order to decide; this one only watches the vendors.
+- [[id:FB65AD71-0697-4835-9D47-31A672E9ADE3][Read the FX montage]] — a lens on the FX rows of this view, one base currency's
+  crosses across providers.
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — from a series' rows to the curve or surface
+  built from them, over time.
+- [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data subscriptions]] — when a vendor the person expects is missing
+  from the list, the subscription or the route is where it is granted.
+
+* Related knowledge
+
+- [[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]] — the subject, the watch rule and the system tenant.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]] — the fields of a row.
+- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]] — why a screen needs the display right.
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — the group this journey belongs to.
+- [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] — the story that builds it.

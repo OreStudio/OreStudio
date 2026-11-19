@@ -183,7 +183,7 @@ export interface IrCoverageBootstrapConfig {
     /** The tenor of the index a projection curve projects; empty for a funding curve. */
     index_tenor?: string;
     /** The funding curve a projection discounts off. */
-    discount_curve_config_id?: string | null;
+    discount_curve_config_id?: string | null | undefined;
 }
 
 /** One curve a currency's bootstrap configs build, with its latest publish. */

@@ -863,7 +863,6 @@ const irCurveCoverageRowSchema = z.object({
     currency_code: z.string(),
     config_id: z.string(),
     source_name: z.string(),
-    price_source: z.string(),
     provider_code: z.string(),
     window_days: z.int(),
     bootstrap_config_id: z.string(),

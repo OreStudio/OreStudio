@@ -179,6 +179,15 @@ for (const [ccy, index, tenor, short, slope, vs] of CURVES) {
 const VTENORS = ['1W','1M','2M','3M','6M','9M','1Y','18M','2Y','3Y','5Y','7Y','10Y'];
 const STRIKES = ['10P','25P','ATM','25C','10C'];
 const QUOTED = ['ATM','25RR','25BF','10RR','10BF'];
+/* how each vendor's surface leans, in vol: tradeweb's short end sits higher, ice's
+   long-dated skew is steeper and its wings richer, derived is an hour old */
+const BIAS = {
+  bloomberg: () => 0,
+  tradeweb: (t, q, term) => q === 'ATM' ? .0018 * Math.exp(-term * 3) : 0,
+  ice: (t, q, term) => q.endsWith('RR') ? -.0012 * term * (q === '10RR' ? 1.8 : 1) : q.endsWith('BF') ? .0006 * term : 0,
+  derived: (t, q) => q === 'ATM' ? -.0025 : 0,
+  demo: () => 0,
+};
 const SURFACES = [
   ['EUR/USD', .072, ['bloomberg','ice','tradeweb','derived']],
   ['GBP/USD', .081, ['bloomberg','ice','tradeweb']],
@@ -194,7 +203,7 @@ for (const [name, atm, vs] of SURFACES) {
                   '10RR': -.0075 - term * .0035, '10BF': .0068 + term * .0018};
     for (const q of QUOTED) {
       const quotes = {};
-      for (const v of vs) quotes[v] = quoteOf(v, vals[q] + gauss() * (q === 'ATM' ? .0012 : .0006) + (v === 'ice' && t === '3M' && q === '25RR' ? .006 : 0));
+      for (const v of vs) quotes[v] = quoteOf(v, vals[q] + gauss() * (q === 'ATM' ? .0003 : .00015) + BIAS[v](t, q, term) + (v === 'ice' && t === '3M' && q === '25RR' ? .006 : 0));
       points.push({label:`${t} ${q}`, tenor:t, quote:q, quotes});
     }
   }
@@ -259,7 +268,7 @@ function cell(s, p, v, med) {
 }
 
 /* ---------- filters and sort ---------- */
-const ui = {ac:'', find:'', sort:'live', pick:null, open:new Set(), tab:'FX spot', surfaceMode:'mid', chart:'level', curveVendor:'mid'};
+const ui = {ac:'', find:'', sort:'live', pick:null, open:new Set(), tab:'FX spot', surfaceMode:'mid', cmpA:'ice', cmpB:'consensus', cmpForm:'strike', cmpTenor:'1Y', cmpCol:null, cmpTerm:'ATM', chart:'level', curveVendor:'mid'};
 function shownSeries() {
   const f = ui.find.trim().toLowerCase().replace('/', '');
   let xs = SERIES.filter(s => liveVendors(s).length)
@@ -372,7 +381,9 @@ function curveChart(s, vs) {
 /* a surface: tenors down, the quoted strategies across, for one vendor, the mid or the spread */
 function surfaceGrid(s) {
   const vs = liveVendors(s);
-  const mode = ui.surfaceMode === 'mid' || ui.surfaceMode === 'spread' || vs.some(v => v.code === ui.surfaceMode) ? ui.surfaceMode : 'mid';
+  const mode = ['mid','spread','compare'].includes(ui.surfaceMode) || vs.some(v => v.code === ui.surfaceMode) ? ui.surfaceMode : 'mid';
+  const modes = `<div class="seg">${['mid', ...vs.map(v => v.code), 'spread', 'compare'].map(m => `<button data-surface="${m}" class="${mode === m ? 'on' : ''}">${m === 'mid' ? 'Mid' : m === 'spread' ? 'Spread' : m === 'compare' ? 'Compare ⇄' : m}</button>`).join('')}</div>`;
+  if (mode === 'compare') return modes + compareView(s);
   const at = (t, q) => s.points.find(p => p.tenor === t && p.quote === q);
   const val = p => {
     const st = stats(s, p);
@@ -381,12 +392,148 @@ function surfaceGrid(s) {
     const q = p.quotes[mode]; if (!q) return {txt:'·', heat:0};
     return {txt: fmt(s, q.v), out: outlierOf(s, q.v, st.med), stale: isStale(q)};
   };
-  const seg = `<div class="seg">${['mid', ...vs.map(v => v.code), 'spread'].map(m => `<button data-surface="${m}" class="${mode === m ? 'on' : ''}">${m === 'mid' ? 'Mid' : m === 'spread' ? 'Spread' : m}</button>`).join('')}</div>`;
+  const seg = modes;
   const rows = VTENORS.map(t => `<tr><td class="mono">${t}</td>${QUOTED.map(q => { const p = at(t, q); const c = val(p);
     return `<td class="num ${c.heat ? 'heat-' + c.heat : ''} ${c.out ? 'out' : ''} ${c.stale ? 'stale' : ''} click" data-point="${p.label}">${c.txt}</td>`; }).join('')}</tr>`).join('');
   const note = mode === 'spread' ? 'Spread between the vendors in vol points; the darker the cell, the more they disagree.' : mode === 'mid' ? 'Mid of the included vendors in vol points, outliers left out.' : `${mode}'s quotes in vol points; ⚠ marks a quote far from the others.`;
   return `<div class="row" style="justify-content:space-between">${seg}<span class="faint" style="font-size:.78rem">${note}</span></div>
     <div class="scroll grid"><table><thead><tr><th>Tenor</th>${QUOTED.map(q => `<th class="num">${q}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+
+/* ---------- comparing two sources of a surface ---------- */
+/* a source is a vendor, or the consensus: the mid of the included live vendors, outliers left out */
+/* the consensus leaves out the source it is compared with, so a vendor is never measured against itself */
+const sourceName = c => c === 'consensus' ? (ui.cmpA !== 'consensus' && ui.cmpB === 'consensus' || ui.cmpB !== 'consensus' && ui.cmpA === 'consensus' ? 'Consensus of the others' : 'Consensus') : c;
+const sourceColour = c => c === 'consensus' ? '#e3e3e6' : vendor(c).colour;
+function quotedOf(s, src, t, q) {
+  const p = s.points.find(x => x.tenor === t && x.quote === q);
+  if (!p) return null;
+  if (src === 'consensus') {
+    const other = ui.cmpA === 'consensus' ? ui.cmpB : ui.cmpA;
+    const ref = referenceOf(p);
+    const xs = VENDORS.filter(v => v.code !== other && included.has(v.code) && p.quotes[v.code] && !isStale(p.quotes[v.code]))
+      .map(v => p.quotes[v.code].v).filter(x => !outlierOf(s, x, ref));
+    return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+  }
+  if (!included.has(src)) return null;
+  return p.quotes[src]?.v ?? null;
+}
+/* the smile by delta. In the product the server supplies it: the conversion needs the
+   pair's delta convention (spot or forward, premium-adjusted or not, which ATM) and a
+   fitted smile. The prototype stands in with the simple strangle approximation:
+   25C = ATM + 25BF + 25RR/2, 25P = ATM + 25BF - 25RR/2, and the same for 10 delta */
+function smileOf(s, src, t) {
+  const g = q => quotedOf(s, src, t, q);
+  const atm = g('ATM'), r25 = g('25RR'), b25 = g('25BF'), r10 = g('10RR'), b10 = g('10BF');
+  if ([atm, r25, b25, r10, b10].some(x => x == null)) return null;
+  return {'10P': atm + b10 - r10 / 2, '25P': atm + b25 - r25 / 2, ATM: atm, '25C': atm + b25 + r25 / 2, '10C': atm + b10 + r10 / 2};
+}
+const columnsOf = () => ui.cmpForm === 'strike' ? STRIKES : QUOTED;
+function cellOf(s, src, t, c) {
+  if (ui.cmpForm === 'quoted') return quotedOf(s, src, t, c);
+  return smileOf(s, src, t)?.[c] ?? null;
+}
+/* a vol-point difference as a diverging colour: blue where A is above B, red where below */
+const BREACH = .4;
+function diffStyle(d) {
+  if (d == null || Math.abs(d) < .02) return '';
+  const k = Math.min(1, Math.abs(d) / .5);
+  const rgb = d > 0 ? '88,166,255' : '248,81,73';
+  return `background:rgba(${rgb},${(.08 + k * .5).toFixed(2)})`;
+}
+function catChart(labels, lines, fmtY, title, pickIndex) {
+  const W = 560, H = 230, L = 8, R = 56, T = 12, B = 24;
+  const ys = lines.flatMap(l => l.vals.filter(v => v != null));
+  if (!ys.length) return '<div class="empty">Nothing to draw.</div>';
+  let lo = Math.min(...ys), hi = Math.max(...ys); const pad = (hi - lo || .001) * .08; lo -= pad; hi += pad;
+  const X = i => L + i / (labels.length - 1) * (W - L - R);
+  const Y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  const grid = [lo + pad, (lo + hi) / 2, hi - pad].map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#30363d"/><text x="${W - R + 6}" y="${Y(v) + 4}" fill="#71717a" font-size="11" font-family="monospace">${fmtY(v)}</text>`).join('');
+  const mark = pickIndex == null ? '' : `<line x1="${X(pickIndex)}" x2="${X(pickIndex)}" y1="${T}" y2="${H - B}" stroke="#58a6ff" stroke-opacity=".35" stroke-dasharray="2 3"/>`;
+  const paths = lines.map(l => {
+    let d = '', pen = false;
+    l.vals.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)} `; pen = true; });
+    const dots = l.strong ? l.vals.map((v, i) => v == null ? '' : `<circle cx="${X(i)}" cy="${Y(v)}" r="2.6" fill="${l.colour}"/>`).join('') : '';
+    return `<path d="${d}" fill="none" stroke="${l.colour}" stroke-width="${l.strong ? 2.4 : 1.2}" stroke-opacity="${l.strong ? 1 : .45}" ${l.dashed ? 'stroke-dasharray="4 3"' : ''}/>${dots}`;
+  }).join('');
+  const xl = labels.map((n, i) => `<text x="${X(i)}" y="${H - 6}" fill="#71717a" font-size="11" text-anchor="middle">${n}</text>`).join('');
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">${grid}${mark}${paths}${xl}</svg></div>`;
+}
+function compareView(s) {
+  const vs = liveVendors(s).filter(v => !(v.ageMs > 60000));
+  const stale = liveVendors(s).filter(v => v.ageMs > 60000);
+  const sources = ['consensus', ...liveVendors(s).map(v => v.code)];
+  if (!sources.includes(ui.cmpA)) ui.cmpA = vs[1]?.code ?? vs[0]?.code ?? 'consensus';
+  if (!sources.includes(ui.cmpB)) ui.cmpB = 'consensus';
+  const A = ui.cmpA, B = ui.cmpB, cols = columnsOf();
+  const pickSel = (k, v) => `<select data-cmp="${k}">${sources.map(x => `<option value="${x}" ${x === v ? 'selected' : ''}>${sourceName(x)}${stale.some(y => y.code === x) ? ' (stale)' : ''}</option>`).join('')}</select>`;
+  const diffs = [];
+  const rows = VTENORS.map(t => `<tr class="${t === ui.cmpTenor ? 'pick' : ''}"><td class="mono click" data-cmptenor="${t}" style="cursor:pointer">${t}</td>${cols.map(c => {
+    const a = cellOf(s, A, t, c), b = cellOf(s, B, t, c);
+    const d = a == null || b == null ? null : (a - b) * 100;
+    if (d != null) diffs.push({t, c, d});
+    const breach = d != null && Math.abs(d) > BREACH;
+    const on = t === ui.cmpTenor && c === ui.cmpCol;
+    return `<td class="num click" data-cmpcell="${t}|${c}" style="cursor:pointer;${diffStyle(d)}${on ? ';outline:2px solid var(--accent);outline-offset:-2px' : ''}${breach ? ';font-weight:700' : ''}" title="${sourceName(A)} ${a == null ? '—' : (a * 100).toFixed(2)} · ${sourceName(B)} ${b == null ? '—' : (b * 100).toFixed(2)}">${d == null ? '·' : Math.abs(d) < .005 ? '0.00' : (d > 0 ? '+' : '') + d.toFixed(2)}${breach ? ' ⚠' : ''}</td>`;
+  }).join('')}</tr>`).join('');
+  const worst = diffs.reduce((w, x) => Math.abs(x.d) > Math.abs(w?.d ?? 0) ? x : w, null);
+  const meanBy = pred => { const xs = diffs.filter(pred).map(x => x.d); return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null; };
+  const atmBias = meanBy(x => x.c === 'ATM');
+  const breaches = diffs.filter(x => Math.abs(x.d) > BREACH).length;
+  const sgn = x => x == null ? '—' : (x > 0 ? '+' : '') + x.toFixed(2);
+  const summary = `<div class="row" style="gap:22px;font-size:.84rem">
+    <span><span class="faint">ATM level, on average</span> <b class="mono">${sgn(atmBias)}</b></span>
+    <span><span class="faint">Widest</span> <b class="mono">${worst ? sgn(worst.d) + ' at ' + worst.t + ' ' + worst.c : '—'}</b></span>
+    <span><span class="faint">Over ${BREACH} vol pts</span> <b class="mono ${breaches ? 'out' : ''}">${breaches} of ${diffs.length}</b></span></div>`;
+
+  /* the smile of the picked tenor and the term structure of the picked measure, every source drawn, A and B strong */
+  const drawn = ['consensus', ...vs.map(v => v.code), ...stale.map(v => v.code)];
+  const lineOf = (src, vals) => ({colour: sourceColour(src), vals, strong: src === A || src === B, dashed: src === 'consensus' || stale.some(v => v.code === src)});
+  const smile = catChart(STRIKES, drawn.map(src => lineOf(src, STRIKES.map(k => { const sm = smileOf(s, src, ui.cmpTenor); return sm ? sm[k] * 100 : null; }))),
+    v => v.toFixed(2), `${s.name} ${ui.cmpTenor} smile by source`, ui.cmpForm === 'strike' && ui.cmpCol ? STRIKES.indexOf(ui.cmpCol) : null);
+  const termVals = src => VTENORS.map(t => { const v = quotedOf(s, src, t, ui.cmpTerm); return v == null ? null : v * 100; });
+  const term = catChart(VTENORS, drawn.map(src => lineOf(src, termVals(src))), v => v.toFixed(2), `${s.name} ${ui.cmpTerm} term structure by source`, VTENORS.indexOf(ui.cmpTenor));
+  const legend = `<div class="legend">${drawn.map(src => `<span style="${src === A || src === B ? 'color:var(--ink)' : ''}"><i style="background:${sourceColour(src)};${src === A || src === B ? '' : 'opacity:.45'}"></i>${sourceName(src)}${src === A ? ' (A)' : src === B ? ' (B)' : ''}</span>`).join('')}</div>`;
+
+  /* one cell, every source's value of it */
+  let cellPanel = '';
+  if (ui.cmpCol && cols.includes(ui.cmpCol)) {
+    const b = cellOf(s, B, ui.cmpTenor, ui.cmpCol);
+    cellPanel = `<div class="panel" style="padding:10px"><h3 style="font-size:.85rem">${ui.cmpTenor} ${ui.cmpCol}${ui.cmpForm === 'strike' ? ' <span class="faint" style="font-weight:400">· converted by the server from each source’s ATM, RR and BF</span>' : ''}</h3>
+      <table><thead><tr><th>Source</th><th class="num">Vol</th><th class="num">To ${sourceName(B)}</th><th class="num">Age</th></tr></thead><tbody>
+      ${drawn.map(src => { const v = cellOf(s, src, ui.cmpTenor, ui.cmpCol); const d = v == null || b == null ? null : (v - b) * 100;
+        const at = src === 'consensus' ? null : s.points.find(p => p.tenor === ui.cmpTenor)?.quotes[src]?.at;
+        return `<tr><td><span class="dot" style="background:${sourceColour(src)}"></span>${sourceName(src)}${src === A ? ' (A)' : src === B ? ' (B)' : ''}</td><td class="num">${v == null ? '—' : (v * 100).toFixed(2)}</td><td class="num ${d != null && Math.abs(d) > BREACH ? 'out' : ''}">${src === B ? '' : sgn(d)}</td><td class="num ${at && Date.now() - at > 60000 ? 'stale' : ''}">${at ? age(at) : ''}</td></tr>`; }).join('')}
+      </tbody></table></div>`;
+  }
+
+  return `<div class="row" style="justify-content:space-between;align-items:flex-end">
+      <div class="row">
+        <label class="field"><span>A</span>${pickSel('A', A)}</label>
+        <button class="btn" data-cmpswap title="Swap A and B" style="margin-bottom:1px">⇄</button>
+        <label class="field"><span>B</span>${pickSel('B', B)}</label>
+        <div class="field"><span>Read as</span><div class="seg">
+          <button data-cmpform="strike" class="${ui.cmpForm === 'strike' ? 'on' : ''}">Vol by delta</button>
+          <button data-cmpform="quoted" class="${ui.cmpForm === 'quoted' ? 'on' : ''}">As quoted</button></div></div>
+        ${ui.cmpForm === 'strike' ? '<span class="tag" title="The server converts each source by the pair\u2019s delta convention; the prototype approximates it.">vols by delta from the server</span>' : ''}
+      </div>
+      <span class="faint" style="font-size:.78rem;max-width:420px">Each cell is A − B in vol points: blue where A is above B, red where below, bold over ${BREACH}. Click a tenor for its smile, a cell for every source's value.</span>
+    </div>
+    ${summary}
+    <div class="two" style="grid-template-columns:minmax(0,5fr) minmax(0,4fr)">
+      <div style="display:grid;gap:10px;align-content:start">
+        <div class="scroll grid"><table><thead><tr><th>Tenor</th>${cols.map(c => `<th class="num">${c}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+        ${cellPanel}
+      </div>
+      <div style="display:grid;gap:10px;align-content:start">
+        <div class="panel-head"><h3 style="font-size:.85rem">${ui.cmpTenor} smile</h3><span class="faint" style="font-size:.78rem">vol by delta</span></div>
+        ${smile}
+        <div class="panel-head"><h3 style="font-size:.85rem">Term structure</h3><div class="seg">${QUOTED.map(q => `<button data-cmpterm="${q}" class="${ui.cmpTerm === q ? 'on' : ''}">${q}</button>`).join('')}</div></div>
+        ${term}
+        ${legend}
+      </div>
+    </div>`;
 }
 
 /* the detail of the picked series, in its own shape */
@@ -395,7 +542,7 @@ function detail(s) {
   const head = `<div class="panel-head"><div><h3>${s.name}</h3><span class="faint" style="font-size:.78rem">${s.type} · ${shapeOf(s)} · ${s.raw}</span></div>${s.shape === 'spot' ? chartToggle() : ''}</div>`;
   if (s.shape === 'spot') return head + allQuotes(s, s.points[0]) + timeChart(s, s.points[0]);
   if (s.shape === 'curve') return head + curveStrip(s);
-  return head + surfaceGrid(s) + (ui.point ? pointDetail(s) : '');
+  return head + surfaceGrid(s) + (ui.point && ui.surfaceMode !== 'compare' ? pointDetail(s) : '');
 }
 function pointDetail(s) {
   const p = s.points.find(x => x.label === ui.point); if (!p) return '';
@@ -484,7 +631,7 @@ function variantC() {
     const pick = xs.find(s => s.id === ui.pick) ?? xs[0];
     board = `<div class="split" style="grid-template-columns:220px minmax(0,1fr)"><div class="rail"><div class="head">Surfaces</div>
       ${xs.map(s => `<label data-series="${s.id}" style="${pick === s ? 'background:var(--accent-dim)' : ''}"><span>${s.name.replace(' vol surface', '')}</span><small class="${Date.now() - newest(s) > 60000 ? 'out' : ''}">${age(newest(s))}</small></label>`).join('')}</div>
-      <div class="panel">${pick ? `<h3>${pick.name}</h3>${surfaceGrid(pick)}${ui.point ? pointDetail(pick) : ''}` : '<div class="empty">No surface.</div>'}</div></div>`;
+      <div class="panel">${pick ? `<h3>${pick.name}</h3>${surfaceGrid(pick)}${ui.point && ui.surfaceMode !== 'compare' ? pointDetail(pick) : ''}` : '<div class="empty">No surface.</div>'}</div></div>`;
   }
   return `<div class="split">${rail()}<div style="display:grid;gap:14px;min-width:0">
     <div class="panel">${filters()}</div>${tabs}<div>${board}</div></div></div>`;
@@ -529,10 +676,15 @@ for (const s of SERIES) for (const p of s.points) for (const [v, q] of Object.en
 setInterval(tick, 1000);
 
 app.addEventListener('click', e => {
-  const t = e.target.closest('[data-series],[data-toggle],[data-sort],[data-surface],[data-chart],[data-tab],[data-curvev],[data-all],[data-pause]');
+  const t = e.target.closest('[data-cmpswap],[data-cmpform],[data-cmptenor],[data-cmpcell],[data-cmpterm],[data-series],[data-toggle],[data-sort],[data-surface],[data-chart],[data-tab],[data-curvev],[data-all],[data-pause]');
   if (!t) return;
   const d = t.dataset;
-  if (d.pause !== undefined) paused = !paused;
+  if (d.cmpswap !== undefined) [ui.cmpA, ui.cmpB] = [ui.cmpB, ui.cmpA];
+  else if (d.cmpform) { ui.cmpForm = d.cmpform; ui.cmpCol = null; }
+  else if (d.cmptenor) ui.cmpTenor = d.cmptenor;
+  else if (d.cmpcell) { [ui.cmpTenor, ui.cmpCol] = d.cmpcell.split('|'); }
+  else if (d.cmpterm) ui.cmpTerm = d.cmpterm;
+  else if (d.pause !== undefined) paused = !paused;
   else if (d.sort) ui.sort = d.sort;
   else if (d.surface) ui.surfaceMode = d.surface;
   else if (d.chart) ui.chart = d.chart;
@@ -547,6 +699,7 @@ app.addEventListener('click', e => {
 app.addEventListener('change', e => {
   if (e.target.dataset.vendor) { e.target.checked ? included.add(e.target.dataset.vendor) : included.delete(e.target.dataset.vendor); render(); }
   if (e.target.dataset.f === 'ac') { ui.ac = e.target.value; render(); }
+  if (e.target.dataset.cmp) { ui['cmp' + e.target.dataset.cmp] = e.target.value; render(); }
 });
 app.addEventListener('input', e => { if (e.target.dataset.f === 'find') { ui.find = e.target.value; render(); } });
 
@@ -562,6 +715,7 @@ document.getElementById('bar').addEventListener('click', e => {
 });
 if (params.get('pick')) { ui.pick = params.get('pick'); ui.point = params.get('point'); }
 if (params.get('tab')) ui.tab = params.get('tab');
+if (params.get('surface')) ui.surfaceMode = params.get('surface');
 render();
 </script>
 </body>

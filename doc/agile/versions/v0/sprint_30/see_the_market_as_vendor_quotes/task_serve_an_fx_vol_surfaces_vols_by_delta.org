@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: B903EF9A-9753-4BEF-8945-516106238842
+:END:
+#+title: Task: Serve an FX vol surface's vols by delta
+#+description: Convert each vendor's quoted FX vol surface (ATM, risk reversals, butterflies) into vols by delta on the server, by the pair's FX option conventions, so the quotes view can compare vendors' smiles.
+#+type: task
+#+level: s1
+#+filetags: :market_data:fx:volatility:service:see_the_market_as_vendor_quotes:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The quotes view compares two vendors' FX vol surfaces as vols by delta (10P, 25P, ATM, 25C, 10C), because a difference in a risk reversal is a difference in skew, not in a vol. The conversion depends on the pair's delta convention (spot or forward delta, premium-adjusted or not), its ATM convention and a smile fitted to the strangles, which only the server knows from the FX option conventions. The browser must not guess it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+- A read returns a vendor's surface of a pair, or the consensus, as vols by delta for each tenor, converted by the pair's FX option conventions.
+- The conversion is tested against known values for at least one spot-delta and one premium-adjusted forward-delta pair.
+- A surface that lacks a quote the conversion needs is returned with that tenor marked incomplete, not converted from a guess.
+- The quotes view's compare mode reads the server's vols by delta instead of the prototype's strangle approximation.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Raised on 2026-11-19 while prototyping the compare mode of
+  [[id:4A9A4369-D6C1-4FF6-B9BF-47B8D87FE0DB][Read the quotes by series prototype]]. The prototype stands in with the
+  simple strangle approximation (25C = ATM + 25BF + 25RR/2) and labels the view
+  as the server's; the product owner asked that the real conversion live on the
+  server side.
+- The conventions already exist in the schema: =refdata_fx_option_conventions=
+  and =refdata_curve_volatility_delta_surfaces= carry the delta and ATM types.
+  Read them before choosing where the conversion lives.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

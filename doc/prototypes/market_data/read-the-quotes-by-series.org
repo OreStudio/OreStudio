@@ -78,8 +78,36 @@ Switch with the bar at the foot, or =?variant=.
 | =b=     | Datum rows, series headings   | The closest to the built screen. Each point is one row with a column for each vendor, under a heading for its series. A curve opens as its tenor rows; a surface opens as its grid, not its 65 rows. The picked row opens the all-quotes panel above. |
 | =c=     | Boards by asset class         | Tabs, each with the board its desk reads. FX spot is a board of pairs by vendor beside the picked pair's quotes. Rates puts every curve side by side, tenors down, for the mid or one vendor. FX vols is a surface list beside the picked surface's grid. |
 
+** Comparing two sources of a surface
+
+A surface's /Compare/ mode answers "where and how do two vendors' surfaces
+differ", the question the single-source grid cannot. It follows how the
+terminals and the consensus services do it, from memory and not checked: the
+terminals overlay one source's smile and term structure on another's, and the
+consensus services show a contributor's surface against the consensus as a
+grid of differences.
+
+- Two pickers, A and B, each a vendor or the consensus, with a swap. The
+  consensus leaves out the vendor it is compared with, so a vendor is never
+  measured against itself.
+- A difference grid, tenor down: each cell is A − B in vol points, blue where A
+  is above B and red where below, bold with ⚠ over 0.4. A line above it gives
+  the mean ATM difference, the widest cell and the count over the limit.
+- /Vol by delta/ (10P, 25P, ATM, 25C, 10C) or /As quoted/ (ATM, RR, BF). A
+  risk reversal difference is a skew difference, not a level, so the default
+  reads the surface by delta.
+- The smile of the picked tenor and the term structure of a chosen measure,
+  every source drawn, A and B strong, the consensus dashed.
+- A picked cell lists every source's value of it and its distance to B.
+
+The vols by delta must come from the server. The conversion depends on the
+pair's delta convention (spot or forward delta, premium-adjusted or not, which
+ATM) and on a fitted smile; the prototype stands in with the simple strangle
+approximation, 25C = ATM + 25BF + 25RR/2, and labels the view as the server's.
+
 =?pick=<series id>= opens a series, such as =spot-EURUSD=, =swap-USD-1D= or
-=vol-EUR/USD=; =?tab== chooses variant c's tab.
+=vol-EUR/USD=; =?tab== chooses variant c's tab; =?surface=compare= opens a surface in compare
+mode.
 
 ** What is fake
 

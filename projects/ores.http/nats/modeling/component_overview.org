@@ -66,6 +66,7 @@ its symbols by default and exports the functions its header declares.
 * Entry points
 
 - =include/ores.http.nats/forwarding.hpp= -- =forward=, =respond= and =refusal_for=.
+- =include/ores.http.nats/history_read.hpp= -- =read=, one record's versions.
 
 * Dependencies
 
@@ -73,9 +74,10 @@ its symbols by default and exports the functions its header declares.
 - =ores.nats= -- the typed request and its errors.
 - =ores.utility= -- the wire codecs.
 - =ores.logging= -- logger factory.
+- =ores.history.api= -- one record's versions, read as the caller.
 
-The core profile's baseline links the first three; the model adds only
-=ores.logging=.
+The core profile's baseline links the HTTP, NATS and utility parts; the model
+adds =ores.logging= and =ores.history.api=.
 
 * See also
 
@@ -86,6 +88,7 @@ The core profile's baseline links the first three; the model adds only
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.logging.lib)
+        ores.logging.lib
+        ores.history.api.lib)
 #+end_src
 

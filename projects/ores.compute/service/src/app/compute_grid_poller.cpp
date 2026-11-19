@@ -118,11 +118,9 @@ boost::asio::awaitable<void> compute_grid_poller::run() {
     boost::asio::steady_timer timer(executor);
 
     try {
-        // The samples are the series a chart draws, so they are spaced by the
-        // schedule rather than by how long each read took: a poll that runs long
-        // must not push every later sample out by the same amount. A poll that
-        // overruns its whole interval is not caught up on, because a burst of
-        // samples at one instant says nothing a single sample does not.
+        // The samples are a chart's series, so they follow the schedule rather
+        // than the time each read took; an interval a read overran is skipped
+        // rather than caught up on, which would bunch samples at one instant.
         auto next = std::chrono::steady_clock::now();
         const auto interval = std::chrono::seconds(interval_seconds_);
 

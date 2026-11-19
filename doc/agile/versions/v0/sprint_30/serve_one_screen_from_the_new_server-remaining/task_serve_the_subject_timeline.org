@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-subject-timeline
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -32,16 +32,34 @@ rather than a failure, which is why the answer carries a list of gaps at all.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Served and verified; no PR yet.        |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Raise the PR and answer its review.    |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
 
--
+- =GET /api/timeline= answers at the BFF's address for all three subjects, with
+  the BFF's member names and status codes.
+- A request's stream is the story the inbox already serves, wrapped with its
+  subject, so the two cannot drift into two shapes.
+- A person's stream is the account, its contact record, the roles it was given,
+  the parties it works in and its sign-ins, and it states the one window it
+  cannot show beside every source it was refused.
+- A party's stream is its own versions, the versions of each part it holds and
+  the opening and closing of each link it keeps, and it states that no read lists
+  a part that was removed from it.
+- Each subject names the row an entry came from, so a screen can pair the entries
+  of one entity and diff them.
+- The events are ordered by the one rule the request story already uses: newest
+  first, and within one second the later act first.
+- A source the caller may not read is a gap on the answer. A source that fails is
+  not: the route answers that the service did not answer.
+- The answer carries an ETag and stays fresh for 30 seconds.
+- The route is paired in the inventory, and the workflow area serves all 18 of
+  its routes.
 
 * Plan
 
@@ -92,9 +110,53 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The workflow suite      | 57 cases, 589 assertions                  | =publish/bin/ores.http.workflow.tests= | d81b67686e |
+| The routes in the tree  | 1387: 1054 by =ores.http=, 333 by the BFF | =./compass.sh generate=, then the inventory's *The inventory* | d81b67686e |
+| The paired routes       | 288 of 333, so 45 are unpaired           | the inventory's pairing table: one =none= row per unpaired route | d81b67686e |
+| The workflow area       | no unpaired route remains                | the same table, searched for the area's addresses | d81b67686e |
+| The check gate          | 52 of 52                                 | =./compass.sh check --exclude-heavy= | d81b67686e |
+| The http suites         | =ores.http.nats.tests= and =ores.http.core.tests= pass | =./compass.sh test run -- -R 'ores\.http\.(nats|core)\.tests'= | d81b67686e |
 
 * Notes
+
+The subject a stream is read for is a word and not an entity type. That is the
+BFF's own split, and it is kept because it is the right one: which rows make up a
+person's story is the server's business, and a browser that named the entity
+types would be stating the composition and would then drift from it.
+
+Three compositions, one of them new. A request's stream is the story the inbox
+already answers, wrapped, so the two subjects cannot become two shapes. A
+person's and a party's are composed here, from the reads their owning components
+already served, and neither invents a subject: each entity type reaches its own
+read through =history_subject_for=.
+
+The gap list is the part worth reading twice. A person's is not symmetric with a
+party's, because what the product cannot say is not symmetric. A sign-in log keeps
+a window, and the stream reads the most recent 200, so an older sign-in is not
+shown: that is a fact about the read and it is stated even for a person who has
+never signed in. A part removed from a party is closed rather than deleted, and no
+read lists a closed row, so the party's stream states that for each kind of part
+instead of showing a story that looks complete.
+
+A refusal becomes a gap; a failure does not. The BFF put both in the same list,
+which read a service that was down as a permission the person lacked. Here only
+the refusal the owning component states is a gap, and a transport failure is
+thrown so the route answers that the service did not answer. The history step
+states its three bad answers - no read for the type, no permission, a read that
+failed - as an answer that did not come, and the composition turns each of them
+into a gap with the sentence the screen shows.
+
+What is not proven. The three compositions are proved by construction and by unit
+tests of their parts: the ordering, the link entries, the cache policy, and the
+address's own refusals. They are not proved against a live service and a database
+in this change, because the deployment's schema and the checkout disagree, so a
+run would have proved the schema rather than the view. A review of the
+compositions against the BFF's own reads is the right next step, followed by a run
+on a rebuilt database.
+
+The one instant formatter is not restated here. The entries carry the instants the
+history layer stamped and the protocol's own text form writes them, as every other
+answer in the part does.
 
 * Test Scenarios
 

@@ -294,6 +294,9 @@ const NOT_LIVE_REASON = 'The latest set is not the set in use.';
  * it. The currency universe is the union of the feed configs and the bootstrap configs.
  */
 export function irCurveCoverage(input: IrCurveCoverageInput): IrCurveCoverageRow[] {
+    // A run is named by its source name alone, which is also the subject its ticks go out on,
+    // so two configs that share a source name share one run, and the service cannot tell them
+    // apart either.
     const runs = new Map(input.runs.map((run) => [run.source_name, run]));
     const configs = groupByCurrency(input.generationConfigs);
     const bootstraps = groupByCurrency(input.bootstrapConfigs);
@@ -508,6 +511,10 @@ async function latestPublishedSets(
 }
 
 /** The IR coverage of the class: its generation configs, its bootstrap configs and their publishes. */
+/**
+ * A failed read of the running feeds fails the coverage. Read on without the runs, every
+ * currency whose run kept a fixed level would state that it is covered.
+ */
 async function interestRateCoverage(session: LiveSession): Promise<IrCurveCoverageRow[]> {
     const [configRows, bootstrapRows, runs] = await Promise.all([
         readAll<ListIrCurveGenerationConfigsResponse>(

@@ -154,6 +154,15 @@ describe('the IR curve coverage', () => {
         }
     });
 
+    it('states the config when it says fixed though the run started from a fixing', () => {
+        const fixed = { ...USD_CONFIG, price_source: 'fixed' };
+        expect(coverage({ runs: [runOf()], generationConfigs: [fixed] })[0]).toMatchObject({
+            provider_code: 'bloomberg',
+            gap: 'no_source',
+            gap_reason: 'The feed config starts from its fixed level, not from a fixing.',
+        });
+    });
+
     it('covers a currency whose feed takes a fixing but does not run now, with no provider', () => {
         const [row] = coverage({ runs: [] });
         expect(row).toMatchObject({ provider_code: '', gap: '' });

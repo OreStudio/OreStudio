@@ -2,7 +2,7 @@
 :ID: E351A753-69AD-4D45-9C7C-77208CB434CA
 :END:
 #+title: Watch the vendors' quotes prototype
-#+description: The quotes each vendor sends as they tick, any asset class, through the feeds the session may watch for display; one row for each datum or one for each series, and the system tenant's view of every feed.
+#+description: The quotes each vendor sends as they tick, any asset class, on the feeds the session may watch for display: every datum, by series, and across the vendors, and the system tenant's view of every feed.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:
@@ -32,16 +32,27 @@ read, then each live tick.
 Is the view one row for each datum, or one row for each series that opens into
 its points? A vol surface quotes many points, and a flat table may bury the FX
 and the rates around it; a grouped table hides the points until a person opens
-them.
+them. And how does a person see one series as several vendors quote it?
 
-** The variants
+The product owner's answer (2026-11-19): both layouts, and a third across the
+vendors. They are three layouts of one screen, switched in the page, not
+alternatives.
 
-Switch with the bar at the foot, or =?variant=.
+** The layouts
 
-| Variant | Name          | The structural argument |
-|---------+---------------+-------------------------|
-| =a=     | Every datum   | One row for each datum, as the journey's wireframe draws it. Every tick is visible where it lands. |
-| =b=     | By series     | One row for each series, with its newest point, its point count and its age; a series opens into its points. A surface is one line until it is opened. |
+Switch in the page, or with =?layout=.
+
+| Layout    | Name           | What it shows |
+|-----------+----------------+---------------|
+| =datum=   | Every datum    | One row for each datum of the chosen vendor. Every tick is visible where it lands. |
+| =series=  | By series      | One row for each series of the chosen vendor, with its newest point, its point count and its age; a series opens into its points. |
+| =vendors= | Across vendors | One row for each datum, one column for each vendor the session may watch, and the spread between them; GBP/USD as Bloomberg and Tradeweb quote it, side by side. A picked row draws every vendor's line. |
+
+The asset class filter is the asset class codes table, the one market series and
+routes name (FX, Interest Rate, Credit, Equity, Commodity, Inflation, Bond,
+Scripted, in its display order), and the instrument type narrows it. The asset
+class catalogue maps each instrument type's oresmd namespace onto a code: =fx= to
+=fx=, =ir= to =interest_rates=.
 
 ** The states
 
@@ -51,15 +62,15 @@ Switch with the bar at the foot, or =?variant=.
 - =?state=none= — a party with no subscription that holds the display right. The
   page says why the list is empty and where a subscription is granted.
 - =?state=silent= — the party's view with one vendor that stopped ticking: its
-  age grows in the vendor list and its rows fade.
+  age grows in the vendor list and its quotes fade.
 
 ** What is fake
 
 Every value, time and age is mock. The ticks are a random walk on a timer, and the
 hour behind a picked row is made up. The datums each vendor quotes, and which
-feeds a party may watch, are fixed in the page. A datum keeps one time, shared by
-every vendor that quotes it, so in the silent state only the silent vendor's own
-view fades its rows; the server keeps the time of each feed's tick apart.
+feeds a party may watch, are fixed in the page. Each
+vendor's quote of a datum has its own value and time, as the feed subjects
+keep them apart.
 
 ** Where the code lives
 

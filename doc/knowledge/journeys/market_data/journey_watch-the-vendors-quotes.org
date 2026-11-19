@@ -56,17 +56,24 @@ the same rows.
    series, the value, the change from the datum's previous tick, the time and
    the age. A row updates in place when its datum ticks again, and briefly marks
    the change.
-3. *Narrow it.* The person narrows by asset class or instrument type, or types
+3. *Lay it out.* The person switches between three layouts of the same rows:
+   every datum of the vendor; the vendor's rows grouped by series, a series
+   opening into its points; and across the vendors, one row for each datum and
+   one column for each vendor the session may watch, with the spread between
+   them, so GBP/USD reads as Bloomberg and Tradeweb quote it side by side.
+4. *Narrow it.* The person narrows by asset class, from the asset class codes
+   table, or by instrument type within it, or types
    part of a series to find it. The screen filters the rows it holds, with no
    call. Narrowing to one series is the exception: the system then asks the
    broker for that series alone.
-4. *Read one series.* The person selects a row. The system reads the series'
-   ticks of the last hour from the store in one call and draws them as a line,
-   then extends the line with each live tick. The rows above keep ticking.
-5. *Notice a silent feed.* A row whose age grows marks itself stale. A feed with
+5. *Read one datum.* The person selects a row. The system reads its ticks of
+   the last hour from the store in one call for each vendor shown and draws them
+   as lines, one for each vendor across the vendors, then extends them with each
+   live tick. The rows above keep ticking.
+6. *Notice a silent feed.* A row whose age grows marks itself stale. A feed with
    no tick for a while shows its age in the vendor list, once it has ticked. The person sees that a
    vendor stopped without leaving the screen.
-6. *Pause.* The person pauses the view to read it. The screen stops updating the
+7. *Pause.* The person pauses the view to read it. The screen stops updating the
    rows and keeps watching, and resumes from the newest values. No call is made.
 
 When a route or a subscription of the party changes while the screen is open, the
@@ -123,8 +130,10 @@ oresmd URI, read by the codec; the schema the client needs to split it is
 | Read one series | Read the series' recent ticks | =marketdata.v1.ops.get_provider_ticks= | exists |
 | A route or subscription changes | Learn of the change | =marketdata.v1.events.routes.>=, =marketdata.v1.events.subscriptions.>= | exists |
 
-Narrowing by class or text and pausing are done on the screen and need no
-operation. The live subject and the two operations are in
+Switching the layout, narrowing by class or text and pausing are done on the
+screen and need no operation. The asset class of a row is the code the asset
+class catalogue maps its oresmd namespace onto (=ir= to =interest_rates=), and the
+filter lists the asset class codes table (=refdata.v1.asset_class_codes.list=). The live subject and the two operations are in
 [[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]].
 
 * What is missing

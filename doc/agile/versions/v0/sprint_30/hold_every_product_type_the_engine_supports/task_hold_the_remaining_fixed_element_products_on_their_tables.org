@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/hold-the-remaining-fixed-element-products-on-their-tables
-#+pr:
+#+pr: 4887
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4887][#4887]] | [trading] Hold the FX worst-of basket swap on its table |
 
 * Review
 

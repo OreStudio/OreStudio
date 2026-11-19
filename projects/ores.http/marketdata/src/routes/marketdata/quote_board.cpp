@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http/routes/marketdata/quote_board.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.api/domain/asset_class_authorities.hpp"
@@ -34,6 +35,11 @@ namespace ores::http::routes::marketdata {
 namespace {
 
 namespace datum = ores::marketdata::datum;
+
+auto& quote_board_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.routes.marketdata.quote_board");
+    return instance;
+}
 using ores::marketdata::messaging::market_tick;
 
 /// The provider and the feed a feed subject names, or nothing for a subject that names none.
@@ -133,8 +139,13 @@ void quote_board::take(const std::string& subject, const market_tick& tick) {
     const auto key = std::make_pair(*feed, tick.oresmd_uri);
     auto found = quotes_.find(key);
     if (found == quotes_.end()) {
-        if (quotes_.size() >= capacity)
+        if (quotes_.size() >= capacity) {
+            if (refused_++ == 0)
+                BOOST_LOG_SEV(quote_board_lg(), ores::logging::warn)
+                    << "The quote board is full at " << capacity
+                    << " quotes; a datum heard from now on is not kept";
             return;
+        }
         quote fresh;
         fresh.provider = feed->first;
         fresh.feed = feed->second;
@@ -165,6 +176,11 @@ std::vector<quote> quote_board::after(std::uint64_t sequence,
     }
     std::ranges::sort(out, {}, &quote::sequence);
     return out;
+}
+
+std::uint64_t quote_board::refused() const {
+    std::lock_guard lock(mutex_);
+    return refused_;
 }
 
 std::uint64_t quote_board::sequence() const {

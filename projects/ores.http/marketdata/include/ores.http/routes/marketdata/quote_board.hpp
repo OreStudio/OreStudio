@@ -69,7 +69,9 @@ struct quote final {
  *
  * One subscription hears every feed's subject, so the board costs the same whatever the
  * number of sessions that read it. It holds no entitlement: a read names the feeds the
- * caller may watch, and the board returns those alone.
+ * caller may watch, and the board returns those alone. It holds no tenant either: a feed
+ * id is unique in the installation, and a feed's ticks are the same for every party that
+ * may watch it, so one entry serves every tenant.
  */
 class quote_board final {
 public:
@@ -114,6 +116,9 @@ public:
     /// The board's count now: the sequence of the newest quote.
     [[nodiscard]] std::uint64_t sequence() const;
 
+    /// How many datums the board did not keep because it was full.
+    [[nodiscard]] std::uint64_t refused() const;
+
     /// The source name and the time of the newest quote of each feed it has heard.
     [[nodiscard]] std::map<feed_key, std::pair<std::string, std::chrono::system_clock::time_point>>
     feeds() const;
@@ -124,6 +129,7 @@ private:
     std::shared_ptr<void> listening_;
     mutable std::mutex mutex_;
     std::uint64_t sequence_ = 0;
+    std::uint64_t refused_ = 0;
     /// The quotes by feed and URI.
     std::map<std::pair<feed_key, std::string>, quote> quotes_;
 };

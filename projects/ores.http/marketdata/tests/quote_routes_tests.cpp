@@ -276,3 +276,54 @@ TEST_CASE("a_history_read_that_names_no_series_is_refused", "[quotes]") {
 
     CHECK(answer.status == http_status::bad_request);
 }
+
+TEST_CASE("a_read_over_the_ceiling_states_the_sequence_of_the_last_quote_it_sent", "[quotes]") {
+    auto lg(make_logger(test_suite));
+    quotes_transport transport;
+    auto board = std::make_shared<quote_board>(transport.subscriber());
+    board->start();
+    const auto total = quote_routes::most_quotes + 5;
+    for (std::size_t i = 1; i <= total; ++i)
+        transport.send("bloomberg",
+                       quotes_bloomberg_feed,
+                       "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D"
+                       "&tenor=3M&term=" +
+                           std::to_string(i) + "D",
+                       "4.0");
+    auto table = std::make_shared<ores::http::net::router>();
+    quote_routes::register_routes(
+        table,
+        std::make_shared<ores::http::openapi::endpoint_registry>(),
+        board,
+        [](const http_request&) {
+            return std::vector<watchable_feed>{{"bloomberg", quotes_bloomberg_feed}};
+        },
+        [](const http_request&, const ores::marketdata::messaging::get_provider_ticks_request&) {
+            return ores::marketdata::messaging::get_series_ticks_response{};
+        });
+    const auto read = [&](const std::string& after) {
+        http_request req =
+            quotes_query(after.empty() ? std::map<std::string, std::string>{} :
+                                         std::map<std::string, std::string>{{"after", after}});
+        const auto route =
+            table->match(http_method::get, "/api/marketdata/quotes", req.path_params);
+        REQUIRE(route.has_value());
+        boost::asio::io_context io;
+        std::optional<http_response> answer;
+        boost::asio::co_spawn(
+            io,
+            [&]() -> boost::asio::awaitable<void> { answer = co_await route->handler(req); },
+            boost::asio::detached);
+        io.run();
+        REQUIRE(answer.has_value());
+        return answer->body;
+    };
+
+    const auto first = read("");
+    const auto stated = "\"sequence\":" + std::to_string(quote_routes::most_quotes) + ",";
+    CHECK(first.find(stated) != std::string::npos);
+    CHECK(quotes_count(first, "\"provider\":") == quote_routes::most_quotes);
+
+    const auto rest = read(std::to_string(quote_routes::most_quotes));
+    CHECK(quotes_count(rest, "\"provider\":") == 5);
+}

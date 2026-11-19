@@ -28,6 +28,7 @@
 #include <chrono>
 #include <cstdint>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -86,6 +87,9 @@ std::chrono::system_clock::time_point instant_of(const http_request& req, const 
 }
 
 std::string history_json(const messaging::get_series_ticks_response& reply) {
+    if (reply.gaps_us.size() != reply.values.size() ||
+        reply.coordinate_indexes.size() != reply.values.size())
+        throw std::runtime_error("The history reply's arrays differ in length");
     std::vector<std::string> rows;
     rows.reserve(reply.values.size());
     auto at = reply.first_instant.value_or(std::chrono::system_clock::time_point{});
@@ -171,10 +175,14 @@ void quote_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                     rr::refuse_unknown_params(req, {"after"});
                     const auto after = after_of(req);
                     board->start();
-                    const auto now = board->sequence();
+                    auto now = board->sequence();
                     auto rows = board->after(after, keys_of(entitled(req)));
-                    if (rows.size() > most_quotes)
-                        rows.erase(rows.begin(), rows.end() - most_quotes);
+                    // A read over the ceiling sends the oldest and states the sequence of the
+                    // last it sent, so the next read carries on from there and loses none.
+                    if (rows.size() > most_quotes) {
+                        rows.resize(most_quotes);
+                        now = rows.back().sequence;
+                    }
                     std::vector<std::string> out;
                     out.reserve(rows.size());
                     for (const auto& q : rows)

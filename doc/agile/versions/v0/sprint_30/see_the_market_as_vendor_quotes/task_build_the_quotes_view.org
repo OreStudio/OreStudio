@@ -115,7 +115,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A read over the ceiling drops quotes the next read never asks for | quote_routes.cpp | Accept | It sends the oldest and states the sequence of the last it sent; a test reads 20005 quotes in two reads. |
+| 2 | A full board drops datums silently | quote_board.cpp | Accept | It warns once and counts them (refused()). |
+| 3 | The board holds every tenant's ticks in one map | quote_board.hpp | Accept | The header states why: a feed id is unique, and a feed's ticks are the same for every party that may watch it. |
+| 4 | The client map has no bound | QuotesPage.tsx | Decline | Bounded by the server's board and by the feeds the session may watch. |
+| 5 | Each poll asks the entitlement | quote_routes.cpp | Decline | A changed subscription must take effect at the next read; one read a second for each open screen is the price. |
+| 6 | The history reply's arrays are trusted | quote_routes.cpp | Accept | A reply whose arrays differ in length is refused. |
 
 * Result
 

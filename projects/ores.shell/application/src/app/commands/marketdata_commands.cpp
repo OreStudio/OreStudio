@@ -135,16 +135,19 @@ public:
         , ask_(std::move(ask))
         , out_(out) {
         watch(subjects);
-        using ores::eventing::domain::entity_event_traits;
-        for (const auto prefix :
-             {entity_event_traits<marketdata::messaging::route_event>::subject_prefix,
-              entity_event_traits<marketdata::messaging::subscription_event>::subject_prefix})
-            events_.push_back(transport.subscribe(
-                std::string(prefix) + ".>", [this](ores::nats::message) { changed_ = true; }));
+        using ores::eventing::domain::event_subject_wildcard;
+        for (const auto& events :
+             {event_subject_wildcard<marketdata::messaging::route_event>(),
+              event_subject_wildcard<marketdata::messaging::subscription_event>()})
+            events_.push_back(
+                transport.subscribe(events, [this](ores::nats::message) { changed_ = true; }));
     }
 
     std::pair<std::vector<marketdata::messaging::market_tick>, bool> next() override {
         if (changed_.exchange(false)) {
+            // A failed question keeps the feeds already held, so a revocation takes effect at
+            // the next change that the service answers. A watch that dropped every feed on a
+            // failure would go dark each time the service restarts.
             if (const auto wanted = ask_())
                 watch(*wanted);
             else
@@ -488,6 +491,11 @@ std::expected<std::vector<std::string>, std::string> marketdata_commands::stream
     const auto datum = marketdata::datum::oresmd_uri_codec::read(uri);
     if (!datum)
         return std::unexpected(datum.error());
+    // A URI that reads but whose series cannot be written is refused here, with no feed asked.
+    if (const auto series =
+            marketdata::datum::oresmd_uri_codec::write(marketdata::datum::series_of(*datum));
+        !series)
+        return std::unexpected(series.error());
     std::vector<std::string> subjects;
     subjects.reserve(feeds.size());
     for (const auto& feed : feeds) {

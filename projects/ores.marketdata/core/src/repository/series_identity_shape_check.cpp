@@ -90,11 +90,13 @@ identity_shape_book::identity_shape_book(const std::vector<series_identity_shape
         by_code[shape.code] =
             &families_[family_key{shape.asset_class, shape.series_subclass, shape.index_family}];
     }
+    // The shape code is checked when an entry is written, and not when its shape
+    // is removed, so an entry can outlive its shape. It speaks for no family then:
+    // refusing it here would stop the projection of every family, not one.
     for (const auto& entry : entries) {
         const auto shape = by_code.find(entry.shape_code);
         if (shape == by_code.end())
-            throw std::logic_error("an entry for field '" + entry.field + "' names shape '" +
-                                   entry.shape_code + "', which no stated shape has");
+            continue;
         if (entry.requirement == required_says)
             shape->second->required.push_back(entry.field);
         else if (entry.requirement == forbidden_says)

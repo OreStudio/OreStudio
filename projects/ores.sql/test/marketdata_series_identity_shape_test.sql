@@ -46,7 +46,7 @@
 
 begin;
 
-select plan(15);
+select plan(16);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -104,6 +104,21 @@ select is(
         or (requirement = 'forbidden' and held <> '')),
     0,
     'no identity contradicts the shape its family states'
+);
+
+-- The writer reads an entry whose shape is gone as speaking for no family, so a
+-- catalogue that holds one has lost a rule without a word. The seed holds none.
+select is(
+    (select string_agg(e.shape_code || '/' || e.field, ', ' order by e.shape_code, e.field)
+     from ores_marketdata_series_identity_shape_entries_tbl e
+     where e.valid_to = ores_utility_infinity_timestamp_fn()
+       and not exists (
+           select 1 from ores_marketdata_series_identity_shapes_tbl sh
+           where sh.code = e.shape_code
+             and sh.tenant_id in (e.tenant_id, ores_utility_system_tenant_id_fn())
+             and sh.valid_to = ores_utility_infinity_timestamp_fn())),
+    null,
+    'every entry names a shape that is stated'
 );
 
 -- A fixing is keyed by its index family and by nothing else, so one rule speaks

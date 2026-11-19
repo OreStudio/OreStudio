@@ -55,10 +55,10 @@ text_of(const domain::market_series_identity& row, std::string_view column);
  * catalogue's.
  *
  * @throws std::invalid_argument naming the series, the family and the field.
- * @throws std::logic_error when an entry names a field no identity holds as text,
- * or names a shape that is not stated. That is a fault of the catalogue, not of the
- * series, so it is not an @c std::invalid_argument and a caller that counts refused
- * series does not count it.
+ * @throws std::logic_error when an entry names a field no identity holds as text.
+ * That is a fault of the catalogue, not of the series, so it is not an
+ * @c std::invalid_argument and a caller that counts refused series does not count it.
+ * An entry whose shape is not stated speaks for no family.
  */
 ORES_MARKETDATA_CORE_EXPORT void
 check_identity_shape(const std::vector<domain::series_identity_shape>& shapes,
@@ -72,7 +72,6 @@ check_identity_shape(const std::vector<domain::series_identity_shape>& shapes,
  */
 class ORES_MARKETDATA_CORE_EXPORT identity_shape_book final {
 public:
-    /// @throws std::logic_error when an entry names a shape @p shapes does not hold.
     identity_shape_book(const std::vector<domain::series_identity_shape>& shapes,
                         const std::vector<domain::series_identity_shape_entry>& entries);
 

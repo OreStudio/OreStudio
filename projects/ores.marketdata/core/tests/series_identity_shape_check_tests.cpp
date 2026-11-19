@@ -233,15 +233,17 @@ TEST_CASE("a_shape_with_no_entries_states_its_family_and_refuses_nothing", shape
     CHECK_NOTHROW(book.check(series, ibor_fixing("USD", "", "EUR")));
 }
 
-TEST_CASE("an_entry_whose_shape_is_not_stated_is_a_fault_of_the_catalogue", shape_tags) {
+TEST_CASE("an_entry_whose_shape_is_not_stated_speaks_for_no_family", shape_tags) {
     auto lg(make_logger(test_suite));
 
-    auto entry = stated("ccy", "required");
+    // The entry outlived its shape. It must not hold the IBOR family to its field,
+    // and it must not stop the book from being read.
+    auto entry = stated("index_name", "forbidden");
     entry.shape_code = "ir.index_fixing.swap";
-
     const std::vector<series_identity_shape_entry> entries{entry};
-    CHECK_THROWS_AS(identity_shape_book(shapes, entries), std::logic_error);
-    CHECK_THROWS_WITH(identity_shape_book(shapes, entries),
-                      Catch::Matchers::ContainsSubstring(
-                          "names shape 'ir.index_fixing.swap', which no stated shape has"));
+    const auto series =
+        series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
+
+    const identity_shape_book book(shapes, entries);
+    CHECK_NOTHROW(book.check(series, ibor_fixing("USD", "SOFR")));
 }

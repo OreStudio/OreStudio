@@ -46,7 +46,7 @@
 
 begin;
 
-select plan(9);
+select plan(12);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -133,6 +133,102 @@ select is(
     0,
     'every IBOR fixing carries the index name that separates it from a swap fixing'
 );
+
+-- A family no shape row states is written unguarded, by design, so the catalogue
+-- can grow one family at a time. This names each family the stored identities use
+-- that no shape states, keyed as the guard keys it, so a family the taxonomy gains
+-- cannot go unguarded without this suite failing. An identity the codec could not
+-- read has no class and is no family.
+--
+-- A family left unguarded on purpose goes in t_unguarded_on_purpose with its
+-- reason. There is none today.
+create temporary table t_unguarded_on_purpose (
+    asset_class text not null,
+    series_subclass text not null,
+    index_family text not null,
+    reason text not null
+) on commit drop;
+
+-- The shapes are copied so the cases below can take a family's rows away without
+-- touching the catalogue. The copy reads what the writer reads.
+create temporary table t_stated_shapes on commit drop as
+select distinct asset_class, series_subclass, index_family
+from ores_marketdata_series_identity_shapes_tbl
+where tenant_id in (ores_iam_current_tenant_id_fn(), ores_utility_system_tenant_id_fn())
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+create temporary view unstated_families as
+select distinct i.asset_class, s.series_subclass, coalesce(i.index, '') as index_family
+from ores_marketdata_market_series_identity_tbl i
+join ores_marketdata_market_series_tbl s
+  on s.id = i.series_id
+ and s.tenant_id = i.tenant_id
+ and s.valid_to = ores_utility_infinity_timestamp_fn()
+where i.asset_class is not null
+  and not exists (
+      select 1 from t_stated_shapes st
+      where st.asset_class = i.asset_class
+        and st.series_subclass = s.series_subclass
+        and st.index_family = coalesce(i.index, ''))
+  and not exists (
+      select 1 from t_unguarded_on_purpose g
+      where g.asset_class = i.asset_class
+        and g.series_subclass = s.series_subclass
+        and g.index_family = coalesce(i.index, ''));
+
+select is(
+    (select string_agg(asset_class || '/' || series_subclass || '/' || index_family, ', '
+                       order by asset_class, series_subclass, index_family)
+     from unstated_families),
+    null,
+    'every family in use has a shape or is unguarded on purpose'
+);
+
+-- The check must be able to fail. Take one stated family that is in use out of the
+-- copy, and it is named; list it as unguarded on purpose, and the check passes. A
+-- database with no family in use yet has nothing to take away, so both cases skip.
+create temporary table t_taken on commit drop as
+select st.asset_class, st.series_subclass, st.index_family
+from t_stated_shapes st
+where exists (
+    select 1
+    from ores_marketdata_market_series_identity_tbl i
+    join ores_marketdata_market_series_tbl s
+      on s.id = i.series_id
+     and s.tenant_id = i.tenant_id
+     and s.valid_to = ores_utility_infinity_timestamp_fn()
+    where i.asset_class = st.asset_class
+      and s.series_subclass = st.series_subclass
+      and coalesce(i.index, '') = st.index_family)
+order by 1, 2, 3
+limit 1;
+
+delete from t_stated_shapes st
+using t_taken tk
+where st.asset_class = tk.asset_class
+  and st.series_subclass = tk.series_subclass
+  and st.index_family = tk.index_family;
+
+select case when exists (select 1 from t_taken) then
+    is((select string_agg(asset_class || '/' || series_subclass || '/' || index_family, ', ')
+        from unstated_families),
+       (select asset_class || '/' || series_subclass || '/' || index_family from t_taken),
+       'a family in use whose shape is taken away is named')
+else
+    skip('no family is in use yet', 1)
+end;
+
+insert into t_unguarded_on_purpose
+select asset_class, series_subclass, index_family,
+       'A case of this suite, to show a listed gap passes.'
+from t_taken;
+
+select case when exists (select 1 from t_taken) then
+    is((select count(*)::int from unstated_families), 0,
+       'a family listed as unguarded on purpose passes')
+else
+    skip('no family is in use yet', 1)
+end;
 
 -- The writer reads the shapes the session can see, so a tenant that could not
 -- see the system's rows would write identities unguarded. Provision one here and

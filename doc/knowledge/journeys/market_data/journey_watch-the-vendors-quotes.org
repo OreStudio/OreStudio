@@ -125,7 +125,8 @@ oresmd URI, read by the codec; the schema the client needs to split it is
 | Open the quotes | Ask which feeds the session may watch | =marketdata.v1.ops.list_watchable_feeds= | exists |
 | Open the quotes | Read the feeds' names | =marketdata.v1.feeds.list= | exists |
 | Choose a source | Watch a feed's ticks | =marketdata.v1.ops.market_tick.<provider>.<feed>.>= | exists |
-| Choose a source | Carry the watched ticks to the browser | none | missing |
+| Choose a source | Carry the watched ticks to the browser | =GET /api/marketdata/quotes= on =ores.http=, polled | exists |
+| Open the quotes | The feeds with their source and last tick | =GET /api/marketdata/quotes/feeds= on =ores.http= | exists |
 | Choose a source | Split a URI into its type, series and point | =marketdata.v1.ops.describe_oresmd_schema= | exists |
 | Narrow it | Watch one series | =marketdata.v1.ops.market_tick.<provider>.<feed>.<type>.<series>.*= | exists |
 | Compare the vendors on one datum | Read its recent ticks, for each vendor | =marketdata.v1.ops.get_provider_ticks= | exists |
@@ -139,15 +140,12 @@ filter lists the asset class codes table (=refdata.v1.asset_class_codes.list=). 
 
 * What is missing
 
-- *A stream from the web server to the browser.* The broker checks no subject, so
-  the browser never reaches it: the web server asks =list_watchable_feeds= for the
-  session, watches those feed subjects, and streams the ticks to the page. No route
-  does this today. The feed pages read a display tap that only the simulator
-  publishes, and the task that builds the quotes view adds the route; the tap then
-  goes.
-- *A feed's age.* No read says when a feed last ticked. The screen measures it from
-  the ticks it receives, so a feed that was silent before the screen opened shows
-  no age until its first tick.
+- *A feed's age before its first tick.* The board learns a feed's source and age
+  from the ticks it hears, so a feed that has been silent since the server started
+  shows no age until its first tick.
+- *A push to the browser.* The screen polls the board each second for what arrived
+  after its last read. A stream that pushes each tick would cut the second of
+  delay; the board is what it would read from.
 
 * Related journeys
 

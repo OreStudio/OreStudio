@@ -123,6 +123,7 @@ import { FxForwardLadderPage } from './marketdata/FxForwardLadderPage.js';
 import { InstrumentFinderPage } from './marketdata/InstrumentFinderPage.js';
 import { RateLadderPage } from './marketdata/RateLadderPage.js';
 import { FxMontagePage } from './marketdata/FxMontagePage.js';
+import { QuotesPage } from './marketdata/QuotesPage.js';
 import { CurveAnalyticsPage } from './marketdata/CurveAnalyticsPage.js';
 import { PublishedCurvePage } from './marketdata/PublishedCurvePage.js';
 import { PublishedCurvesPage } from './marketdata/PublishedCurvesPage.js';
@@ -885,6 +886,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <RateLadderPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.quotes}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <QuotesPage />
                     ),
                     'workspace',
                 )}

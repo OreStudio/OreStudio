@@ -25,6 +25,7 @@ set(files
     "main.cpp"
     "oresmd_routes_tests.cpp"
     "public_rate_routes_tests.cpp"
+    "quote_routes_tests.cpp"
     "series_routes_tests.cpp"
     "subscription_routes_tests.cpp"
 )

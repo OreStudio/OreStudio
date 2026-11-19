@@ -117,6 +117,13 @@ RULES = (
          CPP, RESOURCE, "market-data",
          "One series' observations inside a window, oldest first, the count read as the cap on"
          " the answer, at the address and in the shape the BFF answered."),
+    Rule("the quotes view's routes",
+         ("regex", r"^GET /api/marketdata/quotes(/feeds|/history)?$"),
+         CPP, RESOURCE, "market-data",
+         "The feeds the caller may watch for display, the latest quote of each datum on them"
+         " from the board the gateway fills by listening to every feed subject once, and one"
+         " point of a provider's series over a span; every read asks the market data service"
+         " which feeds the caller may watch."),
     Rule("the curves' route",
          ("regex", r"^POST /api/curves/(series|series-by-id|series-list|slice|evolution"
                    r"|snapshot|manual-point(/clear)?|compute|fx-forward-ladder"

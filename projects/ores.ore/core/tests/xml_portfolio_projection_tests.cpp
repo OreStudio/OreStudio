@@ -3361,7 +3361,7 @@ TEST_CASE("the_variance_swaps_and_the_forward_volatility_agreements_hold_their_t
         <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name><Weight>0.6</Weight></Underlying>
         <Underlying><Type>Equity</Type><Name>RIC:.NDX</Name><Weight>0.4</Weight></Underlying>
       </Underlyings>
-      <SquaredPayoff>true</SquaredPayoff>
+      <SquaredPayoff>True</SquaredPayoff>
       <Cap>2.5</Cap>
       <Floor>0.1</Floor>
       <ValuationSchedule>

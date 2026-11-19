@@ -84,8 +84,8 @@ void read_basket_variance_swap(const xml::record_reader& data, Row& row) {
     row.long_short = scalar_terms::read_text(data, "LongShort").value_or("");
     row.strike = read_decimal(data, "Strike").value_or(decimal{});
     row.notional = read_decimal(data, "Notional").value_or(decimal{});
-    const auto squared = scalar_terms::read_text(data, "SquaredPayoff").value_or("");
-    row.squared_payoff = squared == "true" || squared == "1";
+    row.squared_payoff =
+        option_block::is_flag_on(scalar_terms::read_text(data, "SquaredPayoff").value_or(""));
     row.cap = read_decimal(data, "Cap");
     row.floor = read_decimal(data, "Floor");
     row.settlement_date = read_date(data, "SettlementDate");
@@ -98,7 +98,8 @@ void write_basket_variance_swap(xml::record_writer& data, const Row& row) {
     scalar_terms::write_text(data, "LongShort", row.long_short);
     write_decimal(data, "Strike", row.strike);
     write_decimal(data, "Notional", row.notional);
-    scalar_terms::write_text(data, "SquaredPayoff", row.squared_payoff ? "true" : "false");
+    scalar_terms::write_text(
+        data, "SquaredPayoff", std::string(option_block::flag_text(row.squared_payoff)));
     write_decimal(data, "Cap", row.cap);
     write_decimal(data, "Floor", row.floor);
     write_date(data, "SettlementDate", row.settlement_date);

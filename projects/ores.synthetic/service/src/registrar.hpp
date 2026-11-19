@@ -30,6 +30,7 @@
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.synthetic.api/feeds/adapter_faults.hpp"
+#include "ores.synthetic.service/export.hpp"
 #include <memory>
 #include <optional>
 #include <vector>
@@ -48,7 +49,7 @@ namespace ores::synthetic::service {
  * RBAC) one <kind>.simulate subject per registered kind — batch dry-run sample paths (auth + RBAC)
  *   synthetic.v1.ops.preview_ir_curve_shape  — stateless curve-shape preview (IR only; auth + RBAC)
  */
-class registrar {
+class ORES_SYNTHETIC_SERVICE_EXPORT registrar {
 public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,

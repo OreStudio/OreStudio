@@ -27,6 +27,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.synthetic.api/feeds/adapter_faults.hpp"
+#include "ores.synthetic.service/export.hpp"
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -61,7 +62,7 @@ struct simulator_adapter_timing final {
  * The service may start after the adapter or restart while the adapter runs, so the adapter
  * announces again until one announce succeeds and then at a slow pace.
  */
-class simulator_adapter final {
+class ORES_SYNTHETIC_SERVICE_EXPORT simulator_adapter final {
 private:
     static auto& lg() {
         static auto instance =

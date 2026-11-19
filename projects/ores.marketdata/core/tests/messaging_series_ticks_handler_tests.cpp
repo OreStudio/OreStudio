@@ -96,6 +96,7 @@ struct handler_fixture {
         row.id = series;
         row.party_id = party;
         row.oresmd_uri = ores::marketdata::tests::zero_uri(curve);
+        row.series_subclass = "yield";
         ores::marketdata::repository::market_series_repository{}.write(db.context(), row);
         provider = row.provider_code;
         stream = ores::marketdata::tests::stream_of(provider, row.oresmd_uri);

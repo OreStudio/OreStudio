@@ -433,4 +433,13 @@ TEST_CASE("a_cbo_that_states_its_structure_inline_states_its_rows", credit_tags)
                              .build();
     REQUIRE_FALSE(missing.has_value());
     CHECK(missing.error().term == "tranche_name");
+
+    structure.basket.push_back(structure.basket.front());
+    const auto twice = cbo_builder({.tranche_name = std::string("SeniorNote"),
+                                    .notional = rate("1"),
+                                    .structure_id = std::string("Pegasus"),
+                                    .structure = structure})
+                           .build();
+    REQUIRE_FALSE(twice.has_value());
+    CHECK(twice.error().term == "structure.basket");
 }

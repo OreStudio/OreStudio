@@ -637,6 +637,14 @@ void read_cbo_structure(credit_instrument_data& result, const record_reader& str
                 throw std::invalid_argument(
                     "A CBO tranche states a coupon other than FixedLegData, which is not held "
                     "yet.");
+            const auto fixed = tranche.child("FixedLegData");
+            for (std::uint8_t i = 0; i < fixed->type().field_count; ++i) {
+                const auto name = fixed->type().fields[i].name;
+                if (name != "Rates" && fixed->has(name))
+                    throw std::invalid_argument(
+                        "A CBO tranche's FixedLegData states more than its Rates, which is not "
+                        "held yet.");
+            }
             cbo_tranche t;
             t.sequence_number = sequence;
             t.name = text(tranche, "Name");
@@ -662,9 +670,12 @@ void read_cbo_structure(credit_instrument_data& result, const record_reader& str
     if (const auto basket = structure.child("BondBasketData")) {
         int sequence = 0;
         for (const auto& sub_trade : basket->children("SubTrade")) {
-            const auto bond = sub_trade.child("BondData");
-            if (!bond)
-                continue;
+            const auto type = scalar_terms::read_text(sub_trade, "SubTradeType").value_or("");
+            const auto bond =
+                sub_trade.has("BondData") ? sub_trade.child("BondData") : std::nullopt;
+            if (type != "Bond" || !bond)
+                throw std::invalid_argument(
+                    "A CBO basket sub-trade that is not a Bond is not held yet.");
             for (std::uint8_t i = 0; i < bond->type().field_count; ++i) {
                 const auto name = bond->type().fields[i].name;
                 if (name != "SecurityId" && name != "BondNotional" && bond->has(name))
@@ -677,9 +688,13 @@ void read_cbo_structure(credit_instrument_data& result, const record_reader& str
             m.sub_trade_id = sub_trade.text("id").value_or("");
             m.security_id = text(*bond, "SecurityId");
             m.bond_notional = amount(*bond, "BondNotional");
-            if (const auto envelope = sub_trade.child("Envelope"))
+            if (const auto envelope = sub_trade.child("Envelope")) {
+                if (!text(*envelope, "NettingSetId").empty())
+                    throw std::invalid_argument(
+                        "A CBO basket bond states a netting set, which is not held yet.");
                 if (envelope->has("CounterParty"))
                     m.counterparty = text(*envelope, "CounterParty");
+            }
             credit_instrument_projection_stamp_row(m);
             result.cbo_basket_members.push_back(std::move(m));
         }

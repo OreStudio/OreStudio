@@ -4580,6 +4580,149 @@ TEST_CASE("a_cbo_that_states_its_structure_inline_holds_it_as_rows",
     check(rebuild(items[0]));
 }
 
+TEST_CASE("a_cbo_structure_the_model_does_not_hold_is_refused",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    // Each CBO states one form the rows cannot hold, so each maps to no instrument
+    // rather than to one that loses the form.
+    const auto items = portfolio_projection::map(portfolio_projection::read(R"(<Portfolio>
+  <Trade id="FULL_BOND">
+    <TradeType>CBO</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <CBOData>
+      <CBOInvestment>
+        <TrancheName>SeniorNote</TrancheName>
+        <Notional>1000000</Notional>
+        <StructureId>Pegasus</StructureId>
+      </CBOInvestment>
+      <CBOStructure>
+        <DayCounter>A360</DayCounter>
+        <PaymentConvention>F</PaymentConvention>
+        <Currency>EUR</Currency>
+        <SeniorFee>0.01</SeniorFee>
+        <SubordinatedFee>0.02</SubordinatedFee>
+        <EquityKicker>0.2</EquityKicker>
+        <FeeDayCounter>A360</FeeDayCounter>
+        <BondBasketData>
+          <SubTrade id="Bond_1">
+            <SubTradeType>Bond</SubTradeType>
+            <BondData>
+              <SecurityId>SECURITY_1</SecurityId>
+              <BondNotional>1000000</BondNotional>
+              <IssuerId>ISSUER</IssuerId>
+            </BondData>
+          </SubTrade>
+        </BondBasketData>
+        <CBOTranches>
+          <Tranche>
+            <Name>SeniorNote</Name>
+            <ICRatio>1.0</ICRatio>
+            <OCRatio>1.0</OCRatio>
+            <Notional>6000000</Notional>
+            <FixedLegData><Rates><Rate>0.01</Rate></Rates></FixedLegData>
+          </Tranche>
+        </CBOTranches>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-01-05</StartDate><EndDate>2036-01-05</EndDate><Tenor>3M</Tenor>
+            <Calendar>TARGET</Calendar><Convention>F</Convention><Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </CBOStructure>
+    </CBOData>
+  </Trade>
+  <Trade id="NETTED_BOND">
+    <TradeType>CBO</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <CBOData>
+      <CBOInvestment>
+        <TrancheName>SeniorNote</TrancheName>
+        <Notional>1000000</Notional>
+        <StructureId>Pegasus</StructureId>
+      </CBOInvestment>
+      <CBOStructure>
+        <DayCounter>A360</DayCounter>
+        <PaymentConvention>F</PaymentConvention>
+        <Currency>EUR</Currency>
+        <SeniorFee>0.01</SeniorFee>
+        <SubordinatedFee>0.02</SubordinatedFee>
+        <EquityKicker>0.2</EquityKicker>
+        <FeeDayCounter>A360</FeeDayCounter>
+        <BondBasketData>
+          <SubTrade id="Bond_1">
+            <SubTradeType>Bond</SubTradeType>
+            <Envelope><CounterParty>CPTY_1</CounterParty><NettingSetId>NS_1</NettingSetId></Envelope>
+            <BondData><SecurityId>SECURITY_1</SecurityId><BondNotional>1000000</BondNotional></BondData>
+          </SubTrade>
+        </BondBasketData>
+        <CBOTranches>
+          <Tranche>
+            <Name>SeniorNote</Name>
+            <ICRatio>1.0</ICRatio>
+            <OCRatio>1.0</OCRatio>
+            <Notional>6000000</Notional>
+            <FixedLegData><Rates><Rate>0.01</Rate></Rates></FixedLegData>
+          </Tranche>
+        </CBOTranches>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-01-05</StartDate><EndDate>2036-01-05</EndDate><Tenor>3M</Tenor>
+            <Calendar>TARGET</Calendar><Convention>F</Convention><Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </CBOStructure>
+    </CBOData>
+  </Trade>
+  <Trade id="FLOATING_TRANCHE">
+    <TradeType>CBO</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <CBOData>
+      <CBOInvestment>
+        <TrancheName>SeniorNote</TrancheName>
+        <Notional>1000000</Notional>
+        <StructureId>Pegasus</StructureId>
+      </CBOInvestment>
+      <CBOStructure>
+        <DayCounter>A360</DayCounter>
+        <PaymentConvention>F</PaymentConvention>
+        <Currency>EUR</Currency>
+        <SeniorFee>0.01</SeniorFee>
+        <SubordinatedFee>0.02</SubordinatedFee>
+        <EquityKicker>0.2</EquityKicker>
+        <FeeDayCounter>A360</FeeDayCounter>
+        <BondBasketData>
+          <SubTrade id="Bond_1">
+            <SubTradeType>Bond</SubTradeType>
+            <BondData><SecurityId>SECURITY_1</SecurityId><BondNotional>1000000</BondNotional></BondData>
+          </SubTrade>
+        </BondBasketData>
+        <CBOTranches>
+          <Tranche>
+            <Name>SeniorNote</Name>
+            <ICRatio>1.0</ICRatio>
+            <OCRatio>1.0</OCRatio>
+            <Notional>6000000</Notional>
+            <FloatingLegData><Index>EUR-EURIBOR-3M</Index><Spreads><Spread>0.01</Spread></Spreads></FloatingLegData>
+          </Tranche>
+        </CBOTranches>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-01-05</StartDate><EndDate>2036-01-05</EndDate><Tenor>3M</Tenor>
+            <Calendar>TARGET</Calendar><Convention>F</Convention><Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </CBOStructure>
+    </CBOData>
+  </Trade>
+</Portfolio>)"));
+    REQUIRE(items.size() == 3);
+    for (const auto& item : items) {
+        INFO("trade " << item.ore_id);
+        CHECK(std::holds_alternative<std::monostate>(item.instrument));
+    }
+}
+
 TEST_CASE("an_auto_delta_hedged_option_holds_its_hedge_and_its_batches_as_rows",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

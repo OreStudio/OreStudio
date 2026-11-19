@@ -479,14 +479,27 @@ std::optional<build_error> add_cbo_structure(domain::credit_instrument_data& out
         return build_error{"structure.currency", "must name a currency"};
     if (terms.tranches.empty())
         return build_error{"structure.tranches", "must state at least one tranche"};
+    for (std::size_t i = 0; i < terms.tranches.size(); ++i) {
+        if (terms.tranches[i].name.empty() || !(terms.tranches[i].notional > decimal{}))
+            return build_error{"structure.tranches",
+                               "each tranche must state a name and a notional"};
+        for (std::size_t j = 0; j < i; ++j)
+            if (terms.tranches[j].name == terms.tranches[i].name)
+                return build_error{"structure.tranches", "names a tranche twice"};
+    }
     if (std::ranges::none_of(terms.tranches,
                              [&](const auto& t) { return t.name == invested_tranche; }))
         return build_error{"tranche_name", "must name one of the structure's tranches"};
     if (terms.basket.empty())
         return build_error{"structure.basket", "must hold at least one bond"};
-    for (const auto& bond : terms.basket)
+    for (std::size_t i = 0; i < terms.basket.size(); ++i) {
+        const auto& bond = terms.basket[i];
         if (bond.security_id.empty() || !(bond.notional > decimal{}))
             return build_error{"structure.basket", "each bond must name a security and a notional"};
+        for (std::size_t j = 0; j < i; ++j)
+            if (terms.basket[j].security_id == bond.security_id)
+                return build_error{"structure.basket", "names a bond twice"};
+    }
     if (!(terms.start < terms.end))
         return build_error{"structure.end", "must be after the start"};
 

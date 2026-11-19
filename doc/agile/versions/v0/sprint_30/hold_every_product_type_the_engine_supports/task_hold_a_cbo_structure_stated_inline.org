@@ -119,7 +119,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A non-Bond sub-trade is dropped | credit_instrument_projection.cpp | Accepted | It is refused with a message. |
+| 2 | The basket envelope does not round-trip | credit_instrument_projection.cpp | Accepted | A stated netting set is refused; the counterparty is held. |
+| 3 | FixedLegData beyond Rates is dropped | credit_instrument_projection.cpp | Accepted | It is refused with a message. |
+| 4 | Duplicate basket bonds | credit_builders.cpp | Accepted | The builder refuses a bond named twice. |
+| 5 | The builder validates less | credit_builders.cpp | Accepted | It refuses a tranche named twice or with no notional. |
+| 6 | Unrelated re-wrapping | credit_instrument_projection.cpp | Declined | The format check requires clang-format on a changed file. |
+| 7 | Ratios as doubles | models | Declined | The continuous-quantity rule requires it; the round trip checks the values. |
+| 8 | The leg group check edited in place | SQL | Declined | The database is recreated from the schema scripts. |
+| 9 | The market-data pattern must be narrow | engine test | Declined | It is anchored to the start of ORE's message and names the reference-data cause. |
 
 * Result
 

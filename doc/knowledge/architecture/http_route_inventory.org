@@ -72,7 +72,7 @@ an API publishes no area, so it is counted under =(none)=.
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
 | grid | compute, grid-app-versions, grid-downloads, grid-jobs, operations | 25 | composed view 3, resource 22 |
-| market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, series, series-identity-shapes, subscriptions | 62 | composed view 8, resource 54 |
+| market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, quotes, series, series-identity-shapes, subscriptions | 68 | composed view 8, resource 60 |
 | operations | core, inbox, operations, server, workflow | 9 | composed view 2, resource 5, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 306 | composed view 2, resource 304 |
@@ -151,7 +151,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 11 | 3 |
-| market-data | 37 | 25 | 12 |
+| market-data | 40 | 25 | 15 |
 | operations | 5 | 3 | 2 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 30 | 0 |
@@ -161,7 +161,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 17 | 1 |
 | (none) | 35 | 28 | 7 |
-| total | 330 | 287 | 43 |
+| total | 333 | 287 | 46 |
 
 * The pairing
 
@@ -503,7 +503,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1383 routes: 330 answered by the BFF and 1053 by ores.http.
+1389 routes: 333 answered by the BFF and 1056 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -865,11 +865,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | market-data | post | =/api/marketdata/public-rates/{code}/accept-terms= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rate_routes.cpp:215 | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
 | resource | market-data | post | =/api/marketdata/public-rates/{code}/withdraw-terms= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rate_routes.cpp:236 | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
 | resource | market-data | get | =/api/marketdata/quotes= | bff | projects/ores.web/packages/bff/src/quotes.ts:372 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
-| resource | market-data | get | =/api/marketdata/quotes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/quote_routes.cpp:168 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
+| resource | market-data | get | =/api/marketdata/quotes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/quote_routes.cpp:169 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
 | resource | market-data | get | =/api/marketdata/quotes/feeds= | bff | projects/ores.web/packages/bff/src/quotes.ts:354 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
-| resource | market-data | get | =/api/marketdata/quotes/feeds= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/quote_routes.cpp:141 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
+| resource | market-data | get | =/api/marketdata/quotes/feeds= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/quote_routes.cpp:142 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
 | resource | market-data | get | =/api/marketdata/quotes/history= | bff | projects/ores.web/packages/bff/src/quotes.ts:410 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
-| resource | market-data | get | =/api/marketdata/quotes/history= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/quote_routes.cpp:199 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
+| resource | market-data | get | =/api/marketdata/quotes/history= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/quote_routes.cpp:200 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
 | resource | market-data | get | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:165 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
 | resource | market-data | get | =/api/marketdata/routes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:218 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | post | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:257 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |

@@ -349,6 +349,10 @@ even by a caller that holds no transaction. The identity row names its series,
 so it is written once the series is in, and that write joins the transaction
 the context already carries.
 
+Only a refusal is kept out this way. When the identity write fails for a
+database reason, a caller that holds no transaction keeps the series without
+its identity, so a writer that needs both or neither holds a transaction.
+
 A repository of another entity collapses these markers, so the hook costs every
 other entity nothing.
 

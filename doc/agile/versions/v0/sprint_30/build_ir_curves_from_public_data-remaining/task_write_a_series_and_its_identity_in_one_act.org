@@ -124,6 +124,11 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: without a transaction, a series can be stored and its identity write then fail for a database reason | =market_series_repository.cpp= | Decline | Outside the acceptance, which names the refusal path; recorded in Notes |
 | 2 | Local review: the class comment of the projector still describes a write in the caller's transaction | =market_series_identity_projector.hpp= | Decline | Still true: =write= joins the transaction the context carries |
+| 3 | PR #4867 review 1: =project= no longer returns the count of URIs neither codec reads; check the backfill still counts them | =market_series_identity_projector.cpp= | Decline | =project_missing= and =reproject= count =unreadable= in their own loops, and =a_series_with_an_unreadable_uri_is_projected_once_and_not_retried= asserts it |
+| 4 | PR #4867 review 1: a database failure of the identity write still leaves a series without its identity when the caller holds no transaction; say so in the model | =ores.marketdata.market_series.org= | Accept | The hook's prose now says that only a refusal is kept out, and that a writer that needs both or neither holds a transaction |
+| 5 | PR #4867 review 1: an optional test for an empty batch | =repository_market_series_repository_tests.cpp= | Decline | =project= and =write= both return early on an empty vector; the case adds no defect it could catch |
+| 6 | PR #4867 review 1: no red-first run, and the tests ran on a database built before the rebase | PR | Decline | GitHub runs no checks; the user runs the build. Recorded in Notes and the PR's Limitations |
+| 7 | PR #4867 review 1: the ER diagram regeneration is outside the topic | =ores_schema.*.puml= | Decline | Kept: the drift gate fails without it, and the summary names it |
 
 * Result
 

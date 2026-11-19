@@ -50,6 +50,17 @@ ORES_MARKETDATA_CORE_EXPORT bool may_read_ticks(const ores::database::context& c
                                                 const std::string& provider_code);
 
 /**
+ * @brief Whether the session may read the ticks of @p provider_code for the use it states.
+ *
+ * A read that a screen shows to a person needs the display right, when @p for_display; any other
+ * read needs display or non-display. The system tenant runs the installation and reads every
+ * provider. A session with no party in any other tenant reads none.
+ */
+ORES_MARKETDATA_CORE_EXPORT bool may_read_ticks(const ores::database::context& ctx,
+                                                const std::string& provider_code,
+                                                bool for_display);
+
+/**
  * @brief The providers whose ticks the session's party may compute from.
  *
  * A calculation shows no tick to the party, so any right serves: display, non-display or

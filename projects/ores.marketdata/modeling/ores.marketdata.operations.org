@@ -4106,6 +4106,70 @@ The end of the span, exclusive. Null means now.
 The coordinate URIs to read, or empty for every coordinate of the series. A client that
 plots one pillar of a curve names it.
 
+** get_provider_ticks_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_provider_ticks
+:response: get_series_ticks_response
+:END:
+
+Asks for every tick of one series of one provider in a span of time, in one reply. The series is
+named by the provider and the series URI, as the live subject and the store name it, so a view
+of a vendor's quotes reads it with no series of its own; the system tenant reads every provider.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for every tick of one provider's series in a span of time.
+ *
+ * The span is half open, as get_series_ticks_request's is, and a span over the ceiling is
+ * refused, never cut. The subscription is the door: a party must subscribe to the provider with
+ * the right the use needs, and the system tenant reads every provider.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The provider whose ticks to read.
+
+*** series_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The oresmd URI of the series. A point URI names its series, so either serves.
+
+*** from_instant
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The first instant of the span, inclusive.
+
+*** to_instant
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+The end of the span, exclusive. Null means now.
+
+*** coordinates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The coordinate URIs to read, or empty for every coordinate of the series.
+
+*** for_display
+:PROPERTIES:
+:cpp_type: bool
+:default: true
+:END:
+
+Whether the ticks are shown to a person, which needs the display right. A service that uses
+them with no screen asks with false, and the display or the non-display right serves it.
+
 ** get_series_ticks_response
 
 Every tick of the span, as parallel arrays that state the coordinates and the first instant once.

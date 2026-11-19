@@ -1935,6 +1935,34 @@ struct get_series_ticks_request {
 };
 
 /**
+ * @brief Asks for every tick of one provider's series in a span of time.
+ *
+ * The span is half open, as get_series_ticks_request's is, and a span over the ceiling is
+ * refused, never cut. The subscription is the door: a party must subscribe to the provider with
+ * the right the use needs, and the system tenant reads every provider.
+ */
+struct get_provider_ticks_request {
+    using response_type = struct get_series_ticks_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_provider_ticks";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string provider_code;
+    std::string series_uri;
+    std::chrono::system_clock::time_point from_instant;
+    std::optional<std::chrono::system_clock::time_point> to_instant;
+    std::vector<std::string> coordinates;
+    bool for_display = true;
+
+    friend bool operator==(const get_provider_ticks_request&,
+                           const get_provider_ticks_request&) = default;
+};
+
+/**
  * @brief Every tick of a span of one series.
  *
  * The coordinates come first, once each. The times follow as the first instant and a gap in
@@ -3480,6 +3508,25 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
 }
 
 /**
+ * @brief The members of get_provider_ticks_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_provider_ticks_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"provider_code", &get_provider_ticks_request::provider_code},
+        ::ores::utility::codec::field{"series_uri", &get_provider_ticks_request::series_uri},
+        ::ores::utility::codec::field{"from_instant", &get_provider_ticks_request::from_instant},
+        ::ores::utility::codec::field{"to_instant", &get_provider_ticks_request::to_instant},
+        ::ores::utility::codec::field{"coordinates", &get_provider_ticks_request::coordinates},
+        ::ores::utility::codec::field{"for_display", &get_provider_ticks_request::for_display},
+    };
+}
+
+/**
  * @brief The members of get_series_ticks_response, named as the wire names them and in the order
  * the type declares them.
  *
@@ -4497,6 +4544,18 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::get_series_ticks_request& v);
     static ores::marketdata::messaging::get_series_ticks_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_provider_ticks_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_provider_ticks_request& v);
+    static ores::marketdata::messaging::get_provider_ticks_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_provider_ticks_request& v);
+    static ores::marketdata::messaging::get_provider_ticks_request
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

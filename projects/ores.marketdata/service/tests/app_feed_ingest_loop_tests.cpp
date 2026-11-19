@@ -35,6 +35,7 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
 #include "ores.marketdata.core/repository/subscription_repository.hpp"
+#include "ores.marketdata.core/service/series_tick_reader.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.service/app/tick_writer.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -1573,4 +1574,58 @@ TEST_CASE("a_tick_of_a_feed_that_no_route_names_is_not_published_once_it_has_age
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
     CHECK(on_feed == 0);
+}
+
+TEST_CASE("the_provider_read_returns_the_tick_the_feed_subject_carried",
+          "[app][feed_ingest_loop]") {
+    using namespace ores::marketdata;
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
+    app_feed_ingest_loop_fixture f;
+    const auto source = bound_prefix + run_tag();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
+    f.route(source);
+    f.connect();
+
+    std::mutex mu;
+    std::optional<market_tick> carried;
+    const auto feed_sub = f.nats.subscribe(f.feed_ticks(source), [&](ores::nats::message msg) {
+        const auto tick = ores::nats::default_wire_codec().decode<market_tick>(msg.data);
+        std::lock_guard lock(mu);
+        if (tick)
+            carried = *tick;
+    });
+
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
+    loop.refresh();
+    const auto sent = tick_from(source, quote_uri);
+    REQUIRE_FALSE(loop.handle_tick(sent).has_value());
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+    const auto arrived = [&] {
+        std::lock_guard lock(mu);
+        return carried.has_value();
+    };
+    while (!arrived() && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+    messaging::get_provider_ticks_request request;
+    request.provider_code = "ore";
+    request.series_uri = quote_uri;
+    request.from_instant = sent.observation_time - std::chrono::minutes(1);
+    const auto system_ctx =
+        ores::database::service::tenant_context::with_system_tenant(f.h.context());
+    const auto reply = service::series_tick_reader::read(system_ctx, request);
+
+    std::lock_guard lock(mu);
+    REQUIRE(carried.has_value());
+    REQUIRE(reply.result.outcome == ores::utility::domain::outcome::ok);
+    REQUIRE_FALSE(reply.values.empty());
+    // The newest tick of the read is the one the subject carried: the same value at the same
+    // instant, to the microsecond the store keeps.
+    auto newest = *reply.first_instant;
+    for (const auto gap : reply.gaps_us)
+        newest += std::chrono::microseconds(gap);
+    CHECK(reply.values.back() == std::stod(carried->value));
+    CHECK(std::chrono::floor<std::chrono::microseconds>(carried->observation_time) == newest);
 }

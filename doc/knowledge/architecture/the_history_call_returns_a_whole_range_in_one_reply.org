@@ -41,6 +41,12 @@ starts 10 minutes ago.
   reply holds that coordinate only. A request names at most 1,000 coordinates, and a longer
   list is refused with =filter_too_large=, as the filters of the list reads are.
 
+A second call, =get_provider_ticks=, names the series by the provider and its oresmd
+URI instead, as the live subject names it, and takes the same span and coordinates.
+It reads with no series of the party, so a view of a vendor's quotes and the system
+tenant use it. A URI the codec cannot read is refused with =uri_invalid=, and a
+screen's read needs the display right.
+
 The request has no count. A caller asks for a span of time, never for "the newest N". A
 span has the same meaning on both tiers, and it is what a chart shows.
 

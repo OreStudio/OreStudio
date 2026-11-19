@@ -476,6 +476,22 @@ the matches, so the caller knows what to state.
 The identity names {value} series of the {entity} ({reason}); state the party or the provider so that it names one.
 #+end_src
 
+** uri_invalid
+:PROPERTIES:
+:code: uri_invalid
+:outcome: invalid
+:producer: request
+:args: field, reason
+:END:
+
+A request names an oresmd URI that the codec cannot read. The read refuses rather
+than answer with nothing, because an empty reply would look like a series with no
+data. The reason is the codec's own message.
+
+#+begin_src text :name message
+The {field} is not an oresmd URI the codec reads: {reason}
+#+end_src
+
 ** part_cardinality
 :PROPERTIES:
 :code: part_cardinality

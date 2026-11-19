@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:ticks:history:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-a-vendors-recent-ticks
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ A screen that opens on a vendor's quotes fills its recent history in one call, f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,24 @@ A screen that opens on a vendor's quotes fills its recent history in one call, f
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *The call.* =get_provider_ticks= names the provider and the series URI, as
+   the live subject and the stream do, so a view of a vendor needs no series of
+   the party and the system tenant can read. It returns the history call's
+   reply. A point URI names its series.
+2. *The rule.* =may_read_ticks(ctx, provider, for_display)=: every provider for
+   the system tenant; for a party, the display right for a screen, display or
+   non-display for a service.
+3. *The reader.* =series_tick_reader= shares the span checks and the stream
+   read between the two calls.
+4. *The refusal.* A URI the codec cannot read is refused with a new outcome,
+   =uri_invalid=, and not answered with an empty reply.
+5. *Tests.* The read by series and by point URI; the display right for a screen
+   and the non-display right for a service; the system tenant; no party; a bad
+   URI.
+
+=get_series_ticks= keeps its rule (display or non-display), because its callers
+are charts of a party's own series and services; moving it to the use is a change
+of its own.
 
 * Measurements
 

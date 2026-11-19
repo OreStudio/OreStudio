@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch: feature/serve-the-workflow-views
-#+pr: 4889
+#+branch: feature/serve-the-timeline
+#+pr: 4892
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -28,9 +28,9 @@ Serve these composed views from ores.workflow and ores.inbox: one subject's stor
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Five of the six views answer; one subject's story is the last. |
+| Now          | Every view answers but one, and the two subjects a kind keeps are joined. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve one subject's story at GET /api/timeline, and the two kind-subject joins the inbox owes. |
+| Next         | One subject's story at GET /api/timeline, which wants its own branch: see the notes. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -109,6 +109,10 @@ task and name that file in the Command column.
 | The workflow area's routes the C++ server answers | 17 of 18 paired | =./compass.sh generate= then =build/scripts/route_inventory.py --check= | the story commit |
 | The gateway's routes in the inventory | 1381 routes, 1053 answered by the gateway, 287 of the BFF's 328 paired | =build/scripts/route_inventory.py --check= | the story commit |
 | The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the story commit |
+| The part's test suite | 47 cases, 528 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the review commit |
+| The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the review commit |
+| The part's test suite | 47 cases, 528 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the subject joins commit |
+| The local gate | 43 of 43 checks pass | =./compass.sh check --exclude-heavy= | the subject joins commit |
 |      |       |         |        |
 
 * Notes
@@ -118,7 +122,32 @@ first did not: a view that draws a request reads the same joins the request list
 reads, and those lived inside the request routes. They are shared before the
 views that need them, so each join is stated once for all four request views.
 
-What one subject's story owes, and why it is the last and the largest: the BFF
+The two subjects a kind keeps are joined, so a publish request carries the curve
+set it authorises and a cut request carries the cut, each with the reason it
+carries none when the row cannot be read. A kind that keeps no subject carries
+neither member.
+
+The last view, and what is known about it, so the next branch does not begin from
+the BFF again. A request's timeline is the story this part already serves, wrapped
+with its subject and no gaps. A person's is the account's own versions, the roles
+it was given and the parties it works in read as link histories, its contact
+record, and its sign-ins, which are a rolling window and are stated as a gap for
+that reason. A party's is its own versions, the versions of each part it holds and
+the links it keeps, and every part that was removed is a gap because no read lists
+a closed row. The entity keys are =ores.iam.account=, =ores.iam.account_role=,
+=ores.iam.account_party=, =ores.iam.account_contact_information=,
+=ores.iam.auth_event= for a person, and =ores.refdata.party= with its parts and
+links for a party. The history read every one of them uses is the gateway's own,
+reached by =history_subject_for(entity_type)=.
+
+It is not served here, and that is a decision rather than an omission: the view is
+three compositions of six to eight reads each, and a person's timeline that
+silently left out the sign-ins, or a party's that left out the parts it holds,
+would look complete while being short — the failure this task's review named as
+the one worth refusing. It wants its own branch, its own suite, and the gaps
+mechanism proved source by source.
+
+What the approval inbox owes, for the next family: the BFF
 reads it for three subjects and each is its own composition. A request is the
 story this branch already serves, wrapped with the subject and an empty list of
 gaps. A person is the account, its contact record, the roles it was given and the
@@ -153,6 +182,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4892][#4892]] | [http] Join the subject a request's kind keeps |
 | [[https://github.com/OreStudio/OreStudio/pull/4889][#4889]] | [http] Serve the workflow composed views |
 
 * Review

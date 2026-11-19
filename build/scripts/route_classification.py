@@ -119,9 +119,9 @@ RULES = (
          " the answer, at the address and in the shape the BFF answered."),
     Rule("the quotes view's routes",
          ("regex", r"^GET /api/marketdata/quotes(/feeds|/history)?$"),
-         CPP, RESOURCE, "market-data",
+         None, RESOURCE, "market-data",
          "The feeds the caller may watch for display, the latest quote of each datum on them"
-         " from the board the gateway fills by listening to every feed subject once, and one"
+         " from the board each server fills by listening to every feed subject once, and one"
          " point of a provider's series over a span; every read asks the market data service"
          " which feeds the caller may watch."),
     Rule("the curves' route",

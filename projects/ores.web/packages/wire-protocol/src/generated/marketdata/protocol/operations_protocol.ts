@@ -106,6 +106,7 @@ export interface OresmdInstrument {
     ore_name: string;
     title: string;
     asset: string;
+    asset_class: string;
     subject: string;
     fields: OresmdFieldSpec[];
 }

@@ -285,6 +285,14 @@ The words that name a series of this type, with the fields written as {subject} 
 
 The asset class, which a URI writes as its authority.
 
+*** asset_class
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The refdata asset class code the authority maps onto, as the asset class catalogue
+declares it, or empty where it maps onto none.
+
 *** subject
 :PROPERTIES:
 :cpp_type: std::string

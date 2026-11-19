@@ -54,6 +54,7 @@ import { registerConnectivityRoutes } from './connectivity.js';
 import { registerFixingSeriesRoutes } from './fixing-series.js';
 import { registerSubscriptionRoutes } from './subscriptions.js';
 import { registerOresmdRoutes } from './oresmd.js';
+import { QuoteBoard, quoteTickSchema, registerQuoteRoutes } from './quotes.js';
 import { registerSeriesRoutes } from './series.js';
 import { registerMarketReadRoutes } from './market-reads.js';
 import { registerSeriesIdentityShapeRoutes } from './series-identity-shapes.js';
@@ -2944,6 +2945,13 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerSyntheticRoutes(server, requireSession, feedTicks);
     registerCalibrationRoutes(server, requireSession);
     registerMarketRegimeRoutes(server, requireSession, feedTicks);
+    registerQuoteRoutes(
+        server,
+        requireSession,
+        new QuoteBoard((subject, onTick) =>
+            eventClient.client.subscribeToMessages(subject, quoteTickSchema, onTick),
+        ),
+    );
 
     server.get('/api/events', async (request, reply) => {
         const session = requireSession(request);

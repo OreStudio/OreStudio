@@ -63,7 +63,7 @@ Provisioning now builds holiday calendars, so the figures below predate them. On
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
 
 
 ** Read what the ladder uses
@@ -78,6 +78,7 @@ Provisioning now builds holiday calendars, so the figures below predate them. On
 | Field  | Value |
 |--------+-------|
 | Status | PENDING |
+| Notes  | I can see CAD crosses etc. ; [[file:scenario_verify_the_fx_forward_ladder_screen_step3_20261119_144640.png]] |
 
 
 ** Read the ladder rows

@@ -36,7 +36,7 @@ A person opens the quotes view and sees every quote of the vendors their party s
 * Acceptance
 
 - The screen matches the signed-off prototype.
-- =ores.http= reads the vendor subjects and the recent ticks for the session's party, and the screen calls it under =/cpp=; no BFF route is added (product owner, 2026-11-19), and no buffer is kept per synthetic feed for it.
+- Both servers answer the quotes routes, the BFF and =ores.http=, with the same shapes, and the screen asks through =baseFor('quotes')=: the BFF until the screen moves, =ores.http= after (product owner, 2026-11-19: the BFF serves the screens until it is retired). No buffer is kept per synthetic feed for it.
 - It is checked on the running fleet with a party and with the system tenant, and the vol quotes of a latent surface are among the quotes it shows.
 
 * Plan
@@ -129,7 +129,10 @@ via its "Verifies task" field.
   URI. Three routes read it (=quote_routes=): the feeds the caller may watch for
   display, the board's quotes of those feeds after a sequence, and one point of a
   provider's series over a span; every read asks =list_watchable_feeds= as the
-  caller. No BFF route was added.
+  caller. The BFF answers the same three routes with the same shapes from a board
+  of its own (=bff/src/quotes.ts=), labelling each quote from its URI with the
+  field roles and the asset class that =describe_oresmd_schema= now states for
+  each instrument type.
 - The screen, Market data then Quotes, is the signed-off variant C: the source rail
   with /All vendors/, the asset class codes table as the class filter with the
   instrument type under it, every datum or by series, and the /All quotes/ panel
@@ -143,5 +146,4 @@ via its "Verifies task" field.
 - Tests: =ores.http.marketdata.tests= 44 cases (10 new); the web package 2598 tests
   (8 new); its type check and Prettier pass.
 - Not checked here: the system tenant's view, which needs the super administrator's
-  login. The screen needs a session of =ores.http=: a browser signed in through the
-  BFF has no session there until /Switch ores.web to the C++ server/ is done.
+  login.

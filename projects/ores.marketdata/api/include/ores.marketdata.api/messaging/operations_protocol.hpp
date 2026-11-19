@@ -144,6 +144,7 @@ struct oresmd_instrument {
     std::string ore_name;
     std::string title;
     std::string asset;
+    std::string asset_class;
     std::string subject;
     std::vector<oresmd_field_spec> fields;
 
@@ -2165,6 +2166,7 @@ struct store_market_state_response {
         ::ores::utility::codec::field{"ore_name", &oresmd_instrument::ore_name},
         ::ores::utility::codec::field{"title", &oresmd_instrument::title},
         ::ores::utility::codec::field{"asset", &oresmd_instrument::asset},
+        ::ores::utility::codec::field{"asset_class", &oresmd_instrument::asset_class},
         ::ores::utility::codec::field{"subject", &oresmd_instrument::subject},
         ::ores::utility::codec::field{"fields", &oresmd_instrument::fields},
     };

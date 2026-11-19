@@ -141,6 +141,7 @@ const SCHEMA_REPLY = {
             ore_name: 'IR_SWAP',
             title: '{subject} swap',
             asset: 'ir',
+            asset_class: 'interest_rates',
             subject: 'ccy',
             fields: [
                 { name: 'ccy', role: 'identity', may_be_none: false, kind: 'text', codes: [] },

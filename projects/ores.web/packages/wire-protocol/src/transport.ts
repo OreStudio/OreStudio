@@ -84,6 +84,8 @@ export const PARTY_HEADER = 'X-Party-Id';
 export interface MessageEnvelope {
     readonly tenantId: string | undefined;
     readonly partyId: string | undefined;
+    /** The subject the message came on, relative to the environment's prefix. */
+    readonly subject?: string;
 }
 
 /** mTLS material, as file paths or inline PEM. */
@@ -171,6 +173,12 @@ export class NatsTransport implements Transport {
         return `${this.#options.subjectPrefix}.${relative}`;
     }
 
+    /** Strips the configured prefix from a subject that carries it. */
+    relativeSubject(absolute: string): string {
+        const prefix = `${this.#options.subjectPrefix}.`;
+        return absolute.startsWith(prefix) ? absolute.slice(prefix.length) : absolute;
+    }
+
     /**
      * Listens on a subject, and returns the way to stop.
      *
@@ -201,6 +209,7 @@ export class NatsTransport implements Transport {
                 onMessage(message.data, {
                     tenantId: message.headers?.get(TENANT_HEADER) || undefined,
                     partyId: message.headers?.get(PARTY_HEADER) || undefined,
+                    subject: this.relativeSubject(message.subject),
                 });
             }
         })().catch((error: unknown) => {

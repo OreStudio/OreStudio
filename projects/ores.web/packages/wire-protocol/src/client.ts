@@ -1037,7 +1037,8 @@ export class OresClient {
     }
 
     /**
-     * Listens for published messages of one shape, such as a feed's ticks.
+     * Listens for published messages of one shape, such as a feed's ticks, each with
+     * the subject it came on, which a wildcard subscription needs to tell them apart.
      *
      * Like the change events, nothing is authenticated and nothing is reported:
      * a message that does not parse is skipped, and a transport that cannot
@@ -1046,15 +1047,15 @@ export class OresClient {
     subscribeToMessages<Schema extends z.ZodType>(
         relative: string,
         schema: Schema,
-        onMessage: (message: z.infer<Schema>) => void,
+        onMessage: (message: z.infer<Schema>, subject: string) => void,
     ): () => void {
         const subscribe = this.#transport.subscribe;
         if (subscribe === undefined) {
             return () => undefined;
         }
-        return subscribe.call(this.#transport, relative, (payload) => {
+        return subscribe.call(this.#transport, relative, (payload, envelope) => {
             try {
-                onMessage(this.#codec.decodeAs(payload, schema));
+                onMessage(this.#codec.decodeAs(payload, schema), envelope.subject ?? relative);
             } catch (error) {
                 console.error('ores.wire-protocol: a published message did not parse', error);
                 throw error;

@@ -2,7 +2,7 @@
 :ID: 8AD9ABB7-76B1-44AB-AA51-2D5700919CB2
 :END:
 #+title: Column-list chains exhaust MSVC's template budget in a unity unit
-#+description: windows-msvc-release-ninja fails C1202 at trade_entity.hpp:95 in ores.trading.core unity unit 55. MSVC probes fit the cause: a unit spends a budget of about 1024 column-list operator| calls across every entity's columns() chain, and the first chain of 18 to 20 bindings after that fails. The rule predicts 9 to 12 failing units, so the fix is in the generated columns(), not in the trade entity.
+#+description: windows-msvc-release-ninja fails C1202 in 11 ores.trading.core unity units, not only at trade_entity.hpp:95. In one translation unit MSVC fails at the first column-list operator| call past the 1,025th whose result has 18 or more bindings. Generating columns() as one variadic make_columns call never fails in the probes, so one codegen change fixes all 11.
 #+type: capture
 #+level: cross
 #+filetags: :ci:windows:msvc:trading:unity:codegen:
@@ -17,34 +17,48 @@ The nightly of 2026-11-19 (run 44485188155, head =e866b76f3e=) failed in
 =windows-msvc-release-ninja= with =fatal error C1202: recursive type or
 function dependency context too complex= at =trade_entity.hpp:95=, the
 trade entity's =columns()= chain, in =ores.trading.core= unity unit 55.
-That unit reaches =trade_entity.hpp= after 56 other entity headers and
-1,179 bindings. Unit 54 reaches it after 91 bindings and compiles.
+The MSVC job built units 66 down to 55 and stopped there; only the clang
+job compiled the lower units.
 
-The MSVC job built units 66 down to 55 and stopped at 55; it never
-reached the lower units. Only the clang job compiled them.
+compass's MSVC probes (run 44607561767; MSVC 14.51 with ORE's release
+flags) fit one rule, the only fit, which predicts all 337 chain probes
+exactly, including ORE's own entity headers:
 
-compass's MSVC probes (MSVC 14.51, ORE's release flags) fit a rule that
-predicts all 298 probe outcomes, including ORE's own 62 entity headers
-compiled in units 53 and 55's include order:
+- In one translation unit, count every column-list =operator|= call,
+  across every entity's =columns()= chain, in include order.
+- The 1,026th call and every call after it are past the budget.
+- MSVC fails with C1202 at the first call past the budget whose result
+  has 18 or more bindings.
+- Chains of 17 or fewer bindings never fail, however late they come,
+  and field lists (=wire_fields=) never fail.
 
-- A unit has a budget of about 1024 column-list =operator|= calls,
-  counted over every entity's =columns()= chain in include order.
-- Once the budget is spent, MSVC fails at the first chain of 18 to 20
-  bindings. compass is pinning the exact budget and length.
-- Shorter chains never fail, and field lists (=wire_fields=) never fail
-  at any count.
+At =e866b76f3e= the rule predicts 11 failing =ores.trading.core= units:
 
-At =e866b76f3e= the rule predicts 9 to 12 failing units in
-=ores.trading.core=: 55, and 53, 50, 48, 44, 43, 38, 36, 34 and more
-below it. Units 56 to 66 compile, which matches the CI log. Fixing the
-trade entity alone would only move the failure to the next unit down.
+| Unit | Entity it fails on |
+|------+--------------------|
+| 55 | =trade_entity=, at binding 18 after 1,197 calls |
+| 53 | =fx_strike_resettable_option_instrument_entity= |
+| 50 | =fx_variance_swap_instrument_entity= |
+| 48 | =fx_variance_swap_instrument_entity= |
+| 46 | =fx_window_barrier_option_instrument_entity= |
+| 44 | =instrument_barrier_entity= |
+| 43 | =index_credit_default_swap_instrument_entity= |
+| 38 | =equity_outperformance_option_instrument_entity= |
+| 36 | =equity_cliquet_option_instrument_entity= |
+| 34 | =credit_default_swap_instrument_entity= |
+| 29 | =fx_window_barrier_option_instrument_entity= |
 
-The likely fix is in the generator: emit =columns()= as one variadic
-call, as =field_list= is built (for example
-=make_columns<e>(key(...), bind(...)...)=), instead of a chain of
-=operator|=. compass's probes are testing that form now. If it never
-fails, one generator change removes the whole class. Smaller unity
-batches would only move the failures.
+Other components' units are not computed yet; the compass check being
+built will compute them.
+
+The fix is confirmed. With column lists built in one variadic call,
+=make_columns<e>(key(...), bind(...)...)= returning
+=column_list<Bindings...>{{{bindings}...}}=, no probe failed: units 53
+and 55 as they are, 120 or 480 entities of width 20, 60 of width 75 and
+240 of width 40. The change is to the codegen template that emits
+=columns()=, plus =make_columns= in =columns.hpp=. compass's version is
+=build/probes/msvc_c1202/flat_columns.hpp=. Smaller unity batches would
+only move the failures.
 
 * Why
 
@@ -57,7 +71,8 @@ stands, and every entity a model adds spends more of each unit's budget.
 - compass =doc/agile/versions/v0/sprint_01/keep_msvc_within_its_template_limits/=:
   the investigation of every C1202 from 2026-09-19 to 2026-11-19, and
   the fitted rule.
-- compass =build/probes/msvc_c1202=: the probes.
+- compass =build/probes/msvc_c1202=: the probes, and
+  =flat_columns.hpp=, the variadic form.
 - =projects/ores.trading/core/include/ores.trading.core/repository/trade_entity.hpp=
 
 * See also

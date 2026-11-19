@@ -26,6 +26,7 @@ set(files
     "notification_routes_tests.cpp"
     "operations_routes_tests.cpp"
     "progress_routes_tests.cpp"
+    "request_proposal_routes_tests.cpp"
     "request_routes_tests.cpp"
     "retry_routes_tests.cpp"
 )

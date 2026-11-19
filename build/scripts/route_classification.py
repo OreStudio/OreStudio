@@ -415,11 +415,24 @@ RULES = (
          " controls use, so a client that wants one of them reads that collection instead."),
 
     Rule("the request story",
+         ("exact", "GET /api/requests/{id}/changes"),
+         CPP, COMPOSED, "workflow",
+         "What one request proposes, answered by ores.http at the address and in the shape the BFF"
+         " answered: the request is read first because its kind decides where its lines are kept,"
+         " and then the component that owns the kind states them beside the value in force."),
+    Rule("the request story",
          ("regex", r"^GET /api/requests/:id/(story|changes)$"),
          BFF, COMPOSED, "workflow",
          "One request's whole story woven from every row any component wrote for it, the"
          " request's versions, the answers given on it, the roles it asked for and the"
          " notices, or the change lines of its kind beside the live record's values."),
+    Rule("the request checks",
+         ("exact", "GET /api/requests/{id}/checks"),
+         CPP, COMPOSED, "workflow",
+         "What running a request's lines through the real write now says, answered by ores.http"
+         " at the address and in the shape the BFF answered: the kind's own component runs its"
+         " lines again without applying them, and the parts the policy names travel beside the"
+         " refusal of each line."),
     Rule("the request checks",
          ("exact", "GET /api/requests/:id/checks"),
          BFF, COMPOSED, "workflow",

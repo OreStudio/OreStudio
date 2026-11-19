@@ -3101,16 +3101,53 @@ TEST_CASE("a_best_entry_and_a_strike_resettable_hold_their_terms_and_observation
       </ObservationDates>
     </FxStrikeResettableOptionData>
   </Trade>
+  <Trade id="BEO_EQ">
+    <TradeType>EquityBestEntryOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityBestEntryOptionData>
+      <LongShort>Short</LongShort>
+      <Notional>500000</Notional>
+      <Multiplier>1.5</Multiplier>
+      <Strike>0.85</Strike>
+      <Cap>0.06</Cap>
+      <TriggerLevel>0.95</TriggerLevel>
+      <ResetMinimum>0.85</ResetMinimum>
+      <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name></Underlying>
+      <StrikeObservationDates>
+        <Dates><Dates><Date>2026-03-02</Date><Date>2026-06-01</Date></Dates></Dates>
+      </StrikeObservationDates>
+      <ExpiryDate>2027-01-05</ExpiryDate>
+      <SettlementDate>2027-01-07</SettlementDate>
+      <StrikeDate>2026-01-05</StrikeDate>
+      <Premium>100</Premium>
+      <PremiumDate>2026-01-07</PremiumDate>
+      <Currency>USD</Currency>
+    </EquityBestEntryOptionData>
+  </Trade>
+  <Trade id="SRO_EQ">
+    <TradeType>EquityStrikeResettableOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityStrikeResettableOptionData>
+      <LongShort>Long</LongShort>
+      <OptionType>Put</OptionType>
+      <Currency>USD</Currency>
+      <Strike>3500</Strike>
+      <ResetStrike>3650</ResetStrike>
+      <Quantity>10000</Quantity>
+      <TriggerType>Up</TriggerType>
+      <TriggerPrice>4000</TriggerPrice>
+      <ExpiryDate>2026-06-22</ExpiryDate>
+      <SettlementDate>2026-06-26</SettlementDate>
+      <Premium>100</Premium>
+      <PremiumDate>2026-06-26</PremiumDate>
+      <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name></Underlying>
+      <ObservationDates>
+        <Dates><Dates><Date>2026-04-27</Date><Date>2026-05-25</Date></Dates></Dates>
+      </ObservationDates>
+    </EquityStrikeResettableOptionData>
+  </Trade>
 </Portfolio>)");
-    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
-                             std::string_view name) -> std::string {
-        for (const auto& p : data.parameters)
-            if (p.name == name)
-                return p.value.value_or("");
-        return "<absent>";
-    };
-    const auto dates_of = [](const ores::trading::domain::scripted_instrument_data& data,
-                             std::string_view role) {
+    const auto dates_of = [](const auto& data, std::string_view role) {
         std::size_t n = 0;
         for (const auto& d : data.schedule_dates)
             if (d.schedule_role == role)
@@ -3118,31 +3155,86 @@ TEST_CASE("a_best_entry_and_a_strike_resettable_hold_their_terms_and_observation
         return n;
     };
     const auto check_best_entry = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+        const auto* data = std::get_if<ores::trading::domain::fx_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        CHECK(value_of(*data, "TriggerLevel") == "0.98");
-        CHECK(value_of(*data, "StrikeDate") == "2022-01-31");
-        CHECK(value_of(*data, "Currency") == "USD");
+        REQUIRE(data->best_entry_options.size() == 1);
+        const auto& row = data->best_entry_options[0];
+        CHECK(row.long_short == "Long");
+        CHECK(row.currency == "USD");
+        CHECK(row.notional == decimal_of("1000000"));
+        CHECK(row.multiplier == decimal_of("1.0"));
+        CHECK(row.strike == decimal_of("1.0"));
+        CHECK(row.cap == decimal_of("0.2"));
+        CHECK(row.trigger_level == decimal_of("0.98"));
+        CHECK(row.reset_minimum == decimal_of("0.95"));
+        CHECK(row.premium == decimal_of("0"));
+        CHECK(row.expiry_date == std::chrono::year{2023} / 1 / 31);
+        CHECK(row.strike_date == std::chrono::year{2022} / 1 / 31);
+        CHECK(row.premium_date == std::chrono::year{2022} / 2 / 2);
+        CHECK(row.settlement_date == std::chrono::year{2023} / 2 / 2);
         REQUIRE(data->instrument_underlyings.size() == 1);
         CHECK(data->instrument_underlyings[0].underlying_type == "FX");
-        CHECK(dates_of(*data, "strikeobservationdates") == 3u);
+        CHECK(dates_of(*data, "strike_observation_schedule") == 3u);
     };
     const auto check_strike_resettable = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+        const auto* data = std::get_if<ores::trading::domain::fx_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        CHECK(value_of(*data, "TriggerType") == "Down");
-        CHECK(value_of(*data, "ResetStrike") == "1.08");
-        CHECK(value_of(*data, "OptionType") == "Call");
+        REQUIRE(data->strike_resettable_options.size() == 1);
+        const auto& row = data->strike_resettable_options[0];
+        CHECK(row.long_short == "Long");
+        CHECK(row.option_type == "Call");
+        CHECK(row.currency == "USD");
+        CHECK(row.strike == decimal_of("1.10"));
+        CHECK(row.reset_strike == decimal_of("1.08"));
+        CHECK(row.quantity == 1000000.0);
+        CHECK(row.trigger_type == "Down");
+        CHECK(row.trigger_price == decimal_of("1.02"));
+        CHECK(row.expiry_date == std::chrono::year{2023} / 1 / 31);
+        CHECK(row.settlement_date == std::chrono::year{2023} / 2 / 2);
+        CHECK(row.premium_date == std::chrono::year{2022} / 2 / 2);
         REQUIRE(data->instrument_underlyings.size() == 1);
-        CHECK(dates_of(*data, "observationdates") == 3u);
+        CHECK(dates_of(*data, "observation_schedule") == 3u);
+    };
+    const auto check_equity_best_entry = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        const auto* row = std::get_if<ores::trading::domain::equity_best_entry_option_instrument>(
+            &data->instrument);
+        REQUIRE(row != nullptr);
+        CHECK(row->long_short == "Short");
+        CHECK(row->multiplier == decimal_of("1.5"));
+        CHECK(row->premium == decimal_of("100"));
+        REQUIRE(data->instrument_underlyings.size() == 1);
+        CHECK(data->instrument_underlyings[0].underlying_type == "Equity");
+        CHECK(dates_of(*data, "strike_observation_schedule") == 2u);
+    };
+    const auto check_equity_strike_resettable = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        const auto* row =
+            std::get_if<ores::trading::domain::equity_strike_resettable_option_instrument>(
+                &data->instrument);
+        REQUIRE(row != nullptr);
+        CHECK(row->option_type == "Put");
+        CHECK(row->trigger_type == "Up");
+        CHECK(row->quantity == 10000.0);
+        CHECK(row->trigger_price == decimal_of("4000"));
+        REQUIRE(data->instrument_underlyings.size() == 1);
+        CHECK(dates_of(*data, "observation_schedule") == 2u);
     };
 
     const auto items = portfolio_projection::map(document);
-    REQUIRE(items.size() == 2);
+    REQUIRE(items.size() == 4);
     check_best_entry(items[0]);
     check_best_entry(rebuild(items[0]));
     check_strike_resettable(items[1]);
     check_strike_resettable(rebuild(items[1]));
+    check_equity_best_entry(items[2]);
+    check_equity_best_entry(rebuild(items[2]));
+    check_equity_strike_resettable(items[3]);
+    check_equity_strike_resettable(rebuild(items[3]));
 }
 
 TEST_CASE("a_window_and_a_generic_barrier_hold_their_barriers_schedule_and_kiko_type_as_rows",

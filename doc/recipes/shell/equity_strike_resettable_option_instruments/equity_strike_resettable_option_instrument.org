@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 6FCE1EC2-9150-5D8C-9388-8C71996179D3
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the equity_strike_resettable_option_instruments commands from the shell?
+#+description: Every command the equity_strike_resettable_option_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:equity_strike_resettable_option_instruments:
+
+This file documents the equity_strike_resettable_option_instruments resource at the shell, one section per command. Every command is a subcommand of =equity_strike_resettable_option_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 47E11AC7-5F9E-52E2-BA7B-1DFA33AFC8AE
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_strike_resettable_option_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.equity_strike_resettable_option_instruments.list=.
+
+#+name: equity_strike_resettable_option_instruments-list
+#+begin_src ores-shell :tangle equity_strike_resettable_option_instruments-list.ores :exports none
+equity_strike_resettable_option_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 18B476B8-CB5B-5777-BC16-C895C543689E
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_strike_resettable_option_instruments get <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.equity_strike_resettable_option_instruments.get=.
+
+#+name: equity_strike_resettable_option_instruments-get
+#+begin_src ores-shell :tangle equity_strike_resettable_option_instruments-get.ores :exports none
+equity_strike_resettable_option_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A487581B-F705-50D2-B70C-73A633BA0F25
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_strike_resettable_option_instruments get-many <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.equity_strike_resettable_option_instruments.get_many=.
+
+#+name: equity_strike_resettable_option_instruments-get-many
+#+begin_src ores-shell :tangle equity_strike_resettable_option_instruments-get-many.ores :exports none
+equity_strike_resettable_option_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D8C77F48-15BD-5978-B55E-718D8644C82A
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_strike_resettable_option_instruments add <trade_id> <trade_type_code> <trade_activity_id> <long_short> <option_type> <currency> <strike> <reset_strike> <quantity> <trigger_type> <trigger_price> <expiry_date> <settlement_date> <premium> <premium_date> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_strike_resettable_option_instruments.put=.
+
+#+name: equity_strike_resettable_option_instruments-add
+#+begin_src ores-shell :tangle equity_strike_resettable_option_instruments-add.ores :exports none
+equity_strike_resettable_option_instruments add 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 1 1 0 __none__ 1 1970-01-01 1970-01-01 1 1970-01-01 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 15C0B7BC-0C52-5D69-AC7E-0FBC6171747F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_strike_resettable_option_instruments set <trade_id> <trade_type_code> <trade_activity_id> <long_short> <option_type> <currency> <strike> <reset_strike> <quantity> <trigger_type> <trigger_price> <expiry_date> <settlement_date> <premium> <premium_date> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.equity_strike_resettable_option_instruments.put=.
+
+#+name: equity_strike_resettable_option_instruments-set
+#+begin_src ores-shell :tangle equity_strike_resettable_option_instruments-set.ores :exports none
+equity_strike_resettable_option_instruments set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 1 1 0 __none__ 1 1970-01-01 1970-01-01 1 1970-01-01 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 59464588-BDB2-5ED5-A2DB-6AF0DFE81728
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_strike_resettable_option_instruments put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <long_short> <option_type> <currency> <strike> <reset_strike> <quantity> <trigger_type> <trigger_price> <expiry_date> <settlement_date> <premium> <premium_date> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_strike_resettable_option_instruments.put_many=.
+
+#+name: equity_strike_resettable_option_instruments-put-many
+#+begin_src ores-shell :tangle equity_strike_resettable_option_instruments-put-many.ores :exports none
+equity_strike_resettable_option_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 1 1 0 __none__ 1 1970-01-01 1970-01-01 1 1970-01-01 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 96809129-BD45-56AA-BBBC-E6EC66EBDDB6
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_strike_resettable_option_instruments delete <trade_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.equity_strike_resettable_option_instruments.delete=.
+
+#+name: equity_strike_resettable_option_instruments-delete
+#+begin_src ores-shell :tangle equity_strike_resettable_option_instruments-delete.ores :exports none
+equity_strike_resettable_option_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 48CCF789-AE34-54FE-8834-92869869D87C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_strike_resettable_option_instruments delete-many <trade_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_strike_resettable_option_instruments.delete_many=.
+
+#+name: equity_strike_resettable_option_instruments-delete-many
+#+begin_src ores-shell :tangle equity_strike_resettable_option_instruments-delete-many.ores :exports none
+equity_strike_resettable_option_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 7B994168-ECA8-509A-BC83-F419883A9835
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_strike_resettable_option_instruments versions <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.equity_strike_resettable_option_instruments_versions.list=.
+
+#+name: equity_strike_resettable_option_instruments-versions
+#+begin_src ores-shell :tangle equity_strike_resettable_option_instruments-versions.ores :exports none
+equity_strike_resettable_option_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A3158629-D9BA-5BD0-A63D-17E86FA85D3E
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_strike_resettable_option_instruments version <trade_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.equity_strike_resettable_option_instruments_versions.get=.
+
+#+name: equity_strike_resettable_option_instruments-version
+#+begin_src ores-shell :tangle equity_strike_resettable_option_instruments-version.ores :exports none
+equity_strike_resettable_option_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

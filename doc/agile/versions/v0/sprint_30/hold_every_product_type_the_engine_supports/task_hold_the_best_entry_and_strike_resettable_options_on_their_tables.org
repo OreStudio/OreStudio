@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/hold-the-best-entry-and-strike-resettable-options-on-their-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,11 +28,11 @@ table holds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -53,9 +53,28 @@ table holds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four tables, one per type per family. ORE states each element in one shape for
+both families (=bestEntryOptionData2= and =strikeResettableOptionData2=), so
+one projection header, =entry_reset_option_projection.hpp=, reads and writes the
+scalars for both. The schema requires every scalar, so every column is
+required.
+
+- Best entry: long/short, currency, notional, multiplier, cap, strike, trigger
+  level, reset minimum, premium and the four dates are columns. The underlying
+  is an underlying row; =StrikeObservationDates= is a dated schedule row under
+  the role =strike_observation_schedule=.
+- Strike resettable: long/short, option type, currency, strike, reset strike,
+  quantity (a double, as a continuous quantity), trigger type, trigger price,
+  premium and the three dates are columns. The underlying is an underlying row;
+  =ObservationDates= is a dated schedule row under =observation_schedule=. Its
+  tables are named =*_strike_reset_option_instruments= to fit the identifier
+  budget.
+- The builders move from =scripted_builders= to
+  =entry_reset_option_builders= and return the family's rows; the planner books
+  the element form. The class-read entries are removed.
+- The catalogue names =BestEntryOption= as the scripted form of both best-entry
+  types. ORE's library has no strike-resettable script, so those types are held
+  in their own form only.
 
 * Measurements
 
@@ -69,7 +88,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.trading.api.tests | 5186 test cases, all pass | =./ores.trading.api.tests= | 94cab02484 |
+| ores.trading.core.tests, on a recreated database | 268 test cases, all pass | =./ores.trading.core.tests= | 94cab02484 |
+| ores.shell.trading.tests | 1602 test cases, all pass | =./ores.shell.trading.tests= | 94cab02484 |
+| ores.ore.core.tests, with the ORE engine | 566 test cases, all pass | =./ores.ore.core.tests= | 94cab02484 |
+| ores.synthetic.core.tests, with the ORE engine | 149 test cases, all pass | =./ores.synthetic.core.tests= | 94cab02484 |
+| Generated trades after two refreshes | no file changed | =ORES_UPDATE_GENERATED_TRADES=1 ./ores.synthetic.core.tests "[generated]"= | 94cab02484 |
 
 * Notes
 
@@ -102,3 +126,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The four types are held natively, each on a table of its own:
+=equity_best_entry_option_instruments=, =fx_best_entry_option_instruments=,
+=equity_strike_reset_option_instruments= and =fx_strike_reset_option_instruments=.
+Every scalar the element states is a column; a strike-resettable quantity is a
+double, as a continuous quantity. The underlying is an underlying row, and the
+observation dates are a dated schedule row. The projection reads and writes
+them, and the round-trip test covers ORE's FX example of each plus an equity
+trade of each. The builders return the family's rows, and the generator books
+them. The class-read entries are removed. The catalogue names =BestEntryOption=
+as the scripted form of the best-entry types; ORE's library has no
+strike-resettable script, so those types have only their own form.

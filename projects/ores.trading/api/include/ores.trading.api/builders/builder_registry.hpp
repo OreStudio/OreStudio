@@ -25,6 +25,7 @@
 #include "ores.trading.api/builders/commodity_builders.hpp"
 #include "ores.trading.api/builders/composite_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
+#include "ores.trading.api/builders/entry_reset_option_builders.hpp"
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
@@ -65,10 +66,10 @@ using all_builders =
                basket_option_builder<basket_product::fx_basket>,
                basket_option_builder<basket_product::equity_rainbow>,
                basket_option_builder<basket_product::fx_rainbow>,
-               best_entry_option_builder<scripted_family::equity>,
-               best_entry_option_builder<scripted_family::fx>,
-               strike_resettable_option_builder<scripted_family::equity>,
-               strike_resettable_option_builder<scripted_family::fx>,
+               equity_best_entry_option_builder,
+               fx_best_entry_option_builder,
+               equity_strike_resettable_option_builder,
+               fx_strike_resettable_option_builder,
                window_barrier_option_builder<scripted_family::equity>,
                window_barrier_option_builder<scripted_family::fx>,
                equity_generic_barrier_option_builder,

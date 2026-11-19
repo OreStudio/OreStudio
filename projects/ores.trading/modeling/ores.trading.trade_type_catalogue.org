@@ -95,10 +95,10 @@ absent: it is a placeholder, not a product.
 | FxAccumulator | FX Accumulator | forward | scripted | fx! | false | false | fx_accumulator_instrument |
 | FxTaRF | FX Target Redemption Forward | forward | scripted | fx! | false | false | fx_asian_forward_instrument |
 | FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false | scripted_instrument |
-| FxBestEntryOption | FX Best Entry Option | option | scripted | fx! | true | false | scripted_instrument |
+| FxBestEntryOption | FX Best Entry Option | option | scripted | fx! | true | false | fx_best_entry_option_instrument |
 | FxBasketOption | FX Basket Option | option | scripted | fx! | true | false | fx_basket_option_instrument |
 | FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false | fx_basket_option_instrument |
-| FxStrikeResettableOption | FX Strike Resettable Option | option | scripted | fx! | true | false | scripted_instrument |
+| FxStrikeResettableOption | FX Strike Resettable Option | option | scripted | fx! | true | false | fx_strike_resettable_option_instrument |
 | CreditDefaultSwap | Credit Default Swap | swap | native | credit! | false | false | credit_instrument |
 | CreditDefaultSwapOption | Credit Default Swap Option |   | native | credit! | false | true | credit_instrument |
 | IndexCreditDefaultSwap | Index Credit Default Swap | swap | native | credit! | false | true | credit_instrument |
@@ -139,11 +139,11 @@ absent: it is a placeholder, not a product.
 | EquityAccumulator | Equity Accumulator | forward | scripted | equity! | false | true | equity_accumulator_instrument |
 | EquityTaRF | Equity Target Redemption Forward | forward | scripted | equity! | false | false | equity_accumulator_instrument |
 | EquityWorstOfBasketSwap | Equity Worst-Of Basket Swap | swap | scripted | equity! | false | false | equity_swap_instrument |
-| EquityBestEntryOption | Equity Best Entry Option | option | scripted | equity! | true | false | scripted_instrument |
+| EquityBestEntryOption | Equity Best Entry Option | option | scripted | equity! | true | false | equity_best_entry_option_instrument |
 | EquityBasketOption | Equity Basket Option | option | scripted | equity! | true | false | equity_basket_option_instrument |
 | EquityRainbowOption | Equity Rainbow Option | option | scripted | equity! | true | false | equity_basket_option_instrument |
 | EquityOutperformanceOption | Equity Outperformance Option | option | native | equity! | true | false | equity_option_instrument |
-| EquityStrikeResettableOption | Equity Strike Resettable Option | option | scripted | equity! | true | false | scripted_instrument |
+| EquityStrikeResettableOption | Equity Strike Resettable Option | option | scripted | equity! | true | false | equity_strike_resettable_option_instrument |
 | TotalReturnSwap | Total Return Swap | swap | native | equity! | false | false | composite_instrument |
 | ContractForDifference | Contract for Difference |   | native | equity! | false | false | composite_instrument |
 | EquityPosition | Equity Position | position | native | equity! | false | false | equity_position_instrument |
@@ -207,11 +207,13 @@ library script in ORE, and is held in its own form only.
 |----------------------------------+----------------------------|
 | EquityBasketOption               | VanillaBasketOption        |
 | EquityBasketVarianceSwap         | BasketVarianceSwap         |
+| EquityBestEntryOption            | BestEntryOption            |
 | EquityForwardVolatilityAgreement | ForwardVolatilityAgreement |
 | EquityPairwiseVarianceSwap       | PairwiseVarianceSwap       |
 | EquityRainbowOption              | MaxRainbowOption           |
 | FxBasketOption                   | VanillaBasketOption        |
 | FxBasketVarianceSwap             | BasketVarianceSwap         |
+| FxBestEntryOption                | BestEntryOption            |
 | FxForwardVolatilityAgreement     | ForwardVolatilityAgreement |
 | FxPairwiseVarianceSwap           | PairwiseVarianceSwap       |
 | FxRainbowOption                  | MaxRainbowOption           |
@@ -536,6 +538,8 @@ hold no row for the trade and read as empty.
 | equity_basket_option_instrument  | equity_basket_option_instrument    |
 | equity_basket_variance_swap_instrument | equity_basket_variance_swap_instrument |
 | equity_forward_volatility_agreement_instrument | equity_forward_volatility_agreement_instrument |
+| equity_best_entry_option_instrument | equity_best_entry_option_instrument |
+| equity_strike_resettable_option_instrument | equity_strike_resettable_option_instrument |
 | equity_digital_option_instrument | equity_digital_option_instrument   |
 | equity_forward_instrument        | equity_forward_instrument          |
 | equity_option_instrument         | equity_option_instrument           |
@@ -550,6 +554,8 @@ hold no row for the trade and read as empty.
 | fx_basket_option_instrument      | fx_basket_option_instrument        |
 | fx_basket_variance_swap_instrument | fx_basket_variance_swap_instrument |
 | fx_forward_volatility_agreement_instrument | fx_forward_volatility_agreement_instrument |
+| fx_best_entry_option_instrument | fx_best_entry_option_instrument |
+| fx_strike_resettable_option_instrument | fx_strike_resettable_option_instrument |
 | fx_digital_option_instrument     | fx_digital_option_instrument       |
 | fx_forward_instrument            | fx_forward_instrument              |
 | fx_vanilla_option_instrument     | fx_vanilla_option_instrument       |

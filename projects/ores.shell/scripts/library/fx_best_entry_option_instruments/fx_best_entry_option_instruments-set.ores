@@ -1,0 +1,6 @@
+# =set=
+#
+# GENERATED from doc/recipes/shell/fx_best_entry_option_instruments/fx_best_entry_option_instrument.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+fx_best_entry_option_instruments set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ 1 1 1 1 1 1 1 1970-01-01 1970-01-01 1970-01-01 1970-01-01 __none__ system.new_record generated_script

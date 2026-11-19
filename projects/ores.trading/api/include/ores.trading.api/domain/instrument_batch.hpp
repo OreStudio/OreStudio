@@ -90,6 +90,7 @@
 #include "ores.trading.api/domain/equity_basket_constituent_codec.hpp"
 #include "ores.trading.api/domain/equity_basket_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_basket_variance_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/equity_best_entry_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_forward_volatility_agreement_instrument_codec.hpp"
@@ -97,6 +98,7 @@
 #include "ores.trading.api/domain/equity_pairwise_variance_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_position_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying_codec.hpp"
+#include "ores.trading.api/domain/equity_strike_resettable_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/flexi_swap_instrument_codec.hpp"
@@ -108,10 +110,12 @@
 #include "ores.trading.api/domain/fx_barrier_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_basket_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_basket_variance_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_best_entry_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_forward_volatility_agreement_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_pairwise_variance_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_strike_resettable_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument_codec.hpp"
@@ -211,6 +215,11 @@ struct instrument_batch {
     std::vector<ores::trading::domain::equity_basket_variance_swap_instrument>
         equity_basket_variance_swap_instruments;
     /**
+     * @brief The equity_best_entry_option_instrument rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::equity_best_entry_option_instrument>
+        equity_best_entry_option_instruments;
+    /**
      * @brief The equity_digital_option_instrument rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::equity_digital_option_instrument>
@@ -237,6 +246,11 @@ struct instrument_batch {
      * @brief The equity_position_instrument rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::equity_position_instrument> equity_position_instruments;
+    /**
+     * @brief The equity_strike_resettable_option_instrument rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::equity_strike_resettable_option_instrument>
+        equity_strike_resettable_option_instruments;
     /**
      * @brief The equity_swap_instrument rows, keyed by trade id.
      */
@@ -272,6 +286,11 @@ struct instrument_batch {
     std::vector<ores::trading::domain::fx_basket_variance_swap_instrument>
         fx_basket_variance_swap_instruments;
     /**
+     * @brief The fx_best_entry_option_instrument rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::fx_best_entry_option_instrument>
+        fx_best_entry_option_instruments;
+    /**
      * @brief The fx_digital_option_instrument rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::fx_digital_option_instrument> fx_digital_option_instruments;
@@ -289,6 +308,11 @@ struct instrument_batch {
      */
     std::vector<ores::trading::domain::fx_pairwise_variance_swap_instrument>
         fx_pairwise_variance_swap_instruments;
+    /**
+     * @brief The fx_strike_resettable_option_instrument rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::fx_strike_resettable_option_instrument>
+        fx_strike_resettable_option_instruments;
     /**
      * @brief The fx_vanilla_option_instrument rows, keyed by trade id.
      */
@@ -671,6 +695,13 @@ inline void append(instrument_batch& batch, equity_basket_variance_swap_instrume
 }
 
 /**
+ * @brief Adds one equity_best_entry_option_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, equity_best_entry_option_instrument v) {
+    batch.equity_best_entry_option_instruments.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one equity_digital_option_instrument to the array that holds its type.
  */
 inline void append(instrument_batch& batch, equity_digital_option_instrument v) {
@@ -710,6 +741,13 @@ inline void append(instrument_batch& batch, equity_pairwise_variance_swap_instru
  */
 inline void append(instrument_batch& batch, equity_position_instrument v) {
     batch.equity_position_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one equity_strike_resettable_option_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, equity_strike_resettable_option_instrument v) {
+    batch.equity_strike_resettable_option_instruments.push_back(std::move(v));
 }
 
 /**
@@ -769,6 +807,13 @@ inline void append(instrument_batch& batch, fx_basket_variance_swap_instrument v
 }
 
 /**
+ * @brief Adds one fx_best_entry_option_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, fx_best_entry_option_instrument v) {
+    batch.fx_best_entry_option_instruments.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one fx_digital_option_instrument to the array that holds its type.
  */
 inline void append(instrument_batch& batch, fx_digital_option_instrument v) {
@@ -794,6 +839,13 @@ inline void append(instrument_batch& batch, fx_forward_volatility_agreement_inst
  */
 inline void append(instrument_batch& batch, fx_pairwise_variance_swap_instrument v) {
     batch.fx_pairwise_variance_swap_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one fx_strike_resettable_option_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, fx_strike_resettable_option_instrument v) {
+    batch.fx_strike_resettable_option_instruments.push_back(std::move(v));
 }
 
 /**
@@ -1326,6 +1378,8 @@ template <typename T>
                                       &instrument_batch::equity_basket_option_instruments},
         ::ores::utility::codec::field{"equity_basket_variance_swap_instruments",
                                       &instrument_batch::equity_basket_variance_swap_instruments},
+        ::ores::utility::codec::field{"equity_best_entry_option_instruments",
+                                      &instrument_batch::equity_best_entry_option_instruments},
         ::ores::utility::codec::field{"equity_digital_option_instruments",
                                       &instrument_batch::equity_digital_option_instruments},
         ::ores::utility::codec::field{"equity_forward_instruments",
@@ -1339,6 +1393,9 @@ template <typename T>
                                       &instrument_batch::equity_pairwise_variance_swap_instruments},
         ::ores::utility::codec::field{"equity_position_instruments",
                                       &instrument_batch::equity_position_instruments},
+        ::ores::utility::codec::field{
+            "equity_strike_resettable_option_instruments",
+            &instrument_batch::equity_strike_resettable_option_instruments},
         ::ores::utility::codec::field{"equity_swap_instruments",
                                       &instrument_batch::equity_swap_instruments},
         ::ores::utility::codec::field{"equity_variance_swap_instruments",
@@ -1355,6 +1412,8 @@ template <typename T>
                                       &instrument_batch::fx_basket_option_instruments},
         ::ores::utility::codec::field{"fx_basket_variance_swap_instruments",
                                       &instrument_batch::fx_basket_variance_swap_instruments},
+        ::ores::utility::codec::field{"fx_best_entry_option_instruments",
+                                      &instrument_batch::fx_best_entry_option_instruments},
         ::ores::utility::codec::field{"fx_digital_option_instruments",
                                       &instrument_batch::fx_digital_option_instruments},
         ::ores::utility::codec::field{"fx_forward_instruments",
@@ -1364,6 +1423,8 @@ template <typename T>
             &instrument_batch::fx_forward_volatility_agreement_instruments},
         ::ores::utility::codec::field{"fx_pairwise_variance_swap_instruments",
                                       &instrument_batch::fx_pairwise_variance_swap_instruments},
+        ::ores::utility::codec::field{"fx_strike_resettable_option_instruments",
+                                      &instrument_batch::fx_strike_resettable_option_instruments},
         ::ores::utility::codec::field{"fx_vanilla_option_instruments",
                                       &instrument_batch::fx_vanilla_option_instruments},
         ::ores::utility::codec::field{"fx_variance_swap_instruments",

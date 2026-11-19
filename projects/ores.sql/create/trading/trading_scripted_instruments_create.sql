@@ -75,7 +75,7 @@ create table if not exists "ores_trading_scripted_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('FxWindowBarrierOption', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxStrikeResettableOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityBestEntryOption', 'EquityStrikeResettableOption', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01')),
+    check ("trade_type_code" in ('FxWindowBarrierOption', 'FxWorstOfBasketSwap', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01')),
     check ("script_name" <> '')
 );
 

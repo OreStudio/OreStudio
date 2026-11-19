@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 148
+Tables: 152
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2118,6 +2118,49 @@ package "trading" #E8F5E9 {
     valuation_schedule.
     end note
 
+    entity ores_trading_equity_best_entry_option_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * long_short : text <<FK>>
+        * currency : text
+        * notional : numeric(38, 12)
+        * multiplier : numeric(38, 12)
+        * cap : numeric(38, 12)
+        * strike : numeric(38, 12)
+        * trigger_level : numeric(38, 12)
+        * reset_minimum : numeric(38, 12)
+        * premium : numeric(38, 12)
+        * expiry_date : date
+        * strike_date : date
+        * premium_date : date
+        * settlement_date : date
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_best_entry_option_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Best Entry Option Instrument Table
+    Represents EquityBestEntryOption trades: an option whose strike is the best level the
+    underlying reaches over the strike observation dates, reset only when it
+    crosses the trigger level. ORE reads it through a class of its own. The
+    underlying is an instrument underlying row under the role underlying;
+    an equity is named EQ- and its address. The StrikeObservationDates are an instrument schedule
+    row under the role strike_observation_schedule.
+    end note
+
     entity ores_trading_equity_cliquet_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -2568,6 +2611,48 @@ package "trading" #E8F5E9 {
     a single date column would silently drop the rest of the list. That
     shape belongs to defect 16, the observation schedule.
     The trade row carries the party. The entry rows are family-owned and ride the trade's scope.
+    end note
+
+    entity ores_trading_equity_strike_reset_option_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * long_short : text <<FK>>
+        * option_type : text <<FK>>
+        * currency : text
+        * strike : numeric(38, 12)
+        * reset_strike : numeric(38, 12)
+        * quantity : double
+        * trigger_type : text
+        * trigger_price : numeric(38, 12)
+        * expiry_date : date
+        * settlement_date : date
+        * premium : numeric(38, 12)
+        * premium_date : date
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_strike_reset_option_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Strike Resettable Option Instrument Table
+    Represents EquityStrikeResettableOption trades: an option whose strike resets to the reset
+    strike when the underlying crosses the trigger price on an observation
+    date. ORE reads it through a class of its own. The underlying is an
+    instrument underlying row under the role underlying; an equity is named EQ- and its address.
+    The ObservationDates are an instrument schedule row under the role
+    observation_schedule.
     end note
 
     entity ores_trading_equity_swap_instruments_tbl <<temporal>> #C6F0D8 {
@@ -3081,6 +3166,49 @@ package "trading" #E8F5E9 {
     valuation_schedule.
     end note
 
+    entity ores_trading_fx_best_entry_option_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * long_short : text <<FK>>
+        * currency : text
+        * notional : numeric(38, 12)
+        * multiplier : numeric(38, 12)
+        * cap : numeric(38, 12)
+        * strike : numeric(38, 12)
+        * trigger_level : numeric(38, 12)
+        * reset_minimum : numeric(38, 12)
+        * premium : numeric(38, 12)
+        * expiry_date : date
+        * strike_date : date
+        * premium_date : date
+        * settlement_date : date
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_fx_best_entry_option_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Best Entry Option Instrument Table
+    Represents FxBestEntryOption trades: an option whose strike is the best level the
+    underlying reaches over the strike observation dates, reset only when it
+    crosses the trigger level. ORE reads it through a class of its own. The
+    underlying is an instrument underlying row under the role underlying;
+    an FX index is named FX- and the index. The StrikeObservationDates are an instrument schedule
+    row under the role strike_observation_schedule.
+    end note
+
     entity ores_trading_fx_digital_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -3250,6 +3378,48 @@ package "trading" #E8F5E9 {
     so each member is a column pair. The valuation schedule and the optional
     lagged valuation schedule are instrument schedule rows under the roles
     valuation_schedule and lagged_valuation_schedule.
+    end note
+
+    entity ores_trading_fx_strike_reset_option_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+        * long_short : text <<FK>>
+        * option_type : text <<FK>>
+        * currency : text
+        * strike : numeric(38, 12)
+        * reset_strike : numeric(38, 12)
+        * quantity : double
+        * trigger_type : text
+        * trigger_price : numeric(38, 12)
+        * expiry_date : date
+        * settlement_date : date
+        * premium : numeric(38, 12)
+        * premium_date : date
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_fx_strike_reset_option_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Strike Resettable Option Instrument Table
+    Represents FxStrikeResettableOption trades: an option whose strike resets to the reset
+    strike when the underlying crosses the trigger price on an observation
+    date. ORE reads it through a class of its own. The underlying is an
+    instrument underlying row under the role underlying; an FX index is named FX- and the index.
+    The ObservationDates are an instrument schedule row under the role
+    observation_schedule.
     end note
 
     entity ores_trading_fx_vanilla_option_instruments_tbl <<temporal>> #C6F0D8 {
@@ -5826,6 +5996,9 @@ ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_basket_option_instr
 ores_trading_trades_tbl ||--o{ ores_trading_equity_basket_var_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_basket_var_swap_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_basket_var_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_equity_best_entry_option_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_best_entry_option_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_best_entry_option_instruments_tbl : "has"
 ores_trading_option_types_tbl ||--o{ ores_trading_equity_cliquet_option_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_cliquet_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_digital_option_instruments_tbl : "has"
@@ -5850,6 +6023,10 @@ ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_position_option_und
 ores_trading_option_types_tbl ||--o{ ores_trading_equity_position_option_underlyings_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_position_option_underlyings_tbl : "has"
 ores_trading_exercise_types_tbl ||--o{ ores_trading_equity_position_option_underlyings_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_equity_strike_reset_option_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_strike_reset_option_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_strike_reset_option_instruments_tbl : "has"
+ores_trading_option_types_tbl ||--o{ ores_trading_equity_strike_reset_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_swap_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_equity_swap_instruments_tbl : "has"
@@ -5885,6 +6062,9 @@ ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_basket_option_instrumen
 ores_trading_trades_tbl ||--o{ ores_trading_fx_basket_variance_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_basket_variance_swap_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_basket_variance_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_fx_best_entry_option_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_best_entry_option_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_best_entry_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
 ores_trading_option_types_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
@@ -5899,6 +6079,10 @@ ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_fva_instruments_tbl : "
 ores_trading_trades_tbl ||--o{ ores_trading_fx_pairwise_variance_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_pairwise_variance_swap_instruments_tbl : "has"
 ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_pairwise_variance_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_fx_strike_reset_option_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_strike_reset_option_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_strike_reset_option_instruments_tbl : "has"
+ores_trading_option_types_tbl ||--o{ ores_trading_fx_strike_reset_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
 ores_trading_option_types_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"

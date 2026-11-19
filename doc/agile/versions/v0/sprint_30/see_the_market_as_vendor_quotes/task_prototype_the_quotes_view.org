@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :web:ux:prototype:marketdata:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/prototype-the-quotes-view
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,10 +26,10 @@ The product owner signs off the quotes view before it is built.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | The product owner: the sign-off of the prototype. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-18                               |
 
@@ -41,9 +41,15 @@ The product owner signs off the quotes view before it is built.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. A static page under =doc/prototypes/market_data/watch-the-vendors-quotes/=,
+   in the look of the group's other prototypes, on mock ticks of seven feeds and
+   four asset classes: FX spot, IR swap pillars, FX option vols and swaption
+   vols.
+2. Two variants for the design question, every datum or by series, and four
+   states: a party, the system tenant, no subscription, a silent vendor.
+3. A prototype page with the verdict section, a row on the group page, a count
+   on the top page, and a /Prototype/ section on the journey.
+4. Ask the product owner for the sign-off and record it on the prototype page.
 
 * Measurements
 

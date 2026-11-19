@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: E351A753-69AD-4D45-9C7C-77208CB434CA
+:END:
+#+title: Watch the vendors' quotes prototype
+#+description: The quotes each vendor sends as they tick, any asset class, through the feeds the session may watch for display; one row for each datum or one for each series, and the system tenant's view of every feed.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+| Item          | Where                                            |
+|---------------+--------------------------------------------------|
+| Prototype     | [[file:watch-the-vendors-quotes/][the prototype]]         |
+| Journey       | [[id:E01E9FB6-AB3D-44A4-B852-6A0CB23775F3][Watch the vendors' quotes]] |
+| Gemini review | none                                             |
+| Group         | [[file:index.org][Market data prototypes]]            |
+
+* Summary
+
+The quotes view is the market as the vendors send it: one row for each datum a
+vendor quotes, updated in place as it ticks, whatever the asset class. FX spot,
+IR pillars, FX option vols and swaption vols are rows of one table. The session
+watches the feeds it may watch for display; the system tenant watches every feed
+of the catalogue, routed or not. A picked row draws its last hour: one history
+read, then each live tick.
+
+* Detail
+
+** The question
+
+Is the view one row for each datum, or one row for each series that opens into
+its points? A vol surface quotes many points, and a flat table may bury the FX
+and the rates around it; a grouped table hides the points until a person opens
+them.
+
+** The variants
+
+Switch with the bar at the foot, or =?variant=.
+
+| Variant | Name          | The structural argument |
+|---------+---------------+-------------------------|
+| =a=     | Every datum   | One row for each datum, as the journey's wireframe draws it. Every tick is visible where it lands. |
+| =b=     | By series     | One row for each series, with its newest point, its point count and its age; a series opens into its points. A surface is one line until it is opened. |
+
+** The states
+
+- =?state=party= — Acme Corporation Plc, which may watch four feeds for display.
+- =?state=system= — the system tenant, which watches all seven feeds, including
+  three that no Acme party routes to.
+- =?state=none= — a party with no subscription that holds the display right. The
+  page says why the list is empty and where a subscription is granted.
+- =?state=silent= — the party's view with one vendor that stopped ticking: its
+  age grows in the vendor list and its rows fade.
+
+** What is fake
+
+Every value, time and age is mock. The ticks are a random walk on a timer, and the
+hour behind a picked row is made up. The datums each vendor quotes, and which
+feeds a party may watch, are fixed in the page.
+
+** Where the code lives
+
+=doc/prototypes/market_data/watch-the-vendors-quotes/index.html=, self-contained.
+
+** The verdict
+
+Awaiting the product owner's sign-off. The sign-off, or the changes asked, is
+recorded here before the view is built.
+
+* See also
+
+- [[file:index.org][Market data prototypes]] — the group page.
+- [[id:E01E9FB6-AB3D-44A4-B852-6A0CB23775F3][Watch the vendors' quotes]] — the journey.

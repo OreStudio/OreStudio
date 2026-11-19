@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watch the vendors quotes prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lead{color:var(--ink-dim);font-size:.86rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:150px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.kv{display:flex;gap:18px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.kv b{color:var(--ink);font-weight:600}
+.kv .sep{color:var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.blank{text-align:right;color:var(--ink-faint)}
+tr.total td{border-top:1px solid var(--line);border-bottom:none;padding-top:9px}
+tr.pick td{background:var(--panel-2)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.chart{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.legend .sw{display:inline-block;width:12px;height:2px;background:var(--accent);vertical-align:3px;margin-right:6px}
+.up{color:var(--ok)}.down{color:var(--bad)}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+td.flash{animation:flash .9s ease-out}
+@keyframes flash{from{background:#1f3a5f}to{background:transparent}}
+tr.series td{cursor:pointer}tr.series:hover td{background:#1d1d22}
+tr.point td:first-child{padding-left:26px}
+tr.stale td{color:var(--ink-faint)}
+.vendors{display:flex;gap:8px;flex-wrap:wrap}
+.vendor{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:grid;gap:2px;cursor:pointer;min-width:150px}
+.vendor.on{border-color:var(--accent)}.vendor small{color:var(--ink-faint);font-size:.72rem}
+.vendor .age.bad{color:var(--warn)}
+.who{display:inline-flex;gap:6px;align-items:center}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The person's "Watch the vendors' quotes" screen
+  (doc/knowledge/journeys/market_data/journey_watch-the-vendors-quotes.org):
+  the feeds the session may watch for display, one row for each datum a vendor
+  quotes, updated in place as it ticks, whatever the asset class, and one
+  series drawn from its history and its live ticks.
+
+  Variants with ?variant=a|b. a is one flat row for each datum, as the journey's
+  wireframe draws it. b groups the rows by series: a series is one row with its
+  newest tick and its point count, and opens into its points. The variant is the
+  design question: a vol surface quotes hundreds of points, and the flat table
+  may drown the FX and the rates around it.
+  ?state=party|system|none|silent switches the session and the market. party is
+  Acme Corporation Plc, which may watch four feeds. system is the system tenant,
+  which watches every feed of the catalogue, routed or not. none is a party with
+  no subscription. silent is the party's view with one vendor that stopped.
+-->
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'party';
+
+/* the feeds of the catalogue: provider, feed, and whether the plc party may watch it for display */
+const FEEDS = [
+  {provider:'bloomberg', feed:'bloomberg-a', party:true},
+  {provider:'tradeweb',  feed:'tradeweb-a',  party:true},
+  {provider:'ice',       feed:'ice-a',       party:true},
+  {provider:'derived',   feed:'ore-derived', party:true},
+  {provider:'lseg',      feed:'lseg-a',      party:false},
+  {provider:'demo',      feed:'demo-a',      party:false},
+  {provider:'composite', feed:'composite-derived', party:false}
+];
+const SESSION = state === 'system' ? 'System tenant' : state === 'none' ? 'Acme Corporation HK Ltd' : 'Acme Corporation Plc';
+const feeds = state === 'system' ? FEEDS : state === 'none' ? [] : FEEDS.filter(f => f.party);
+
+/* each datum: class, series, point (empty for a series without coordinates), value, decimals, feeds that quote it */
+const D = [];
+function add(cls, series, point, value, dp, on){ D.push({cls, series, point, value, dp, on, prev:value, at:Date.now() - Math.random()*4000, hist:[]}); }
+[['GBP/USD',1.30815],['EUR/USD',1.08412],['USD/JPY',151.284],['USD/CHF',0.88131],['AUD/USD',0.65412]].forEach(([s,v]) =>
+  add('fx_spot', s, '', v, s.includes('JPY') ? 3 : 5, ['bloomberg','lseg','demo','tradeweb']));
+['1Y','2Y','3Y','5Y','7Y','10Y','15Y','20Y','30Y'].forEach((t,i) =>
+  add('ir_swap', 'USD SOFR fwd 0D', t, 4.05 + i*0.034, 4, ['bloomberg','tradeweb','ice']));
+['1Y','2Y','5Y','10Y','30Y'].forEach((t,i) =>
+  add('ir_swap', 'GBP SONIA fwd 0D', t, 4.31 + i*0.021, 4, ['bloomberg','lseg']));
+['1M','3M','6M','1Y'].forEach(e => ['ATM','25D RR','25D BF','10D RR','10D BF'].forEach((k,j) =>
+  add('fx_option', 'EUR/USD vol', e + ' ' + k, j === 0 ? 0.072 + Math.random()*0.01 : (j % 2 ? -0.004 : 0.002) + Math.random()*0.002, 4, ['bloomberg','ice'])));
+['1Y','5Y','10Y'].forEach(e => ['1Y','5Y','10Y'].forEach(u =>
+  add('swaption', 'USD swaption normal vol', e + ' x ' + u, 0.0090 + Math.random()*0.002, 5, ['bloomberg','derived'])));
+add('fx_spot', 'EUR/GBP', '', 0.82871, 5, ['composite']);
+
+let vendor = params.get('vendor') || (feeds[0] ? feeds[0].feed : '');
+let cls = 'all', find = '', paused = false, picked = null, open = new Set();
+const silent = state === 'silent' ? 'ice-a' : null;
+const now = () => Date.now();
+const feedOf = name => FEEDS.find(f => f.feed === name);
+function visible(d){
+  const f = feedOf(vendor);
+  if (!f || !d.on.includes(f.provider)) return false;
+  if (cls !== 'all' && d.cls !== cls) return false;
+  if (find && !(d.series + ' ' + d.point).toLowerCase().includes(find.toLowerCase())) return false;
+  return true;
+}
+function age(ms){ const s = ms/1000; return s < 60 ? s.toFixed(1) + 's' : Math.round(s/60) + 'm'; }
+function chg(d){
+  const c = d.value - d.prev, s = c > 0 ? '+' : '';
+  return `<span class="${c > 0 ? 'up' : c < 0 ? 'down' : 'faint'}">${s}${c.toFixed(d.dp)}</span>`;
+}
+function time(t){ return new Date(t).toISOString().slice(11, 23); }
+
+function header(){
+  const f = feedOf(vendor);
+  return `
+  <div class="top">
+    <h1>Quotes</h1>
+    <span class="lead">the market as the vendors quote it, as it ticks, for any asset class</span>
+    <a style="margin-left:auto" href="../../../knowledge/journeys/market_data/journey_watch-the-vendors-quotes.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <div class="kv">
+      <span class="who">Session <b>${SESSION}</b></span><span class="sep">|</span>
+      <span>Feeds you may watch <b>${feeds.length}</b>${state === 'system' ? ' <span class="tag ok">every feed</span>' : ' <span class="tag">by subscription, for display</span>'}</span><span class="sep">|</span>
+      <span>${paused ? '<span class="tag warn">paused</span>' : '<span class="tag ok">live</span>'}</span>
+      <button class="btn" id="pause" style="margin-left:auto">${paused ? 'Resume' : 'Pause'}</button>
+    </div>
+    <div class="vendors" id="vendors"></div>
+    ${feeds.length ? `<div class="row">
+      <div class="field"><label>Class</label><select id="cls">${['all','fx_spot','ir_swap','fx_option','swaption'].map(c => `<option ${c === cls ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+      <div class="field"><label>Find</label><input id="find" value="${find}" placeholder="part of a series"></div>
+      <div class="faint" style="font-size:.8rem">${f ? f.provider + ' through ' + f.feed : ''}</div>
+    </div>` : ''}
+  </div>`;
+}
+function vendors(){
+  return feeds.map(f => {
+    const quoted = D.filter(d => d.on.includes(f.provider));
+    const last = f.feed === silent ? now() - 14*60000 : Math.max(...quoted.map(d => d.at));
+    const old = now() - last > 60000;
+    return `<div class="vendor ${f.feed === vendor ? 'on' : ''}" data-f="${f.feed}">
+      <b>${f.provider}</b><small>${f.feed} · ${quoted.length} datums</small>
+      <small class="age ${old ? 'bad' : ''}">last tick ${age(now() - last)} ago${f.party ? '' : ' · not routed to Acme'}</small></div>`;
+  }).join('');
+}
+function rows(){
+  const shown = D.filter(visible);
+  if (!shown.length) return '<tr><td colspan="7" class="faint">No datum matches.</td></tr>';
+  const stale = d => vendor === silent || now() - d.at > 60000;
+  const line = (d, cssClass) => `<tr class="${cssClass} ${stale(d) ? 'stale' : ''} ${picked === d ? 'pick' : ''}" data-i="${D.indexOf(d)}">
+      <td>${d.cls}</td><td>${d.series}</td><td>${d.point || '<span class="faint">—</span>'}</td>
+      <td class="num ${now() - d.at < 700 ? 'flash' : ''}">${d.value.toFixed(d.dp)}</td><td class="num">${chg(d)}</td>
+      <td class="mono">${time(d.at)}</td><td class="num">${age(now() - d.at)}</td></tr>`;
+  if (variant === 'a') return shown.map(d => line(d, 'series')).join('');
+  const bySeries = new Map();
+  shown.forEach(d => { if (!bySeries.has(d.series)) bySeries.set(d.series, []); bySeries.get(d.series).push(d); });
+  return [...bySeries].map(([s, ds]) => {
+    if (ds.length === 1) return line(ds[0], 'series');
+    const newest = ds.reduce((a, b) => a.at > b.at ? a : b);
+    const head = `<tr class="series" data-s="${s}"><td>${ds[0].cls}</td><td>${open.has(s) ? '▾' : '▸'} ${s}</td>
+      <td class="faint">${ds.length} points</td><td class="num faint">${newest.point}: ${newest.value.toFixed(newest.dp)}</td>
+      <td class="num">${chg(newest)}</td><td class="mono">${time(newest.at)}</td><td class="num">${age(now() - newest.at)}</td></tr>`;
+    return head + (open.has(s) ? ds.map(d => line(d, 'point')).join('') : '');
+  }).join('');
+}
+function table(){
+  if (!feeds.length) return `<div class="panel"><h2>No feed to watch</h2><div class="notice">Your party subscribes to no
+    provider with the display right, so there is no vendor to show. Vendor streams are paid for: a party sees the vendors it
+    subscribes to, through the feed its route picks. <a href="#">Manage market data subscriptions &rarr;</a></div></div>`;
+  return `<div class="panel"><h2>${variant === 'a' ? 'Every datum' : 'By series'}</h2>
+    <table><thead><tr><th>Class</th><th>Series</th><th>Point</th><th style="text-align:right">Value</th>
+    <th style="text-align:right">Change</th><th>Time</th><th style="text-align:right">Age</th></tr></thead>
+    <tbody id="rows">${rows()}</tbody></table></div>`;
+}
+function detail(){
+  if (!picked) return feeds.length ? '<div class="panel"><h2>One series</h2><p class="faint">Pick a row to draw its last hour.</p></div>' : '';
+  const W = 1000, H = 140, h = picked.hist, lo = Math.min(...h), hi = Math.max(...h), span = hi - lo || 1;
+  const pts = h.map((v, i) => (i*W/(h.length-1)).toFixed(1) + ',' + (H - 8 - (v-lo)/span*(H-16)).toFixed(1)).join(' ');
+  const split = ((picked.seeded - 1)*W/(h.length-1)).toFixed(1);
+  return `<div class="panel"><h2>${picked.series}${picked.point ? ' · ' + picked.point : ''} · ${feedOf(vendor).feed} · the last hour</h2>
+    <div class="chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="${split}" x2="${split}" y1="0" y2="${H}" stroke="#30363d" stroke-dasharray="4 4"/>
+    <polyline points="${pts}" fill="none" stroke="#58a6ff" stroke-width="1.5"/></svg></div>
+    <div class="legend"><span>left of the dashes: one history read (get_provider_ticks)</span><span>right: the live ticks since the row was picked</span>
+    <span class="mono">${lo.toFixed(picked.dp)} – ${hi.toFixed(picked.dp)}</span></div></div>`;
+}
+
+function render(){
+  document.getElementById('app').innerHTML = header() + table() + detail();
+  const v = document.getElementById('vendors'); if (v) v.innerHTML = vendors();
+}
+function tick(){
+  if (paused || !feeds.length) return;
+  const live = D.filter(d => d.on.some(p => feeds.some(f => f.provider === p && f.feed !== silent)));
+  for (let k = 0; k < 6; k++) {
+    const d = live[Math.floor(Math.random()*live.length)]; if (!d) return;
+    d.prev = d.value; d.value = d.value * (1 + (Math.random() - .5) * 0.0004); d.at = now();
+    if (picked === d) d.hist.push(d.value);
+  }
+  const body = document.getElementById('rows');
+  if (body) body.innerHTML = rows();
+  const v = document.getElementById('vendors'); if (v) v.innerHTML = vendors();
+  if (picked) { const p = document.querySelector('.chart'); if (p) p.parentElement.outerHTML = detail(); }
+}
+document.getElementById('app').addEventListener('click', e => {
+  const ven = e.target.closest('.vendor'), tr = e.target.closest('tr');
+  if (e.target.id === 'pause') { paused = !paused; render(); return; }
+  if (ven) { vendor = ven.dataset.f; picked = null; render(); return; }
+  if (tr && tr.dataset.s) { open.has(tr.dataset.s) ? open.delete(tr.dataset.s) : open.add(tr.dataset.s); render(); return; }
+  if (tr && tr.dataset.i) {
+    picked = D[+tr.dataset.i];
+    picked.hist = Array.from({length:120}, (_, i) => picked.value * (1 + Math.sin(i/9)*0.0006 + (Math.random()-.5)*0.0003));
+    picked.hist.push(picked.value);
+    picked.seeded = picked.hist.length;
+    render();
+  }
+});
+document.getElementById('app').addEventListener('change', e => { if (e.target.id === 'cls') { cls = e.target.value; render(); } });
+document.getElementById('app').addEventListener('input', e => {
+  if (e.target.id === 'find') { find = e.target.value; const b = document.getElementById('rows'); if (b) b.innerHTML = rows(); }
+});
+
+document.getElementById('note').textContent =
+  'PROTOTYPE · throwaway · mock data, no server · variant ' + variant + ' · state ' + state;
+render();
+setInterval(tick, 700);
+document.getElementById('bar').innerHTML =
+  '<span class="label">Variant</span>' +
+  [['a','A · every datum'],['b','B · by series']].map(([v,t]) =>
+    `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${t}</button>`).join('') +
+  '<span class="sep">·</span><span class="label">State</span>' +
+  [['party','a party'],['system','system tenant'],['none','no subscription'],['silent','a silent vendor']].map(([s,t]) =>
+    `<button data-s="${s}" class="${s === state ? 'on' : ''}">${t}</button>`).join('');
+document.getElementById('bar').addEventListener('click', e => {
+  const v = e.target.dataset.v, s = e.target.dataset.s;
+  const next = new URLSearchParams(location.search);
+  if (v) next.set('variant', v); if (s) next.set('state', s);
+  next.delete('vendor');
+  location.search = next.toString();
+});
+</script>
+</body>
+</html>

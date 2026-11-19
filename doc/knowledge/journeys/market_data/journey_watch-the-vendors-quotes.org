@@ -84,6 +84,18 @@ middle, and the selected series' line at the bottom.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_watch-the-vendors-quotes.png]]
 
+* Prototype
+
+A static page at =doc/prototypes/market_data/watch-the-vendors-quotes/index.html=: mock data only, no backend,
+no build step and no session. It argues that every asset class reads as rows of one ticking table, and asks
+whether a row is a datum or a series.
+
+- Variants :: a every datum, b by series
+- States :: a party, the system tenant, no subscription, a silent vendor
+- Source :: =doc/prototypes/market_data/watch-the-vendors-quotes/index.html=
+- Open :: =/OreStudio/doc/prototypes/market_data/watch-the-vendors-quotes/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

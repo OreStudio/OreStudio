@@ -42,6 +42,7 @@
 #include "ores.reporting.core/service/nats_cut_body_reader.hpp"
 #include "ores.reporting.core/service/report_configuration_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
+#include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.reporting.core/service/report_run_admission_service.hpp"
 #include "ores.reporting.core/service/report_run_grant_service.hpp"
 #include "ores.reporting.core/service/report_type_service.hpp"
@@ -467,14 +468,17 @@ private:
                 // non-terminal instance, so leaving it pending would hold every
                 // later run of this definition behind work that will never
                 // happen.
-                mark_dispatch_failed(tenant_ctx, receipt.instance_id, e.what());
+                const auto marked = mark_dispatch_failed(tenant_ctx, receipt.instance_id, e.what());
                 response.result.outcome = ores::utility::domain::outcome::failed;
                 response.result.code = "dispatch_failed";
                 response.result.message =
                     std::format("Report instance {} was created but its workflow could not be "
-                                "started: {}",
+                                "started: {}{}",
                                 inst_id_str,
-                                e.what());
+                                e.what(),
+                                marked ? "" :
+                                         ", and it could not be marked failed, so it still "
+                                         "holds this definition");
                 BOOST_LOG_SEV(report_instance_trigger_handler_lg(), error)
                     << response.result.message;
                 return;
@@ -496,7 +500,7 @@ private:
      * record that is logged rather than thrown: the caller is already being
      * told why its run did not start.
      */
-    void mark_dispatch_failed(const ores::database::context& tenant_ctx,
+    bool mark_dispatch_failed(const ores::database::context& tenant_ctx,
                               const boost::uuids::uuid& instance_id,
                               std::string_view reason) {
         try {
@@ -506,16 +510,18 @@ private:
                 BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn)
                     << "Could not find report instance " << boost::uuids::to_string(instance_id)
                     << " to mark it failed";
-                return;
+                return false;
             }
             inst->fsm_state_id = instance_states_.require("failed");
-            inst->change_reason_code = "reporting.dispatch_failed";
+            inst->change_reason_code = "system.dispatch_failed";
             inst->change_commentary = std::string(reason);
             inst_svc.save_instance(*inst);
+            return true;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(report_instance_trigger_handler_lg(), error)
                 << "Could not mark report instance " << boost::uuids::to_string(instance_id)
                 << " failed: " << e.what();
+            return false;
         }
     }
 

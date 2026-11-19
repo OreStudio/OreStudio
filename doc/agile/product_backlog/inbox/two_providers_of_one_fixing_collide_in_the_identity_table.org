@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 3B58C44F-5E31-4A30-B185-C06A75E6451C
+:END:
+#+title: Two providers of one fixing collide in the identity table
+#+description: A party may hold one fixing from two providers, but the identity table's unique index for fixings leaves out the provider, so the second identity write fails after its series is stored.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:identity:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The series table keys a series by party, URI and provider, so one party may hold
+the EURIBOR 6M fixing from Bloomberg and from LSEG. The identity table refuses
+that: its unique index over a fixing's decomposed fields is per tenant and party
+and does not hold the provider. The second series is stored, and its identity
+write then fails on the duplicate key. A caller without a transaction keeps a
+series that no identity reader can find.
+
+Decide which of the two is the rule. Either the identity row carries the
+provider, or one identity row serves every provider's series of that fixing and
+the series table's key loses the provider for fixings.
+
+* Why
+
+Found while making the test generator write real fixings. The repository case
+=two_providers_keep_two_series_for_one_item_and_party= holds a Bloomberg and an
+LSEG series of one item for one party. It passes only because its fixture writes an =oresmd://generic/= URI that no codec reads, so no
+fixing identity row is written. With a fixing URI, the second write fails.
+
+* References
+
+- =projects/ores.sql/create/marketdata/marketdata_market_series_identity_create.sql=:
+  the =market_series_identity_fixing_identity_idx= unique index.
+- =make_identity_test_series= in
+  =projects/ores.marketdata/core/tests/repository_market_series_repository_tests.cpp=.
+
+* See also
+
+- [[id:ABFE5452-57B4-4621-86A4-011CF2B03E6A][Write a series and its identity in one act]]
+- [[id:474E8968-C7B4-4740-839F-9328B93A5FEA][Generate a series that is an identity]]

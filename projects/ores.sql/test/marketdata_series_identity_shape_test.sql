@@ -165,14 +165,20 @@ join ores_marketdata_market_series_tbl s
  and s.tenant_id = i.tenant_id
  and s.valid_to = ores_utility_infinity_timestamp_fn()
 where i.asset_class is not null
-  and (i.asset_class, s.series_subclass, coalesce(i.index, '')) not in (
-      select asset_class, series_subclass, index_family from t_stated_shapes)
-  and (i.asset_class, s.series_subclass, coalesce(i.index, '')) not in (
-      select asset_class, series_subclass, index_family from t_unguarded_on_purpose);
+  and not exists (
+      select 1 from t_stated_shapes st
+      where st.asset_class = i.asset_class
+        and st.series_subclass = s.series_subclass
+        and st.index_family = coalesce(i.index, ''))
+  and not exists (
+      select 1 from t_unguarded_on_purpose g
+      where g.asset_class = i.asset_class
+        and g.series_subclass = s.series_subclass
+        and g.index_family = coalesce(i.index, ''));
 
 select is(
     (select string_agg(asset_class || '/' || series_subclass || '/' || index_family, ', '
-                       order by 1)
+                       order by asset_class, series_subclass, index_family)
      from unstated_families),
     null,
     'every family in use has a shape or is unguarded on purpose'

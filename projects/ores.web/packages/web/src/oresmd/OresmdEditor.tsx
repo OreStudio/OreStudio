@@ -22,6 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import type { OresmdComposeRequest, OresmdSchema } from '@ores/contracts';
+import { useHeld } from '../access/holds.js';
 import { familyOf, identityShapes, type Requirement } from '../api/identityShapes.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Input, Notice, Select, Tag } from '../ui/Primitives.js';
@@ -245,17 +246,21 @@ export function Composer({
     const row = rowOf(schema, state);
     const fixing = state.kind === 'fixing';
     // The shape of the family is advice: a person who may not read the shapes
-    // still composes, and sees no marks.
+    // still composes, sees no marks, and is not sent to ask.
+    const held = useHeld();
+    const readsShapes =
+        held('marketdata::series_identity_shapes:read') &&
+        held('marketdata::series_classification_rules:read');
     const shapes = useQuery({
         queryKey: ['series-identity-shapes'],
         queryFn: identityShapes.list,
-        enabled: row !== null,
+        enabled: row !== null && readsShapes,
         retry: false,
     });
     const rules = useQuery({
         queryKey: ['series-classification-rules'],
         queryFn: identityShapes.classificationRules,
-        enabled: row !== null,
+        enabled: row !== null && readsShapes,
         retry: false,
     });
     const family = familyOfEditor(row, state, rules.data ?? []);

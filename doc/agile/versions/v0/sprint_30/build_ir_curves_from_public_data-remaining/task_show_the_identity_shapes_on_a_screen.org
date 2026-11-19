@@ -109,7 +109,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4875 review 1: the editor asks for the shapes and rules for every person, so one without the permission gets two refusals | =OresmdEditor.tsx= | Accept | The two reads run only for a person who holds both read permissions |
+| 2 | PR #4875 review 1: test the versions read with an empty index family | =series-identity-shapes.test.ts= | Decline | The case exists: =reads the versions of a family with no index family= |
+| 3 | PR #4875 review 1: the family line may say unstated while the rules are unavailable | =family.ts= | Decline | A series names no family without its rule; a fixing falls back to =index_fixing=, the subclass the identity kind rule requires of every fixing |
+| 4 | PR #4875 review 1: a reply without a tenant would show a row as the tenant's own | =series-identity-shapes.ts= | Decline | Every row carries its tenant; a write the screen offers by mistake is refused by the service's row-level security |
 
 * Result
 

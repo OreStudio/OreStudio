@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-every-product-in-both-forms
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Every product ORE carries in both forms is booked in both: once as its own eleme
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,9 +44,27 @@ Every product ORE carries in both forms is booked in both: once as its own eleme
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decided with the user on 2026-11-19: each twin's variables are a recipe held in a
+reference table.
+
+- The recipe is an org table in the trade type catalogue, one row per native
+  trade type and script input: the input's name, its type and shape as the
+  library states them, the path of the native row value it takes, and a
+  transform. A path names a part of the native trade's rows: =product.strike=
+  for a column of the product row, =instrument_underlyings[underlying].name=
+  for a column of the rows under a role, =instrument_options.option_type= for a
+  shared row, or a constant. The =sign= transform turns =Long= or =Call= into
+  =1= and =Short= or =Put= into =-1=, as the scripts read them.
+- A generator turns the org table into the seed of a =script_twin_inputs=
+  reference table and into a compiled-in table the trade generator reads, so the
+  data has one source and the generator needs no database.
+- One evaluator reads a path over the native trade's instrument batch through
+  the rows' =wire_fields=, so a recipe needs no code of its own.
+- The generator books each product with a scripted form twice: the native trade,
+  then a generic =ScriptedTrade= built through the scripted trade builder from
+  the recipe evaluated over the native trade.
+- Delivered in steps: the reference table, the evaluator and the basket and
+  rainbow recipes first, then the remaining products' recipes.
 
 * Measurements
 
@@ -88,3 +106,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+First PR: the machinery and the first recipes. The catalogue's =Scripted twin
+recipes= table states, for each product with a scripted form, where each input
+of its script takes its value from in the native trade's rows. The generator
+script =generate_script_twins.py= joins it with the mined script inputs, refuses
+a recipe that misses or invents an input, and writes the seed of the new
+=script_twin_inputs= reference table and the table the trade generator compiles
+in. One evaluator reads a recipe over the native trade's rows through their
+wire fields, and the FX and equity planners book each such product again as its
+generic ScriptedTrade through the scripted trade builder. The equity and FX
+basket and rainbow options are twinned: the twins book, export, and ORE builds
+them with no error of the trade kind. The remaining products' recipes follow.

@@ -81,6 +81,8 @@
 -- they belong to.
 \ir ./trading_script_inputs_notify_trigger_drop.sql
 \ir ./trading_script_inputs_drop.sql
+\ir ./trading_script_twin_inputs_notify_trigger_drop.sql
+\ir ./trading_script_twin_inputs_drop.sql
 \ir ./trading_script_coarsenings_notify_trigger_drop.sql
 \ir ./trading_script_coarsenings_drop.sql
 \ir ./trading_script_calibration_strikes_notify_trigger_drop.sql

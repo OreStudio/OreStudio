@@ -223,6 +223,63 @@ library script in ORE, and is held in its own form only.
 | FxWindowBarrierOption            | WindowBarrierOption        |
 | FxWorstOfBasketSwap              | WorstOfBasketSwap          |
 
+* Scripted twin recipes
+
+The generator books each product of the =Scripted forms= table twice: its own
+element, and a generic =ScriptedTrade= over the library script, on the same
+terms. This table states, for each such product, where each input of the script
+takes its value from in the native trade's rows, so the twin is read from the
+native trade rather than drawn again. The generator script
+=projects/ores.sql/utility/generate_script_twins.py= turns it into the seed of
+the script twin inputs table and the table the trade generator compiles in, and
+refuses a recipe that misses an input of its script.
+
+A source is =product.<column>= for a column of the native product row,
+=<rows>[<role>].<column>= for a column of the shared rows under a role, or
+=<rows>.<column>= for a column of the shared rows; =a or b= takes =b= when =a=
+holds no value, and a quoted ='text'= is a literal. =sign= turns =Long=, =Call=
+or =true= into =1= and =Short=, =Put= or =false= into =-1=; =flag= turns =true=
+into =1= and =false= into =0=.
+
+| code                | input       | source                                                                          | transform |
+|---------------------+-------------+---------------------------------------------------------------------------------+-----------|
+| EquityBasketOption  | Underlyings | instrument_underlyings[underlying].name                                         |           |
+| EquityBasketOption  | Weights     | instrument_underlyings[underlying].weight                                       |           |
+| EquityBasketOption  | Expiry      | instrument_schedule_dates[exercise_dates].schedule_date                         |           |
+| EquityBasketOption  | PutCall     | instrument_options.option_type                                                  | sign      |
+| EquityBasketOption  | Strike      | product.strike                                                                  |           |
+| EquityBasketOption  | LongShort   | instrument_options.long_short                                                   | sign      |
+| EquityBasketOption  | Notional    | product.notional                                                                |           |
+| EquityBasketOption  | Settlement  | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date |           |
+| EquityBasketOption  | PayCcy      | product.currency                                                                |           |
+| EquityRainbowOption | Underlyings | instrument_underlyings[underlying].name                                         |           |
+| EquityRainbowOption | Weights     | instrument_underlyings[underlying].weight                                       |           |
+| EquityRainbowOption | Expiry      | instrument_schedule_dates[exercise_dates].schedule_date                         |           |
+| EquityRainbowOption | PutCall     | instrument_options.option_type                                                  | sign      |
+| EquityRainbowOption | Strike      | product.strike                                                                  |           |
+| EquityRainbowOption | LongShort   | instrument_options.long_short                                                   | sign      |
+| EquityRainbowOption | Notional    | product.notional                                                                |           |
+| EquityRainbowOption | Settlement  | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date |           |
+| EquityRainbowOption | PayCcy      | product.currency                                                                |           |
+| FxBasketOption      | Underlyings | instrument_underlyings[underlying].name                                         |           |
+| FxBasketOption      | Weights     | instrument_underlyings[underlying].weight                                       |           |
+| FxBasketOption      | Expiry      | instrument_schedule_dates[exercise_dates].schedule_date                         |           |
+| FxBasketOption      | PutCall     | instrument_options.option_type                                                  | sign      |
+| FxBasketOption      | Strike      | product.strike                                                                  |           |
+| FxBasketOption      | LongShort   | instrument_options.long_short                                                   | sign      |
+| FxBasketOption      | Notional    | product.notional                                                                |           |
+| FxBasketOption      | Settlement  | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date |           |
+| FxBasketOption      | PayCcy      | product.currency                                                                |           |
+| FxRainbowOption     | Underlyings | instrument_underlyings[underlying].name                                         |           |
+| FxRainbowOption     | Weights     | instrument_underlyings[underlying].weight                                       |           |
+| FxRainbowOption     | Expiry      | instrument_schedule_dates[exercise_dates].schedule_date                         |           |
+| FxRainbowOption     | PutCall     | instrument_options.option_type                                                  | sign      |
+| FxRainbowOption     | Strike      | product.strike                                                                  |           |
+| FxRainbowOption     | LongShort   | instrument_options.long_short                                                   | sign      |
+| FxRainbowOption     | Notional    | product.notional                                                                |           |
+| FxRainbowOption     | Settlement  | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date |           |
+| FxRainbowOption     | PayCcy      | product.currency                                                                |           |
+
 * Classes
 
 The division Operations works by: the plain trades a desk signs off a few rows

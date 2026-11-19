@@ -122,6 +122,7 @@
 #include "ores.trading.core/messaging/script_input_registrar.hpp"
 #include "ores.trading.core/messaging/script_registrar.hpp"
 #include "ores.trading.core/messaging/script_result_registrar.hpp"
+#include "ores.trading.core/messaging/script_twin_input_registrar.hpp"
 #include "ores.trading.core/messaging/script_variant_registrar.hpp"
 #include "ores.trading.core/messaging/scripted_parameter_registrar.hpp"
 #include "ores.trading.core/messaging/scripted_parameter_value_registrar.hpp"
@@ -231,6 +232,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_script_calibration_strike_handlers(nats, ctx, verifier));
     append(register_script_coarsening_handlers(nats, ctx, verifier));
     append(register_script_input_handlers(nats, ctx, verifier));
+    append(register_script_twin_input_handlers(nats, ctx, verifier));
     append(register_party_role_type_handlers(nats, ctx, verifier));
     append(register_payoff_type_handlers(nats, ctx, verifier));
     append(register_price_type_handlers(nats, ctx, verifier));

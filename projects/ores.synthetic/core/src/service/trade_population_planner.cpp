@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/projection/ore_projection.hpp"
+#include "ores.synthetic.core/service/scripted_twins.hpp"
 #include "ores.trading.api/builders/barrier_product_builders.hpp"
 #include "ores.trading.api/builders/basket_option_builders.hpp"
 #include "ores.trading.api/builders/bond_builders.hpp"
@@ -2366,6 +2367,8 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         plan.slots.push_back(std::move(entry));
     }
 
+    // A product ORE carries in both forms is booked again as its generic ScriptedTrade.
+    add_scripted_twins(plan);
     return plan;
 }
 
@@ -3741,6 +3744,8 @@ equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         plan.slots.push_back(std::move(entry));
     }
 
+    // A product ORE carries in both forms is booked again as its generic ScriptedTrade.
+    add_scripted_twins(plan);
     return plan;
 }
 

@@ -28,9 +28,9 @@ Serve these composed views from ores.workflow and ores.inbox: one subject's stor
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Two of the six views answer: the run's progress and the approval inbox. |
+| Now          | Five of the six views answer; one subject's story is the last. |
 | Waiting on   | Nothing.                               |
-| Next         | The two subject joins the inbox owes: the curve publish a request authorises, and the cut. |
+| Next         | Serve one subject's story at GET /api/timeline, and the two kind-subject joins the inbox owes. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -100,6 +100,15 @@ task and name that file in the Command column.
 | The workflow area's routes the C++ server answers | 14 of 18 paired | =./compass.sh generate= then =build/scripts/route_inventory.py --check= | the inbox commit |
 | The gateway's routes in the inventory | 1378 routes, 1050 answered by the gateway, 284 of the BFF's 328 paired | =build/scripts/route_inventory.py --check= | the inbox commit |
 | The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the inbox commit |
+| The part's test suite | 43 cases, 504 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the proposal commit |
+| The workflow area's routes the C++ server answers | 16 of 18 paired | =./compass.sh generate= then =build/scripts/route_inventory.py --check= | the proposal commit |
+| The gateway's routes in the inventory | 1380 routes, 1052 answered by the gateway, 286 of the BFF's 328 paired | =build/scripts/route_inventory.py --check= | the proposal commit |
+| The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the proposal commit |
+| The part's test suite | 47 cases, 528 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.workflow.tests= | the story commit |
+| The market data part's suite | 1 test target, all pass | =./compass.sh test run -- -R '^ores\.http\.marketdata\.tests$'= | the story commit |
+| The workflow area's routes the C++ server answers | 17 of 18 paired | =./compass.sh generate= then =build/scripts/route_inventory.py --check= | the story commit |
+| The gateway's routes in the inventory | 1381 routes, 1053 answered by the gateway, 287 of the BFF's 328 paired | =build/scripts/route_inventory.py --check= | the story commit |
+| The local gate | 46 of 46 checks pass | =./compass.sh check --exclude-heavy= | the story commit |
 |      |       |         |        |
 
 * Notes
@@ -108,6 +117,19 @@ The views are served smallest first, and the second one needed something the
 first did not: a view that draws a request reads the same joins the request list
 reads, and those lived inside the request routes. They are shared before the
 views that need them, so each join is stated once for all four request views.
+
+What one subject's story owes, and why it is the last and the largest: the BFF
+reads it for three subjects and each is its own composition. A request is the
+story this branch already serves, wrapped with the subject and an empty list of
+gaps. A person is the account, its contact record, the roles it was given and the
+parties it works in, read as link histories, plus its sign-ins and the role
+catalogue those links are named from. A party is the same shape over the party's
+own rows. Each source that a caller may not read becomes a gap in the answer
+rather than a failure, which is why the answer has a gaps list at all.
+
+The gateway already has the primitive that makes this possible: the one history
+read every history tab calls, keyed by entity type. What the view adds is the
+composition, the ordering the request story already shares, and the gaps.
 
 What the approval inbox owes, for the next family: the queue read itself, the
 joins this part now shares, and one subject join per kind, because a kind's

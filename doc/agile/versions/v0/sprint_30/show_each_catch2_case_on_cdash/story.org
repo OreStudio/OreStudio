@@ -27,9 +27,9 @@ process each. Only the Test.xml that CTest.cmake submits changes.
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Done. CTest.cmake expands each suite into its cases before the submit. |
+| Now           | Done. CTest.cmake expands each suite into its cases and groups them by component. |
 | Waiting on    | Nothing.                               |
-| Next          | Check the first CI build on CDash shows the cases. |
+| Next          | Check the first CI build on CDash shows the cases, grouped by component. |
 | Last touched  | 2026-11-19                               |
 
 * Acceptance
@@ -42,12 +42,15 @@ process each. Only the Test.xml that CTest.cmake submits changes.
   a failed suite whose cases all passed.
 - The suites run as before: no extra process, and no extra test tenant.
 - The memcheck run and local =ctest= are unchanged.
+- CDash groups the cases by component: each test is labelled with its
+  component, and every submission declares the components as subprojects.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:3531C677-255F-4EE6-B7CD-BBEEDFB66622][Expand each suite's results into its cases before the CDash submit]] | DONE | 2026-11-19 | 2026-11-19 | A script rewrites ctest's Test.xml from each suite's Catch2 results, so CDash shows one entry per case, and CTest.cmake runs it between ctest_test and ctest_submit. |
+| [[id:ED622DDC-DA74-496D-8A32-6B41653E5207][Group the CDash test cases by component]] | DONE | 2026-11-19 | 2026-11-19 | Label each test with its component, list the components at configure, and declare them to CDash as subprojects, so the 36,000 case entries are grouped by component. |
 
 * Decisions
 
@@ -69,7 +72,6 @@ process each. Only the Test.xml that CTest.cmake submits changes.
 * Out of scope
 
 - Local =ctest= and =ctest -R= by case name. Each suite stays one test.
-- Grouping the cases into CDash subprojects by component (compass PR #88).
 - The memcheck results, which CDash reads from a different part.
 
 * Promoted from capture

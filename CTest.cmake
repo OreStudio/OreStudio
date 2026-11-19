@@ -336,6 +336,37 @@ endif()
 
 message(STATUS "CMake args: ${cmake_args}")
 ctest_configure(OPTIONS "${cmake_args}" RETURN_VALUE configure_result)
+
+# Every test carries its component as a label, and configure lists those
+# components (see projects/CMakeLists.txt). Naming them as subprojects makes
+# CDash group the test cases by component.
+set(subprojects_file "${CTEST_BINARY_DIRECTORY}/cdash_subprojects.txt")
+if(EXISTS "${subprojects_file}")
+    file(STRINGS "${subprojects_file}" CTEST_LABELS_FOR_SUBPROJECTS)
+    list(LENGTH CTEST_LABELS_FOR_SUBPROJECTS subproject_count)
+    message(STATUS "CDash subprojects: ${subproject_count}")
+
+    # CDash only groups by the subprojects a project declares. Declaring them
+    # in a Project.xml with every submission keeps them in step with the
+    # components, with no manual edit on CDash.
+    set(project_xml "${CTEST_BINARY_DIRECTORY}/Project.xml")
+    set(xml "<Project name=\"${CTEST_PROJECT_NAME}\">\n")
+    foreach(subproject IN LISTS CTEST_LABELS_FOR_SUBPROJECTS)
+        string(APPEND xml "  <SubProject name=\"${subproject}\"></SubProject>\n")
+    endforeach()
+    string(APPEND xml "</Project>\n")
+    file(WRITE "${project_xml}" "${xml}")
+    if(cdash_submit)
+        ctest_submit(FILES "${project_xml}"
+            RETRY_COUNT 2 RETRY_DELAY 30
+            RETURN_VALUE project_submit_result)
+        if(project_submit_result)
+            message(WARNING "CDash did not take the subproject list "
+                "(exit code: ${project_submit_result}).")
+        endif()
+    endif()
+endif()
+
 if(NOT configure_result EQUAL 0)
     message(WARNING "Failed to configure")
     set(had_failures ON)

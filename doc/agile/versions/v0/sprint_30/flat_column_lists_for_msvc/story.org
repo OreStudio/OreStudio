@@ -1,17 +1,72 @@
 :PROPERTIES:
 :ID: 8AD9ABB7-76B1-44AB-AA51-2D5700919CB2
 :END:
-#+title: Column-list chains exhaust MSVC's template budget in a unity unit
-#+description: windows-msvc-release-ninja fails C1202 in 11 ores.trading.core unity units, not only at trade_entity.hpp:95. In one translation unit MSVC fails at the first column-list operator| call past the 1,025th whose result has 18 or more bindings. Generating columns() as one variadic make_columns call never fails in the probes, so one codegen change fixes all 11.
-#+type: capture
-#+level: cross
-#+filetags: :ci:windows:msvc:trading:unity:codegen:
+#+title: Story: Generate column lists in one variadic call so MSVC stays within its template budget
+#+description: Generate each entity's columns() as one variadic make_columns call instead of an operator| chain, so no ores unity unit exhausts MSVC's template budget and windows-msvc-release-ninja stops failing with C1202.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:ci:windows:msvc:codegen:
 #+created: 2026-11-19
 #+updated: 2026-11-19
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
-* What
+* Goal
+
+=windows-msvc-release-ninja= fails with C1202 in 11 =ores.trading.core=
+unity units. The cause is the generated =columns()= chain: each
+=operator|= call spends MSVC's per-unit template budget, and a long chain
+late in a unit fails. Generate =columns()= as one variadic
+=make_columns<e>(key(...), bind(...)...)= call, as compass's probes
+prove, so the budget is never spent on column lists. The rule, the
+failing units and the evidence are under * Promoted from capture.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-19                               |
+
+* Acceptance
+
+- =columns.hpp= has a variadic =make_columns= that returns
+  =column_list<Bindings...>= in one step.
+- The codegen template emits every entity's =columns()= as one
+  =make_columns= call, and regeneration is byte-identical with the
+  committed tree.
+- No generated or hand-written =columns()= uses the =operator|= chain.
+- =windows-msvc-release-ninja= builds every =ores.trading.core= unity
+  unit, including 29 to 55.
+- The Linux, macOS and Windows clang builds stay green, and the
+  repository tests pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Changing unity batch sizes. That only moves the failures.
+- The compass check that counts each unit's budget. compass owns it.
+- The C1202 failures of the conventions and the configuration document
+  protocol, which other stories own.
+
+* Promoted from capture
+
+Captured 2026-11-19 in the product backlog; promoted preserving the UUID.
+
+** What
 
 The nightly of 2026-11-19 (run 44485188155, head =e866b76f3e=) failed in
 =windows-msvc-release-ninja= with =fatal error C1202: recursive type or
@@ -60,13 +115,13 @@ and 55 as they are, 120 or 480 entities of width 20, 60 of width 75 and
 =build/probes/msvc_c1202/flat_columns.hpp=. Smaller unity batches would
 only move the failures.
 
-* Why
+** Why
 
 The failure is on MSVC release alone; the Linux and Windows clang legs
 compile the same tree. No MSVC Windows artefact can be built while it
 stands, and every entity a model adds spends more of each unit's budget.
 
-* References
+** References
 
 - compass =doc/agile/versions/v0/sprint_01/keep_msvc_within_its_template_limits/=:
   the investigation of every C1202 from 2026-09-19 to 2026-11-19, and
@@ -75,6 +130,6 @@ stands, and every entity a model adds spends more of each unit's budget.
   =flat_columns.hpp=, the variadic form.
 - =projects/ores.trading/core/include/ores.trading.core/repository/trade_entity.hpp=
 
-* See also
+** See also
 
 - [[id:7878D057-5504-4117-98DF-6CEA9BB5D6B9][MSVC fails C1202 on the bond export carrier]] — the other C1202 mechanism, one reflected type too large; reflect-cpp's removal ended it.

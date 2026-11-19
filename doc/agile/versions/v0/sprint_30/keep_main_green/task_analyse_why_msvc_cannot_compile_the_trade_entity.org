@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: eager_maxwell
 #+branch: docs/analyse-the-msvc-trade-entity-failure
-#+pr:
+#+pr: 4897
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-19
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4897][#4897]] | [agile] Analyse why MSVC cannot compile the trade entity |
 
 * Review
 

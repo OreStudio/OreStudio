@@ -19,7 +19,7 @@
  *
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
  * The identity shapes against the running services: the shapes are a paged list
@@ -28,6 +28,16 @@ import { expect, test } from '@playwright/test';
  */
 
 const CODE = 'credit.yield';
+
+/** Deletes the shape this file adds, with its entries, when a failed run left it behind. */
+async function removeLeftover(page: Page): Promise<void> {
+    const found = await page.request.get(`/api/refdata/series-identity-shapes/key/${CODE}`);
+    if (!found.ok()) return;
+    await page.goto(`/market-data/identity-shapes/${CODE}`);
+    await page.getByRole('button', { name: 'Delete', exact: true }).first().click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(page).toHaveURL(/\/market-data\/identity-shapes$/);
+}
 
 test('the shapes are a paged list, and a shape opens with its entries', async ({ page }) => {
     await page.goto('/market-data/identity-shapes');
@@ -48,6 +58,7 @@ test('the shapes are a paged list, and a shape opens with its entries', async ({
 });
 
 test('a shape is added with an entry, and deleted with its entries', async ({ page }) => {
+    await removeLeftover(page);
     await page.goto('/market-data/identity-shapes');
     await page.getByRole('button', { name: 'Add a shape' }).click();
     const add = page.getByRole('dialog');
@@ -61,11 +72,12 @@ test('a shape is added with an entry, and deleted with its entries', async ({ pa
     await page.getByRole('tab', { name: 'Entries' }).click();
     await page.getByRole('button', { name: 'Add', exact: true }).click();
     const entry = page.getByRole('dialog');
-    await entry.getByLabel('Field', { exact: true }).fill('unit_ccy');
+    await entry.getByRole('textbox', { name: /^Field/ }).fill('unit_ccy');
     await entry.getByLabel('Requirement').selectOption('forbidden');
     await entry.getByLabel('Why').fill('A yield is a proportion, not a price.');
     await entry.getByRole('button', { name: 'Add', exact: true }).click();
     await expect(entry).toBeHidden();
+    await page.getByRole('button', { name: 'Refresh' }).click();
     await expect(page.getByRole('row').filter({ hasText: 'unit_ccy' })).toContainText('Forbidden');
 
     await page.getByRole('button', { name: 'Delete', exact: true }).first().click();

@@ -58,10 +58,10 @@ generate_synthetic_equity_generic_barrier_option_instrument(
                    .value();
     r.settlement_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
-    r.barrier_start_date =
-        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
-    r.barrier_end_date =
-        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.barrier_start_date = std::optional<std::chrono::year_month_day>(std::chrono::year_month_day{
+        std::chrono::year{2027}, std::chrono::month{1}, std::chrono::day{4}});
+    r.barrier_end_date = std::optional<std::chrono::year_month_day>(std::chrono::year_month_day{
+        std::chrono::year{2027}, std::chrono::month{6}, std::chrono::day{30}});
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

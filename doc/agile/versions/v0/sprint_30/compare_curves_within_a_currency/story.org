@@ -15,31 +15,40 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+A person compares the curves of one currency by default, and compares two currencies only overnight against overnight, with the screen saying what each comparison shows.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. The analytics picks a currency first and compares like for like. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-11-19                               |
 
 * Acceptance
 
--
+- A curve is chosen within a currency, and the curve beside it is the same currency's by default.
+- Two currencies are compared only overnight against overnight, and the screen says what that shows.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0B48074A-FBFA-4467-964A-CDB9AF23794F][Pick a currency, then compare like for like]] | STARTED | 2026-11-19 | | Choose a currency before a curve, offer the same currency's curves beside it, offer other currencies' overnight curves only behind an explicit choice, and state what a cross-currency pair shows. |
+| [[id:0B48074A-FBFA-4467-964A-CDB9AF23794F][Pick a currency, then compare like for like]] | DONE | 2026-11-19 | 2026-11-19 | Choose a currency before a curve, offer the same currency's curves beside it, offer other currencies' overnight curves only behind an explicit choice, and state what a cross-currency pair shows. |
 
 * Decisions
 
+- A curve is read within its currency. Two currencies are compared only
+  overnight against overnight, because that pair says one thing, the rate
+  differential; a term curve of one currency beside the overnight of another says
+  nothing either curve means.
+- The rules that say which curves may stand together live in one module apart
+  from the page, so the page asks and never decides.
+
 * Out of scope
 
--
+- Comparing term curves across currencies, such as EURIBOR 6M against GBP
+  LIBOR 6M, which mixes the differential with two panels' credit.

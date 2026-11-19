@@ -26,11 +26,11 @@ A person compares the curves of one currency by default, and compares two curren
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6898220F-A217-4848-A796-B5D17F1CDE65][Compare curves within a currency, and across currencies like for like]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
@@ -42,9 +42,18 @@ A person compares the curves of one currency by default, and compares two curren
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Both pickers listed every curve of every currency in one flat list.
+
+1. Give each curve option its currency, from its bootstrap config.
+2. State the rules in one module, =curveChoice=: the currencies, a currency's
+   curves with its funding curve first, the curves that may stand beside the
+   chosen one, and the two pairs the screen explains.
+3. Ask for a currency first, then a curve of it; offer the same currency's
+   curves beside it, the one it discounts off first; offer other currencies'
+   overnight curves only on request and only beside an overnight curve. An
+   address that names any other pair draws one curve.
+4. Explain a cross-currency pair with its own panel: the rate differential,
+   forward points and carry.
 
 * Measurements
 
@@ -58,7 +67,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curve choice and analytics screen tests | 26, pass | =npx vitest run src/marketdata/curveChoice.test.ts src/marketdata/curveAnalyticsScreen.test.tsx= | 044f450845 |
+| Web suite | 2,601 tests, pass | =npx vitest run= in =packages/web= | 044f450845 |
+| Live: GBP overnight beside USD overnight | both curves drawn, pillar by pillar, the differential panel | a probe of the running services as the system administrator | 044f450845 |
 
 * Notes
 
@@ -86,3 +97,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The curve analytics asks for a currency, then a curve of it. The curve beside it
+is the same currency's, the curve it discounts off first. Another currency is
+offered only on request and only beside an overnight curve, and only its
+overnight curves; such a pair has its own panel, which says the gap is the rate
+differential, the source of forward points and of carry. All four acceptance
+points are met.

@@ -8,7 +8,7 @@
 #+filetags: :browse_identity_shapes_as_records:sprint_30:v0:
 #+owner: marco
 #+branch: feature/browse-identity-shapes-as-records
-#+pr:
+#+pr: 4902
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-19
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4902][#4902]] | [marketdata,web] Browse identity shapes as records |
 
 * Review
 

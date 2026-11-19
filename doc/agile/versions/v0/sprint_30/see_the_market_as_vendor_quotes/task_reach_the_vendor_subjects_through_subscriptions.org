@@ -103,7 +103,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed re-ask keeps the old feeds | marketdata_commands.cpp | Accept | A comment states the choice: a watch that dropped every feed on a failure would go dark at each service restart. |
+| 2 | The re-ask blocks the read loop | marketdata_commands.cpp | Decline | Bounded by one request timeout, and a burst of events makes one request. |
+| 3 | The check is advisory at the broker | tick_publication_and_entitlement.org | Decline | The target page records the decision: the check is made where a watch starts, and broker permissions are a separate change. |
+| 4 | The event subscription is broad | marketdata_commands.cpp | Accept in part | The event subjects carry no tenant, so they cannot be narrowed. The wildcard now comes from event_subject_wildcard(), as the eventing header asks. |
+| 5 | The URI check skips the write | marketdata_commands.cpp | Accept | stream_subjects() writes the series before it asks any feed. |
+| 6 | The watch class has no test | marketdata_commands.cpp | Decline | It wraps the concrete NATS client; tested live instead: a watch dropped the Bloomberg feed when display was taken off and added it back when display returned. |
 
 * Result
 
@@ -123,6 +128,8 @@ via its "Verifies task" field.
   subject of a point and of a series; the shell's subjects and its change of
   feeds. Suites: market data API 1136 cases, market data core 458, shell
   application 65, HTTP market data 34; all pass.
-- Not tested: a live watch that asks again after a real change event. The
-  decision is unit tested; the event path needs a running fleet.
+- Tested live on the fleet: =marketdata stream= of GBP/USD as the plc party
+  watched four feeds; taking the display right off the Bloomberg subscription
+  dropped the Bloomberg feed within seconds, with no Bloomberg tick after it, and
+  giving it back added the feed again.
 - The decision on the ticks of an unrouted feed went to its own task.

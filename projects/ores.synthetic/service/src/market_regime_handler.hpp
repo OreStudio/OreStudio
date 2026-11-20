@@ -22,7 +22,6 @@
 #include "feed_kind_registry.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.synthetic.api/messaging/market_regime_protocol.hpp"
-#include <boost/log/trivial.hpp>
 #include <chrono>
 #include <cmath>
 #include <cstddef>

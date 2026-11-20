@@ -32,7 +32,6 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
-#include <boost/log/sources/record_ostream.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <algorithm>
 #include <chrono>

@@ -57,6 +57,55 @@ because the consumers assume arbitrage-free quotes.
 - The calibration engine task, which fits gamma:
   =doc/agile/versions/v0/sprint_30/support_volatility_surfaces-remaining/task_build_the_ssvi_calibration_engine.org=
 
+* Assessment of the analysis
+
+Claude's opinion, 2026-11-20. The analysis is right about where the code changes
+go and about the butterfly bound. It is wrong about calendar arbitrage, it
+leaves out one butterfly condition, and its safe-side advice points the wrong
+way.
+
+- /The butterfly bound is right but incomplete./ Gatheral and Jacquier give two
+  sufficient conditions: theta * phi(theta) * (1 + |rho|) < 4 and
+  theta * phi(theta)^2 * (1 + |rho|) <= 4. The analysis states only the first.
+  With phi = eta * theta^(-gamma) the second is
+  eta^2 * theta^(1 - 2 gamma) * (1 + |rho|) <= 4, which is independent of theta
+  at gamma = 1/2 and depends on it otherwise. A per-slice check has to test both.
+- /The safe-side advice points the wrong way./ It suggests holding gamma at or
+  above 1/2. The calibration fits gamma in (0, 1), and the value seen on a
+  Heston surface is 0.28. A generator that never goes below 1/2 does not test
+  the region the fit lands in. Below 1/2 the first bound tightens at the long
+  end, because theta^(1 - gamma) grows faster. So the long expiry is the one to
+  bound eta against.
+- /The calendar concern is misplaced./ Calendar arbitrage is a property of one
+  surface across its maturities, not of how the surface moves from one step to
+  the next. For the power law with gamma in (0, 1), theta * phi(theta) =
+  eta * theta^(1 - gamma) increases with theta, and
+  d(theta * phi)/d(theta) = (1 - gamma) * phi stays within the SSVI calendar
+  condition's upper bound. So each published surface is free of calendar
+  arbitrage whenever theta increases with maturity, whatever gamma and eta did
+  on the step before. What can break it is a theta that does not increase. That
+  depends on the forward variance drivers, which exist now and do not depend on
+  gamma.
+- /An alternative it does not mention./ Gatheral and Jacquier's power-law form
+  phi(theta) = eta / (theta^gamma * (1 + theta)^(1 - gamma)) is free of butterfly
+  arbitrage for every theta when eta * (1 + |rho|) <= 2 and gamma is in
+  (0, 1/2]. That would remove the per-slice check. But the calibration fits the
+  pure power law, as QuantExt does, so the generator and the fit would then use
+  different families. Keep the pure power law and check each slice.
+- /On the three approaches./ The bounded mean-reverting driver fits the
+  existing design best, but nothing yet says gamma moves day to day in real FX
+  markets. A gamma coupled to the state ties it to eta with no evidence for the
+  link. A constant gamma per path or per regime is the useful first step: it
+  costs no factor and no change to the correlation layout, it uses the start's
+  gamma instead of ignoring it, and it gives the calibration a known gamma to
+  recover. That is the test this work exists for. A moving gamma makes that
+  test harder to read, because there is no single true value to compare with.
+
+Recommendation: take the start's gamma, held constant on the path, in (0, 1).
+Check both butterfly conditions on each published slice, at the longest expiry
+first. Add a stochastic gamma driver only when there is evidence that gamma
+moves.
+
 * See also
 
 -

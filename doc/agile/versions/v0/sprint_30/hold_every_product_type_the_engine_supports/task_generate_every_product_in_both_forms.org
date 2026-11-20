@@ -133,7 +133,6 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/4919][#4919]] | [synthetic] Twin the pairwise variance swaps |
-| TBD | [synthetic] Twin the pairwise variance swaps |
 | [[https://github.com/OreStudio/OreStudio/pull/4912][#4912]] | [synthetic] Twin the window barrier options |
 | [[https://github.com/OreStudio/OreStudio/pull/4906][#4906]] | [synthetic] Twin the variance swaps, forward vol agreements and best entry options |
 | [[https://github.com/OreStudio/OreStudio/pull/4898][#4898]] | [synthetic] Book the basket and rainbow options as scripted twins |

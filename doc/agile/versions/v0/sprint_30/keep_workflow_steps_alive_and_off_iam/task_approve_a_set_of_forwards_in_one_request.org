@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: FD16644C-6F33-497A-A810-72013FB6F694
+:END:
+#+title: Task: Approve a set of forwards in one request
+#+description: The forward publish was left on the one-request-one-subject key when curves and surfaces moved to a set. It raises a request per pair, about twenty a party, and its repository still reads a request's subject with read_latest_by_request.
+#+type: task
+#+level: s1
+#+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the forward publish the set shape curves and surfaces now use: the pair is
+the second half of the natural key, one request names a party's pairs, and the
+step raises once.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
+| Now          | Not started.                           |
+| Waiting on   | Nothing.                               |
+| Next         | The same four slices the surface set took. |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- One request authorises a party's forward pairs, and a decider answers it once.
+- A publish still names the request and one pair, and is refused when the request
+  does not name that pair.
+- The published forward sets a reader sees do not change shape: one row per pair,
+  sharing the request id of the set they belong to.
+- A person's publish of one pair is a set of one, so there is one raise path.
+
+* Plan
+
+=ores_marketdata_fx_forward_publishes_tbl= still keys on =request_id= alone, and
+=fx_forward_publish_service.cpp= reads a request's subject with
+=read_latest_by_request=. The work is the four slices of
+[[id:C756C87B-2284-4BCB-AAEC-F2EA4F2F6D6F][Approve a set of surfaces in one
+request]]: the pair becomes the second half of the natural key; the read becomes
+=read_latest_by_request_and_pair=; a set raise writes the request and its pairs in
+one transaction; the forwards step raises once and publishes each pair under it.
+
+This is tracked rather than assumed because the set path is not complete for every
+kind until it is done, and because #4913's review asked for it to be written down
+before the shape is described as finished.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

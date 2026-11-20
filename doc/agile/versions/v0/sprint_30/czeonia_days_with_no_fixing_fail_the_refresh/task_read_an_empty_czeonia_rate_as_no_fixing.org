@@ -62,6 +62,7 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Rows with an empty rate in the bank's files | 2018: 29, 2019: 82, 2020: 31; none in 2016-17 or 2021-26 | =curl= of =yearly.txt?calendarYear=Y=, =awk -F'|' '$3==""'= | 90700d9b6d |
+| CTest suites | 105 of 105 passed | =./compass.sh check= (ctest) | bb8076c458 |
 | ores.marketdata.official.tests | 121 cases passed, 519 assertions | =ores.marketdata.official.tests= | 90700d9b6d |
 | New case before the fix | failed: =fixings.has_value()= is false | =ores.marketdata.official.tests "[cnb]"= | 2cc6d6e76b |
 | CZEONIA fixings stored on a fresh environment | 2367, 2016-11-22 to 2026-11-19 | =./compass.sh sql -u ddl= on =ores_marketdata_market_fixings_tbl= | 90700d9b6d |
@@ -100,7 +101,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: a rate cell of spaces only is still refused | =cnb.cpp= | Decline | No published file holds one; only the empty cell the bank writes means no rate |
+| 2 | Local review: the changed files spell clean | all | Accept | misspell-fixer on the changed files exits 0 |
+| 3 | Gate: ticks-smoke failed provisioning | machine | Decline | The disk filled (944 MB of 906 GB free); Postgres could not extend a file. Not the change |
 
 * Result
 

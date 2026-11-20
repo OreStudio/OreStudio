@@ -195,7 +195,7 @@ Gates, each run on the tree it names:
 | Codegen suite | this branch | 1814 passed |
 | =check_single_writer.py= | this branch | 9 tables written both ways, all listed |
 | =check_populate_references.py=, =check_entity_table_writes.py=, =check_rls_system_tenant_widenings.py= | this branch | clean, no new writer, 13 widenings |
-| `compass check --exclude-heavy` | this branch, rebased | 90 of 91 pass; the one failure is `ore-parameters-seed`, which fails on `origin/main` in a clean worktree too |
+| `compass check --exclude-heavy` | this branch, rebased onto `3b8cdcd569` | 88 of 91 pass. The three failures all fail on `origin/main` in a clean worktree: `xml-benchmark-recorded` and `ore-parameters-seed` exit 1 there, and `web` hits the 900 s cap only when three heavy jobs share the host -- it passes alone, and a clean checkout of the branch typechecks, formats and tests clean |
 | Build, ctest, ticks smoke | this branch | not run here: the host is building elsewhere |
 | Build, ctest 103 of 103 | PR #4833 | succeeded on that tree |
 

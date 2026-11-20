@@ -108,10 +108,10 @@ Delivered by the two tasks named in the plan; nothing new was built here.
 - Checked on main at a6264d8040: =ores.marketdata.core.tests
   "[series_identity][shape]"= passed 11 cases (23 assertions), among them a
   fixing missing a required field, and one carrying a unit currency, refused
-  by name. The database-backed writer tests were not run: this environment's
-  database predates main's =provider_code= column. Outstanding: run them
-  (=service_import_service_tests=, among them
-  =a_batch_with_a_series_the_shape_refuses_stores_none_of_it=) on a database
-  recreated from main.
+  by name. On a database recreated from main at cddb56fd15, the whole
+  =ores.marketdata.core.tests= suite passed (471 cases, 44,546 assertions),
+  among them the writer's =a_series_the_shape_refuses_is_not_stored=,
+  =a_batch_with_a_series_the_shape_refuses_stores_none_of_it= and
+  =a_series_the_shape_refuses_is_counted_and_left_unprojected=.
 - Left to the story's other tasks: the CRM topology factory's refusal of an FX
   level series that lacks =ccy= or =unit_ccy= is not built.

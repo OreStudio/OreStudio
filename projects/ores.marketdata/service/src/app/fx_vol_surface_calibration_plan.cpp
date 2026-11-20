@@ -27,6 +27,7 @@
 #include <cmath>
 #include <format>
 #include <set>
+#include <stdexcept>
 
 namespace ores::marketdata::service::app {
 
@@ -499,7 +500,8 @@ make_quote_fit_recipe(const std::string& base_currency,
     auto& held = out.quotes[series];
     std::vector<recipe_expiry> expiries;
     for (const auto& q : quotes) {
-        if (!std::isfinite(q.volatility) || !read_strike_label(q.expiry + "/" + q.label, q.label))
+        if (!std::isfinite(q.volatility) ||
+            !read_strike_label(pillar_key_of(q.expiry, q.label), q.label))
             continue;
         if (!std::ranges::any_of(expiries, [&](const auto& e) { return e.code == q.expiry; })) {
             const auto period = mapping::parse_tenor_text(q.expiry);
@@ -552,6 +554,62 @@ std::string delta_label(const std::string& strike) {
     if (!delta)
         return strike;
     return delta->delta.text() + (delta->option_type == "Call" ? "C" : "P");
+}
+
+std::expected<std::vector<ores::marketdata::messaging::fx_vol_source_fit>, std::string>
+fit_quote_sources(const std::string& base_currency,
+                  const std::string& quote_currency,
+                  const refdata::domain::fx_option_convention& convention,
+                  const std::vector<ores::marketdata::messaging::fx_vol_quote_source>& sources,
+                  const quote_fit_forwards& forwards_of,
+                  double pillar_tolerance) {
+    if (sources.size() > most_fit_sources)
+        return std::unexpected(std::format(
+            "A fit reads at most {} sources, not {}.", most_fit_sources, sources.size()));
+    for (const auto& source : sources)
+        if (source.quotes.size() > most_fit_quotes)
+            return std::unexpected(std::format("A source holds at most {} quotes; {} holds {}.",
+                                               most_fit_quotes,
+                                               source.name,
+                                               source.quotes.size()));
+    std::vector<ores::marketdata::messaging::fx_vol_source_fit> out;
+    std::optional<surface_forward_set> forwards;
+    for (const auto& source : sources) {
+        ores::marketdata::messaging::fx_vol_source_fit fit;
+        fit.name = source.name;
+        try {
+            std::vector<quoted_surface_point> quotes;
+            quotes.reserve(source.quotes.size());
+            for (const auto& q : source.quotes)
+                quotes.push_back({q.expiry, q.label, q.volatility});
+            const auto made = make_quote_fit_recipe(
+                base_currency, quote_currency, convention, source.name, quotes);
+            if (!made)
+                throw std::invalid_argument(made.error());
+            const auto checked = check_recipe(made->recipe);
+            if (!checked)
+                throw std::invalid_argument(checked.error());
+            if (!forwards)
+                forwards = forwards_of(made->recipe);
+            const auto prepared = prepare_calibration(
+                made->recipe, *checked, *forwards, made->quotes, pillar_tolerance, 1);
+            if (!prepared)
+                throw std::invalid_argument(prepared.error());
+            const auto fitted = qs::calibrate_ssvi(prepared->request);
+            if (!fitted)
+                throw std::invalid_argument(fitted.error());
+            for (const auto& point : fitted->grid)
+                fit.points.push_back({.expiry = point.expiry_id,
+                                      .strike = delta_label(point.strike_id),
+                                      .volatility = point.volatility});
+            fit.unfitted_expiries = prepared->unfitted_expiries;
+            fit.fitted = true;
+        } catch (const std::exception& e) {
+            fit.message = e.what();
+        }
+        out.push_back(std::move(fit));
+    }
+    return out;
 }
 
 }

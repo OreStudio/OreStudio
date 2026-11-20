@@ -599,42 +599,18 @@ fx_vol_surface_calibration_service::fit_quotes(const context& ctx,
         out.convention_id = convention.id;
         out.delta_type = convention.delta_type;
 
-        std::optional<surface_forward_set> forwards;
-        for (const auto& source : req.sources) {
-            mm::fx_vol_source_fit fit;
-            fit.name = source.name;
-            try {
-                std::vector<quoted_surface_point> quotes;
-                quotes.reserve(source.quotes.size());
-                for (const auto& q : source.quotes)
-                    quotes.push_back({q.expiry, q.label, q.volatility});
-                const auto made =
-                    make_quote_fit_recipe(base, quote, convention, source.name, quotes);
-                if (!made)
-                    throw std::invalid_argument(made.error());
-                const auto checked = check_recipe(made->recipe);
-                if (!checked)
-                    throw std::invalid_argument(checked.error());
-                if (!forwards)
-                    forwards = read_forwards(ctx, made->recipe, as_of);
-                const auto prepared = prepare_calibration(
-                    made->recipe, *checked, *forwards, made->quotes, pillar_tolerance, 1);
-                if (!prepared)
-                    throw std::invalid_argument(prepared.error());
-                const auto fitted = qs::calibrate_ssvi(prepared->request);
-                if (!fitted)
-                    throw std::invalid_argument(fitted.error());
-                for (const auto& point : fitted->grid)
-                    fit.points.push_back({.expiry = point.expiry_id,
-                                          .strike = delta_label(point.strike_id),
-                                          .volatility = point.volatility});
-                fit.unfitted_expiries = prepared->unfitted_expiries;
-                fit.fitted = true;
-            } catch (const std::exception& e) {
-                fit.message = e.what();
-            }
-            out.fits.push_back(std::move(fit));
-        }
+        auto fits = fit_quote_sources(
+            base,
+            quote,
+            convention,
+            req.sources,
+            [&](const surface_calibration_recipe& recipe) {
+                return read_forwards(ctx, recipe, as_of);
+            },
+            pillar_tolerance);
+        if (!fits)
+            throw std::invalid_argument(fits.error());
+        out.fits = std::move(*fits);
         out.success = true;
     } catch (const std::exception& e) {
         out.success = false;

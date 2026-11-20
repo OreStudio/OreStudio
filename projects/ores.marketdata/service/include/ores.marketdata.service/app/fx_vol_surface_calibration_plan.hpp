@@ -21,6 +21,7 @@
 
 #include "ores.analytics.quant/domain/date_convention.hpp"
 #include "ores.analytics.quant/service/ssvi_calibration_engine.hpp"
+#include "ores.marketdata.api/messaging/fx_vol_quote_fit_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.refdata.api/domain/fx_vol_surface_blueprint.hpp"
@@ -29,6 +30,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <expected>
+#include <functional>
 #include <map>
 #include <optional>
 #include <string>
@@ -175,7 +177,8 @@ struct quote_fit_recipe final {
     std::map<boost::uuids::uuid, surface_series_quotes> quotes;
 };
 
-/// The series id a quote fit's pillars read; it names no stored series.
+/// The series id a quote fit's pillars read; it names no stored series. Its bytes spell
+/// "QuoteFit", then one.
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT boost::uuids::uuid quote_fit_series();
 
 /**
@@ -194,6 +197,30 @@ make_quote_fit_recipe(const std::string& base_currency,
                       const refdata::domain::fx_option_convention& convention,
                       const std::string& source_name,
                       const std::vector<quoted_surface_point>& quotes);
+
+/// The most sources one quote fit reads; each is a fit of its own.
+inline constexpr std::size_t most_fit_sources = 8;
+/// The most quotes one source of a quote fit holds.
+inline constexpr std::size_t most_fit_quotes = 1000;
+
+/// The forward set a quote fit reads, given the recipe of its first source.
+using quote_fit_forwards = std::function<surface_forward_set(const surface_calibration_recipe&)>;
+
+/**
+ * @brief Each source's quotes read as a smile by delta, in the order the sources are named.
+ *
+ * A source that cannot be fitted is answered with why, and the others are still fitted. The
+ * forward set is read once, for the first source that reaches it. Refuses more than
+ * most_fit_sources sources, or a source of more than most_fit_quotes quotes, before any fit.
+ */
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT
+    std::expected<std::vector<ores::marketdata::messaging::fx_vol_source_fit>, std::string>
+    fit_quote_sources(const std::string& base_currency,
+                      const std::string& quote_currency,
+                      const refdata::domain::fx_option_convention& convention,
+                      const std::vector<ores::marketdata::messaging::fx_vol_quote_source>& sources,
+                      const quote_fit_forwards& forwards_of,
+                      double pillar_tolerance);
 
 /// The display label of an output strike: 25P for DEL/PaSpot/Put/25, ATM for ATM.
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::string delta_label(const std::string& strike);

@@ -473,3 +473,53 @@ TEST_CASE("a positive risk reversal puts the call wing above the put wing",
         CHECK(smile.at({expiry, "ATM"}) == Approx(0.10).margin(0.002));
     }
 }
+
+TEST_CASE("a source that cannot be fitted is answered with why, and the others are still fitted",
+          "[app][fx_vol_surface_calibration_plan][quote_fit]") {
+    namespace mm = ores::marketdata::messaging;
+    const auto source_of = [](const std::string& name, const std::vector<quoted_surface_point>& q) {
+        mm::fx_vol_quote_source out;
+        out.name = name;
+        for (const auto& p : q)
+            out.quotes.push_back(
+                {.expiry = p.expiry, .label = p.label, .volatility = p.volatility});
+        return out;
+    };
+    int reads = 0;
+    const auto forwards_of = [&](const surface_calibration_recipe&) {
+        ++reads;
+        return eur_usd_forward_set();
+    };
+    const auto fits = fit_quote_sources("EUR",
+                                        "USD",
+                                        *eur_usd_recipe().convention,
+                                        {source_of("empty", {}),
+                                         source_of("ice", source_quotes(0.10, 0.0, 0.0)),
+                                         source_of("tradeweb", source_quotes(0.12, 0.0, 0.0))},
+                                        forwards_of,
+                                        0.01);
+    REQUIRE(fits);
+    REQUIRE(fits->size() == 3);
+    CHECK((*fits)[0].name == "empty");
+    CHECK_FALSE((*fits)[0].fitted);
+    CHECK((*fits)[0].message.contains("empty quotes no ATM"));
+    CHECK((*fits)[1].fitted);
+    CHECK((*fits)[1].points.size() == 15);
+    CHECK((*fits)[2].fitted);
+    CHECK((*fits)[2].points.front().volatility == Approx(0.12).margin(1e-4));
+    CHECK(reads == 1);
+
+    const std::vector<mm::fx_vol_quote_source> crowd(most_fit_sources + 1,
+                                                     source_of("ice", source_quotes(0.1, 0, 0)));
+    const auto refused =
+        fit_quote_sources("EUR", "USD", *eur_usd_recipe().convention, crowd, forwards_of, 0.01);
+    REQUIRE_FALSE(refused);
+    CHECK(refused.error().contains("at most 8 sources"));
+
+    std::vector<quoted_surface_point> many(most_fit_quotes + 1, {"1M", "ATM", 0.1});
+    const auto large = fit_quote_sources(
+        "EUR", "USD", *eur_usd_recipe().convention, {source_of("ice", many)}, forwards_of, 0.01);
+    REQUIRE_FALSE(large);
+    CHECK(large.error().contains("ice holds 1001"));
+    CHECK(reads == 1);
+}

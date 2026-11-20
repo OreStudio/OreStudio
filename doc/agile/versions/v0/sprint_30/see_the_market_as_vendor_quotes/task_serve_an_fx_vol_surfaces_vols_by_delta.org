@@ -92,7 +92,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ores.http checks the pair less than the BFF | quote_routes.cpp | Decline | The service is the authority: it refuses a pair that is not BASE/QUOTE with a plain message, through either entry point. |
+| 2 | No limit on a request's size in ores.http | fx_vol_surface_calibration_plan.cpp | Accept | The service refuses more than 8 sources, or a source of more than 1000 quotes, before any fit, so both entry points are capped. Checked live: 10 sources are refused. |
+| 3 | A fit holds the NATS handler thread | application.cpp | Decline | nats.c gives each subscription its own delivery thread (no global delivery is set), so a slow fit delays only other fits, never other subjects. |
+| 4 | Pillar ids repeat past 65,536 quotes | fx_vol_surface_calibration_plan.cpp | Accept | Closed by the cap of 1000 quotes a source. |
+| 5 | A quote with a label SSVI cannot read is dropped silently | fx_vol_surface_calibration_plan.cpp | Decline | The screen sends only the board's ATM, RR and BF labels; a source left with nothing is told so. |
+| 6 | The point name passed to read_strike_label is unclear | fx_vol_surface_calibration_plan.cpp | Accept | It now uses pillar_key_of, the same key the blueprint's pillars use. |
+| 7 | One delta type for every expiry | fx_vol_surface_calibration_plan.cpp | Decline | Already stated as a limitation of the PR and the task. |
+| 8 | No test of fit_quotes' per-source isolation | fx_vol_surface_calibration_service.cpp | Accept | The per-source loop moved into the pure plan (fit_quote_sources) and is tested: a source with nothing to fit is answered with why while two others fit, the forwards are read once, and both caps refuse. |
+| 9 | The full check gate was not run | - | Decline | Stated in the PR; the gate recreates the environment's database. |
+| 10 | quote_fit_series' bytes are unexplained | fx_vol_surface_calibration_plan.hpp | Accept | Its comment says they spell QuoteFit, then one. |
+| 11 | fit_body sits before the namespace aliases | quote_routes.cpp | Decline | A grouping preference; the struct reads with its wire fields. |
 
 * Result
 

@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 52116497-C612-4788-ADEB-FCC1A2DF6667
+:END:
+#+title: Task: Forbid the Boost.Log macros outside the logger backend
+#+description: A compass check that fails any C++ source calling a Boost.Log macro outside the logger backend, and names the ORES_ macro to use instead.
+#+type: task
+#+level: s1
+#+filetags: :compass:check:logging:break_the_large_compilation_dependencies:sprint_30:v0:
+#+owner: marco
+#+branch: feature/forbid-boost-log-sev
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A compass check fails any C++ source that calls BOOST_LOG_SEV or BOOST_LOG_SCOPED_LOGGER_TAG outside ores.logging/src/logger.cpp, and names the ORES_ macro to use instead, so the 604-object Boost.Log reach the logger handle removed does not come back.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- =compass/checks/ores_logger.org= forbids =BOOST_LOG_SEV= and
+  =BOOST_LOG_SCOPED_LOGGER_TAG= in every C++ source except
+  =projects/ores.logging/src/logger.cpp=.
+- Each finding names the ORES_ replacement and the header to include.
+- The page explains why, from this story, and carries examples that compass
+  runs on every check.
+- The tree has no finding: the two calls left on main are converted.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- compass-85 advised the form. =CPP_NAME= matches a macro invocation and skips
+  comments and strings. =OUTSIDE= is the place for a permanent exemption,
+  because =* Exceptions= rows expire, and it is set once per check, so the page
+  is named for the concept (log through the ORE logger) and later rules share
+  the exemption.
+- Two calls to =BOOST_LOG_SEV= were left on main at 6ebe67a9ac, in
+  =projects/ores.http/synthetic/tests/feed_tick_routes_tests.cpp= lines 158
+  and 190. This task converts them.
+- Not in this task: Boost.Log includes. Most are legitimate (=ores.logging=,
+  the telemetry sinks, the test scoped attributes). Two look like leftovers:
+  =ores.synthetic/service/src/market_regime_handler.hpp= includes
+  =boost/log/trivial.hpp= but logs only through =ORES_LOG_SEV=, and
+  =ores.http/reporting/src/routes/reporting/run_routes.cpp= includes
+  =boost/log/sources/record_ostream.hpp=. A =CPP_INCLUDE= rule on
+  =boost/log= would need a wider =OUTSIDE=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compass/checks/ores_logger.org= forbids both Boost.Log macros outside the
+logger backend, and each finding names its ORES_ replacement. The two calls left
+on main are converted. With compass-ng 459f4a3, =compass check --codec
+ores_logger= gives 0 diagnostics and its four examples pass. One call put back
+on line 158 gave =ores_logger/boost_log_sev= with the fix text, and exit 1.

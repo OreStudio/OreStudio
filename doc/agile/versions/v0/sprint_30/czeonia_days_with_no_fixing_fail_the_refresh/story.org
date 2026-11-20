@@ -21,11 +21,11 @@ The CNB adapter reads a day with an empty rate as a day with no fixing, so every
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Done.                                  |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-11-20                               |
 
 * Acceptance
@@ -38,10 +38,16 @@ The CNB adapter reads a day with an empty rate as a day with no fixing, so every
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8E5BDABE-6926-4FEA-A20D-A507C59318D8][Read an empty CZEONIA rate as no fixing]] | STARTED | 2026-11-20 | | Skip a CZEONIA row whose rate is empty, as the bank writes for a day it set no rate, instead of refusing the whole yearly file. |
+| [[id:8E5BDABE-6926-4FEA-A20D-A507C59318D8][Read an empty CZEONIA rate as no fixing]] | DONE | 2026-11-20 | 2026-11-20 | Skip a CZEONIA row whose rate is empty, as the bank writes for a day it set no rate, instead of refusing the whole yearly file. |
 
 * Decisions
 
+- An empty CZEONIA rate means the bank set no rate that day, so the row gives
+  no fixing. Only an empty rate is read this way; any other text that is not a
+  number still refuses the file.
+
 * Out of scope
 
--
+- The failed refresh of bcb-cdi, which another source causes.
+- The start order on a fresh environment, which leaves the CZK curve on its fixed
+  rate until the synthetic service starts again.

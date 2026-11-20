@@ -42,6 +42,14 @@ const std::string year_2025 = "Date|Volume (CZK mio)|Rate\n"
                               "30 Dec 2025|10422|3.43\n"
                               "31 Dec 2025|6315|3.10\n";
 
+/// The first lines of the 2019 file as the bank sent it on 2026-11-20. A day with no
+/// volume carries no rate.
+const std::string year_2019 = "Date|Volume (CZK mio)|Rate\n"
+                              "02 Jan 2019|58142|0.85\n"
+                              "03 Jan 2019|0|\n"
+                              "04 Jan 2019|0|\n"
+                              "07 Jan 2019|500|1.75\n";
+
 /// What the bank sent on 2026-11-12 for 2027, a year with no rate yet.
 const std::string empty_year = "\n";
 
@@ -85,6 +93,17 @@ TEST_CASE("a_year_with_no_czeonia_rate_reads_as_no_fixing", "[domain][cnb]") {
 
     REQUIRE(fixings.has_value());
     CHECK(fixings->empty());
+}
+
+TEST_CASE("a_day_with_no_czeonia_rate_reads_as_no_fixing", "[domain][cnb]") {
+    const auto fixings = parse_cnb_czeonia(year_2019, "CZEONIA");
+
+    REQUIRE(fixings.has_value());
+    REQUIRE(fixings->size() == 2);
+    CHECK((*fixings)[0].date == cnb_day(2019, 1, 2));
+    CHECK((*fixings)[0].value == "0.0085");
+    CHECK((*fixings)[1].date == cnb_day(2019, 1, 7));
+    CHECK((*fixings)[1].value == "0.0175");
 }
 
 TEST_CASE("a_malformed_czeonia_file_is_an_error_and_not_a_fixing", "[domain][cnb]") {

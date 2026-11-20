@@ -52,6 +52,10 @@ std::expected<std::vector<published_fixing>, std::string> parse_cnb_czeonia(std:
         auto date = date_of_month_name(cells[*date_at], ' ');
         if (!date)
             return std::unexpected(date.error());
+        // The bank leaves the rate empty on a day it set none, as on the
+        // no-volume days of 2018 to 2020.
+        if (cells[*rate_at].empty())
+            continue;
         auto value = decimal_of_percent(cells[*rate_at]);
         if (!value)
             return std::unexpected(value.error());

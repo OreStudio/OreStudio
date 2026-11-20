@@ -8,7 +8,7 @@
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
 #+branch: feature/approve-a-set-of-surfaces-in-one-request
-#+pr:
+#+pr: 4913
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -145,7 +145,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4913][#4913]] | [marketdata] Approve a party's set of publishes in one request |
 
 * Review
 

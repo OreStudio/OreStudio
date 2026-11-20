@@ -77,7 +77,12 @@ struct surface_publish_raise {
  * a blocking failure, or with a raise already open is left out and named, so a
  * decider never answers for a surface the service would refuse.
  *
- * @throws std::invalid_argument when no member can be raised, or the reason is empty.
+ * The raise judges each member before anything is raised, so a decider never
+ * answers for a surface the service would refuse; what it does not judge is
+ * whether the surface holds at its apply, which the apply answers per member.
+ *
+ * @throws std::invalid_argument when no member can be raised, the reason is
+ * empty, or a surface is named twice.
  */
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT surface_publish_raise
 raise_surface_publish_set(const ores::database::context& ctx,

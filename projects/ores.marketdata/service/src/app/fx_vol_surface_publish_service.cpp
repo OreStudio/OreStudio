@@ -41,6 +41,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <optional>
+#include <set>
 #include <stdexcept>
 
 namespace ores::marketdata::service::app {
@@ -271,6 +272,15 @@ raise_surface_publish_set(const context& ctx,
         throw std::invalid_argument(
             "Say why the surfaces should be published, so the decider reads a reason.");
 
+    // A set names a surface once. The store would refuse the repeat at its
+    // unique key, in words a caller cannot read, so the repeat is refused here,
+    // for the whole set, with the surface named.
+    std::set<boost::uuids::uuid> named;
+    for (const auto& subject : subjects)
+        if (!named.insert(subject.blueprint_id).second)
+            throw std::invalid_argument("The set names the surface " +
+                                        boost::uuids::to_string(subject.blueprint_id) + " twice.");
+
     struct member final {
         surface_publish_subject subject;
         domain::fx_vol_surface_publish record;
@@ -412,8 +422,10 @@ fx_vol_surface_publish_service::read(const context& ctx,
         // set uses.
         msg::fx_vol_surface_publishes_filter by_request;
         by_request.request_id = boost::uuids::string_generator{}(req.approval_request_id);
-        const auto records = repository::fx_vol_surface_publish_repository{}.read_latest(
-            ctx, 0, 1000, {}, by_request);
+        const auto records = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+            return repository::fx_vol_surface_publish_repository{}.read_latest(
+                ctx, offset, limit, {}, by_request);
+        });
         if (records.empty()) {
             out.message = "No surface publish request has the id " + req.approval_request_id + ".";
             return out;

@@ -191,6 +191,23 @@ TEST_CASE("the_market_risk_decider_sees_the_request_and_approving_it_permits_the
     CHECK(verdict.record->bootstrap_config_id == f.config_id);
 }
 
+TEST_CASE("a_set_that_names_a_curve_twice_is_refused_in_words", tags) {
+    curve_fixture f;
+    const auto maker = seed_person(f.h);
+    const auto subject = f.subject();
+
+    // The store would refuse the repeat at the natural key, in words a caller
+    // cannot read, so the set is refused before anything is written.
+    try {
+        raise_publish_request_set(maker.ctx, {subject, subject}, "A set that repeats itself");
+        FAIL("A set that names one curve twice was raised.");
+    } catch (const std::invalid_argument& e) {
+        const auto message = std::string(e.what());
+        CHECK(message.find("twice") != std::string::npos);
+        CHECK(message.find(boost::uuids::to_string(f.config_id)) != std::string::npos);
+    }
+}
+
 TEST_CASE("one_request_authorises_a_set_and_each_member_publishes_once", tags) {
     curve_fixture f;
     const auto maker = seed_person(f.h);

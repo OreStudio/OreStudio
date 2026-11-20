@@ -148,7 +148,14 @@ ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request raise_publi
  * act is visible where the requests and the kinds are read rather than buried in
  * the code that raises one.
  *
- * @throws std::invalid_argument when no subject is named, or the reason is empty.
+ * The raise writes every subject it is given and judges none of them: whether a
+ * curve may be published is the gate's to answer at the apply, and a caller that
+ * wants a set with no refusable member filters its subjects first, as the
+ * provisioning step does. The only subjects it refuses are ones it cannot write:
+ * a set that names the same curve twice.
+ *
+ * @throws std::invalid_argument when no subject is named, the reason is empty, or
+ * a curve is named twice.
  * @throws std::runtime_error when the store refuses a detail row.
  */
 ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request

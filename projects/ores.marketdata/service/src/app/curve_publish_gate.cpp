@@ -31,6 +31,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <set>
 #include <stdexcept>
 #include <string>
 
@@ -178,6 +179,16 @@ raise_publish_request_set(const ores::database::context& ctx,
         throw std::invalid_argument(
             "Say why the curve should be published, so the decider reads a reason.");
 
+    // A set names a curve once. The store would refuse the repeat at the
+    // natural key, in words a caller cannot read, so the repeat is refused here
+    // with the curve named.
+    std::set<boost::uuids::uuid> named;
+    for (const auto& subject : subjects)
+        if (!named.insert(subject.bootstrap_config_id).second)
+            throw std::invalid_argument("The set names the curve " +
+                                        boost::uuids::to_string(subject.bootstrap_config_id) +
+                                        " twice.");
+
     ores::inbox::service::approval_lifecycle lifecycle(ctx);
     const auto kind = lifecycle.kind(std::string(curve_publish_kind_code));
     if (!kind)
@@ -286,10 +297,14 @@ publish_verdict verdict_on_publish(const ores::database::context& ctx,
         ores::marketdata::messaging::curve_publishes_filter by_request;
         by_request.request_id = boost::uuids::string_generator{}(request_id);
         std::string authorised;
-        for (const auto& member : repo.read_latest(ctx, 0, 1000, {}, by_request)) {
-            authorised +=
-                (authorised.empty() ? "" : "; ") +
-                describe(names_of(ctx, member.party_id, member.output_series_id, member.as_of));
+        for (std::uint32_t offset = 0;; offset += 1000) {
+            const auto page = repo.read_latest(ctx, offset, 1000, {}, by_request);
+            for (const auto& member : page)
+                authorised +=
+                    (authorised.empty() ? "" : "; ") +
+                    describe(names_of(ctx, member.party_id, member.output_series_id, member.as_of));
+            if (page.size() < 1000)
+                break;
         }
         if (authorised.empty())
             return {.approved = false,

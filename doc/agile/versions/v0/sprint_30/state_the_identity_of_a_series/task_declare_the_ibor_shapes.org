@@ -61,6 +61,10 @@ task and name that file in the Command column.
 
 * Notes
 
+- 2026-11-20: the IR shapes are declared on main (=ir.index_fixing.ibor=
+  requires =ccy=, =index= and =index_name= and forbids =unit_ccy=), and the
+  classification rules hold one index_fixing rule; see the result of [[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

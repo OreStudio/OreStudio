@@ -210,3 +210,16 @@ def test_main_splits_when_asked(tmp_path):
     out = tmp_path / "split"
     assert expand_catch2_cases.main(["x", str(path), "--split", str(out)]) == 0
     assert (out / "files.txt").read_text() == f"{out / 'Test-demo.xml'}\n"
+
+
+def test_a_test_with_two_subproject_labels_goes_to_the_first(tmp_path):
+    tree = ctest_xml(("ores.demo.tests", "passed", None, "demo</Label><Label>other"),
+                     subprojects=("demo", "other"))
+    files = expand_catch2_cases.split(tree, tmp_path / "split")
+    assert [f.name for f in files] == ["Test-demo.xml"]
+
+
+def test_split_of_a_file_without_testing_writes_nothing(tmp_path):
+    tree = ET.ElementTree(ET.fromstring('<Site Name="x"/>'))
+    assert expand_catch2_cases.split(tree, tmp_path / "split") == []
+    assert not (tmp_path / "split").exists()

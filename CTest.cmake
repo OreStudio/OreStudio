@@ -514,9 +514,17 @@ endif()
 # Capture the return value so that CDash being unreachable does not fail CI.
 if(cdash_submit)
     if(subproject_test_files)
-        ctest_submit(FILES ${subproject_test_files}
-            RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
-            RETURN_VALUE submit_result)
+        foreach(test_file IN LISTS subproject_test_files)
+            ctest_submit(FILES "${test_file}"
+                RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
+                RETURN_VALUE file_submit_result)
+            if(file_submit_result)
+                get_filename_component(test_file_name "${test_file}" NAME)
+                message(WARNING "CDash did not take ${test_file_name} "
+                    "(exit code: ${file_submit_result}).")
+                set(submit_result ${file_submit_result})
+            endif()
+        endforeach()
         ctest_submit(PARTS Update Coverage MemCheck Notes ExtraFiles Upload Done
             RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
             RETURN_VALUE parts_submit_result)

@@ -113,6 +113,22 @@ multiplexes a request at a time onto them; the cap becomes pgbouncer's
 =default_pool_size= and =max_db_connections= rather than a sum of per-service
 sizes nobody can see.
 
+What that is worth, stated as expectation and not as measurement until the unit
+exists: the services' own connections do not shrink - they terminate at the
+pooler instead of at the server - so the whole saving is on the server side.
+
+| | Today | Behind a transaction pooler |
+|--+-------+------------------------------|
+| Server connections, one idle environment | 38, held for life | 0 once =server_idle_timeout= closes them |
+| Server connections, one busy environment | 38, whatever it is doing | at most =max_db_connections=, queued beyond it |
+| Ten environments, idle | about 380 of the server's 1500 | near 0 |
+| Concurrency a service may offer | its pool, 2 | its pool, sized to its work, without touching the server |
+
+The point of the last row is that the two questions separate: a step may run four
+lanes and the service two steps without the server seeing eight backends, and one
+environment can no longer starve another because its ceiling is stated per
+environment rather than summed across services that nobody counts.
+
 ** Decision 0: a pooler is a deployment option, never a developer requirement
 
 The problem worth solving is a shared instance carrying ten environments and

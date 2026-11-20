@@ -29,10 +29,8 @@
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.api/messaging/subject_area_protocol.hpp"
 #include "ores.dq.core/repository/subject_area_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -445,27 +443,27 @@ subject_area_service::prepare_change(const messaging::subject_area_change& chang
 
 std::vector<domain::subject_area> subject_area_service::list_areas(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all subject areas";
+    ORES_LOG_SEV(lg(), debug) << "Listing all subject areas";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t subject_area_service::count_areas() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total subject areas count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total subject areas count";
     return repo_.get_total_area_count(ctx_);
 }
 
 
 std::optional<domain::subject_area> subject_area_service::get_area_at_version(
     const std::string& name, const std::string& domain_name, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting subject area at version. " << "name: " << name
-                               << " domain_name: " << domain_name << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting subject area at version. " << "name: " << name
+                              << " domain_name: " << domain_name << " version: " << version;
     return repo_.read_at_version(ctx_, name, domain_name, version);
 }
 
 std::optional<domain::subject_area> subject_area_service::get_area(const std::string& name,
                                                                    const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting subject area. " << "name: " << name
-                               << " domain_name: " << domain_name;
+    ORES_LOG_SEV(lg(), debug) << "Getting subject area. " << "name: " << name
+                              << " domain_name: " << domain_name;
     auto results = repo_.read_latest(ctx_, name, domain_name);
     if (results.empty())
         return std::nullopt;
@@ -483,13 +481,13 @@ void subject_area_service::save_area(const domain::subject_area& v) {
         throw std::invalid_argument("Subject Area name cannot be empty.");
     if (v.domain_name.empty())
         throw std::invalid_argument("Subject Area domain_name cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving subject area. " << "name: " << v.name
-                               << " domain_name: " << v.domain_name;
+    ORES_LOG_SEV(lg(), debug) << "Saving subject area. " << "name: " << v.name
+                              << " domain_name: " << v.domain_name;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved subject area. " << "name: " << v.name
-                              << " domain_name: " << v.domain_name;
+    ORES_LOG_SEV(lg(), info) << "Saved subject area. " << "name: " << v.name
+                             << " domain_name: " << v.domain_name;
 }
 
 void subject_area_service::save_areas(const std::vector<domain::subject_area>& areas) {
@@ -499,7 +497,7 @@ void subject_area_service::save_areas(const std::vector<domain::subject_area>& a
         if (e.domain_name.empty())
             throw std::invalid_argument("Subject Area domain_name cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << areas.size() << " subject areas";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << areas.size() << " subject areas";
     auto ts = areas;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -508,11 +506,11 @@ void subject_area_service::save_areas(const std::vector<domain::subject_area>& a
 }
 
 void subject_area_service::delete_area(const std::string& name, const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing subject area. " << "name: " << name
-                               << " domain_name: " << domain_name;
-    repo_.remove(ctx_, name, domain_name);
-    BOOST_LOG_SEV(lg(), info) << "Removed subject area. " << "name: " << name
+    ORES_LOG_SEV(lg(), debug) << "Removing subject area. " << "name: " << name
                               << " domain_name: " << domain_name;
+    repo_.remove(ctx_, name, domain_name);
+    ORES_LOG_SEV(lg(), info) << "Removed subject area. " << "name: " << name
+                             << " domain_name: " << domain_name;
 }
 
 void subject_area_service::delete_areas(const std::vector<std::string>& names,
@@ -522,8 +520,8 @@ void subject_area_service::delete_areas(const std::vector<std::string>& names,
 
 std::vector<domain::subject_area>
 subject_area_service::get_area_history(const std::string& name, const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for subject area. " << "name: " << name
-                               << " domain_name: " << domain_name;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for subject area. " << "name: " << name
+                              << " domain_name: " << domain_name;
     return repo_.read_all(ctx_, name, domain_name);
 }
 

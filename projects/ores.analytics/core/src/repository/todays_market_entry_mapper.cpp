@@ -27,9 +27,7 @@
 #include "ores.analytics.api/domain/todays_market_entry_json_io.hpp" // IWYU pragma: keep.
 #include "ores.analytics.core/repository/todays_market_entry_entity.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -40,7 +38,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::todays_market_entry todays_market_entry_mapper::map(const todays_market_entry_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::todays_market_entry r;
     r.version = v.version;
@@ -60,12 +58,12 @@ domain::todays_market_entry todays_market_entry_mapper::map(const todays_market_
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 todays_market_entry_entity todays_market_entry_mapper::map(const domain::todays_market_entry& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     todays_market_entry_entity r;
     r.id = v.id;
@@ -84,7 +82,7 @@ todays_market_entry_entity todays_market_entry_mapper::map(const domain::todays_
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

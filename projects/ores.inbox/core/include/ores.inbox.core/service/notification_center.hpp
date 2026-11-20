@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
 #include "ores.inbox.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>

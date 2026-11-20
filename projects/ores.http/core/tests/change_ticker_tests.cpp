@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.core/stream/change_ticker.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -38,7 +38,7 @@ const std::string ticker_system_tenant = "ffffffff-ffff-ffff-ffff-ffffffffffff";
 
 TEST_CASE("a_change_recorded_between_ticks_reaches_the_stream", "[change_ticker]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a tick carries a recorded change to the stream";
+    ORES_LOG_SEV(lg, info) << "Testing that a tick carries a recorded change to the stream";
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
@@ -62,7 +62,7 @@ TEST_CASE("a_change_recorded_between_ticks_reaches_the_stream", "[change_ticker]
 
 TEST_CASE("a_stopped_ticker_publishes_nothing_further", "[change_ticker]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a stopped ticker is silent";
+    ORES_LOG_SEV(lg, info) << "Testing that a stopped ticker is silent";
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
@@ -85,7 +85,7 @@ TEST_CASE("a_stopped_ticker_publishes_nothing_further", "[change_ticker]") {
 
 TEST_CASE("a_tick_with_nothing_recorded_writes_nothing", "[change_ticker]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an idle tick is silent";
+    ORES_LOG_SEV(lg, info) << "Testing that an idle tick is silent";
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
@@ -103,7 +103,7 @@ TEST_CASE("a_tick_with_nothing_recorded_writes_nothing", "[change_ticker]") {
 
 TEST_CASE("a_change_inside_the_window_does_not_extend_it", "[change_ticker]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a window closes one interval after it opened";
+    ORES_LOG_SEV(lg, info) << "Testing that a window closes one interval after it opened";
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
@@ -130,7 +130,7 @@ TEST_CASE("a_change_inside_the_window_does_not_extend_it", "[change_ticker]") {
 
 TEST_CASE("a_closed_window_opens_again_on_the_next_change", "[change_ticker]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the clock returns to waiting after a window";
+    ORES_LOG_SEV(lg, info) << "Testing that the clock returns to waiting after a window";
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
@@ -157,7 +157,7 @@ TEST_CASE("a_closed_window_opens_again_on_the_next_change", "[change_ticker]") {
 
 TEST_CASE("a_ticker_stopped_before_it_ran_returns_at_once", "[change_ticker]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a stop before the loop is not lost";
+    ORES_LOG_SEV(lg, info) << "Testing that a stop before the loop is not lost";
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);

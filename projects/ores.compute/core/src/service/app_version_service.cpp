@@ -26,7 +26,6 @@
 #include "ores.compute.api/domain/app_version.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.core/repository/app_version_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -489,24 +487,24 @@ app_version_service::prepare_change(const messaging::app_version_change& change,
 
 std::vector<domain::app_version> app_version_service::list_app_versions(std::uint32_t offset,
                                                                         std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all app versions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all app versions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t app_version_service::count_app_versions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total app versions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total app versions count";
     return repo_.get_total_app_version_count(ctx_);
 }
 
 
 std::vector<domain::app_version> app_version_service::list_app_versions_by_app_id(
     const std::string& app_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing app versions by app_id: " << app_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing app versions by app_id: " << app_id;
     return repo_.read_latest_by_app_id(ctx_, app_id, offset, limit);
 }
 
 std::uint32_t app_version_service::count_app_versions_by_app_id(const std::string& app_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total app versions count by app_id: " << app_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total app versions count by app_id: " << app_id;
     return repo_.get_total_app_version_count_by_app_id(ctx_, app_id);
 }
 
@@ -514,14 +512,14 @@ std::uint32_t app_version_service::count_app_versions_by_app_id(const std::strin
 std::optional<domain::app_version>
 app_version_service::get_app_version_at_version(const boost::uuids::uuid& id,
                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting app version at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting app version at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::app_version>
 app_version_service::get_app_version(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting app version. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting app version. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -536,11 +534,11 @@ app_version_service::get_app_versions(const std::vector<std::string>& ids) {
 void app_version_service::save_app_version(const domain::app_version& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("App Version id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving app version. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving app version. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved app version. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved app version. " << "id: " << v.id;
 }
 
 void app_version_service::save_app_versions(const std::vector<domain::app_version>& app_versions) {
@@ -548,7 +546,7 @@ void app_version_service::save_app_versions(const std::vector<domain::app_versio
         if (e.id.is_nil())
             throw std::invalid_argument("App Version id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << app_versions.size() << " app versions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << app_versions.size() << " app versions";
     auto ts = app_versions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -557,9 +555,9 @@ void app_version_service::save_app_versions(const std::vector<domain::app_versio
 }
 
 void app_version_service::delete_app_version(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing app version. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing app version. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed app version. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed app version. " << "id: " << id;
 }
 
 void app_version_service::delete_app_versions(const std::vector<std::string>& ids) {
@@ -568,7 +566,7 @@ void app_version_service::delete_app_versions(const std::vector<std::string>& id
 
 std::vector<domain::app_version>
 app_version_service::get_app_version_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for app version. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for app version. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

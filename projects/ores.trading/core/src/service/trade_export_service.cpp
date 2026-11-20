@@ -904,7 +904,7 @@ trade_export_service::export_trades(const std::vector<std::string>& page_ids,
     for (auto& item : items)
         if (const auto alias = ore_ids.find(item.ore_id); alias != ore_ids.end())
             add_context(item, "OreTradeId", alias->second);
-    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " trades.";
+    ORES_LOG_SEV(lg(), debug) << "Exported " << items.size() << " trades.";
     return items;
 }
 }

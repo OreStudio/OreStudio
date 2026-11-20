@@ -613,7 +613,7 @@ read_system_party(const context& ctx, const std::string& tenant_id);
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::party>
 party_repository::read_system_party(const context& ctx, const std::string& tenant_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading system party for tenant: " << tenant_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading system party for tenant: " << tenant_id;
     const std::string sql =
         "SELECT * FROM ores_refdata_read_system_party_fn('" + tenant_id + "'::uuid)";
     const auto rows = query_builder::execute_raw_multi_column_query(ctx, sql, lg(),
@@ -667,7 +667,7 @@ read_descendants(const context& ctx, const boost::uuids::uuid& root_id);
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<boost::uuids::uuid>
 party_repository::read_descendants(const context& ctx, const boost::uuids::uuid& root_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party descendants. Root: " << root_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading party descendants. Root: " << root_id;
     const auto id_str = boost::uuids::to_string(root_id);
     const std::string sql =
         "WITH RECURSIVE party_tree AS ("
@@ -815,7 +815,7 @@ the workflow engine rather than replying to the caller directly.
                                             resp.result.message);
                     return;
                 }
-                BOOST_LOG_SEV(party_handler_lg(), debug)
+                ORES_LOG_SEV(party_handler_lg(), debug)
                     << "Workflow step completed: " << msg.subject;
                 publish_step_completion(nats_,
                                         step_id,
@@ -824,7 +824,7 @@ the workflow engine rather than replying to the caller directly.
                                         ores::utility::codec::wire_traits<put_party_response>::write_json(resp),
                                         "");
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(party_handler_lg(), error)
+                ORES_LOG_SEV(party_handler_lg(), error)
                     << "Workflow step failed: " << msg.subject << " — " << e.what();
                 publish_step_completion(nats_,
                                         step_id,
@@ -839,7 +839,7 @@ the workflow engine rather than replying to the caller directly.
 
 #+begin_src cpp :name custom_handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
     void composite_as_of(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -852,7 +852,7 @@ the workflow engine rather than replying to the caller directly.
         }
         auto req = decode<get_party_composite_as_of_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             reply(nats_,
                   msg,
                   get_party_composite_as_of_response{.success = false,
@@ -893,7 +893,7 @@ the workflow engine rather than replying to the caller directly.
             auto contacts = contact_svc.list_party_contact_informations_by_party_id_as_of(
                 boost::uuids::to_string(req->id), current->recorded_at, window_end);
 
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   get_party_composite_as_of_response{.success = true,
@@ -901,7 +901,7 @@ the workflow engine rather than replying to the caller directly.
                                                      .identifiers = std::move(identifiers),
                                                      .contacts = std::move(contacts)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   get_party_composite_as_of_response{.success = false, .message = e.what()});
@@ -909,7 +909,7 @@ the workflow engine rather than replying to the caller directly.
     }
 
     void put_composite(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -922,7 +922,7 @@ the workflow engine rather than replying to the caller directly.
         }
         auto req = decode<put_party_composite_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -967,14 +967,14 @@ the workflow engine rather than replying to the caller directly.
             // carries the version and the audit stamps the store gave it.
             service::party_service reader(req_ctx);
             auto written = reader.find_party(party.id);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   put_party_composite_response{.result = {},
                                                .party = written ? std::move(*written) :
                                                                   std::move(party)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             put_party_composite_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";

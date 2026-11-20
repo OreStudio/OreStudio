@@ -27,13 +27,11 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/entity_classification.hpp"
 #include "ores.refdata.api/domain/entity_classification_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/entity_classification_entity.hpp"
 #include "ores.refdata.core/repository/entity_classification_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -224,8 +222,8 @@ void entity_classification_repository::write(const context& ctx,
 void entity_classification_repository::write(const context& ctx,
                                              const domain::entity_classification& v,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing entity classification. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing entity classification. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     const auto t = entity_classification_apply_claim(
         v,
         claim,
@@ -242,7 +240,7 @@ void entity_classification_repository::write(
     const context& ctx,
     const std::vector<domain::entity_classification>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing entity classifications. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing entity classifications. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "entity_classification_repository::write: one claim is needed for each row");
@@ -284,8 +282,8 @@ entity_classification_repository::read_latest(const context& ctx) {
 
 std::vector<domain::entity_classification> entity_classification_repository::read_latest(
     const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest entity classification. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest entity classification. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -306,8 +304,8 @@ std::vector<domain::entity_classification> entity_classification_repository::rea
 
 std::vector<domain::entity_classification> entity_classification_repository::read_all(
     const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all entity classification versions. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all entity classification versions. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -330,9 +328,9 @@ entity_classification_repository::read_at_version(const context& ctx,
                                                   const std::string& code,
                                                   const std::string& coding_scheme_code,
                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading entity classification at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading entity classification at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<entity_classification_entity>> |
@@ -359,8 +357,8 @@ entity_classification_repository::remove(const context& ctx,
                                          const std::string& code,
                                          const std::string& coding_scheme_code,
                                          std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing entity classification. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing entity classification. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     const auto current = read_latest(ctx, code, coding_scheme_code);
     if (current.empty())
         return remove_status::missing;
@@ -401,8 +399,8 @@ entity_classification_repository::read_latest(const context& ctx,
                                               std::uint32_t limit,
                                               const ores::utility::domain::order& order,
                                               const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest entity classifications with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest entity classifications with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<entity_classification_entity>> |
@@ -422,7 +420,7 @@ entity_classification_repository::read_latest(const context& ctx,
 
 std::uint32_t entity_classification_repository::get_total_classification_count(
     const context& ctx, const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active entity classification count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active entity classification count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

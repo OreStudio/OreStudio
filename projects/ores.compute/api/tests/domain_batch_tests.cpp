@@ -20,7 +20,7 @@
 #include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.api/domain/batch_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/batch_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -42,7 +42,7 @@ TEST_CASE("create_batch_with_valid_fields", "[domain]") {
     sut.external_ref = "RISK-RUN-2026-03-22";
     sut.status = "open";
 
-    BOOST_LOG_SEV(lg, info) << "Batch: " << sut;
+    ORES_LOG_SEV(lg, info) << "Batch: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "admin");
@@ -60,7 +60,7 @@ TEST_CASE("create_batch_in_processing_state", "[domain]") {
     sut.external_ref = "RISK-RUN-2026-03-21";
     sut.status = "processing";
 
-    BOOST_LOG_SEV(lg, info) << "Batch: " << sut;
+    ORES_LOG_SEV(lg, info) << "Batch: " << sut;
 
     CHECK(sut.status == "processing");
 }
@@ -78,7 +78,7 @@ TEST_CASE("create_batch_with_specific_uuid", "[domain]") {
     sut.external_ref = "BATCH-001";
     sut.status = "closed";
 
-    BOOST_LOG_SEV(lg, info) << "Batch: " << sut;
+    ORES_LOG_SEV(lg, info) << "Batch: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.external_ref == "BATCH-001");
@@ -98,7 +98,7 @@ TEST_CASE("batch_insertion_operator", "[domain]") {
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "Batch JSON: " << json_output;
+    ORES_LOG_SEV(lg, info) << "Batch JSON: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("TEST-BATCH-001") != std::string::npos);
@@ -117,7 +117,7 @@ TEST_CASE("batch_convert_single_to_table", "[domain]") {
     std::vector<batch> batches = {b};
     auto table = convert_to_table(batches);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("RISK-RUN-2026-03-22") != std::string::npos);
@@ -140,7 +140,7 @@ TEST_CASE("batch_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(batches);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("BATCH-000") != std::string::npos);
@@ -154,7 +154,7 @@ TEST_CASE("batch_convert_empty_vector_to_table", "[domain]") {
     std::vector<batch> batches;
     auto table = convert_to_table(batches);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     // The header row survives an empty result set.
     CHECK(!table.empty());
@@ -173,7 +173,7 @@ TEST_CASE("create_batch_with_faker", "[domain]") {
         std::string(faker::word::noun()) + "-" + std::to_string(faker::number::integer(1000, 9999));
     sut.status = statuses[faker::number::integer(0, 3)];
 
-    BOOST_LOG_SEV(lg, info) << "Batch: " << sut;
+    ORES_LOG_SEV(lg, info) << "Batch: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(sut.version <= 10);
@@ -200,7 +200,7 @@ TEST_CASE("batch_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(batches);
 
-    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
     for (const auto& b : batches) {

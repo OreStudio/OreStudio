@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/engine_settings_proposal_operations_protocol.hpp"
@@ -94,7 +94,7 @@ public:
             auto raised = service::engine_settings_proposal_service(*ctx).raise(*req);
             ores::service::messaging::reply(nats_, msg, raised);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Error raising an engine run settings proposal: " << e.what();
             ores::service::messaging::reply(
                 nats_,
@@ -137,7 +137,7 @@ public:
                     .changes =
                         service::engine_settings_proposal_service(*ctx).lines(req->request_id)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Error reading an engine run settings proposal: " << e.what();
             ores::service::messaging::reply(
                 nats_,
@@ -193,7 +193,7 @@ public:
                                                          .refusals = refusals,
                                                          .part_codes = std::move(parts)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Error checking an engine run settings proposal: " << e.what();
             ores::service::messaging::reply(
                 nats_,
@@ -248,7 +248,7 @@ private:
     }
 
     std::optional<ores::database::context> context_for(const ores::nats::message& msg) {
-        BOOST_LOG_SEV(lg(), ores::logging::debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(lg(), ores::logging::debug) << "Handling " << msg.subject;
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
             ores::service::messaging::error_reply(nats_, msg, ctx.error());

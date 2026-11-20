@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/credit_basket_constituent.hpp"
 #include "ores.trading.api/messaging/credit_basket_constituent_protocol.hpp"
 #include "ores.trading.core/repository/credit_basket_constituent_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -523,12 +521,12 @@ ores::utility::domain::result credit_basket_constituent_service::prepare_change(
 std::vector<domain::credit_basket_constituent>
 credit_basket_constituent_service::list_credit_basket_constituents(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all credit basket constituents";
+    ORES_LOG_SEV(lg(), debug) << "Listing all credit basket constituents";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t credit_basket_constituent_service::count_credit_basket_constituents() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total credit basket constituents count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total credit basket constituents count";
     return repo_.get_total_credit_basket_constituent_count(ctx_);
 }
 
@@ -536,14 +534,14 @@ std::uint32_t credit_basket_constituent_service::count_credit_basket_constituent
 std::vector<domain::credit_basket_constituent>
 credit_basket_constituent_service::list_credit_basket_constituents_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing credit basket constituents by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing credit basket constituents by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t credit_basket_constituent_service::count_credit_basket_constituents_by_trade_id(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total credit basket constituents count by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total credit basket constituents count by trade_id: "
+                              << trade_id;
     return repo_.get_total_credit_basket_constituent_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -551,18 +549,17 @@ std::uint32_t credit_basket_constituent_service::count_credit_basket_constituent
 std::optional<domain::credit_basket_constituent>
 credit_basket_constituent_service::get_credit_basket_constituent_at_version(
     const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting credit basket constituent at version. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting credit basket constituent at version. "
+                              << "trade_id: " << trade_id << " sequence_number: " << sequence_number
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::credit_basket_constituent>
 credit_basket_constituent_service::get_credit_basket_constituent(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting credit basket constituent. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting credit basket constituent. " << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -579,13 +576,13 @@ void credit_basket_constituent_service::save_credit_basket_constituent(
     const domain::credit_basket_constituent& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Credit Basket Constituent trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving credit basket constituent. " << "trade_id: " << v.trade_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving credit basket constituent. " << "trade_id: " << v.trade_id
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved credit basket constituent. " << "trade_id: " << v.trade_id
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved credit basket constituent. " << "trade_id: " << v.trade_id
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void credit_basket_constituent_service::save_credit_basket_constituents(
@@ -594,8 +591,8 @@ void credit_basket_constituent_service::save_credit_basket_constituents(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Credit Basket Constituent trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << credit_basket_constituents.size()
-                               << " credit basket constituents";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << credit_basket_constituents.size()
+                              << " credit basket constituents";
     auto ts = credit_basket_constituents;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -605,11 +602,11 @@ void credit_basket_constituent_service::save_credit_basket_constituents(
 
 void credit_basket_constituent_service::delete_credit_basket_constituent(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing credit basket constituent. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed credit basket constituent. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing credit basket constituent. " << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed credit basket constituent. " << "trade_id: " << trade_id
+                             << " sequence_number: " << sequence_number;
 }
 
 void credit_basket_constituent_service::delete_credit_basket_constituents(
@@ -620,9 +617,9 @@ void credit_basket_constituent_service::delete_credit_basket_constituents(
 std::vector<domain::credit_basket_constituent>
 credit_basket_constituent_service::get_credit_basket_constituent_history(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for credit basket constituent. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for credit basket constituent. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 

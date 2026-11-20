@@ -15,7 +15,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.ore.core/xml/record.hpp"
@@ -336,7 +336,7 @@ TEST_CASE("as_of_date_reads_where_the_document_states_it_not_where_it_is_mention
 
     REQUIRE(date.has_value());
     CHECK(*date == "2026-01-02");
-    BOOST_LOG_SEV(lg, info) << "read " << *date;
+    ORES_LOG_SEV(lg, info) << "read " << *date;
 
     // The rewrite states the new date and keeps what the document said.
     const auto rewritten = run_document_projection::with_as_of_date(text, "2026-01-05");
@@ -363,7 +363,7 @@ TEST_CASE("as_of_date_reads_the_same_date_however_the_attribute_is_spelled",
 
     REQUIRE(date.has_value());
     CHECK(*date == "2026-01-02");
-    BOOST_LOG_SEV(lg, info) << "read " << *date;
+    ORES_LOG_SEV(lg, info) << "read " << *date;
 }
 
 TEST_CASE("as_of_date_states_nothing_for_a_document_that_prices_at_the_latest_data",
@@ -379,5 +379,5 @@ TEST_CASE("as_of_date_states_nothing_for_a_document_that_prices_at_the_latest_da
 </ORE>)";
 
     CHECK_FALSE(run_document_projection::as_of_date(text).has_value());
-    BOOST_LOG_SEV(lg, info) << "no date, as expected";
+    ORES_LOG_SEV(lg, info) << "no date, as expected";
 }

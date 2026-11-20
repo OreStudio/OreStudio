@@ -22,7 +22,7 @@
 #include "ores.dq.api/domain/dataset_bundle_table.hpp"
 #include "ores.dq.api/domain/dataset_bundle_table_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/dataset_bundle_generator.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "test_suite.hpp"
@@ -54,7 +54,7 @@ TEST_CASE("create_dataset_bundle_with_valid_fields", "[domain]") {
     sut.change_commentary = "Initial creation";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 1);
 
-    BOOST_LOG_SEV(lg, info) << "Dataset bundle: " << sut;
+    ORES_LOG_SEV(lg, info) << "Dataset bundle: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "crypto");
@@ -82,7 +82,7 @@ TEST_CASE("dataset_bundle_convert_single_to_table", "[domain]") {
     std::vector<dataset_bundle> bundles = {db};
     auto table = convert_to_table(bundles);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Name"));
@@ -97,7 +97,7 @@ TEST_CASE("dataset_bundle_generator_produces_valid_instance", "[domain]") {
     generation_context ctx;
     auto sut = ores::dq::generators::generate_synthetic_dataset_bundle(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated bundle: " << sut;
+    ORES_LOG_SEV(lg, info) << "Generated bundle: " << sut;
 
     CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
@@ -114,8 +114,8 @@ TEST_CASE("dataset_bundle_generator_produces_multiple_instances", "[domain]") {
     const std::size_t count = 5;
     auto bundles = ores::dq::generators::generate_synthetic_dataset_bundles(count, ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated " << bundles.size() << " bundles";
-    BOOST_LOG_SEV(lg, info) << bundles;
+    ORES_LOG_SEV(lg, info) << "Generated " << bundles.size() << " bundles";
+    ORES_LOG_SEV(lg, info) << bundles;
 
     CHECK(bundles.size() == count);
 

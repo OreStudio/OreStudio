@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/csa.hpp"
 #include "ores.refdata.api/messaging/csa_protocol.hpp"
 #include "ores.refdata.core/repository/csa_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -496,12 +494,12 @@ csa_service::prepare_change(const messaging::csa_change& change,
 
 
 std::vector<domain::csa> csa_service::list_csas(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all CSAs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all CSAs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t csa_service::count_csas() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CSAs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total CSAs count";
     return repo_.get_total_csa_count(ctx_);
 }
 
@@ -509,24 +507,24 @@ std::uint32_t csa_service::count_csas() {
 std::vector<domain::csa> csa_service::list_csas_by_netting_set_id(const std::string& netting_set_id,
                                                                   std::uint32_t offset,
                                                                   std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing CSAs by netting_set_id: " << netting_set_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing CSAs by netting_set_id: " << netting_set_id;
     return repo_.read_latest_by_netting_set_id(ctx_, netting_set_id, offset, limit);
 }
 
 std::uint32_t csa_service::count_csas_by_netting_set_id(const std::string& netting_set_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CSAs count by netting_set_id: " << netting_set_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total CSAs count by netting_set_id: " << netting_set_id;
     return repo_.get_total_csa_count_by_netting_set_id(ctx_, netting_set_id);
 }
 
 std::vector<domain::csa> csa_service::list_csas_by_netting_set_id(
     const boost::uuids::uuid& netting_set_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing CSAs by netting_set_id: " << netting_set_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing CSAs by netting_set_id: " << netting_set_id;
     return repo_.read_latest_by_netting_set_id(
         ctx_, boost::uuids::to_string(netting_set_id), offset, limit);
 }
 
 std::uint32_t csa_service::count_csas_by_netting_set_id(const boost::uuids::uuid& netting_set_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CSAs count by netting_set_id: " << netting_set_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total CSAs count by netting_set_id: " << netting_set_id;
     return repo_.get_total_csa_count_by_netting_set_id(ctx_,
                                                        boost::uuids::to_string(netting_set_id));
 }
@@ -534,13 +532,13 @@ std::uint32_t csa_service::count_csas_by_netting_set_id(const boost::uuids::uuid
 
 std::optional<domain::csa> csa_service::get_csa_at_version(const boost::uuids::uuid& id,
                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CSA at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting CSA at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::csa> csa_service::get_csa(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CSA. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting CSA. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -548,7 +546,7 @@ std::optional<domain::csa> csa_service::get_csa(const boost::uuids::uuid& id) {
 }
 
 std::optional<domain::csa> csa_service::find_csa(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding CSA. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding CSA. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -562,11 +560,11 @@ std::vector<domain::csa> csa_service::get_csas(const std::vector<std::string>& i
 void csa_service::save_csa(const domain::csa& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("CSA id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CSA. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving CSA. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CSA. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved CSA. " << "id: " << v.id;
 }
 
 void csa_service::save_csas(const std::vector<domain::csa>& csas) {
@@ -574,7 +572,7 @@ void csa_service::save_csas(const std::vector<domain::csa>& csas) {
         if (e.id.is_nil())
             throw std::invalid_argument("CSA id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << csas.size() << " CSAs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << csas.size() << " CSAs";
     auto ts = csas;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -583,15 +581,15 @@ void csa_service::save_csas(const std::vector<domain::csa>& csas) {
 }
 
 void csa_service::delete_csa(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CSA. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CSA. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed CSA. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed CSA. " << "id: " << id;
 }
 
 void csa_service::remove_csa(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CSA. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CSA. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed CSA. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed CSA. " << "id: " << id;
 }
 
 void csa_service::delete_csas(const std::vector<std::string>& ids) {
@@ -599,12 +597,12 @@ void csa_service::delete_csas(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::csa> csa_service::get_csa_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CSA. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for CSA. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 
 std::vector<domain::csa> csa_service::get_csa_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CSA. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for CSA. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

@@ -21,7 +21,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/nil_generator.hpp>
@@ -129,7 +129,7 @@ std::map<std::string, std::string> party_names(const http_request& req, nats_cli
         for (const auto& party : reply.parties)
             names[lowered(party.party_id)] = party.name;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(views_lg(), ores::logging::warn)
+        ORES_LOG_SEV(views_lg(), ores::logging::warn)
             << "The names of the parties were not read: " << e.what();
     }
     return names;
@@ -161,7 +161,7 @@ std::map<std::string, std::string> report_run_names(const http_request& req,
         for (const auto& run : reply.instances)
             names[lowered(rr::as_text(run.id))] = run.name;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(views_lg(), ores::logging::warn)
+        ORES_LOG_SEV(views_lg(), ores::logging::warn)
             << "The names of the report runs were not read: " << e.what();
     }
     return names;

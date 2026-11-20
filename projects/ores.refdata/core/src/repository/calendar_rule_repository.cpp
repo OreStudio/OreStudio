@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/calendar_rule.hpp"
 #include "ores.refdata.api/domain/calendar_rule_json_io.hpp" // IWYU pragma: keep.
@@ -34,7 +33,6 @@
 #include "ores.refdata.core/repository/calendar_rule_entity.hpp"
 #include "ores.refdata.core/repository/calendar_rule_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -222,7 +220,7 @@ void calendar_rule_repository::write(const context& ctx,
 void calendar_rule_repository::write(const context& ctx,
                                      const domain::calendar_rule& v,
                                      const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing calendar rule. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing calendar rule. " << "id: " << v.id;
     const auto t = calendar_rule_apply_claim(v,
                                              claim,
                                              calendar_rule_claim_reads_current(claim) ?
@@ -236,7 +234,7 @@ void calendar_rule_repository::write(
     const context& ctx,
     const std::vector<domain::calendar_rule>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing calendar rules. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing calendar rules. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "calendar_rule_repository::write: one claim is needed for each row");
@@ -272,7 +270,7 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_latest(const c
 
 std::vector<domain::calendar_rule> calendar_rule_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar rule. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar rule. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -290,7 +288,7 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_latest(const c
 
 std::vector<domain::calendar_rule> calendar_rule_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all calendar rule versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all calendar rule versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<calendar_rule_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -306,8 +304,8 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_all(const cont
 
 std::optional<domain::calendar_rule> calendar_rule_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading calendar rule at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading calendar rule at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<calendar_rule_entity>> |
@@ -334,8 +332,8 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_latest_by_cale
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::calendar_rules_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar rules. calendar_code: " << calendar_code
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar rules. calendar_code: " << calendar_code
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -358,8 +356,8 @@ std::uint32_t calendar_rule_repository::get_total_calendar_rule_count_by_calenda
     const context& ctx,
     const std::string& calendar_code,
     const std::optional<messaging::calendar_rules_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar rules count. calendar_code: "
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active calendar rules count. calendar_code: "
+                              << calendar_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -382,8 +380,8 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_by_calendar_co
     const std::string& calendar_code,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading calendar rules as of window. calendar_code: "
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading calendar rules as of window. calendar_code: "
+                              << calendar_code;
 
     const auto vf(valid_from_bound);
     const auto vt(valid_to_bound);
@@ -404,7 +402,7 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_by_calendar_co
 
 calendar_rule_repository::remove_status calendar_rule_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar rule. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing calendar rule. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -442,8 +440,8 @@ calendar_rule_repository::read_latest(const context& ctx,
                                       const ores::utility::domain::order& order,
                                       const std::optional<messaging::calendar_rules_filter>& filter,
                                       const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar rules with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar rules with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<calendar_rule_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -464,7 +462,7 @@ std::uint32_t calendar_rule_repository::get_total_calendar_rule_count(
     const context& ctx,
     const std::optional<messaging::calendar_rules_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar rule count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active calendar rule count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<calendar_rule_entity>> |

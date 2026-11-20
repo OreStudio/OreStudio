@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.api/domain/trade_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
@@ -34,7 +33,6 @@
 #include "ores.trading.core/repository/trade_identifier_mapper.hpp"
 #include "ores.trading.core/repository/trade_write_observation.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -227,8 +225,8 @@ void trade_identifier_repository::write(const context& ctx,
 void trade_identifier_repository::write(const context& ctx,
                                         const domain::trade_identifier& v,
                                         const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade identifier. " << "trade_id: " << v.trade_id
-                               << " id_type: " << v.id_type;
+    ORES_LOG_SEV(lg(), debug) << "Writing trade identifier. " << "trade_id: " << v.trade_id
+                              << " id_type: " << v.id_type;
     const auto t = trade_identifier_apply_claim(
         v,
         claim,
@@ -243,7 +241,7 @@ void trade_identifier_repository::write(
     const context& ctx,
     const std::vector<domain::trade_identifier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade identifiers. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing trade identifiers. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "trade_identifier_repository::write: one claim is needed for each row");
@@ -279,8 +277,8 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(c
 
 std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(
     const context& ctx, const std::string& trade_id, const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifier. " << "trade_id: " << trade_id
-                               << " id_type: " << id_type;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest trade identifier. " << "trade_id: " << trade_id
+                              << " id_type: " << id_type;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
@@ -298,8 +296,8 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(
 
 std::vector<domain::trade_identifier> trade_identifier_repository::read_all(
     const context& ctx, const std::string& trade_id, const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all trade identifier versions. "
-                               << "trade_id: " << trade_id << " id_type: " << id_type;
+    ORES_LOG_SEV(lg(), debug) << "Reading all trade identifier versions. "
+                              << "trade_id: " << trade_id << " id_type: " << id_type;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
@@ -319,9 +317,8 @@ trade_identifier_repository::read_at_version(const context& ctx,
                                              const std::string& trade_id,
                                              const std::string& id_type,
                                              std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading trade identifier at version. "
-                               << "trade_id: " << trade_id << " id_type: " << id_type
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading trade identifier at version. " << "trade_id: " << trade_id
+                              << " id_type: " << id_type << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
@@ -348,8 +345,8 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest_b
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::trade_identifiers_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifiers. trade_id: " << trade_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest trade identifiers. trade_id: " << trade_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
@@ -372,8 +369,8 @@ std::uint32_t trade_identifier_repository::get_total_identifier_count_by_trade_i
     const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::trade_identifiers_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade identifiers count. trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active trade identifiers count. trade_id: "
+                              << trade_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -395,8 +392,8 @@ trade_identifier_repository::remove(const context& ctx,
                                     const std::string& trade_id,
                                     const std::string& id_type,
                                     std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "trade_id: " << trade_id
-                               << " id_type: " << id_type;
+    ORES_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "trade_id: " << trade_id
+                              << " id_type: " << id_type;
     const auto current = read_latest(ctx, trade_id, id_type);
     if (current.empty())
         return remove_status::missing;
@@ -438,8 +435,8 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::trade_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifiers with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest trade identifiers with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -461,7 +458,7 @@ std::uint32_t trade_identifier_repository::get_total_identifier_count(
     const context& ctx,
     const std::optional<messaging::trade_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade identifier count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active trade identifier count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |

@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/commodity_price_segment.hpp"
 #include "ores.refdata.api/messaging/commodity_price_segment_protocol.hpp"
 #include "ores.refdata.core/repository/commodity_price_segment_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -473,12 +471,12 @@ ores::utility::domain::result commodity_price_segment_service::prepare_change(
 
 std::vector<domain::commodity_price_segment>
 commodity_price_segment_service::list_price_segments(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all commodity price segments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all commodity price segments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t commodity_price_segment_service::count_price_segments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total commodity price segments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total commodity price segments count";
     return repo_.get_total_price_segment_count(ctx_);
 }
 
@@ -486,14 +484,14 @@ std::uint32_t commodity_price_segment_service::count_price_segments() {
 std::optional<domain::commodity_price_segment>
 commodity_price_segment_service::get_price_segment_at_version(const boost::uuids::uuid& id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting commodity price segment at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting commodity price segment at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::commodity_price_segment>
 commodity_price_segment_service::get_price_segment(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting commodity price segment. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting commodity price segment. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -508,11 +506,11 @@ commodity_price_segment_service::get_price_segments(const std::vector<std::strin
 void commodity_price_segment_service::save_price_segment(const domain::commodity_price_segment& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Commodity Price Segment id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving commodity price segment. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving commodity price segment. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved commodity price segment. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved commodity price segment. " << "id: " << v.id;
 }
 
 void commodity_price_segment_service::save_price_segments(
@@ -521,7 +519,7 @@ void commodity_price_segment_service::save_price_segments(
         if (e.id.is_nil())
             throw std::invalid_argument("Commodity Price Segment id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << price_segments.size() << " commodity price segments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << price_segments.size() << " commodity price segments";
     auto ts = price_segments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -530,9 +528,9 @@ void commodity_price_segment_service::save_price_segments(
 }
 
 void commodity_price_segment_service::delete_price_segment(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing commodity price segment. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing commodity price segment. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed commodity price segment. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed commodity price segment. " << "id: " << id;
 }
 
 void commodity_price_segment_service::delete_price_segments(const std::vector<std::string>& ids) {
@@ -541,7 +539,7 @@ void commodity_price_segment_service::delete_price_segments(const std::vector<st
 
 std::vector<domain::commodity_price_segment>
 commodity_price_segment_service::get_price_segment_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for commodity price segment. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for commodity price segment. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

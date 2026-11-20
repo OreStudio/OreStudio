@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http/routes/marketdata/quote_board.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.api/domain/asset_class_authorities.hpp"
@@ -141,7 +141,7 @@ void quote_board::take(const std::string& subject, const market_tick& tick) {
     if (found == quotes_.end()) {
         if (quotes_.size() >= capacity) {
             if (refused_++ == 0)
-                BOOST_LOG_SEV(quote_board_lg(), ores::logging::warn)
+                ORES_LOG_SEV(quote_board_lg(), ores::logging::warn)
                     << "The quote board is full at " << capacity
                     << " quotes; a datum heard from now on is not kept";
             return;

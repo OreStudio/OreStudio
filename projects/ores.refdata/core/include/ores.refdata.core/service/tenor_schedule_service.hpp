@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_TENOR_SCHEDULE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/tenor_schedule.hpp"
 #include "ores.refdata.api/messaging/tenor_schedule_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

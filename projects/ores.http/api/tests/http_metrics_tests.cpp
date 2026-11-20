@@ -21,7 +21,7 @@
 #include "ores.http.api/domain/session_cookie.hpp"
 #include "ores.http.api/domain/session_store.hpp"
 #include "ores.http.api/net/http_server.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -206,7 +206,7 @@ std::uint64_t metric_value(const std::string& text, const std::string& name) {
 
 TEST_CASE("health_reports_what_the_server_can_do", "[http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that health states the verifier's presence";
+    ORES_LOG_SEV(lg, info) << "Testing that health states the verifier's presence";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -225,7 +225,7 @@ TEST_CASE("health_reports_what_the_server_can_do", "[http_metrics]") {
 TEST_CASE("a_session_cookie_authenticates_a_request_without_a_token",
           "[session_cookie][http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the cookie is a credential and not a cache";
+    ORES_LOG_SEV(lg, info) << "Testing that the cookie is a credential and not a cache";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -267,7 +267,7 @@ TEST_CASE("a_session_cookie_authenticates_a_request_without_a_token",
 TEST_CASE("a_session_request_forwards_the_token_the_session_keeps",
           "[session_cookie][http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a cookie request carries its session's token";
+    ORES_LOG_SEV(lg, info) << "Testing that a cookie request carries its session's token";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -308,7 +308,7 @@ TEST_CASE("a_session_request_forwards_the_token_the_session_keeps",
 TEST_CASE("an_open_read_sees_a_live_session_and_an_open_write_does_not",
           "[session_cookie][http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an open route reads a session and never needs one";
+    ORES_LOG_SEV(lg, info) << "Testing that an open route reads a session and never needs one";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -360,7 +360,7 @@ TEST_CASE("an_open_read_sees_a_live_session_and_an_open_write_does_not",
 
 TEST_CASE("a_session_near_its_expiry_is_renewed_once", "[session_cookie][http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the gateway renews a browser session's token";
+    ORES_LOG_SEV(lg, info) << "Testing that the gateway renews a browser session's token";
 
     using outcome = token_renewal::outcome;
     for (const auto result : {outcome::renewed, outcome::unavailable, outcome::refused}) {
@@ -437,7 +437,7 @@ TEST_CASE("a_session_near_its_expiry_is_renewed_once", "[session_cookie][http_me
 TEST_CASE("a_session_the_server_does_not_know_is_refused_and_the_cookie_cleared",
           "[session_cookie][http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a dead cookie becomes a sign-in, not a loop";
+    ORES_LOG_SEV(lg, info) << "Testing that a dead cookie becomes a sign-in, not a loop";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -469,7 +469,7 @@ TEST_CASE("a_session_the_server_does_not_know_is_refused_and_the_cookie_cleared"
 
 TEST_CASE("a_session_request_that_changes_something_must_prove_intent", "[session_cookie][csrf]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a cookie alone cannot change anything";
+    ORES_LOG_SEV(lg, info) << "Testing that a cookie alone cannot change anything";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -530,7 +530,7 @@ TEST_CASE("a_session_request_that_changes_something_must_prove_intent", "[sessio
 
 TEST_CASE("an_open_route_refuses_a_client_past_its_budget", "[rate_limit][http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a client past the open budget is told to wait";
+    ORES_LOG_SEV(lg, info) << "Testing that a client past the open budget is told to wait";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -571,7 +571,7 @@ TEST_CASE("an_open_route_refuses_a_client_past_its_budget", "[rate_limit][http_m
 
 TEST_CASE("a_trusted_proxy_s_appended_line_names_the_client", "[rate_limit][http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that every X-Forwarded-For line is read, in order";
+    ORES_LOG_SEV(lg, info) << "Testing that every X-Forwarded-For line is read, in order";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -616,7 +616,7 @@ TEST_CASE("a_trusted_proxy_s_appended_line_names_the_client", "[rate_limit][http
 
 TEST_CASE("an_authenticated_route_counts_the_account", "[rate_limit][http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a signed-in caller spends its own budget";
+    ORES_LOG_SEV(lg, info) << "Testing that a signed-in caller spends its own budget";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -657,7 +657,7 @@ TEST_CASE("an_authenticated_route_counts_the_account", "[rate_limit][http_metric
 
 TEST_CASE("failed_credentials_spend_the_open_budget", "[rate_limit][http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that guessing a credential is limited like an open read";
+    ORES_LOG_SEV(lg, info) << "Testing that guessing a credential is limited like an open read";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -681,7 +681,7 @@ TEST_CASE("failed_credentials_spend_the_open_budget", "[rate_limit][http_metrics
 
 TEST_CASE("metrics_count_what_the_server_answered", "[http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an answer moves the counter it belongs to";
+    ORES_LOG_SEV(lg, info) << "Testing that an answer moves the counter it belongs to";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -718,7 +718,7 @@ TEST_CASE("metrics_count_what_the_server_answered", "[http_metrics]") {
 
 TEST_CASE("a_refused_body_moves_its_own_counter", "[http_metrics]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a refusal is visible where an operator looks";
+    ORES_LOG_SEV(lg, info) << "Testing that a refusal is visible where an operator looks";
 
     http_server_options options;
     options.address = "127.0.0.1";

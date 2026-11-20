@@ -22,7 +22,6 @@
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.core/repository/cut_approval_detail_repository.hpp"
 #include "ores.reporting.core/repository/cut_gap_repository.hpp"
@@ -32,7 +31,6 @@
 #include "ores.reporting.core/service/cut_state.hpp"
 #include "ores.reporting.core/service/cut_take_plan.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -383,8 +381,8 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
                 ores::inbox::service::approval_announcer(ctx_).tell_open_parts(
                     lifecycle, *approval_kind, *raised);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "The request " << request_id
-                                      << " stands, and telling its deciders failed: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "The request " << request_id
+                                     << " stands, and telling its deciders failed: " << e.what();
         }
     }
 
@@ -396,12 +394,12 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
     if (!assembly.gaps.empty()) {
         // The gaps are the answer: the cut exists as an incomplete body and the
         // sentence says what the person chases. It is not a refused call.
-        BOOST_LOG_SEV(lg(), info) << "Cut " << response.cut_id << " of kind " << cut.kind_code
-                                  << " was saved incomplete with " << assembly.gaps.size()
-                                  << " gap(s).";
+        ORES_LOG_SEV(lg(), info) << "Cut " << response.cut_id << " of kind " << cut.kind_code
+                                 << " was saved incomplete with " << assembly.gaps.size()
+                                 << " gap(s).";
     } else {
-        BOOST_LOG_SEV(lg(), info) << "Took cut " << response.cut_id << " of kind " << cut.kind_code
-                                  << " for scope " << cut.scope_code;
+        ORES_LOG_SEV(lg(), info) << "Took cut " << response.cut_id << " of kind " << cut.kind_code
+                                 << " for scope " << cut.scope_code;
     }
     response.result = answered();
     return response;

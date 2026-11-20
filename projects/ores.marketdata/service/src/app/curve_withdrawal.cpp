@@ -21,7 +21,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -165,7 +165,7 @@ withdraw_curve(const ores::database::context& ctx,
                {ores::utility::domain::precondition_kind::must_match_version,
                 static_cast<std::uint32_t>(record.version)});
 
-    BOOST_LOG_SEV(curve_withdrawal_lg(), info)
+    ORES_LOG_SEV(curve_withdrawal_lg(), info)
         << "Withdrew published set " << request.publish_id << " of series "
         << record.output_series_id << " as " << request.reason_code;
 

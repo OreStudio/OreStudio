@@ -20,7 +20,7 @@
 #define ORES_SYNTHETIC_SERVICE_DERIVED_FX_VOL_ADAPTER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"

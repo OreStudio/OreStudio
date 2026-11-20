@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_SERVICE_CALIBRATION_PROVIDER_ORDER_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/calibration_provider_order.hpp"
 #include "ores.synthetic.api/messaging/calibration_provider_order_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

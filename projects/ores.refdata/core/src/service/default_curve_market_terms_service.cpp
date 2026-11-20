@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/default_curve_market_terms.hpp"
 #include "ores.refdata.api/messaging/default_curve_market_terms_protocol.hpp"
 #include "ores.refdata.core/repository/default_curve_market_terms_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -471,12 +469,12 @@ ores::utility::domain::result default_curve_market_terms_service::prepare_change
 
 std::vector<domain::default_curve_market_terms>
 default_curve_market_terms_service::list_market_terms(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all default curve market terms";
+    ORES_LOG_SEV(lg(), debug) << "Listing all default curve market terms";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t default_curve_market_terms_service::count_market_terms() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total default curve market terms count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total default curve market terms count";
     return repo_.get_total_market_terms_count(ctx_);
 }
 
@@ -484,14 +482,14 @@ std::uint32_t default_curve_market_terms_service::count_market_terms() {
 std::optional<domain::default_curve_market_terms>
 default_curve_market_terms_service::get_market_terms_at_version(const boost::uuids::uuid& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting default curve market terms at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting default curve market terms at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::default_curve_market_terms>
 default_curve_market_terms_service::get_market_terms(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting default curve market terms. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting default curve market terms. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -507,11 +505,11 @@ void default_curve_market_terms_service::save_market_terms(
     const domain::default_curve_market_terms& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Default Curve Market Terms id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving default curve market terms. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving default curve market terms. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved default curve market terms. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved default curve market terms. " << "id: " << v.id;
 }
 
 void default_curve_market_terms_service::save_market_terms(
@@ -520,7 +518,7 @@ void default_curve_market_terms_service::save_market_terms(
         if (e.id.is_nil())
             throw std::invalid_argument("Default Curve Market Terms id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << market_terms.size() << " default curve market terms";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << market_terms.size() << " default curve market terms";
     auto ts = market_terms;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -529,9 +527,9 @@ void default_curve_market_terms_service::save_market_terms(
 }
 
 void default_curve_market_terms_service::delete_market_terms(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing default curve market terms. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing default curve market terms. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed default curve market terms. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed default curve market terms. " << "id: " << id;
 }
 
 void default_curve_market_terms_service::delete_market_terms(const std::vector<std::string>& ids) {
@@ -540,8 +538,7 @@ void default_curve_market_terms_service::delete_market_terms(const std::vector<s
 
 std::vector<domain::default_curve_market_terms>
 default_curve_market_terms_service::get_market_terms_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for default curve market terms. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for default curve market terms. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

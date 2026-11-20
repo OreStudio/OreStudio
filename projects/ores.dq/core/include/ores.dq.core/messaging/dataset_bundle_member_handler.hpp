@@ -28,7 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq.core/service/dataset_bundle_member_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -74,7 +74,7 @@ public:
      * @brief Serves dq.v1.dataset_bundle_members.list.
      */
     void list_dataset_bundle_members(ores::nats::message msg) {
-        BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,7 +89,7 @@ public:
         }
         auto req = decode<list_dataset_bundle_members_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -97,13 +97,13 @@ public:
         service::dataset_bundle_member_service svc(req_ctx);
         try {
             auto response = svc.list_dataset_bundle_members(*req);
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_dataset_bundle_members_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -117,7 +117,7 @@ public:
      * @brief Serves dq.v1.dataset_bundle_members.get.
      */
     void get_dataset_bundle_member(ores::nats::message msg) {
-        BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -132,7 +132,7 @@ public:
         }
         auto req = decode<get_dataset_bundle_member_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -140,13 +140,13 @@ public:
         service::dataset_bundle_member_service svc(req_ctx);
         try {
             auto response = svc.get_dataset_bundle_member(*req);
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_dataset_bundle_member_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -160,7 +160,7 @@ public:
      * @brief Serves dq.v1.dataset_bundle_members.get_many.
      */
     void get_many_dataset_bundle_members(ores::nats::message msg) {
-        BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -175,7 +175,7 @@ public:
         }
         auto req = decode<get_many_dataset_bundle_members_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -183,13 +183,13 @@ public:
         service::dataset_bundle_member_service svc(req_ctx);
         try {
             auto response = svc.get_many_dataset_bundle_members(*req);
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_dataset_bundle_members_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -203,7 +203,7 @@ public:
      * @brief Serves dq.v1.dataset_bundle_members.put.
      */
     void put_dataset_bundle_member(ores::nats::message msg) {
-        BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -218,7 +218,7 @@ public:
         }
         auto req = decode<put_dataset_bundle_member_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -226,13 +226,13 @@ public:
         service::dataset_bundle_member_service svc(req_ctx);
         try {
             auto response = svc.put_dataset_bundle_member(*req);
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_dataset_bundle_member_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -246,7 +246,7 @@ public:
      * @brief Serves dq.v1.dataset_bundle_members.put_many.
      */
     void put_many_dataset_bundle_members(ores::nats::message msg) {
-        BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -261,7 +261,7 @@ public:
         }
         auto req = decode<put_many_dataset_bundle_members_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -269,13 +269,13 @@ public:
         service::dataset_bundle_member_service svc(req_ctx);
         try {
             auto response = svc.put_many_dataset_bundle_members(*req);
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_dataset_bundle_members_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -289,7 +289,7 @@ public:
      * @brief Serves dq.v1.dataset_bundle_members.delete.
      */
     void delete_dataset_bundle_member(ores::nats::message msg) {
-        BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -304,7 +304,7 @@ public:
         }
         auto req = decode<delete_dataset_bundle_member_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -312,13 +312,13 @@ public:
         service::dataset_bundle_member_service svc(req_ctx);
         try {
             auto response = svc.delete_dataset_bundle_member(*req);
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_dataset_bundle_member_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -332,7 +332,7 @@ public:
      * @brief Serves dq.v1.dataset_bundle_members.delete_many.
      */
     void delete_many_dataset_bundle_members(ores::nats::message msg) {
-        BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -347,7 +347,7 @@ public:
         }
         auto req = decode<delete_many_dataset_bundle_members_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -355,13 +355,13 @@ public:
         service::dataset_bundle_member_service svc(req_ctx);
         try {
             auto response = svc.delete_many_dataset_bundle_members(*req);
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_dataset_bundle_members_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -375,7 +375,7 @@ public:
      * @brief Serves dq.v1.dataset_bundle_members.list_by_bundle_code.
      */
     void list_by_bundle_code_dataset_bundle_members(ores::nats::message msg) {
-        BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -390,7 +390,7 @@ public:
         }
         auto req = decode<list_by_bundle_code_dataset_bundle_members_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -398,13 +398,13 @@ public:
         service::dataset_bundle_member_service svc(req_ctx);
         try {
             auto response = svc.list_by_bundle_code_dataset_bundle_members(*req);
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+            ORES_LOG_SEV(dataset_bundle_member_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_bundle_code_dataset_bundle_members_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

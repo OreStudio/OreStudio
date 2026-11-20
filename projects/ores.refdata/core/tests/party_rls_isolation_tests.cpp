@@ -19,8 +19,7 @@
  */
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party_counterparty.hpp"
 #include "ores.refdata.api/domain/party_counterparty_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
@@ -35,7 +34,6 @@
 #include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -142,7 +140,7 @@ TEST_CASE("system_party_sees_all_assignments", "[rls][party_isolation]") {
 
     // System party should see all parties via visible party set
     auto visible = compute_visible_parties(ctx, tid, system_party_id);
-    BOOST_LOG_SEV(lg, debug) << "System party visible set size: " << visible.size();
+    ORES_LOG_SEV(lg, debug) << "System party visible set size: " << visible.size();
     const auto is_visible = [&visible](const boost::uuids::uuid& id) {
         return std::ranges::any_of(visible, [&id](const boost::uuids::uuid& v) { return v == id; });
     };
@@ -155,7 +153,7 @@ TEST_CASE("system_party_sees_all_assignments", "[rls][party_isolation]") {
     party_counterparty_repository sys_repo(sys_ctx);
 
     auto all = sys_repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "System party sees " << all.size() << " assignments";
+    ORES_LOG_SEV(lg, debug) << "System party sees " << all.size() << " assignments";
 
     // Each assignment the test wrote comes back by content.
     const auto find_assignment = [&all](const boost::uuids::uuid& party_id,
@@ -245,7 +243,7 @@ TEST_CASE("party_a_sees_only_own_assignments", "[rls][party_isolation]") {
     party_counterparty_repository a_repo(a_ctx);
 
     auto a_results = a_repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Party A sees " << a_results.size() << " assignments";
+    ORES_LOG_SEV(lg, debug) << "Party A sees " << a_results.size() << " assignments";
 
     // Party A should see cp1 and cp3 (both assigned to A)
     CHECK(a_results.size() == 2);
@@ -301,7 +299,7 @@ TEST_CASE("party_b_sees_only_own_assignments", "[rls][party_isolation]") {
     party_counterparty_repository b_repo(b_ctx);
 
     auto b_results = b_repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Party B sees " << b_results.size() << " assignments";
+    ORES_LOG_SEV(lg, debug) << "Party B sees " << b_results.size() << " assignments";
 
     // Party B should see cp2 and cp3 (both assigned to B)
     CHECK(b_results.size() == 2);
@@ -345,20 +343,20 @@ TEST_CASE("nested_party_hierarchy_visibility", "[rls][party_isolation]") {
 
     // Parent sees child's assignments (visible = [parent, child])
     auto parent_visible = compute_visible_parties(ctx, tid, parent.id);
-    BOOST_LOG_SEV(lg, debug) << "Parent visible set size: " << parent_visible.size();
+    ORES_LOG_SEV(lg, debug) << "Parent visible set size: " << parent_visible.size();
     REQUIRE(parent_visible.size() >= 2); // parent + child
 
     auto parent_ctx = ctx.with_party(tid, parent.id, parent_visible, "");
     party_counterparty_repository parent_repo(parent_ctx);
     auto parent_results = parent_repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Parent sees " << parent_results.size() << " assignments";
+    ORES_LOG_SEV(lg, debug) << "Parent sees " << parent_results.size() << " assignments";
     CHECK(parent_results.size() >= 1);
 
     // Child sees only its own assignments (visible = [child])
     auto child_ctx = ctx.with_party(tid, child.id, {child.id}, "");
     party_counterparty_repository child_repo(child_ctx);
     auto child_results = child_repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Child sees " << child_results.size() << " assignments";
+    ORES_LOG_SEV(lg, debug) << "Child sees " << child_results.size() << " assignments";
     CHECK(child_results.size() == 1);
     CHECK(child_results[0].counterparty_id == cp.id);
 }

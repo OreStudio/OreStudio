@@ -28,7 +28,6 @@
 #include "ores.refdata.core/repository/book_change_repository.hpp"
 #include "ores.refdata.core/repository/book_repository.hpp"
 #include "ores.service/messaging/approval_gate.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <chrono>
@@ -48,7 +47,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -684,26 +682,26 @@ book_service::gate_delete(const std::vector<domain::book>& live,
 }
 
 std::vector<domain::book> book_service::list_books(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all books";
+    ORES_LOG_SEV(lg(), debug) << "Listing all books";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t book_service::count_books() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total books count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total books count";
     return repo_.get_total_book_count(ctx_);
 }
 
 
 std::vector<domain::book> book_service::list_books_by_parent_portfolio_id(
     const std::string& parent_portfolio_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing books by parent_portfolio_id: " << parent_portfolio_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing books by parent_portfolio_id: " << parent_portfolio_id;
     return repo_.read_latest_by_parent_portfolio_id(ctx_, parent_portfolio_id, offset, limit);
 }
 
 std::uint32_t
 book_service::count_books_by_parent_portfolio_id(const std::string& parent_portfolio_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total books count by parent_portfolio_id: "
-                               << parent_portfolio_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total books count by parent_portfolio_id: "
+                              << parent_portfolio_id;
     return repo_.get_total_book_count_by_parent_portfolio_id(ctx_, parent_portfolio_id);
 }
 
@@ -712,8 +710,8 @@ std::vector<domain::book> book_service::list_books_by_parent_portfolio_id_as_of(
     const std::string& parent_portfolio_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing books by parent_portfolio_id as of window: "
-                               << parent_portfolio_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing books by parent_portfolio_id as of window: "
+                              << parent_portfolio_id;
     return repo_.read_by_parent_portfolio_id_as_of(
         ctx_, parent_portfolio_id, valid_from_bound, valid_to_bound);
 }
@@ -721,13 +719,13 @@ std::vector<domain::book> book_service::list_books_by_parent_portfolio_id_as_of(
 
 std::optional<domain::book> book_service::get_book_at_version(const boost::uuids::uuid& id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting book at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting book at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::book> book_service::get_book(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting book. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting book. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -735,7 +733,7 @@ std::optional<domain::book> book_service::get_book(const boost::uuids::uuid& id)
 }
 
 std::optional<domain::book> book_service::get_book_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting book by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting book by name: " << name;
     messaging::book_key k;
     k.name = name;
     auto found = book_read_one(repo_, ctx_, k);
@@ -765,7 +763,7 @@ void book_service::delete_books(const std::vector<std::string>&) {
 }
 
 std::vector<domain::book> book_service::get_book_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for book. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for book. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

@@ -62,7 +62,7 @@ void auth_event_operations_operations_commands::register_commands(cli::Menu& roo
 
 void auth_event_operations_operations_commands::process_list_auth_events(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-auth-events request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-auth-events request.";
 
     using request_type = ores::iam::messaging::list_auth_events_request;
 

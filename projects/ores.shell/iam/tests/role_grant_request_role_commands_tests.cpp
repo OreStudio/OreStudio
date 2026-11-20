@@ -22,7 +22,7 @@
  * Template: cpp_shell_command_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/iam/role_grant_request_role_commands.hpp"
@@ -84,7 +84,7 @@ TEST_CASE("role_grant_request_role_commands_registers_every_derived_verb", "[com
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 9 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 9 command(s).";
 }
 
 TEST_CASE("role_grant_request_role_commands_process_list_requires_a_session", "[commands]") {
@@ -96,7 +96,7 @@ TEST_CASE("role_grant_request_role_commands_process_list_requires_a_session", "[
     command_feedback::reset();
     role_grant_request_role_commands::process_list(out, session, role_grant_request_role_tokens(0));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -110,7 +110,7 @@ TEST_CASE("role_grant_request_role_commands_process_get_requires_a_session", "[c
     command_feedback::reset();
     role_grant_request_role_commands::process_get(out, session, role_grant_request_role_tokens(2));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -125,7 +125,7 @@ TEST_CASE("role_grant_request_role_commands_process_get_reports_the_expected_cou
     command_feedback::reset();
     role_grant_request_role_commands::process_get(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -145,7 +145,7 @@ TEST_CASE("role_grant_request_role_commands_process_get_many_requires_a_session"
     role_grant_request_role_commands::process_get_many(
         out, session, role_grant_request_role_tokens(2));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -159,7 +159,7 @@ TEST_CASE("role_grant_request_role_commands_process_add_requires_a_session", "[c
     command_feedback::reset();
     role_grant_request_role_commands::process_add(out, session, role_grant_request_role_tokens(3));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -174,7 +174,7 @@ TEST_CASE("role_grant_request_role_commands_process_add_reports_the_expected_cou
     command_feedback::reset();
     role_grant_request_role_commands::process_add(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -193,7 +193,7 @@ TEST_CASE("role_grant_request_role_commands_process_set_requires_a_session", "[c
     command_feedback::reset();
     role_grant_request_role_commands::process_set(out, session, role_grant_request_role_tokens(3));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -208,7 +208,7 @@ TEST_CASE("role_grant_request_role_commands_process_set_reports_the_expected_cou
     command_feedback::reset();
     role_grant_request_role_commands::process_set(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -228,7 +228,7 @@ TEST_CASE("role_grant_request_role_commands_process_put_many_requires_a_session"
     role_grant_request_role_commands::process_put_many(
         out, session, role_grant_request_role_tokens(3));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -243,7 +243,7 @@ TEST_CASE("role_grant_request_role_commands_process_delete_requires_a_session", 
     role_grant_request_role_commands::process_delete(
         out, session, role_grant_request_role_tokens(2));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -259,7 +259,7 @@ TEST_CASE("role_grant_request_role_commands_process_delete_reports_the_expected_
     command_feedback::reset();
     role_grant_request_role_commands::process_delete(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -279,7 +279,7 @@ TEST_CASE("role_grant_request_role_commands_process_delete_many_requires_a_sessi
     role_grant_request_role_commands::process_delete_many(
         out, session, role_grant_request_role_tokens(2));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -295,7 +295,7 @@ TEST_CASE("role_grant_request_role_commands_process_by_request_id_requires_a_ses
     role_grant_request_role_commands::process_by_request_id(
         out, session, role_grant_request_role_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -311,7 +311,7 @@ TEST_CASE("role_grant_request_role_commands_process_by_request_id_reports_the_ex
     command_feedback::reset();
     role_grant_request_role_commands::process_by_request_id(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received

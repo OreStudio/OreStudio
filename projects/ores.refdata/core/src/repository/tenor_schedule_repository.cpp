@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_schedule.hpp"
 #include "ores.refdata.api/domain/tenor_schedule_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/tenor_schedule_protocol.hpp"
 #include "ores.refdata.core/repository/tenor_schedule_entity.hpp"
 #include "ores.refdata.core/repository/tenor_schedule_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -236,7 +234,7 @@ void tenor_schedule_repository::write(const context& ctx,
 void tenor_schedule_repository::write(const context& ctx,
                                       const domain::tenor_schedule& v,
                                       const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor schedule. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing tenor schedule. " << "code: " << v.code;
     const auto t = tenor_schedule_apply_claim(v,
                                               claim,
                                               tenor_schedule_claim_reads_current(claim) ?
@@ -250,7 +248,7 @@ void tenor_schedule_repository::write(
     const context& ctx,
     const std::vector<domain::tenor_schedule>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor schedules. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing tenor schedules. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "tenor_schedule_repository::write: one claim is needed for each row");
@@ -286,7 +284,7 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest(const
 
 std::vector<domain::tenor_schedule>
 tenor_schedule_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor schedule. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor schedule. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -304,7 +302,7 @@ tenor_schedule_repository::read_latest(const context& ctx, const std::string& co
 
 std::vector<domain::tenor_schedule> tenor_schedule_repository::read_all(const context& ctx,
                                                                         const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor schedule versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all tenor schedule versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_schedule_entity>> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code) |
@@ -320,8 +318,8 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_all(const co
 
 std::optional<domain::tenor_schedule> tenor_schedule_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading tenor schedule at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading tenor schedule at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<tenor_schedule_entity>> |
@@ -348,8 +346,8 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_ca
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::tenor_schedules_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor schedules. calendar_code: " << calendar_code
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor schedules. calendar_code: " << calendar_code
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -372,8 +370,8 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_calendar_co
     const context& ctx,
     const std::string& calendar_code,
     const std::optional<messaging::tenor_schedules_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor schedules count. calendar_code: "
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active tenor schedules count. calendar_code: "
+                              << calendar_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -398,8 +396,8 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_di
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::tenor_schedules_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor schedules. diary_entry_type: "
-                               << diary_entry_type << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor schedules. diary_entry_type: "
+                              << diary_entry_type << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -422,8 +420,8 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_diary_entry
     const context& ctx,
     const std::string& diary_entry_type,
     const std::optional<messaging::tenor_schedules_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Retrieving total active tenor schedules count. diary_entry_type: " << diary_entry_type;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active tenor schedules count. diary_entry_type: "
+                              << diary_entry_type;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -443,7 +441,7 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_diary_entry
 
 tenor_schedule_repository::remove_status tenor_schedule_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor schedule. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing tenor schedule. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -481,8 +479,8 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::tenor_schedules_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor schedules with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor schedules with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_schedule_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -503,7 +501,7 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count(
     const context& ctx,
     const std::optional<messaging::tenor_schedules_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor schedule count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active tenor schedule count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_schedule_entity>> |

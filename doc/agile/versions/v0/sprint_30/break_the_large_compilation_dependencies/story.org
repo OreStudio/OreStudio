@@ -54,7 +54,7 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 | [[id:AE2E77E7-5E09-436A-817E-66FB7064BA28][Delete the unused includes the analysis found]] | DONE | 2026-11-14 | 2026-11-14 | Remove the dead includes and the two inline functions that force them: the string generator in tenant_id.hpp, and the two magic_enum users in error_code.hpp. |
 | [[id:F185ECD2-FFD9-416E-9179-10E96BE8F634][Stop the pool and statement headers reaching the connection header]] | DONE | 2026-11-14 | 2026-11-15 | Cut the second path into pq/connection.hpp so the split of the context header is not undone by the other includers. |
 | [[id:9C9D7D89-1114-4111-9A0B-DAFDF59E19F2][Split the unit of work header]] | DONE | 2026-11-16 | 2026-11-16 | Separate pq::transaction from pq::session_context so unit_of_work.hpp takes the declaration and the forward-declaration check reaches zero. |
-| [[id:1CCAE6BF-99D4-4CEB-84BF-D115152DC664][Split the logger typedef out of make_logger.hpp]] | BACKLOG | | | Hold the logger behind a small handle so the typedef does not pull Boost.Log's sources into 565 objects. |
+| [[id:1CCAE6BF-99D4-4CEB-84BF-D115152DC664][Split the logger typedef out of make_logger.hpp]] | DONE | 2026-11-17 | 2026-11-20 | Hold the logger behind a small handle so the typedef does not pull Boost.Log's sources into 565 objects. |
 
 * Decisions
 
@@ -117,6 +117,11 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
   looked like the fix reached none of them.
 - The rest of the header cost is parse time, in three shapes: the codec chain,
   =<chrono>=, and Boost.Log. It is real and it is a different task's leverage.
+- A macro is the seam that makes a heavy header removable. The logging macro
+  named Boost.Log's logger type in 57911 places, so the type could not leave the
+  header until the macro belonged to the logging library; once it did, Boost.Log's
+  logger header went from 604 objects to one, and the sites kept the shape they
+  had.
 - A header's parse cost has a floor in the types its own API names, and no
   split goes below it: =context.hpp= costs what =boost::uuids::uuid= costs,
   because its accessors return a =std::optional= of one. Measure that floor

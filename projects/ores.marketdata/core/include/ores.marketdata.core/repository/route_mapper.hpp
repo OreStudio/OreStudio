@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_ROUTE_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_ROUTE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/route.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/route_entity.hpp"

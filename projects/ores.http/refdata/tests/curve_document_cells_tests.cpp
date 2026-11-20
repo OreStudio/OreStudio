@@ -20,7 +20,7 @@
 #include "ores.http/routes/refdata/curve_document_cells.hpp"
 #include "ores.http/routes/refdata/curve_section_wiring.hpp"
 #include "ores.http/routes/refdata/wire_cells.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -75,7 +75,7 @@ refdata_messaging::curve_configuration_document document_with_one_curve() {
 
 TEST_CASE("a_curve_document_row_is_read_by_the_column_it_states", "[curve_document_cells]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the flattening of a curve configuration document";
+    ORES_LOG_SEV(lg, info) << "Testing the flattening of a curve configuration document";
 
     const auto document = cells(document_with_one_curve());
 
@@ -101,7 +101,7 @@ TEST_CASE("a_curve_document_row_is_read_by_the_column_it_states", "[curve_docume
 
 TEST_CASE("a_curve_document_cell_is_absent_empty_or_stated", "[curve_document_cells]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a cell a curve document row does not carry";
+    ORES_LOG_SEV(lg, info) << "Testing a cell a curve document row does not carry";
 
     const auto document = cells(document_with_one_curve());
     const auto& definitions = document.at("definitions");
@@ -119,7 +119,7 @@ TEST_CASE("a_curve_document_cell_is_absent_empty_or_stated", "[curve_document_ce
 TEST_CASE("every_vector_the_curve_screen_reads_is_one_a_document_carries",
           "[curve_document_cells]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the vectors the curve screen's wiring names";
+    ORES_LOG_SEV(lg, info) << "Testing the vectors the curve screen's wiring names";
 
     namespace wiring = ores::http::routes::refdata::wiring;
     const auto document = cells(refdata_messaging::curve_configuration_document{});

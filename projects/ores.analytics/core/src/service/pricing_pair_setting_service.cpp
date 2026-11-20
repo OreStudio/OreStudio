@@ -29,10 +29,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -460,12 +458,12 @@ ores::utility::domain::result pricing_pair_setting_service::prepare_change(
 
 std::vector<domain::pricing_pair_setting>
 pricing_pair_setting_service::list_settings(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all pricing pair settings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all pricing pair settings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t pricing_pair_setting_service::count_settings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total pricing pair settings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total pricing pair settings count";
     return repo_.get_total_setting_count(ctx_);
 }
 
@@ -473,14 +471,14 @@ std::uint32_t pricing_pair_setting_service::count_settings() {
 std::optional<domain::pricing_pair_setting>
 pricing_pair_setting_service::get_setting_at_version(const std::string& code,
                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting pricing pair setting at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting pricing pair setting at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::pricing_pair_setting>
 pricing_pair_setting_service::find_setting(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding pricing pair setting. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding pricing pair setting. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -495,11 +493,11 @@ pricing_pair_setting_service::get_settings(const std::vector<std::string>& codes
 void pricing_pair_setting_service::save_setting(const domain::pricing_pair_setting& v) {
     if (v.code.empty())
         throw std::invalid_argument("Pricing Pair Setting code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving pricing pair setting. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving pricing pair setting. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved pricing pair setting. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved pricing pair setting. " << "code: " << v.code;
 }
 
 void pricing_pair_setting_service::save_settings(
@@ -508,7 +506,7 @@ void pricing_pair_setting_service::save_settings(
         if (e.code.empty())
             throw std::invalid_argument("Pricing Pair Setting code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << settings.size() << " pricing pair settings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << settings.size() << " pricing pair settings";
     auto ts = settings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -517,9 +515,9 @@ void pricing_pair_setting_service::save_settings(
 }
 
 void pricing_pair_setting_service::delete_setting(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing pair setting. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing pricing pair setting. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed pricing pair setting. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed pricing pair setting. " << "code: " << code;
 }
 
 void pricing_pair_setting_service::delete_settings(const std::vector<std::string>& codes) {
@@ -528,7 +526,7 @@ void pricing_pair_setting_service::delete_settings(const std::vector<std::string
 
 std::vector<domain::pricing_pair_setting>
 pricing_pair_setting_service::get_setting_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing pair setting. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for pricing pair setting. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

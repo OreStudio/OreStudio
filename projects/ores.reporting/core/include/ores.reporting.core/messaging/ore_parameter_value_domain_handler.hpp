@@ -27,7 +27,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/ore_parameter_value_domain_protocol.hpp"
@@ -81,7 +81,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_ore_parameter_value_domains(ores::nats::message msg) {
-        BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -96,7 +96,7 @@ public:
         }
         auto req = decode<list_ore_parameter_value_domains_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -106,14 +106,14 @@ public:
         service::ore_parameter_value_domain_service svc(sys_ctx);
         try {
             auto response = svc.list_ore_parameter_value_domains(*req);
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_ore_parameter_value_domains_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -133,7 +133,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_ore_parameter_value_domain(ores::nats::message msg) {
-        BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -148,7 +148,7 @@ public:
         }
         auto req = decode<get_ore_parameter_value_domain_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -158,14 +158,14 @@ public:
         service::ore_parameter_value_domain_service svc(sys_ctx);
         try {
             auto response = svc.get_ore_parameter_value_domain(*req);
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_ore_parameter_value_domain_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -185,7 +185,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_ore_parameter_value_domains(ores::nats::message msg) {
-        BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -200,7 +200,7 @@ public:
         }
         auto req = decode<get_many_ore_parameter_value_domains_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -210,14 +210,14 @@ public:
         service::ore_parameter_value_domain_service svc(sys_ctx);
         try {
             auto response = svc.get_many_ore_parameter_value_domains(*req);
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_ore_parameter_value_domains_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -237,7 +237,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_ore_parameter_value_domain(ores::nats::message msg) {
-        BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -260,7 +260,7 @@ public:
         }
         auto req = decode<put_ore_parameter_value_domain_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -270,14 +270,14 @@ public:
         service::ore_parameter_value_domain_service svc(sys_ctx);
         try {
             auto response = svc.put_ore_parameter_value_domain(*req);
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_ore_parameter_value_domain_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -297,7 +297,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_ore_parameter_value_domains(ores::nats::message msg) {
-        BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -320,7 +320,7 @@ public:
         }
         auto req = decode<put_many_ore_parameter_value_domains_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -330,14 +330,14 @@ public:
         service::ore_parameter_value_domain_service svc(sys_ctx);
         try {
             auto response = svc.put_many_ore_parameter_value_domains(*req);
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_ore_parameter_value_domains_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -357,7 +357,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_ore_parameter_value_domain(ores::nats::message msg) {
-        BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -380,7 +380,7 @@ public:
         }
         auto req = decode<delete_ore_parameter_value_domain_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -390,14 +390,14 @@ public:
         service::ore_parameter_value_domain_service svc(sys_ctx);
         try {
             auto response = svc.delete_ore_parameter_value_domain(*req);
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_ore_parameter_value_domain_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -417,7 +417,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_ore_parameter_value_domains(ores::nats::message msg) {
-        BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -440,7 +440,7 @@ public:
         }
         auto req = decode<delete_many_ore_parameter_value_domains_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -450,14 +450,14 @@ public:
         service::ore_parameter_value_domain_service svc(sys_ctx);
         try {
             auto response = svc.delete_many_ore_parameter_value_domains(*req);
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_ore_parameter_value_domains_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -477,7 +477,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_ore_parameter_value_domain_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -492,7 +492,7 @@ public:
         }
         auto req = decode<list_ore_parameter_value_domain_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -502,14 +502,14 @@ public:
         service::ore_parameter_value_domain_service svc(sys_ctx);
         try {
             auto response = svc.list_ore_parameter_value_domain_versions(*req);
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_ore_parameter_value_domain_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -529,7 +529,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_ore_parameter_value_domain_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -544,7 +544,7 @@ public:
         }
         auto req = decode<get_ore_parameter_value_domain_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -554,14 +554,14 @@ public:
         service::ore_parameter_value_domain_service svc(sys_ctx);
         try {
             auto response = svc.get_ore_parameter_value_domain_version(*req);
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
+            ORES_LOG_SEV(ore_parameter_value_domain_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_ore_parameter_value_domain_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

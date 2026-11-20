@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/coding_scheme_authority_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/coding_scheme_authority_type_generator.hpp"
 #include "ores.dq.core/repository/coding_scheme_authority_type_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -48,11 +48,11 @@ TEST_CASE("write_single_coding_scheme_authority_type", "[repository]") {
     authority_type.tenant_id = h.tenant_id();
     authority_type.code = authority_type.code + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Coding scheme authority type: " << authority_type;
+    ORES_LOG_SEV(lg, debug) << "Coding scheme authority type: " << authority_type;
     repo.write(h.context(), authority_type);
 
     auto read_authority_types = repo.read_latest(h.context(), authority_type.code);
-    BOOST_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
+    ORES_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
 
     REQUIRE(read_authority_types.size() == 1);
     CHECK(read_authority_types[0].code == authority_type.code);
@@ -71,11 +71,11 @@ TEST_CASE("write_multiple_coding_scheme_authority_types", "[repository]") {
         a.tenant_id = h.tenant_id();
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Coding scheme authority types: " << authority_types;
+    ORES_LOG_SEV(lg, debug) << "Coding scheme authority types: " << authority_types;
     repo.write(h.context(), authority_types);
 
     auto read_authority_types = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
+    ORES_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
 
     for (const auto& written : authority_types) {
         bool found = false;
@@ -101,12 +101,12 @@ TEST_CASE("read_latest_coding_scheme_authority_types", "[repository]") {
         a.tenant_id = h.tenant_id();
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Written authority types: " << written_authority_types;
+    ORES_LOG_SEV(lg, debug) << "Written authority types: " << written_authority_types;
 
     repo.write(h.context(), written_authority_types);
 
     auto read_authority_types = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
+    ORES_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
 
     for (const auto& written : written_authority_types) {
         bool found = false;
@@ -134,13 +134,13 @@ TEST_CASE("read_latest_coding_scheme_authority_type_by_code", "[repository]") {
     }
 
     const auto target = authority_types.front();
-    BOOST_LOG_SEV(lg, debug) << "Write authority types: " << authority_types;
+    ORES_LOG_SEV(lg, debug) << "Write authority types: " << authority_types;
     repo.write(h.context(), authority_types);
 
-    BOOST_LOG_SEV(lg, debug) << "Target authority type: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target authority type: " << target;
 
     auto read_authority_types = repo.read_latest(h.context(), target.code);
-    BOOST_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
+    ORES_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
 
     REQUIRE(read_authority_types.size() == 1);
     CHECK(read_authority_types[0].code == target.code);

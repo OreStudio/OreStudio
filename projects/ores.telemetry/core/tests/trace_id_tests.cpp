@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.telemetry.core/domain/trace_id.hpp"
 #include "ores.telemetry.core/generators/trace_id_generator.hpp"
 #include "test_suite.hpp"
@@ -35,7 +35,7 @@ TEST_CASE("default_trace_id_is_invalid", "[trace_id]") {
     trace_id id;
     REQUIRE(id.to_hex() == "00000000000000000000000000000000");
     REQUIRE_FALSE(id.is_valid());
-    BOOST_LOG_SEV(lg, debug) << "Default trace_id: " << id.to_hex();
+    ORES_LOG_SEV(lg, debug) << "Default trace_id: " << id.to_hex();
 }
 
 TEST_CASE("generated_trace_id_is_valid", "[trace_id]") {
@@ -44,7 +44,7 @@ TEST_CASE("generated_trace_id_is_valid", "[trace_id]") {
     const auto id = gen();
 
     REQUIRE(id.is_valid());
-    BOOST_LOG_SEV(lg, debug) << "Generated trace_id: " << id.to_hex();
+    ORES_LOG_SEV(lg, debug) << "Generated trace_id: " << id.to_hex();
 }
 
 TEST_CASE("trace_id_to_hex_produces_32_chars", "[trace_id]") {
@@ -137,7 +137,7 @@ TEST_CASE("trace_id_generator_uses_machine_id", "[trace_id]") {
         (static_cast<std::uint16_t>(machine_high) << 8) | static_cast<std::uint16_t>(machine_low);
 
     REQUIRE(machine_id == 0x1234);
-    BOOST_LOG_SEV(lg, debug) << "Trace ID with machine 0x1234: " << id.to_hex();
+    ORES_LOG_SEV(lg, debug) << "Trace ID with machine 0x1234: " << id.to_hex();
 }
 
 TEST_CASE("trace_id_generator_is_thread_safe", "[trace_id]") {

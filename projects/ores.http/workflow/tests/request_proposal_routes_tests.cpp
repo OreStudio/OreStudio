@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/workflow/request_proposal_routes.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -70,7 +70,7 @@ bool proposal_holds(const std::string& body, const std::string& part) {
 
 TEST_CASE("a_proposal_is_named_by_its_request", "[workflow_proposal]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier both proposal reads name";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier both proposal reads name";
 
     for (const auto& [method, path, pattern] :
          std::vector<std::tuple<http_method, std::string, std::string>>{
@@ -84,7 +84,7 @@ TEST_CASE("a_proposal_is_named_by_its_request", "[workflow_proposal]") {
 
 TEST_CASE("a_proposal_answers_the_service_is_absent", "[workflow_proposal]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing both proposal reads with no service behind them";
+    ORES_LOG_SEV(lg, info) << "Testing both proposal reads with no service behind them";
 
     CHECK(answer_at<workflow_routes>(http_method::get, its_changes, http_request{}, changes_pattern)
               .status == http_status::bad_gateway);
@@ -94,7 +94,7 @@ TEST_CASE("a_proposal_answers_the_service_is_absent", "[workflow_proposal]") {
 
 TEST_CASE("a_proposal_refuses_a_parameter_it_does_not_take", "[workflow_proposal]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter a proposal read does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter a proposal read does not name";
 
     http_request req;
     req.query_params["asOf"] = "2026-01-01";
@@ -106,7 +106,7 @@ TEST_CASE("a_proposal_refuses_a_parameter_it_does_not_take", "[workflow_proposal
 
 TEST_CASE("what_a_request_proposes_is_kept_for_fifteen_seconds", "[workflow_proposal]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the cache policy of the proposed lines";
+    ORES_LOG_SEV(lg, info) << "Testing the cache policy of the proposed lines";
 
     http_request req;
     const auto first = request_proposal_routes::changes_answer(req, a_proposal_body);
@@ -123,7 +123,7 @@ TEST_CASE("what_a_request_proposes_is_kept_for_fifteen_seconds", "[workflow_prop
 
 TEST_CASE("what_running_a_request_says_is_kept_for_half_a_minute", "[workflow_proposal]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the cache policy of the checks";
+    ORES_LOG_SEV(lg, info) << "Testing the cache policy of the checks";
 
     http_request req;
     const auto first = request_proposal_routes::checks_answer(req, a_checks_body);

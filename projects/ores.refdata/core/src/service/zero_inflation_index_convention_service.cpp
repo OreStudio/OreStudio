@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
 #include "ores.refdata.api/messaging/zero_inflation_index_convention_protocol.hpp"
 #include "ores.refdata.core/repository/zero_inflation_index_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -475,12 +473,12 @@ ores::utility::domain::result zero_inflation_index_convention_service::prepare_c
 std::vector<domain::zero_inflation_index_convention>
 zero_inflation_index_convention_service::list_zero_inflation_index_conventions(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all zero inflation index conventions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all zero inflation index conventions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t zero_inflation_index_convention_service::count_zero_inflation_index_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total zero inflation index conventions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total zero inflation index conventions count";
     return repo_.get_total_zero_inflation_index_convention_count(ctx_);
 }
 
@@ -488,15 +486,15 @@ std::uint32_t zero_inflation_index_convention_service::count_zero_inflation_inde
 std::optional<domain::zero_inflation_index_convention>
 zero_inflation_index_convention_service::get_zero_inflation_index_convention_at_version(
     const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting zero inflation index convention at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting zero inflation index convention at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::zero_inflation_index_convention>
 zero_inflation_index_convention_service::get_zero_inflation_index_convention(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting zero inflation index convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting zero inflation index convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -513,11 +511,11 @@ void zero_inflation_index_convention_service::save_zero_inflation_index_conventi
     const domain::zero_inflation_index_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("Zero Inflation Index Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving zero inflation index convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving zero inflation index convention. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved zero inflation index convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved zero inflation index convention. " << "id: " << v.id;
 }
 
 void zero_inflation_index_convention_service::save_zero_inflation_index_conventions(
@@ -526,8 +524,8 @@ void zero_inflation_index_convention_service::save_zero_inflation_index_conventi
         if (e.id.empty())
             throw std::invalid_argument("Zero Inflation Index Convention id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << zero_inflation_index_conventions.size()
-                               << " zero inflation index conventions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << zero_inflation_index_conventions.size()
+                              << " zero inflation index conventions";
     auto ts = zero_inflation_index_conventions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -537,9 +535,9 @@ void zero_inflation_index_convention_service::save_zero_inflation_index_conventi
 
 void zero_inflation_index_convention_service::delete_zero_inflation_index_convention(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing zero inflation index convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing zero inflation index convention. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed zero inflation index convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed zero inflation index convention. " << "id: " << id;
 }
 
 void zero_inflation_index_convention_service::delete_zero_inflation_index_conventions(
@@ -550,8 +548,8 @@ void zero_inflation_index_convention_service::delete_zero_inflation_index_conven
 std::vector<domain::zero_inflation_index_convention>
 zero_inflation_index_convention_service::get_zero_inflation_index_convention_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for zero inflation index convention. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for zero inflation index convention. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

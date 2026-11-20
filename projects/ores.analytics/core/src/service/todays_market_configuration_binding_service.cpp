@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/todays_market_configuration_binding.hpp"
 #include "ores.analytics.api/messaging/todays_market_configuration_binding_protocol.hpp"
 #include "ores.analytics.core/repository/todays_market_configuration_binding_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -564,12 +562,12 @@ ores::utility::domain::result todays_market_configuration_binding_service::prepa
 std::vector<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_service::list_bindings(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all today's market configuration bindings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all today's market configuration bindings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t todays_market_configuration_binding_service::count_bindings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total today's market configuration bindings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total today's market configuration bindings count";
     return repo_.get_total_binding_count(ctx_);
 }
 
@@ -577,7 +575,7 @@ std::uint32_t todays_market_configuration_binding_service::count_bindings() {
 std::vector<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_service::list_bindings_by_todays_market_configuration_id(
     const std::string& todays_market_configuration_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Listing today's market configuration bindings by todays_market_configuration_id: "
         << todays_market_configuration_id;
     return repo_.read_latest_by_todays_market_configuration_id(
@@ -587,9 +585,9 @@ todays_market_configuration_binding_service::list_bindings_by_todays_market_conf
 std::uint32_t
 todays_market_configuration_binding_service::count_bindings_by_todays_market_configuration_id(
     const std::string& todays_market_configuration_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total today's market configuration bindings count by "
-                                  "todays_market_configuration_id: "
-                               << todays_market_configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total today's market configuration bindings count by "
+                                 "todays_market_configuration_id: "
+                              << todays_market_configuration_id;
     return repo_.get_total_binding_count_by_todays_market_configuration_id(
         ctx_, todays_market_configuration_id);
 }
@@ -598,14 +596,14 @@ todays_market_configuration_binding_service::count_bindings_by_todays_market_con
 std::optional<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_service::get_binding_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market configuration binding at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market configuration binding at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_service::get_binding(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market configuration binding. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market configuration binding. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -615,8 +613,8 @@ todays_market_configuration_binding_service::get_binding(const boost::uuids::uui
 std::optional<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_service::get_binding_by_reference(
     const std::string& reference) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market configuration binding by reference: "
-                               << reference;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market configuration binding by reference: "
+                              << reference;
     messaging::todays_market_configuration_binding_key k;
     k.reference = reference;
     auto found = todays_market_configuration_binding_read_one(repo_, ctx_, k);
@@ -627,7 +625,7 @@ todays_market_configuration_binding_service::get_binding_by_reference(
 
 std::optional<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_service::find_binding(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding today's market configuration binding. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding today's market configuration binding. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -643,11 +641,11 @@ void todays_market_configuration_binding_service::save_binding(
     const domain::todays_market_configuration_binding& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Todays Market Configuration Binding id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving today's market configuration binding. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving today's market configuration binding. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved today's market configuration binding. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved today's market configuration binding. " << "id: " << v.id;
 }
 
 void todays_market_configuration_binding_service::save_bindings(
@@ -656,8 +654,8 @@ void todays_market_configuration_binding_service::save_bindings(
         if (e.id.is_nil())
             throw std::invalid_argument("Todays Market Configuration Binding id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << bindings.size()
-                               << " today's market configuration bindings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << bindings.size()
+                              << " today's market configuration bindings";
     auto ts = bindings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -666,15 +664,15 @@ void todays_market_configuration_binding_service::save_bindings(
 }
 
 void todays_market_configuration_binding_service::delete_binding(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market configuration binding. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market configuration binding. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed today's market configuration binding. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed today's market configuration binding. " << "id: " << id;
 }
 
 void todays_market_configuration_binding_service::remove_binding(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market configuration binding. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market configuration binding. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed today's market configuration binding. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed today's market configuration binding. " << "id: " << id;
 }
 
 void todays_market_configuration_binding_service::delete_bindings(
@@ -684,8 +682,8 @@ void todays_market_configuration_binding_service::delete_bindings(
 
 std::vector<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_service::get_binding_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for today's market configuration binding. key: "
-                               << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for today's market configuration binding. key: "
+                              << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -707,8 +705,8 @@ todays_market_configuration_binding_service::get_binding_history(const std::stri
 
 std::vector<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_service::get_binding_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for today's market configuration binding. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for today's market configuration binding. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

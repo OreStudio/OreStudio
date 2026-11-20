@@ -21,7 +21,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
@@ -158,7 +158,7 @@ std::vector<std::string> readers_of(const ores::database::context& ctx,
         // A notice reaches whoever it can: the party's accounts are already
         // resolved, and a failure to add the permission's holders loses no
         // reader that is owed the notice by name.
-        BOOST_LOG_SEV(notices_lg(), warn)
+        ORES_LOG_SEV(notices_lg(), warn)
             << "The holders of " << curve_reader_permission << " were not read: " << e.what();
     }
 
@@ -196,12 +196,12 @@ void raise_notice(const ores::database::context& ctx,
                                                              .account_ids = {},
                                                              .audience_permission_code = ""};
         const auto result = center.raise(n, readers, *raiser);
-        BOOST_LOG_SEV(notices_lg(), info)
+        ORES_LOG_SEV(notices_lg(), info)
             << "Raised " << kind_code << " notice " << result.notification_id << " for "
             << result.recipient_count << " reader(s)";
     } catch (const std::exception& e) {
         // Telling is never the act: the set moved, and the record says so.
-        BOOST_LOG_SEV(notices_lg(), warn)
+        ORES_LOG_SEV(notices_lg(), warn)
             << "A " << kind_code << " notice was not raised: " << e.what();
     }
 }

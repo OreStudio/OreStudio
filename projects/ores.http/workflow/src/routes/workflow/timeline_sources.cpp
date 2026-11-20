@@ -20,7 +20,7 @@
 #include "ores.http/routes/workflow/timeline_sources.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -62,7 +62,7 @@ std::vector<boost::uuids::uuid> uuids_of(const std::set<std::string>& ids) {
         try {
             out.push_back(boost::uuids::string_generator()(id));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(timeline_lg(), ores::logging::warn)
+            ORES_LOG_SEV(timeline_lg(), ores::logging::warn)
                 << "A row this stream points at is not named by a uuid, so it keeps its id: "
                 << e.what();
         }
@@ -82,7 +82,7 @@ std::vector<ores::http::net::history::version> versions_or_gap(std::vector<timel
     return or_gap(gaps, entity, reason, [&]() {
         const auto answer = ores::http::net::history::read(req, session, entity_type, entity_id);
         if (!answer.answered) {
-            BOOST_LOG_SEV(timeline_lg(), ores::logging::info)
+            ORES_LOG_SEV(timeline_lg(), ores::logging::info)
                 << "The history of " << entity_type << " does not answer this "
                 << "caller, so the stream carries a gap: " << answer.message;
             gaps.push_back({std::string(entity), std::string(reason)});
@@ -111,7 +111,7 @@ std::map<std::string, std::string> party_names(const http_request& req,
     try {
         const auto reply = forwarding::forward(req, session, msg);
         if (reply.result.outcome != ores::utility::domain::outcome::ok) {
-            BOOST_LOG_SEV(timeline_lg(), ores::logging::info)
+            ORES_LOG_SEV(timeline_lg(), ores::logging::info)
                 << "The parties a timeline points at could not be named: " << reply.result.message;
             unanswered();
             return names;
@@ -120,11 +120,11 @@ std::map<std::string, std::string> party_names(const http_request& req,
             names[rr::as_text(party.id)] =
                 party.full_name.empty() ? party.short_code : party.full_name;
     } catch (const rr::refusal& refusal) {
-        BOOST_LOG_SEV(timeline_lg(), ores::logging::info)
+        ORES_LOG_SEV(timeline_lg(), ores::logging::info)
             << "The parties a timeline points at were refused: " << refusal.message;
         unanswered();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(timeline_lg(), ores::logging::warn)
+        ORES_LOG_SEV(timeline_lg(), ores::logging::warn)
             << "The parties a timeline points at could not be read, so their ids stand: "
             << e.what();
         unanswered();
@@ -151,7 +151,7 @@ std::map<std::string, std::string> counterparty_names(const http_request& req,
     try {
         const auto reply = forwarding::forward(req, session, msg);
         if (reply.result.outcome != ores::utility::domain::outcome::ok) {
-            BOOST_LOG_SEV(timeline_lg(), ores::logging::info)
+            ORES_LOG_SEV(timeline_lg(), ores::logging::info)
                 << "The counterparties a timeline points at could not be named: "
                 << reply.result.message;
             unanswered();
@@ -161,11 +161,11 @@ std::map<std::string, std::string> counterparty_names(const http_request& req,
             names[rr::as_text(counterparty.id)] =
                 counterparty.full_name.empty() ? counterparty.short_code : counterparty.full_name;
     } catch (const rr::refusal& refusal) {
-        BOOST_LOG_SEV(timeline_lg(), ores::logging::info)
+        ORES_LOG_SEV(timeline_lg(), ores::logging::info)
             << "The counterparties a timeline points at were refused: " << refusal.message;
         unanswered();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(timeline_lg(), ores::logging::warn)
+        ORES_LOG_SEV(timeline_lg(), ores::logging::warn)
             << "The counterparties a timeline points at could not be read, so their ids stand: "
             << e.what();
         unanswered();

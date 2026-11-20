@@ -22,7 +22,7 @@
 
 #include "ores.database/repository/db_types.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <chrono>
@@ -64,13 +64,13 @@ std::vector<Dest> map_vector(const std::vector<Source>& source,
 
     using namespace ores::logging;
 
-    BOOST_LOG_SEV(lg, debug) << "Mapping " << log_prefix << ". Total: " << source.size();
+    ORES_LOG_SEV(lg, debug) << "Mapping " << log_prefix << ". Total: " << source.size();
 
     std::vector<Dest> result;
     result.reserve(source.size());
     std::ranges::transform(source, std::back_inserter(result), std::forward<MapFunc>(map_func));
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped " << log_prefix << ".";
+    ORES_LOG_SEV(lg, debug) << "Mapped " << log_prefix << ".";
     return result;
 }
 

@@ -31,9 +31,7 @@
 #include "ores.dq.api/messaging/fsm_state_protocol.hpp"
 #include "ores.dq.core/repository/fsm_state_entity.hpp"
 #include "ores.dq.core/repository/fsm_state_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -209,7 +207,7 @@ void fsm_state_repository::write(const context& ctx, const std::vector<domain::f
 void fsm_state_repository::write(const context& ctx,
                                  const domain::fsm_state& v,
                                  const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing fsm state. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing fsm state. " << "id: " << v.id;
     const auto t = fsm_state_apply_claim(v,
                                          claim,
                                          fsm_state_claim_reads_current(claim) ?
@@ -222,7 +220,7 @@ void fsm_state_repository::write(const context& ctx,
 void fsm_state_repository::write(const context& ctx,
                                  const std::vector<domain::fsm_state>& v,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing fsm states. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing fsm states. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "fsm_state_repository::write: one claim is needed for each row");
@@ -255,7 +253,7 @@ std::vector<domain::fsm_state> fsm_state_repository::read_latest(const context& 
 
 std::vector<domain::fsm_state> fsm_state_repository::read_latest(const context& ctx,
                                                                  const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm state. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest fsm state. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
                        query_builder::where("id"_c == id && "valid_to"_c == max);
@@ -270,7 +268,7 @@ std::vector<domain::fsm_state> fsm_state_repository::read_latest(const context& 
 
 std::vector<domain::fsm_state> fsm_state_repository::read_latest_by_name(const context& ctx,
                                                                          const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm state by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest fsm state by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
                        query_builder::where("name"_c == name && "valid_to"_c == max);
@@ -303,7 +301,7 @@ fsm_state_repository::read_latest_by_name(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states by name. Count: " << names.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest fsm states by name. Count: " << names.size();
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
                        query_builder::where("name"_c.in(names) && "valid_to"_c == max);
@@ -318,7 +316,7 @@ fsm_state_repository::read_latest_by_name(const context& ctx,
 
 std::vector<domain::fsm_state> fsm_state_repository::read_any_by_name(const context& ctx,
                                                                       const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any fsm state by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading any fsm state by name: " << name;
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
                        query_builder::where("name"_c == name) |
                        query_builder::order_by("valid_from"_c.desc()) | query_builder::limit(1);
@@ -334,7 +332,7 @@ std::vector<domain::fsm_state> fsm_state_repository::read_any_by_name(const cont
 
 std::vector<domain::fsm_state> fsm_state_repository::read_all(const context& ctx,
                                                               const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all fsm state versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all fsm state versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
                        query_builder::where("id"_c == id) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
@@ -350,8 +348,8 @@ std::vector<domain::fsm_state> fsm_state_repository::read_all(const context& ctx
 std::optional<domain::fsm_state> fsm_state_repository::read_at_version(const context& ctx,
                                                                        const std::string& id,
                                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading fsm state at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading fsm state at version. " << "id: " << id
+                              << " version: " << version;
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
                        query_builder::where("id"_c == id && "version"_c == version) |
                        query_builder::limit(1);
@@ -370,7 +368,7 @@ std::optional<domain::fsm_state> fsm_state_repository::read_at_version(const con
 
 fsm_state_repository::remove_status fsm_state_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing fsm state. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing fsm state. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -408,8 +406,8 @@ fsm_state_repository::read_latest(const context& ctx,
                                   const ores::utility::domain::order& order,
                                   const std::optional<messaging::fsm_states_filter>& filter,
                                   const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest fsm states with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -427,7 +425,7 @@ std::uint32_t fsm_state_repository::get_total_state_count(
     const context& ctx,
     const std::optional<messaging::fsm_states_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active fsm state count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active fsm state count";
 
     const auto query = query_builder::read<std::vector<fsm_state_entity>>;
 
@@ -491,7 +489,7 @@ void fsm_state_repository::remove(const context& ctx, const std::vector<std::str
 std::vector<domain::fsm_state>
 fsm_state_repository::read_latest_by_machine_name(const context& ctx,
                                                   const std::string& machine_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states for machine: " << machine_name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest fsm states for machine: " << machine_name;
     static constexpr auto max = db_timestamp::max();
 
     // The raw read takes the timestamp as text: MAX_TIMESTAMP is the same
@@ -506,7 +504,7 @@ fsm_state_repository::read_latest_by_machine_name(const context& ctx,
         "Reading fsm machine id by name");
 
     if (machine_ids.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No fsm machine named: " << machine_name;
+        ORES_LOG_SEV(lg(), warn) << "No fsm machine named: " << machine_name;
         return {};
     }
 

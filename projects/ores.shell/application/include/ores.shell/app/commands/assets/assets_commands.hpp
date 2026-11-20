@@ -1,7 +1,7 @@
 #ifndef ORES_SHELL_APP_COMMANDS_ASSETS_ASSETS_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_ASSETS_ASSETS_COMMANDS_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 
 namespace cli {

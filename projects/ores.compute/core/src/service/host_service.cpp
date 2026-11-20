@@ -26,7 +26,6 @@
 #include "ores.compute.api/domain/host.hpp"
 #include "ores.compute.api/messaging/host_protocol.hpp"
 #include "ores.compute.core/repository/host_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -476,25 +474,25 @@ host_service::prepare_change(const messaging::host_change& change,
 
 
 std::vector<domain::host> host_service::list_hosts(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all compute hosts";
+    ORES_LOG_SEV(lg(), debug) << "Listing all compute hosts";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t host_service::count_hosts() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total compute hosts count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total compute hosts count";
     return repo_.get_total_host_count(ctx_);
 }
 
 
 std::optional<domain::host> host_service::get_host_at_version(const boost::uuids::uuid& id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute host at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute host at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::host> host_service::get_host(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute host. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute host. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -502,7 +500,7 @@ std::optional<domain::host> host_service::get_host(const boost::uuids::uuid& id)
 }
 
 std::optional<domain::host> host_service::get_host_by_external_id(const std::string& external_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute host by external_id: " << external_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute host by external_id: " << external_id;
     messaging::host_key k;
     k.external_id = external_id;
     auto found = host_read_one(repo_, ctx_, k);
@@ -518,11 +516,11 @@ std::vector<domain::host> host_service::get_hosts(const std::vector<std::string>
 void host_service::save_host(const domain::host& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Host id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving compute host. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving compute host. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved compute host. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved compute host. " << "id: " << v.id;
 }
 
 void host_service::save_hosts(const std::vector<domain::host>& hosts) {
@@ -530,7 +528,7 @@ void host_service::save_hosts(const std::vector<domain::host>& hosts) {
         if (e.id.is_nil())
             throw std::invalid_argument("Host id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << hosts.size() << " compute hosts";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << hosts.size() << " compute hosts";
     auto ts = hosts;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -539,9 +537,9 @@ void host_service::save_hosts(const std::vector<domain::host>& hosts) {
 }
 
 void host_service::delete_host(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing compute host. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing compute host. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed compute host. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed compute host. " << "id: " << id;
 }
 
 void host_service::delete_hosts(const std::vector<std::string>& ids) {
@@ -549,7 +547,7 @@ void host_service::delete_hosts(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::host> host_service::get_host_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for compute host. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for compute host. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

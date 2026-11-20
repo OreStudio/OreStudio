@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.core/repository/business_centre_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -448,26 +446,26 @@ business_centre_service::prepare_change(const messaging::business_centre_change&
 
 std::vector<domain::business_centre> business_centre_service::list_centres(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all business centres";
+    ORES_LOG_SEV(lg(), debug) << "Listing all business centres";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t business_centre_service::count_centres() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total business centres count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total business centres count";
     return repo_.get_total_centre_count(ctx_);
 }
 
 
 std::optional<domain::business_centre>
 business_centre_service::get_centre_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business centre at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting business centre at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::business_centre>
 business_centre_service::get_centre(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business centre. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting business centre. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -482,11 +480,11 @@ business_centre_service::get_centres(const std::vector<std::string>& codes) {
 void business_centre_service::save_centre(const domain::business_centre& v) {
     if (v.code.empty())
         throw std::invalid_argument("Business Centre code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving business centre. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving business centre. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved business centre. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved business centre. " << "code: " << v.code;
 }
 
 void business_centre_service::save_centres(const std::vector<domain::business_centre>& centres) {
@@ -494,7 +492,7 @@ void business_centre_service::save_centres(const std::vector<domain::business_ce
         if (e.code.empty())
             throw std::invalid_argument("Business Centre code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << centres.size() << " business centres";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << centres.size() << " business centres";
     auto ts = centres;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -503,9 +501,9 @@ void business_centre_service::save_centres(const std::vector<domain::business_ce
 }
 
 void business_centre_service::delete_centre(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing business centre. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing business centre. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed business centre. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed business centre. " << "code: " << code;
 }
 
 void business_centre_service::delete_centres(const std::vector<std::string>& codes) {
@@ -514,7 +512,7 @@ void business_centre_service::delete_centres(const std::vector<std::string>& cod
 
 std::vector<domain::business_centre>
 business_centre_service::get_centre_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for business centre. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for business centre. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

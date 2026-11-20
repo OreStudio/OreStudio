@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_SERIES_CLASSIFICATION_RULE_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_SERIES_CLASSIFICATION_RULE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_entity.hpp"

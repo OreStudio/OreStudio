@@ -24,7 +24,7 @@
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>

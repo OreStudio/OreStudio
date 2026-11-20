@@ -27,13 +27,11 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_calendar.hpp"
 #include "ores.refdata.api/domain/currency_calendar_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/currency_calendar_entity.hpp"
 #include "ores.refdata.core/repository/currency_calendar_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -193,9 +191,9 @@ void currency_calendar_repository::write(
 
 void currency_calendar_repository::write(const domain::currency_calendar& currency_calendar,
                                          const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency calendar to database: "
-                               << currency_calendar.currency_iso_code << "/"
-                               << currency_calendar.calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing currency calendar to database: "
+                              << currency_calendar.currency_iso_code << "/"
+                              << currency_calendar.calendar_code;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(currency_calendar.currency_iso_code, currency_calendar.calendar_code) :
@@ -208,8 +206,8 @@ void currency_calendar_repository::write(const domain::currency_calendar& curren
 void currency_calendar_repository::write(
     const std::vector<domain::currency_calendar>& currency_calendars,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency calendars to database. Count: "
-                               << currency_calendars.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing currency calendars to database. Count: "
+                              << currency_calendars.size();
     if (claims.size() != currency_calendars.size())
         throw std::invalid_argument(
             "currency_calendar_repository::write: one claim is needed for each row");
@@ -249,8 +247,8 @@ std::vector<domain::currency_calendar> currency_calendar_repository::read_latest
 
 std::vector<domain::currency_calendar>
 currency_calendar_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendars with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency calendars with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -271,8 +269,8 @@ currency_calendar_repository::read_latest(std::uint32_t offset, std::uint32_t li
 std::vector<domain::currency_calendar>
 currency_calendar_repository::read_latest(const std::string& currency_iso_code,
                                           const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendar. " << currency_iso_code << "/"
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency calendar. " << currency_iso_code << "/"
+                              << calendar_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto currency_iso_code_str = currency_iso_code;
@@ -294,7 +292,7 @@ currency_calendar_repository::read_latest(const std::string& currency_iso_code,
 }
 
 std::uint32_t currency_calendar_repository::get_total_currency_calendar_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency calendars count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active currency calendars count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -305,14 +303,14 @@ std::uint32_t currency_calendar_repository::get_total_currency_calendar_count() 
 
     const auto count = query_builder::execute_count_query<currency_calendar_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency calendars");
-    BOOST_LOG_SEV(lg(), debug) << "Total active currency calendars count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active currency calendars count: " << count;
     return count;
 }
 
 std::vector<domain::currency_calendar>
 currency_calendar_repository::read_latest_by_currency(const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Currency: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Currency: "
+                              << currency_iso_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -336,7 +334,7 @@ currency_calendar_repository::read_latest_by_currency(const std::string& currenc
 
 std::vector<domain::currency_calendar>
 currency_calendar_repository::read_latest_by_calendar(const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Calendar: " << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Calendar: " << calendar_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -360,8 +358,8 @@ currency_calendar_repository::read_latest_by_calendar(const std::string& calenda
 
 std::vector<domain::currency_calendar> currency_calendar_repository::read_latest_by_currency(
     const std::string& currency_iso_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Currency: "
-                               << currency_iso_code << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Currency: "
+                              << currency_iso_code << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -386,8 +384,8 @@ std::vector<domain::currency_calendar> currency_calendar_repository::read_latest
 
 std::uint32_t currency_calendar_repository::get_total_currency_calendar_count_by_currency(
     const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency calendars count. Currency: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active currency calendars count. Currency: "
+                              << currency_iso_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -399,14 +397,14 @@ std::uint32_t currency_calendar_repository::get_total_currency_calendar_count_by
 
     const auto count = query_builder::execute_count_query<currency_calendar_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency calendars");
-    BOOST_LOG_SEV(lg(), debug) << "Total active currency calendars count by currency: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active currency calendars count by currency: " << count;
     return count;
 }
 
 std::uint32_t currency_calendar_repository::get_total_currency_calendar_count_by_calendar(
     const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency calendars count. Calendar: "
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active currency calendars count. Calendar: "
+                              << calendar_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -418,14 +416,14 @@ std::uint32_t currency_calendar_repository::get_total_currency_calendar_count_by
 
     const auto count = query_builder::execute_count_query<currency_calendar_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency calendars");
-    BOOST_LOG_SEV(lg(), debug) << "Total active currency calendars count by calendar: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active currency calendars count by calendar: " << count;
     return count;
 }
 
 std::vector<currency_calendar_history_row>
 currency_calendar_repository::read_all_by_currency(const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the currency calendars. Currency: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the currency calendars. Currency: "
+                              << currency_iso_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -477,8 +475,8 @@ currency_calendar_repository::remove_status
 currency_calendar_repository::remove(const std::string& currency_iso_code,
                                      const std::string& calendar_code,
                                      std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency calendar from database: " << currency_iso_code
-                               << "/" << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing currency calendar from database: " << currency_iso_code
+                              << "/" << calendar_code;
 
     const auto current = read_latest(currency_iso_code, calendar_code);
     if (current.empty())
@@ -525,8 +523,8 @@ void currency_calendar_repository::remove(const std::vector<std::string>& curren
 }
 
 void currency_calendar_repository::remove_by_currency(const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all currency calendars from database: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing all currency calendars from database: "
+                              << currency_iso_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =

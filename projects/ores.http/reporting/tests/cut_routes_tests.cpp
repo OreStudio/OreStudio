@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/reporting/configuration_routes.hpp"
 #include "ores.http/routes/reporting/cut_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -69,7 +69,7 @@ std::string a_take(const std::string& without = "") {
 
 TEST_CASE("the_cuts_refuse_a_page_or_a_narrowing_they_do_not_read", "[cut]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the cuts list's query";
+    ORES_LOG_SEV(lg, info) << "Testing the cuts list's query";
 
     // A page states a limit, as the BFF's own schema required.
     CHECK(answer_at<cut_routes>(http_method::get, cuts_address, http_request{}, cuts_address)
@@ -90,7 +90,7 @@ TEST_CASE("the_cuts_refuse_a_page_or_a_narrowing_they_do_not_read", "[cut]") {
 
 TEST_CASE("a_cut_refuses_an_id_that_is_not_a_uuid", "[cut]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a cut's address";
+    ORES_LOG_SEV(lg, info) << "Testing a cut's address";
 
     http_request req;
     req.path_params["id"] = "not-an-id";
@@ -103,7 +103,7 @@ TEST_CASE("a_cut_refuses_an_id_that_is_not_a_uuid", "[cut]") {
 
 TEST_CASE("a_take_refuses_a_body_it_does_not_state", "[cut]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the take's shape";
+    ORES_LOG_SEV(lg, info) << "Testing the take's shape";
 
     const auto status = [](const std::string& body) {
         http_request req;
@@ -119,7 +119,7 @@ TEST_CASE("a_take_refuses_a_body_it_does_not_state", "[cut]") {
 
 TEST_CASE("a_take_with_no_service_is_refused_as_upstream", "[cut]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a take with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a take with no service behind it";
 
     http_request req;
     req.body = a_take();
@@ -129,7 +129,7 @@ TEST_CASE("a_take_with_no_service_is_refused_as_upstream", "[cut]") {
 
 TEST_CASE("the_runs_of_a_cut_with_no_service_are_refused_as_upstream", "[cut]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a cut's runs with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a cut's runs with no service behind it";
 
     CHECK(
         answer_at<cut_routes>(http_method::get, cut_address + "/runs", http_request{}, runs_pattern)
@@ -138,7 +138,7 @@ TEST_CASE("the_runs_of_a_cut_with_no_service_are_refused_as_upstream", "[cut]") 
 
 TEST_CASE("a_configuration_refuses_an_id_that_is_not_a_uuid", "[configuration]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a configuration's address";
+    ORES_LOG_SEV(lg, info) << "Testing a configuration's address";
 
     http_request req;
     req.path_params["id"] = "not-an-id";

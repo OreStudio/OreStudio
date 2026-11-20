@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_BUSINESS_DAY_CONVENTION_TYPE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/business_day_convention_type.hpp"
 #include "ores.refdata.api/messaging/business_day_convention_type_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

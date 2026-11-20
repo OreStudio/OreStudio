@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_MESSAGING_PUBLISH_DUE_CURVES_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/service/curve_build_planner.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
@@ -123,12 +123,12 @@ public:
         try {
             resp = publish_all(req_ctx);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(publish_due_curves_handler_lg(), error)
+            ORES_LOG_SEV(publish_due_curves_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
         }
-        BOOST_LOG_SEV(publish_due_curves_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(publish_due_curves_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
@@ -172,7 +172,7 @@ public:
         if (!planned) {
             resp.success = false;
             resp.message = refusal_message(planned.error(), configs_by_id);
-            BOOST_LOG_SEV(publish_due_curves_handler_lg(), error)
+            ORES_LOG_SEV(publish_due_curves_handler_lg(), error)
                 << "Curve republish refused: " << resp.message;
             return resp;
         }
@@ -192,7 +192,7 @@ public:
             else
                 ++failed;
 
-            BOOST_LOG_SEV(publish_due_curves_handler_lg(), info)
+            ORES_LOG_SEV(publish_due_curves_handler_lg(), info)
                 << "Curve republish: name='" << outcome.name << "' as_of='"
                 << ores::platform::time::datetime::to_iso8601_utc(outcome.as_of)
                 << "' duration=" << outcome.duration_ms << "ms status=" << outcome.status
@@ -256,7 +256,7 @@ public:
                        std::to_string(configs.size()) + " curve(s): deferred " +
                        std::to_string(deferred) + ", failed " + std::to_string(failed) +
                        ", raised " + std::to_string(raised);
-        BOOST_LOG_SEV(publish_due_curves_handler_lg(), info)
+        ORES_LOG_SEV(publish_due_curves_handler_lg(), info)
             << "Curve republish sweep: " << resp.message;
         return resp;
     }

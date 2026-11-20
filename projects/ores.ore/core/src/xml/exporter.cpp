@@ -165,7 +165,7 @@ auto write_parameters(pugi::xml_node parent,
 } // namespace
 
 std::string exporter::export_currency_config(const std::vector<currency>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Exporting currency config. Total: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Exporting currency config. Total: " << v.size();
 
     xc::currency_config record;
     record.currency.reserve(v.size());
@@ -181,7 +181,7 @@ std::string exporter::export_currency_config(const std::vector<currency>& v) {
 
 std::string
 exporter::export_pricing_engines(const analytics::messaging::pricing_engines_document& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Exporting pricing engines. Products: " << v.products.size();
+    ORES_LOG_SEV(lg(), debug) << "Exporting pricing engines. Products: " << v.products.size();
 
     // The projection is the one statement of which parameter belongs to which
     // product, of what a row the document has no place for is refused with, and
@@ -214,7 +214,7 @@ std::string exporter::export_pricing_engines(const pricing_engines_document& v) 
 
 std::string exporter::export_calendar_adjustments(
     const std::vector<refdata::messaging::calendar_adjustment>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Exporting " << v.size() << " calendar adjustments.";
+    ORES_LOG_SEV(lg(), debug) << "Exporting " << v.size() << " calendar adjustments.";
     const auto* calendar = find_child_type(*xg::calendar_adjustments_document().root, "Calendar");
     if (calendar == nullptr)
         throw std::runtime_error("the calendar adjustments table has no Calendar element");
@@ -235,7 +235,7 @@ std::string exporter::export_calendar_adjustments(
 }
 
 std::string exporter::export_conventions(const domain::conventions_package& package) {
-    BOOST_LOG_SEV(lg(), debug) << "Exporting conventions.";
+    ORES_LOG_SEV(lg(), debug) << "Exporting conventions.";
     return domain::conventions_mapper::write(domain::join_conventions(package));
 }
 
@@ -243,12 +243,12 @@ std::string
 exporter::export_portfolio(const std::vector<trading::messaging::trade_export_item>& items,
                            const trading::domain::instrument_batch& instruments,
                            const ores::marketdata::projection::ore_projection& projection) {
-    BOOST_LOG_SEV(lg(), debug) << "Started portfolio export. Items: " << items.size();
+    ORES_LOG_SEV(lg(), debug) << "Started portfolio export. Items: " << items.size();
 
     const auto document = portfolio_projection::reverse(items, instruments, projection);
     auto result = portfolio_projection::write(document);
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished portfolio export. Trades: " << document.trade.size();
+    ORES_LOG_SEV(lg(), debug) << "Finished portfolio export. Trades: " << document.trade.size();
     return result;
 }
 
@@ -259,8 +259,8 @@ domain::written_portfolio exporter::export_portfolio_leaving_out(
     const auto document = portfolio_projection::reverse(items, instruments, projection);
     auto result = portfolio_projection::write_leaving_out(document);
     for (const auto& refused : result.refused)
-        BOOST_LOG_SEV(lg(), warn) << "Left trade " << refused.trade_id << " (" << refused.trade_type
-                                  << ") out of the portfolio: " << refused.message;
+        ORES_LOG_SEV(lg(), warn) << "Left trade " << refused.trade_id << " (" << refused.trade_type
+                                 << ") out of the portfolio: " << refused.message;
     return result;
 }
 

@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_DRAFT_REASON_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_DRAFT_REASON_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/draft_reason.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/draft_reason_entity.hpp"

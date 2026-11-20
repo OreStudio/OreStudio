@@ -189,7 +189,7 @@ void approval_operations_operations_commands::register_commands(cli::Menu& root_
 
 void approval_operations_operations_commands::process_raise_approval(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating raise-approval request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating raise-approval request.";
 
     using request_type = ores::inbox::messaging::raise_approval_request_request;
 
@@ -245,7 +245,7 @@ void approval_operations_operations_commands::process_raise_approval(
 
 void approval_operations_operations_commands::process_withdraw_approval(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating withdraw-approval request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating withdraw-approval request.";
 
     using request_type = ores::inbox::messaging::withdraw_approval_request_request;
 
@@ -305,7 +305,7 @@ void approval_operations_operations_commands::process_withdraw_approval(
 
 void approval_operations_operations_commands::process_decide_approval(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating decide-approval request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating decide-approval request.";
 
     using request_type = ores::inbox::messaging::decide_approval_request_request;
 
@@ -372,7 +372,7 @@ void approval_operations_operations_commands::process_decide_approval(
 
 void approval_operations_operations_commands::process_list_approval_queue(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-approval-queue request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-approval-queue request.";
 
     using request_type = ores::inbox::messaging::list_approval_queue_request;
 
@@ -433,7 +433,7 @@ void approval_operations_operations_commands::process_list_approval_queue(
 
 void approval_operations_operations_commands::process_list_my_approval_requests(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-my-approval-requests request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-my-approval-requests request.";
 
     using request_type = ores::inbox::messaging::list_my_approval_requests_request;
 
@@ -494,7 +494,7 @@ void approval_operations_operations_commands::process_list_my_approval_requests(
 
 void approval_operations_operations_commands::process_get_approvals_mode(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-approvals-mode request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-approvals-mode request.";
 
     using request_type = ores::inbox::messaging::get_approvals_mode_request;
 
@@ -546,7 +546,7 @@ void approval_operations_operations_commands::process_get_approvals_mode(
 
 void approval_operations_operations_commands::process_set_approvals_mode(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating set-approvals-mode request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating set-approvals-mode request.";
 
     using request_type = ores::inbox::messaging::set_approvals_mode_request;
 
@@ -609,7 +609,7 @@ void approval_operations_operations_commands::process_set_approvals_mode(
 
 void approval_operations_operations_commands::process_get_approval(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-approval request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-approval request.";
 
     using request_type = ores::inbox::messaging::get_approval_request;
 
@@ -663,7 +663,7 @@ void approval_operations_operations_commands::process_get_approval(
 
 void approval_operations_operations_commands::process_expire_overdue_approvals(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating expire-overdue-approvals request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating expire-overdue-approvals request.";
 
     using request_type = ores::inbox::messaging::expire_overdue_approvals_request;
 
@@ -715,7 +715,7 @@ void approval_operations_operations_commands::process_expire_overdue_approvals(
 
 void approval_operations_operations_commands::process_remind_expiring_approvals(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating remind-expiring-approvals request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating remind-expiring-approvals request.";
 
     using request_type = ores::inbox::messaging::remind_expiring_approvals_request;
 
@@ -767,7 +767,7 @@ void approval_operations_operations_commands::process_remind_expiring_approvals(
 
 void approval_operations_operations_commands::process_retry_stalled_applies(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating retry-stalled-applies request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating retry-stalled-applies request.";
 
     using request_type = ores::inbox::messaging::retry_stalled_applies_request;
 
@@ -819,7 +819,7 @@ void approval_operations_operations_commands::process_retry_stalled_applies(
 
 void approval_operations_operations_commands::process_get_approval_history(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-approval-history request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-approval-history request.";
 
     using request_type = ores::inbox::messaging::get_approval_history_request;
 
@@ -873,7 +873,7 @@ void approval_operations_operations_commands::process_get_approval_history(
 
 void approval_operations_operations_commands::process_get_approval_parts(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-approval-parts request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-approval-parts request.";
 
     using request_type = ores::inbox::messaging::get_approval_parts_request;
 

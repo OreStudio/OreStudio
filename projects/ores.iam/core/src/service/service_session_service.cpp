@@ -29,16 +29,16 @@ service_session_service::service_session_service(const context& ctx)
     : ctx_(ctx)
     , session_repo_() {
 
-    BOOST_LOG_SEV(lg(), debug) << "Service session service initialized";
+    ORES_LOG_SEV(lg(), debug) << "Service session service initialized";
 }
 
 std::optional<domain::account>
 service_session_service::get_service_account(const std::string& username) {
-    BOOST_LOG_SEV(lg(), debug) << "Looking up service account: " << username;
+    ORES_LOG_SEV(lg(), debug) << "Looking up service account: " << username;
 
     auto accounts = account_repo_.read_latest_by_username(ctx_, username);
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Service account not found: " << username;
+        ORES_LOG_SEV(lg(), warn) << "Service account not found: " << username;
         return std::nullopt;
     }
 
@@ -46,8 +46,8 @@ service_session_service::get_service_account(const std::string& username) {
 
     // Verify this is a service account (not a user)
     if (account.account_type == "user") {
-        BOOST_LOG_SEV(lg(), warn) << "Account '" << username
-                                  << "' is a user account, not a service account";
+        ORES_LOG_SEV(lg(), warn) << "Account '" << username
+                                 << "' is a user account, not a service account";
         return std::nullopt;
     }
 
@@ -59,8 +59,8 @@ service_session_service::start_service_session(const std::string& username,
                                                const std::string& client_identifier,
                                                const std::string& protocol) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting service session for username: " << username
-                               << " with client: " << client_identifier;
+    ORES_LOG_SEV(lg(), debug) << "Starting service session for username: " << username
+                              << " with client: " << client_identifier;
 
     auto account_opt = get_service_account(username);
     if (!account_opt) {
@@ -75,21 +75,21 @@ service_session_service::start_service_session(const boost::uuids::uuid& account
                                                const std::string& client_identifier,
                                                const std::string& protocol) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting service session for account ID: "
-                               << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Starting service session for account ID: "
+                              << boost::uuids::to_string(account_id);
 
     // Verify account exists and is a service account
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Account not found: " << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Account not found: " << boost::uuids::to_string(account_id);
         return std::nullopt;
     }
 
     const auto& account = accounts[0];
 
     if (account.account_type == "user") {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot create service session for user account: "
-                                  << account.username;
+        ORES_LOG_SEV(lg(), warn) << "Cannot create service session for user account: "
+                                 << account.username;
         return std::nullopt;
     }
 
@@ -113,9 +113,9 @@ service_session_service::start_service_session(const boost::uuids::uuid& account
 
     session_repo_.write(ctx_, session);
 
-    BOOST_LOG_SEV(lg(), info) << "Started service session: " << boost::uuids::to_string(session_id)
-                              << " for account: " << account.username
-                              << " (type: " << account.account_type << ")";
+    ORES_LOG_SEV(lg(), info) << "Started service session: " << boost::uuids::to_string(session_id)
+                             << " for account: " << account.username
+                             << " (type: " << account.account_type << ")";
 
     return session;
 }
@@ -126,12 +126,12 @@ void service_session_service::end_service_session(
     std::uint64_t bytes_sent,
     std::uint64_t bytes_received) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Ending service session: " << boost::uuids::to_string(session_id);
+    ORES_LOG_SEV(lg(), debug) << "Ending service session: " << boost::uuids::to_string(session_id);
 
     auto now = std::chrono::system_clock::now();
     session_repo_.end_session(ctx_, session_id, start_time, now, bytes_sent, bytes_received);
 
-    BOOST_LOG_SEV(lg(), info) << "Ended service session: " << boost::uuids::to_string(session_id);
+    ORES_LOG_SEV(lg(), info) << "Ended service session: " << boost::uuids::to_string(session_id);
 }
 
 }

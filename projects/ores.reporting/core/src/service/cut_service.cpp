@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/cut.hpp"
 #include "ores.reporting.api/messaging/cut_protocol.hpp"
 #include "ores.reporting.core/repository/cut_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -297,12 +295,12 @@ cut_service::get_cut_version(const messaging::get_cut_version_request& request) 
 
 
 std::vector<domain::cut> cut_service::list_cuts(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all cuts";
+    ORES_LOG_SEV(lg(), debug) << "Listing all cuts";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cut_service::count_cuts() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cuts count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total cuts count";
     return repo_.get_total_cut_count(ctx_);
 }
 
@@ -310,25 +308,25 @@ std::uint32_t cut_service::count_cuts() {
 std::vector<domain::cut> cut_service::list_cuts_by_kind_code(const std::string& kind_code,
                                                              std::uint32_t offset,
                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing cuts by kind_code: " << kind_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing cuts by kind_code: " << kind_code;
     return repo_.read_latest_by_kind_code(ctx_, kind_code, offset, limit);
 }
 
 std::uint32_t cut_service::count_cuts_by_kind_code(const std::string& kind_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cuts count by kind_code: " << kind_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting total cuts count by kind_code: " << kind_code;
     return repo_.get_total_cut_count_by_kind_code(ctx_, kind_code);
 }
 
 
 std::optional<domain::cut> cut_service::get_cut_at_version(const boost::uuids::uuid& id,
                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cut at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting cut at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::cut> cut_service::get_cut(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cut. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting cut. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -342,11 +340,11 @@ std::vector<domain::cut> cut_service::get_cuts(const std::vector<std::string>& i
 void cut_service::save_cut(const domain::cut& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Cut id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving cut. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving cut. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved cut. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved cut. " << "id: " << v.id;
 }
 
 void cut_service::save_cuts(const std::vector<domain::cut>& cuts) {
@@ -354,7 +352,7 @@ void cut_service::save_cuts(const std::vector<domain::cut>& cuts) {
         if (e.id.is_nil())
             throw std::invalid_argument("Cut id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << cuts.size() << " cuts";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << cuts.size() << " cuts";
     auto ts = cuts;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -363,9 +361,9 @@ void cut_service::save_cuts(const std::vector<domain::cut>& cuts) {
 }
 
 void cut_service::delete_cut(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cut. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing cut. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed cut. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed cut. " << "id: " << id;
 }
 
 void cut_service::delete_cuts(const std::vector<std::string>& ids) {
@@ -373,7 +371,7 @@ void cut_service::delete_cuts(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::cut> cut_service::get_cut_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for cut. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for cut. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

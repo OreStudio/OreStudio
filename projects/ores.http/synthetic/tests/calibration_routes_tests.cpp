@@ -21,7 +21,7 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http/routes/synthetic/calibration_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
@@ -112,7 +112,7 @@ const std::string fixing = "oresmd://fx/EUR?quote=USD&type=fixing";
 
 TEST_CASE("calibration_runs_refuse_a_malformed_request", "[calibration]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a calibration run's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing a calibration run's refusals";
 
     CHECK(run("FX", "") == http_status::bad_request);
     CHECK(run("fx", R"({"configId":"feed"})") == http_status::bad_request);
@@ -124,7 +124,7 @@ TEST_CASE("calibration_runs_refuse_a_malformed_request", "[calibration]") {
 
 TEST_CASE("calibration_reviews_belong_to_the_system_tenant", "[calibration]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a review's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing a review's refusals";
 
     const std::string approve = R"({"decision":"approve","reason":"Fits the history."})";
     CHECK(review(approve, other_tenant) == http_status::forbidden);
@@ -138,7 +138,7 @@ TEST_CASE("calibration_reviews_belong_to_the_system_tenant", "[calibration]") {
 
 TEST_CASE("calibration_policies_refuse_a_malformed_policy", "[calibration]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a policy write's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing a policy write's refusals";
 
     CHECK(policy(http_method::put, policy_body("30", "[]"), other_tenant) ==
           http_status::forbidden);
@@ -170,7 +170,7 @@ TEST_CASE("calibration_policies_refuse_a_malformed_policy", "[calibration]") {
 
 TEST_CASE("calibration_pins_refuse_a_malformed_candidate", "[calibration]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a pin's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing a pin's refusals";
 
     CHECK(pin(http_method::put,
               pin_body("oresmd://fx/EUR?quote=USD&type=spot", "ecb"),

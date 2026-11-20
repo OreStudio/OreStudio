@@ -30,7 +30,7 @@
 #include "ores.dq.core/repository/artefact_type_repository.hpp"
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
 #include "ores.dq.core/repository/dataset_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <map>
 #include <string>

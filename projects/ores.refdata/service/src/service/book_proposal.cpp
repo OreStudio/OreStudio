@@ -402,7 +402,7 @@ book_apply book_proposal_service::apply(const std::string& request_id) {
         out.lines_applied = 0;
         out.refusal = e.what();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(log(), ores::logging::error)
+        ORES_LOG_SEV(log(), ores::logging::error)
             << "Applying request " << request_id << " failed: " << e.what();
         return {.transient = true, .refusal = e.what()};
     }
@@ -414,14 +414,14 @@ book_apply book_proposal_service::apply(const std::string& request_id) {
         const auto moved = lifecycle.fail_apply(
             request_id, "Line " + std::to_string(out.failed_line) + ": " + out.refusal);
         if (moved.outcome != "ok") {
-            BOOST_LOG_SEV(log(), ores::logging::warn)
+            ORES_LOG_SEV(log(), ores::logging::warn)
                 << "Request " << request_id << " was refused but is " << moved.state_code
                 << ", not apply_failed: " << moved.message;
         }
     } catch (const std::exception& e) {
         // Nothing was written and the request is still approved, so the apply
         // may run again and meet the same refusal.
-        BOOST_LOG_SEV(log(), ores::logging::error)
+        ORES_LOG_SEV(log(), ores::logging::error)
             << "Request " << request_id << " could not be moved to apply_failed: " << e.what();
         return {.transient = true, .refusal = e.what()};
     }

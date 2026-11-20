@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.api/domain/http_request.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -27,7 +27,7 @@ using namespace ores::logging;
 
 TEST_CASE("http_request_get_header_returns_value", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_header returns value for existing header";
+    ORES_LOG_SEV(lg, info) << "Testing get_header returns value for existing header";
 
     http_request sut;
     sut.headers["content-type"] = "application/json";
@@ -37,7 +37,7 @@ TEST_CASE("http_request_get_header_returns_value", "[http_request]") {
 
 TEST_CASE("http_request_get_header_case_insensitive", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_header is case insensitive";
+    ORES_LOG_SEV(lg, info) << "Testing get_header is case insensitive";
 
     http_request sut;
     sut.headers["content-type"] = "application/json";
@@ -48,7 +48,7 @@ TEST_CASE("http_request_get_header_case_insensitive", "[http_request]") {
 
 TEST_CASE("http_request_get_header_returns_empty_for_missing", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_header returns empty string for missing header";
+    ORES_LOG_SEV(lg, info) << "Testing get_header returns empty string for missing header";
 
     http_request sut;
 
@@ -57,7 +57,7 @@ TEST_CASE("http_request_get_header_returns_empty_for_missing", "[http_request]")
 
 TEST_CASE("http_request_get_query_param_returns_value", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_query_param returns value for existing param";
+    ORES_LOG_SEV(lg, info) << "Testing get_query_param returns value for existing param";
 
     http_request sut;
     sut.query_params["page"] = "1";
@@ -69,7 +69,7 @@ TEST_CASE("http_request_get_query_param_returns_value", "[http_request]") {
 
 TEST_CASE("http_request_get_query_param_returns_empty_for_missing", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_query_param returns empty for missing param";
+    ORES_LOG_SEV(lg, info) << "Testing get_query_param returns empty for missing param";
 
     http_request sut;
 
@@ -78,7 +78,7 @@ TEST_CASE("http_request_get_query_param_returns_empty_for_missing", "[http_reque
 
 TEST_CASE("http_request_get_path_param_returns_value", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_path_param returns value for existing param";
+    ORES_LOG_SEV(lg, info) << "Testing get_path_param returns value for existing param";
 
     http_request sut;
     sut.path_params["id"] = "123";
@@ -90,7 +90,7 @@ TEST_CASE("http_request_get_path_param_returns_value", "[http_request]") {
 
 TEST_CASE("http_request_get_path_param_returns_empty_for_missing", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_path_param returns empty for missing param";
+    ORES_LOG_SEV(lg, info) << "Testing get_path_param returns empty for missing param";
 
     http_request sut;
 
@@ -99,7 +99,7 @@ TEST_CASE("http_request_get_path_param_returns_empty_for_missing", "[http_reques
 
 TEST_CASE("http_request_get_bearer_token_returns_token", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_bearer_token extracts token from Authorization header";
+    ORES_LOG_SEV(lg, info) << "Testing get_bearer_token extracts token from Authorization header";
 
     http_request sut;
     sut.headers["authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
@@ -112,8 +112,7 @@ TEST_CASE("http_request_get_bearer_token_returns_token", "[http_request]") {
 
 TEST_CASE("http_request_get_bearer_token_returns_nullopt_for_missing_header", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info)
-        << "Testing get_bearer_token returns nullopt when Authorization missing";
+    ORES_LOG_SEV(lg, info) << "Testing get_bearer_token returns nullopt when Authorization missing";
 
     http_request sut;
 
@@ -124,7 +123,7 @@ TEST_CASE("http_request_get_bearer_token_returns_nullopt_for_missing_header", "[
 
 TEST_CASE("http_request_get_bearer_token_returns_nullopt_for_non_bearer", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_bearer_token returns nullopt for non-Bearer auth";
+    ORES_LOG_SEV(lg, info) << "Testing get_bearer_token returns nullopt for non-Bearer auth";
 
     http_request sut;
     sut.headers["authorization"] = "Basic dXNlcjpwYXNz";
@@ -136,7 +135,7 @@ TEST_CASE("http_request_get_bearer_token_returns_nullopt_for_non_bearer", "[http
 
 TEST_CASE("http_request_get_bearer_token_handles_empty_auth_header", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_bearer_token handles empty Authorization header";
+    ORES_LOG_SEV(lg, info) << "Testing get_bearer_token handles empty Authorization header";
 
     http_request sut;
     sut.headers["authorization"] = "";
@@ -148,7 +147,7 @@ TEST_CASE("http_request_get_bearer_token_handles_empty_auth_header", "[http_requ
 
 TEST_CASE("http_request_default_construction", "[http_request]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing http_request default construction";
+    ORES_LOG_SEV(lg, info) << "Testing http_request default construction";
 
     http_request sut;
 

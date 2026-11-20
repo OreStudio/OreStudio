@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_RATE_CARD_COMPONENT_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_RATE_CARD_COMPONENT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/rate_card_component.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/rate_card_component_entity.hpp"

@@ -28,13 +28,13 @@ void auth_session_service::add_session(const std::string& token,
                                        ores::iam::domain::session session) {
     std::lock_guard<std::mutex> lock(mutex_);
     sessions_.emplace(token, std::move(session));
-    BOOST_LOG_SEV(lg(), debug) << "Session added for token (length " << token.size() << ")";
+    ORES_LOG_SEV(lg(), debug) << "Session added for token (length " << token.size() << ")";
 }
 
 void auth_session_service::remove_session(const std::string& token) {
     std::lock_guard<std::mutex> lock(mutex_);
     sessions_.erase(token);
-    BOOST_LOG_SEV(lg(), debug) << "Session removed for token (length " << token.size() << ")";
+    ORES_LOG_SEV(lg(), debug) << "Session removed for token (length " << token.size() << ")";
 }
 
 std::optional<ores::iam::domain::session>

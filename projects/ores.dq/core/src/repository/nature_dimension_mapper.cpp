@@ -27,8 +27,6 @@
 #include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.dq.api/domain/nature_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/nature_dimension_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::dq::repository {
@@ -37,7 +35,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::nature_dimension nature_dimension_mapper::map(const nature_dimension_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::nature_dimension r;
     r.version = v.version;
@@ -51,12 +49,12 @@ domain::nature_dimension nature_dimension_mapper::map(const nature_dimension_ent
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 nature_dimension_entity nature_dimension_mapper::map(const domain::nature_dimension& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     nature_dimension_entity r;
     r.code = v.code;
@@ -69,7 +67,7 @@ nature_dimension_entity nature_dimension_mapper::map(const domain::nature_dimens
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

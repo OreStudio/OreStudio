@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/reporting/report_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -85,7 +85,7 @@ http_status reports_status(const std::string& query) {
 
 TEST_CASE("reports_state_a_row_from_its_definitions_and_decorations", "[report]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a report row";
+    ORES_LOG_SEV(lg, info) << "Testing a report row";
 
     const auto answer = report_routes::rows_json(
         {definition_of("Daily risk")},
@@ -110,7 +110,7 @@ TEST_CASE("reports_state_a_row_from_its_definitions_and_decorations", "[report]"
 
 TEST_CASE("reports_state_never_run_and_the_cells_a_failed_read_leaves_out", "[report]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the cells a read that failed leaves out";
+    ORES_LOG_SEV(lg, info) << "Testing the cells a read that failed leaves out";
 
     const auto never_ran = report_routes::rows_json({definition_of("Daily risk")},
                                                     std::vector{party_of("ACME", "")},
@@ -137,7 +137,7 @@ TEST_CASE("reports_state_never_run_and_the_cells_a_failed_read_leaves_out", "[re
 
 TEST_CASE("reports_refuse_a_page_they_do_not_read", "[report]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the list's page";
+    ORES_LOG_SEV(lg, info) << "Testing the list's page";
 
     CHECK(reports_status("") == http_status::bad_gateway);
     CHECK(reports_status("limit=0") == http_status::bad_request);
@@ -150,7 +150,7 @@ TEST_CASE("reports_refuse_a_page_they_do_not_read", "[report]") {
 
 TEST_CASE("reports_refuse_a_detail_address_that_names_no_record", "[report]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the detail address";
+    ORES_LOG_SEV(lg, info) << "Testing the detail address";
 
     const auto status = [](const std::string& address, const std::string& pattern) {
         return answer_at<report_routes>(http_method::get, address, http_request{}, pattern).status;
@@ -169,7 +169,7 @@ TEST_CASE("reports_refuse_a_detail_address_that_names_no_record", "[report]") {
 
 TEST_CASE("reports_refuse_a_write_they_do_not_read", "[report]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a definition's write";
+    ORES_LOG_SEV(lg, info) << "Testing a definition's write";
 
     const auto put = [](const std::string& body) {
         http_request req;
@@ -199,7 +199,7 @@ TEST_CASE("reports_refuse_a_write_they_do_not_read", "[report]") {
 
 TEST_CASE("reports_state_a_write_from_the_record_and_the_form", "[report]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the write the form makes";
+    ORES_LOG_SEV(lg, info) << "Testing the write the form makes";
 
     auto definition = definition_of("Daily risk");
     definition.description = "The old description.";

@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.synthetic.api/domain/variance_calibration_input_point.hpp"
 #include "ores.synthetic.api/domain/variance_calibration_input_point_json_io.hpp" // IWYU pragma: keep.
 #include "ores.synthetic.api/messaging/variance_calibration_input_point_protocol.hpp"
 #include "ores.synthetic.core/repository/variance_calibration_input_point_entity.hpp"
 #include "ores.synthetic.core/repository/variance_calibration_input_point_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -253,7 +251,7 @@ void variance_calibration_input_point_repository::write(
     const context& ctx,
     const domain::variance_calibration_input_point& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing variance calibration input point. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing variance calibration input point. " << "id: " << v.id;
     const auto t = variance_calibration_input_point_apply_claim(
         v,
         claim,
@@ -271,7 +269,7 @@ void variance_calibration_input_point_repository::write(
     const context& ctx,
     const std::vector<domain::variance_calibration_input_point>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing variance calibration input points. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing variance calibration input points. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "variance_calibration_input_point_repository::write: one claim is needed for each row");
@@ -314,8 +312,8 @@ variance_calibration_input_point_repository::read_latest(const context& ctx) {
 std::vector<domain::variance_calibration_input_point>
 variance_calibration_input_point_repository::read_latest(const context& ctx,
                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest variance calibration input point. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest variance calibration input point. "
+                              << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -335,8 +333,8 @@ variance_calibration_input_point_repository::read_latest(const context& ctx,
 
 std::vector<domain::variance_calibration_input_point>
 variance_calibration_input_point_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all variance calibration input point versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all variance calibration input point versions. "
+                              << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -357,8 +355,8 @@ std::optional<domain::variance_calibration_input_point>
 variance_calibration_input_point_repository::read_at_version(const context& ctx,
                                                              const std::string& id,
                                                              std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading variance calibration input point at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading variance calibration input point at version. "
+                              << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<variance_calibration_input_point_entity>> |
@@ -387,7 +385,7 @@ variance_calibration_input_point_repository::remove_status
 variance_calibration_input_point_repository::remove(const context& ctx,
                                                     const std::string& id,
                                                     std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing variance calibration input point. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing variance calibration input point. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -428,8 +426,8 @@ variance_calibration_input_point_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::variance_calibration_input_points_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest variance calibration input points with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest variance calibration input points with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<variance_calibration_input_point_entity>> |
@@ -453,7 +451,7 @@ variance_calibration_input_point_repository::get_total_variance_calibration_inpu
     const context& ctx,
     const std::optional<messaging::variance_calibration_input_points_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active variance calibration input point count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active variance calibration input point count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/purpose_type.hpp"
 #include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
 #include "ores.refdata.core/repository/purpose_type_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -441,25 +439,25 @@ purpose_type_service::prepare_change(const messaging::purpose_type_change& chang
 
 std::vector<domain::purpose_type> purpose_type_service::list_types(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all purpose types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all purpose types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t purpose_type_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total purpose types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total purpose types count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::purpose_type>
 purpose_type_service::get_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting purpose type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting purpose type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::purpose_type> purpose_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting purpose type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting purpose type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -474,11 +472,11 @@ purpose_type_service::get_types(const std::vector<std::string>& codes) {
 void purpose_type_service::save_type(const domain::purpose_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Purpose Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving purpose type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving purpose type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved purpose type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved purpose type. " << "code: " << v.code;
 }
 
 void purpose_type_service::save_types(const std::vector<domain::purpose_type>& types) {
@@ -486,7 +484,7 @@ void purpose_type_service::save_types(const std::vector<domain::purpose_type>& t
         if (e.code.empty())
             throw std::invalid_argument("Purpose Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " purpose types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " purpose types";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -495,9 +493,9 @@ void purpose_type_service::save_types(const std::vector<domain::purpose_type>& t
 }
 
 void purpose_type_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing purpose type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing purpose type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed purpose type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed purpose type. " << "code: " << code;
 }
 
 void purpose_type_service::delete_types(const std::vector<std::string>& codes) {
@@ -505,7 +503,7 @@ void purpose_type_service::delete_types(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::purpose_type> purpose_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for purpose type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for purpose type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

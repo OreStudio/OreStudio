@@ -18,7 +18,7 @@
  *
  */
 #include "ores.iam.core/repository/database_info_lookups.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -40,9 +40,9 @@ TEST_CASE("read_database_info_carries_the_recorded_build", "[repository]") {
 
     const auto info = ores::iam::repository::read_database_info(h.context());
 
-    BOOST_LOG_SEV(lg, debug) << "Database info: fingerprint=" << info.fingerprint
-                             << " environment=" << info.environment << " commit=" << info.commit
-                             << " created=" << info.created;
+    ORES_LOG_SEV(lg, debug) << "Database info: fingerprint=" << info.fingerprint
+                            << " environment=" << info.environment << " commit=" << info.commit
+                            << " created=" << info.created;
 
     CHECK_FALSE(info.fingerprint.empty());
     CHECK_FALSE(info.environment.empty());

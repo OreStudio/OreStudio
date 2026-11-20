@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/country.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/country_generator.hpp"
@@ -37,7 +37,7 @@ TEST_CASE("generate_fictional_countries_returns_all_when_no_count", "[generators
     generation_context ctx;
 
     auto countries = generate_fictional_countries(0, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated fictional countries: " << countries;
+    ORES_LOG_SEV(lg, debug) << "Generated fictional countries: " << countries;
 
     CHECK(countries.size() == 50);
 
@@ -59,7 +59,7 @@ TEST_CASE("generate_fictional_countries_returns_requested_count", "[generators]"
     generation_context ctx;
 
     auto countries = generate_fictional_countries(5, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated 5 fictional countries: " << countries;
+    ORES_LOG_SEV(lg, debug) << "Generated 5 fictional countries: " << countries;
 
     REQUIRE(countries.size() == 5);
     CHECK(countries[0].alpha2_code == "AL");
@@ -73,7 +73,7 @@ TEST_CASE("generate_fictional_countries_returns_all_when_count_exceeds_available
     generation_context ctx;
 
     auto countries = generate_fictional_countries(100, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated fictional countries with large count: " << countries;
+    ORES_LOG_SEV(lg, debug) << "Generated fictional countries with large count: " << countries;
 
     CHECK(countries.size() == 50);
 
@@ -104,7 +104,7 @@ TEST_CASE("generate_fictional_countries_has_expected_first_country", "[generator
     generation_context ctx;
 
     auto countries = generate_fictional_countries(1, ctx);
-    BOOST_LOG_SEV(lg, debug) << "First fictional country: " << countries;
+    ORES_LOG_SEV(lg, debug) << "First fictional country: " << countries;
 
     REQUIRE(countries.size() == 1);
     CHECK(countries[0].alpha2_code == "AL");

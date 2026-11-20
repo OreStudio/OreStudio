@@ -24,7 +24,7 @@
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/result_rollup.hpp"
 #include "ores.http/routes/reporting/run_lookup.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
@@ -132,7 +132,7 @@ state_name_of(const http_request& req, nats_client& session, const boost::uuids:
             if (entry.report_instance_id == id)
                 return entry.state_name;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(result_lg(), ores::logging::warn)
+        ORES_LOG_SEV(result_lg(), ores::logging::warn)
             << "The state of run " << boost::uuids::to_string(id)
             << " could not be read: " << e.what();
     }
@@ -224,14 +224,14 @@ trade_records read_trade_records(const http_request& req,
             }
             records.complete = true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(result_lg(), ores::logging::warn)
+            ORES_LOG_SEV(result_lg(), ores::logging::warn)
                 << "The portfolios of the run's books could not be read: " << e.what();
             records.complete = false;
         }
     } catch (const std::exception& e) {
         // A read that fails leaves the names empty rather than failing the
         // figures: a run's numbers are the answer and its names annotate them.
-        BOOST_LOG_SEV(result_lg(), ores::logging::warn)
+        ORES_LOG_SEV(result_lg(), ores::logging::warn)
             << "The records behind a run's trades could not be read: " << e.what();
         return trade_records{};
     }

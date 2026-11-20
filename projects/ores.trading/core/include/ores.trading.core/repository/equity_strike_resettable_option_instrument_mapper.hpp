@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_EQUITY_STRIKE_RESETTABLE_OPTION_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_EQUITY_STRIKE_RESETTABLE_OPTION_INSTRUMENT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/equity_strike_resettable_option_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/equity_strike_resettable_option_instrument_entity.hpp"

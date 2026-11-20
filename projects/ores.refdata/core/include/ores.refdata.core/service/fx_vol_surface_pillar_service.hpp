@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_FX_VOL_SURFACE_PILLAR_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/fx_vol_surface_pillar.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_pillar_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

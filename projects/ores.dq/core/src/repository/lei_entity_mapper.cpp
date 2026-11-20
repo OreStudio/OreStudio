@@ -27,9 +27,7 @@
 #include "ores.dq.api/domain/lei_entity.hpp"
 #include "ores.dq.api/domain/lei_entity_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/lei_entity_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <vector>
 
@@ -39,7 +37,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::lei_entity lei_entity_mapper::map(const lei_entity_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::lei_entity r;
     r.tenant_id = v.tenant_id;
@@ -70,12 +68,12 @@ domain::lei_entity lei_entity_mapper::map(const lei_entity_entity& v) {
     r.entity_transliterated_name_1 = v.entity_transliterated_name_1;
     r.entity_transliterated_name_1_type = v.entity_transliterated_name_1_type;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 lei_entity_entity lei_entity_mapper::map(const domain::lei_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     lei_entity_entity r;
     r.lei = v.lei;
@@ -106,7 +104,7 @@ lei_entity_entity lei_entity_mapper::map(const domain::lei_entity& v) {
     r.entity_transliterated_name_1 = v.entity_transliterated_name_1;
     r.entity_transliterated_name_1_type = v.entity_transliterated_name_1_type;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

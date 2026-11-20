@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
@@ -61,7 +61,7 @@ TEST_CASE("pack_and_extract_round_trips_a_directory_tree", "[filesystem]") {
     scoped_temp_file archive;
     archiver::pack(source.path(), archive.path());
 
-    BOOST_LOG_SEV(lg, info) << "Packed archive: " << archive.path();
+    ORES_LOG_SEV(lg, info) << "Packed archive: " << archive.path();
     CHECK(std::filesystem::exists(archive.path()));
     CHECK(std::filesystem::file_size(archive.path()) > 0);
 
@@ -85,7 +85,7 @@ TEST_CASE("pack_of_a_missing_source_directory_throws", "[filesystem]") {
     scoped_temp_file archive;
     const auto missing = parent.path() / "no-such-directory";
 
-    BOOST_LOG_SEV(lg, info) << "Packing missing directory: " << missing;
+    ORES_LOG_SEV(lg, info) << "Packing missing directory: " << missing;
     CHECK_THROWS_AS(archiver::pack(missing, archive.path()), std::runtime_error);
 }
 
@@ -96,7 +96,7 @@ TEST_CASE("extract_of_a_file_that_is_not_an_archive_throws", "[filesystem]") {
     write_file(not_an_archive.path(), "this file is not a tar.gz archive");
 
     scoped_temp_directory destination;
-    BOOST_LOG_SEV(lg, info) << "Extracting non-archive: " << not_an_archive.path();
+    ORES_LOG_SEV(lg, info) << "Extracting non-archive: " << not_an_archive.path();
     CHECK_THROWS_AS(archiver::extract(not_an_archive.path(), destination.path()),
                     std::runtime_error);
 }

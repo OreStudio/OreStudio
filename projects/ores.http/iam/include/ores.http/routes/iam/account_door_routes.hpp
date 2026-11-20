@@ -25,7 +25,7 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.iam.api/messaging/password_policy_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <memory>
 #include <string>

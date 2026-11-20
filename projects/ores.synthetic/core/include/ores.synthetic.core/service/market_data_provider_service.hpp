@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_SERVICE_MARKET_DATA_PROVIDER_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/market_data_provider.hpp"
 #include "ores.synthetic.api/messaging/market_data_provider_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

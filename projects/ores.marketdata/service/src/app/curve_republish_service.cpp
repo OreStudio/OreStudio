@@ -245,13 +245,13 @@ std::expected<std::vector<ores::analytics::quant::service::bootstrapped_point>, 
 curve_republish_service::compute(const context& ctx,
                                  const boost::uuids::uuid& bootstrap_config_id,
                                  std::chrono::system_clock::time_point as_of) {
-    BOOST_LOG_SEV(lg(), info) << "Computing bootstrap config " << bootstrap_config_id << " as of "
-                              << as_of;
+    ORES_LOG_SEV(lg(), info) << "Computing bootstrap config " << bootstrap_config_id << " as of "
+                             << as_of;
 
     auto computed = compute_curve(ctx, bootstrap_config_id, as_of);
     if (!computed) {
-        BOOST_LOG_SEV(lg(), info) << "Deferred bootstrap config " << bootstrap_config_id << ": "
-                                  << computed.error().reason;
+        ORES_LOG_SEV(lg(), info) << "Deferred bootstrap config " << bootstrap_config_id << ": "
+                                 << computed.error().reason;
         return std::unexpected(std::move(computed.error()));
     }
     return std::move(computed->points);
@@ -261,13 +261,13 @@ std::expected<void, curve_deferral>
 curve_republish_service::republish(const context& ctx,
                                    const boost::uuids::uuid& bootstrap_config_id,
                                    std::chrono::system_clock::time_point as_of) {
-    BOOST_LOG_SEV(lg(), info) << "Republishing bootstrap config " << bootstrap_config_id
-                              << " as of " << as_of;
+    ORES_LOG_SEV(lg(), info) << "Republishing bootstrap config " << bootstrap_config_id << " as of "
+                             << as_of;
 
     auto computed = compute_curve(ctx, bootstrap_config_id, as_of);
     if (!computed) {
-        BOOST_LOG_SEV(lg(), info) << "Deferred bootstrap config " << bootstrap_config_id << ": "
-                                  << computed.error().reason;
+        ORES_LOG_SEV(lg(), info) << "Deferred bootstrap config " << bootstrap_config_id << ": "
+                                 << computed.error().reason;
         return std::unexpected(std::move(computed.error()));
     }
 
@@ -354,8 +354,8 @@ curve_republish_service::republish(const context& ctx,
     ores::marketdata::service::observation_lineage_service lineage_service(ctx);
     lineage_service.save_observation_lineages(lineages);
 
-    BOOST_LOG_SEV(lg(), info) << "Republished " << observations.size()
-                              << " points for bootstrap config " << bootstrap_config_id;
+    ORES_LOG_SEV(lg(), info) << "Republished " << observations.size()
+                             << " points for bootstrap config " << bootstrap_config_id;
     return {};
 }
 

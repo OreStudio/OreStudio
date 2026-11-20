@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_segment_convention.hpp"
 #include "ores.refdata.api/messaging/curve_segment_convention_protocol.hpp"
 #include "ores.refdata.core/repository/curve_segment_convention_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -470,12 +468,12 @@ ores::utility::domain::result curve_segment_convention_service::prepare_change(
 std::vector<domain::curve_segment_convention>
 curve_segment_convention_service::list_segment_conventions(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve segment conventions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve segment conventions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_segment_convention_service::count_segment_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve segment conventions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve segment conventions count";
     return repo_.get_total_segment_convention_count(ctx_);
 }
 
@@ -483,14 +481,14 @@ std::uint32_t curve_segment_convention_service::count_segment_conventions() {
 std::optional<domain::curve_segment_convention>
 curve_segment_convention_service::get_segment_convention_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment convention at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment convention at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_segment_convention>
 curve_segment_convention_service::get_segment_convention(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -506,11 +504,11 @@ void curve_segment_convention_service::save_segment_convention(
     const domain::curve_segment_convention& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Segment Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve segment convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve segment convention. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve segment convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve segment convention. " << "id: " << v.id;
 }
 
 void curve_segment_convention_service::save_segment_conventions(
@@ -519,8 +517,8 @@ void curve_segment_convention_service::save_segment_conventions(
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Segment Convention id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << segment_conventions.size()
-                               << " curve segment conventions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << segment_conventions.size()
+                              << " curve segment conventions";
     auto ts = segment_conventions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -529,9 +527,9 @@ void curve_segment_convention_service::save_segment_conventions(
 }
 
 void curve_segment_convention_service::delete_segment_convention(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve segment convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve segment convention. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve segment convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve segment convention. " << "id: " << id;
 }
 
 void curve_segment_convention_service::delete_segment_conventions(
@@ -541,7 +539,7 @@ void curve_segment_convention_service::delete_segment_conventions(
 
 std::vector<domain::curve_segment_convention>
 curve_segment_convention_service::get_segment_convention_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve segment convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve segment convention. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

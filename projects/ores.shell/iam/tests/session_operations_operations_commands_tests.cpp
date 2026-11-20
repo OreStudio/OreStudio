@@ -22,7 +22,7 @@
  * Template: cpp_shell_operation_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/iam/session_operations_operations_commands.hpp"
@@ -64,7 +64,7 @@ TEST_CASE("session_operations_operations_registers_every_declared_command", "[co
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 2 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 2 command(s).";
 }
 
 TEST_CASE("session_operations_operations_process_get_active_sessions_requires_a_session",
@@ -78,7 +78,7 @@ TEST_CASE("session_operations_operations_process_get_active_sessions_requires_a_
     session_operations_operations_commands::process_get_active_sessions(
         out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -98,7 +98,7 @@ TEST_CASE("session_operations_operations_process_get_active_sessions_reaches_the
     session_operations_operations_commands::process_get_active_sessions(
         out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -119,7 +119,7 @@ TEST_CASE("session_operations_operations_process_end_session_requires_a_session"
             "00000000-0000-0000-0000-000000000001",
         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -138,7 +138,7 @@ TEST_CASE("session_operations_operations_process_end_session_reports_the_expecte
     command_feedback::reset();
     session_operations_operations_commands::process_end_session(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 1 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -161,7 +161,7 @@ TEST_CASE("session_operations_operations_process_end_session_reaches_the_transpo
             "00000000-0000-0000-0000-000000000001",
         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);

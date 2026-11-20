@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/messaging/convention_protocol.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -461,25 +459,25 @@ convention_service::prepare_change(const messaging::convention_change& change,
 
 std::vector<domain::convention> convention_service::list_conventions(std::uint32_t offset,
                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all conventions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all conventions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t convention_service::count_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total conventions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total conventions count";
     return repo_.get_total_convention_count(ctx_);
 }
 
 
 std::optional<domain::convention>
 convention_service::get_convention_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting convention at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting convention at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::convention> convention_service::get_convention(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -488,8 +486,8 @@ std::optional<domain::convention> convention_service::get_convention(const boost
 
 std::optional<domain::convention> convention_service::find_convention_by_code(
     const boost::uuids::uuid& party_id, const std::string& kind_code, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding convention by party_id/kind_code/name: " << party_id
-                               << "/" << kind_code << "/" << name;
+    ORES_LOG_SEV(lg(), debug) << "Finding convention by party_id/kind_code/name: " << party_id
+                              << "/" << kind_code << "/" << name;
     auto results =
         repo_.read_latest_by_code(ctx_, boost::uuids::to_string(party_id), kind_code, name);
     if (results.empty())
@@ -505,12 +503,12 @@ convention_service::get_conventions(const std::vector<std::string>& ids) {
 void convention_service::save_convention(const domain::convention& v) {
     if (v.identity.id.is_nil())
         throw std::invalid_argument("Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving convention. " << "id: " << v.identity.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving convention. " << "id: " << v.identity.id;
     auto t = v;
     stamp(t.identity, ctx_);
     stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved convention. " << "id: " << v.identity.id;
+    ORES_LOG_SEV(lg(), info) << "Saved convention. " << "id: " << v.identity.id;
 }
 
 void convention_service::save_conventions(const std::vector<domain::convention>& conventions) {
@@ -518,7 +516,7 @@ void convention_service::save_conventions(const std::vector<domain::convention>&
         if (e.identity.id.is_nil())
             throw std::invalid_argument("Convention id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << conventions.size() << " conventions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << conventions.size() << " conventions";
     auto ts = conventions;
     for (auto& e : ts) {
         stamp(e.identity, ctx_);
@@ -528,9 +526,9 @@ void convention_service::save_conventions(const std::vector<domain::convention>&
 }
 
 void convention_service::delete_convention(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing convention. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed convention. " << "id: " << id;
 }
 
 void convention_service::delete_conventions(const std::vector<std::string>& ids) {
@@ -538,7 +536,7 @@ void convention_service::delete_conventions(const std::vector<std::string>& ids)
 }
 
 std::vector<domain::convention> convention_service::get_convention_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for convention. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

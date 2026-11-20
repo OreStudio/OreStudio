@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/inflation_seasonality.hpp"
 #include "ores.refdata.api/messaging/inflation_seasonality_protocol.hpp"
 #include "ores.refdata.core/repository/inflation_seasonality_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -467,12 +465,12 @@ ores::utility::domain::result inflation_seasonality_service::prepare_change(
 std::vector<domain::inflation_seasonality>
 inflation_seasonality_service::list_inflation_seasonalities(std::uint32_t offset,
                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all inflation seasonalities";
+    ORES_LOG_SEV(lg(), debug) << "Listing all inflation seasonalities";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t inflation_seasonality_service::count_inflation_seasonalities() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total inflation seasonalities count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total inflation seasonalities count";
     return repo_.get_total_inflation_seasonality_count(ctx_);
 }
 
@@ -480,14 +478,14 @@ std::uint32_t inflation_seasonality_service::count_inflation_seasonalities() {
 std::optional<domain::inflation_seasonality>
 inflation_seasonality_service::get_inflation_seasonality_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting inflation seasonality at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting inflation seasonality at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::inflation_seasonality>
 inflation_seasonality_service::get_inflation_seasonality(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting inflation seasonality. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting inflation seasonality. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -503,11 +501,11 @@ void inflation_seasonality_service::save_inflation_seasonality(
     const domain::inflation_seasonality& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Inflation Seasonality id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving inflation seasonality. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving inflation seasonality. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved inflation seasonality. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved inflation seasonality. " << "id: " << v.id;
 }
 
 void inflation_seasonality_service::save_inflation_seasonalities(
@@ -516,8 +514,8 @@ void inflation_seasonality_service::save_inflation_seasonalities(
         if (e.id.is_nil())
             throw std::invalid_argument("Inflation Seasonality id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << inflation_seasonalities.size()
-                               << " inflation seasonalities";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << inflation_seasonalities.size()
+                              << " inflation seasonalities";
     auto ts = inflation_seasonalities;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -526,9 +524,9 @@ void inflation_seasonality_service::save_inflation_seasonalities(
 }
 
 void inflation_seasonality_service::delete_inflation_seasonality(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing inflation seasonality. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing inflation seasonality. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed inflation seasonality. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed inflation seasonality. " << "id: " << id;
 }
 
 void inflation_seasonality_service::delete_inflation_seasonalities(
@@ -538,7 +536,7 @@ void inflation_seasonality_service::delete_inflation_seasonalities(
 
 std::vector<domain::inflation_seasonality>
 inflation_seasonality_service::get_inflation_seasonality_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for inflation seasonality. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for inflation seasonality. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

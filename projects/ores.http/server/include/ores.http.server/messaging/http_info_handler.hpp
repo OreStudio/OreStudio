@@ -21,7 +21,7 @@
 #define ORES_HTTP_SERVER_MESSAGING_HTTP_INFO_HANDLER_HPP
 
 #include "ores.http.api/messaging/http_info_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -61,7 +61,7 @@ public:
         , base_url_(std::move(base_url)) {}
 
     void get(ores::nats::message msg) {
-        BOOST_LOG_SEV(http_info_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(http_info_handler_lg(), debug) << "Handling " << msg.subject;
 
         const auto auth_it = msg.headers.find(std::string(ores::nats::headers::authorization));
         if (auth_it == msg.headers.end() ||
@@ -85,7 +85,7 @@ public:
         resp.success = true;
         reply(nats_, msg, resp);
 
-        BOOST_LOG_SEV(http_info_handler_lg(), debug) << "Replied with base_url: " << base_url_;
+        ORES_LOG_SEV(http_info_handler_lg(), debug) << "Replied with base_url: " << base_url_;
     }
 
 private:

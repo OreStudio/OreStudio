@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/ascot.hpp"
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.core/repository/ascot_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -443,25 +441,25 @@ ascot_service::prepare_change(const messaging::ascot_change& change,
 
 
 std::vector<domain::ascot> ascot_service::list_ascots(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all ascots";
+    ORES_LOG_SEV(lg(), debug) << "Listing all ascots";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ascot_service::count_ascots() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ascots count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total ascots count";
     return repo_.get_total_ascot_count(ctx_);
 }
 
 
 std::optional<domain::ascot> ascot_service::get_ascot_at_version(const boost::uuids::uuid& trade_id,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ascot at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting ascot at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::ascot> ascot_service::get_ascot(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ascot. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting ascot. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -475,11 +473,11 @@ std::vector<domain::ascot> ascot_service::get_ascots(const std::vector<std::stri
 void ascot_service::save_ascot(const domain::ascot& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Ascot trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving ascot. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving ascot. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved ascot. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved ascot. " << "trade_id: " << v.trade_id;
 }
 
 void ascot_service::save_ascots(const std::vector<domain::ascot>& ascots) {
@@ -487,7 +485,7 @@ void ascot_service::save_ascots(const std::vector<domain::ascot>& ascots) {
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Ascot trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << ascots.size() << " ascots";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << ascots.size() << " ascots";
     auto ts = ascots;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -496,9 +494,9 @@ void ascot_service::save_ascots(const std::vector<domain::ascot>& ascots) {
 }
 
 void ascot_service::delete_ascot(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ascot. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing ascot. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed ascot. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed ascot. " << "trade_id: " << trade_id;
 }
 
 void ascot_service::delete_ascots(const std::vector<std::string>& trade_ids) {
@@ -506,7 +504,7 @@ void ascot_service::delete_ascots(const std::vector<std::string>& trade_ids) {
 }
 
 std::vector<domain::ascot> ascot_service::get_ascot_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for ascot. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for ascot. " << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

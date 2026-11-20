@@ -69,7 +69,7 @@ application::application() = default;
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.scheduler.service", 0, 1);
 
     ores::nats::service::client nats(cfg.nats);

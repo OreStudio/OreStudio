@@ -26,7 +26,7 @@
 #define ORES_REPORTING_CORE_REPOSITORY_REPORT_TYPE_CONFIGURATION_TYPE_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/report_type_configuration_type.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"

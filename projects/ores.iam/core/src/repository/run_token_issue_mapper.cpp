@@ -27,9 +27,7 @@
 #include "ores.iam.api/domain/run_token_issue.hpp"
 #include "ores.iam.api/domain/run_token_issue_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/run_token_issue_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <chrono>
 #include <string_view>
 #include <vector>
@@ -40,7 +38,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::run_token_issue run_token_issue_mapper::map(const run_token_issue_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::run_token_issue r;
     r.id = v.id;
@@ -54,12 +52,12 @@ domain::run_token_issue run_token_issue_mapper::map(const run_token_issue_entity
     r.outcome = v.outcome;
     r.reason = v.reason;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 run_token_issue_entity run_token_issue_mapper::map(const domain::run_token_issue& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     run_token_issue_entity r;
     r.id = v.id;
@@ -73,7 +71,7 @@ run_token_issue_entity run_token_issue_mapper::map(const domain::run_token_issue
     r.outcome = v.outcome;
     r.reason = v.reason;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

@@ -28,7 +28,7 @@
 #include "ores.iam.api/domain/account_role.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_role_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::iam::repository {
 

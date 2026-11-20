@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_schedule.hpp"
 #include "ores.refdata.api/messaging/tenor_schedule_protocol.hpp"
 #include "ores.refdata.core/repository/tenor_schedule_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -558,55 +556,55 @@ tenor_schedule_service::prepare_change(const messaging::tenor_schedule_change& c
 
 std::vector<domain::tenor_schedule> tenor_schedule_service::list_schedules(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all tenor schedules";
+    ORES_LOG_SEV(lg(), debug) << "Listing all tenor schedules";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t tenor_schedule_service::count_schedules() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total tenor schedules count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total tenor schedules count";
     return repo_.get_total_schedule_count(ctx_);
 }
 
 
 std::vector<domain::tenor_schedule> tenor_schedule_service::list_schedules_by_calendar_code(
     const std::string& calendar_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing tenor schedules by calendar_code: " << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing tenor schedules by calendar_code: " << calendar_code;
     return repo_.read_latest_by_calendar_code(ctx_, calendar_code, offset, limit);
 }
 
 std::uint32_t
 tenor_schedule_service::count_schedules_by_calendar_code(const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total tenor schedules count by calendar_code: "
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting total tenor schedules count by calendar_code: "
+                              << calendar_code;
     return repo_.get_total_schedule_count_by_calendar_code(ctx_, calendar_code);
 }
 
 
 std::vector<domain::tenor_schedule> tenor_schedule_service::list_schedules_by_diary_entry_type(
     const std::string& diary_entry_type, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing tenor schedules by diary_entry_type: "
-                               << diary_entry_type;
+    ORES_LOG_SEV(lg(), debug) << "Listing tenor schedules by diary_entry_type: "
+                              << diary_entry_type;
     return repo_.read_latest_by_diary_entry_type(ctx_, diary_entry_type, offset, limit);
 }
 
 std::uint32_t
 tenor_schedule_service::count_schedules_by_diary_entry_type(const std::string& diary_entry_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total tenor schedules count by diary_entry_type: "
-                               << diary_entry_type;
+    ORES_LOG_SEV(lg(), debug) << "Getting total tenor schedules count by diary_entry_type: "
+                              << diary_entry_type;
     return repo_.get_total_schedule_count_by_diary_entry_type(ctx_, diary_entry_type);
 }
 
 
 std::optional<domain::tenor_schedule>
 tenor_schedule_service::get_schedule_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor schedule at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenor schedule at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::tenor_schedule>
 tenor_schedule_service::get_schedule(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor schedule. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenor schedule. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -621,11 +619,11 @@ tenor_schedule_service::get_schedules(const std::vector<std::string>& codes) {
 void tenor_schedule_service::save_schedule(const domain::tenor_schedule& v) {
     if (v.code.empty())
         throw std::invalid_argument("Tenor Schedule code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor schedule. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving tenor schedule. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor schedule. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved tenor schedule. " << "code: " << v.code;
 }
 
 void tenor_schedule_service::save_schedules(const std::vector<domain::tenor_schedule>& schedules) {
@@ -633,7 +631,7 @@ void tenor_schedule_service::save_schedules(const std::vector<domain::tenor_sche
         if (e.code.empty())
             throw std::invalid_argument("Tenor Schedule code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << schedules.size() << " tenor schedules";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << schedules.size() << " tenor schedules";
     auto ts = schedules;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -642,9 +640,9 @@ void tenor_schedule_service::save_schedules(const std::vector<domain::tenor_sche
 }
 
 void tenor_schedule_service::delete_schedule(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor schedule. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing tenor schedule. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenor schedule. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed tenor schedule. " << "code: " << code;
 }
 
 void tenor_schedule_service::delete_schedules(const std::vector<std::string>& codes) {
@@ -653,7 +651,7 @@ void tenor_schedule_service::delete_schedules(const std::vector<std::string>& co
 
 std::vector<domain::tenor_schedule>
 tenor_schedule_service::get_schedule_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor schedule. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for tenor schedule. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

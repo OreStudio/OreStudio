@@ -19,7 +19,7 @@
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.analytics.quant/service/ssvi_calibration_engine.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/fx_vol_surface_calibration.hpp"
@@ -564,13 +564,12 @@ mm::calibrate_fx_vol_surface_response fx_vol_surface_calibration_service::calibr
         out.gamma = record.gamma;
         out.converged = record.converged;
         out.max_abs_error = max_abs_error;
-        BOOST_LOG_SEV(calibration_log(), ores::logging::info) << out.message;
+        ORES_LOG_SEV(calibration_log(), ores::logging::info) << out.message;
     } catch (const std::exception& e) {
         out = {};
         out.success = false;
         out.message = e.what();
-        BOOST_LOG_SEV(calibration_log(), ores::logging::warn)
-            << "Calibration refused: " << e.what();
+        ORES_LOG_SEV(calibration_log(), ores::logging::warn) << "Calibration refused: " << e.what();
     }
     return out;
 }

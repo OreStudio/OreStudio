@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http/routes/reporting/result_rollup.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>

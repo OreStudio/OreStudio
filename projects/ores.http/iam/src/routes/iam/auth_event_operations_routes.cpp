@@ -81,7 +81,7 @@ void auth_event_operations_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering auth_event_operations routes";
+    ORES_LOG_SEV(lg(), info) << "Registering auth_event_operations routes";
 
     auto list_auth_events_route =
         router->post("/api/v1/iam/auth_events/list")
@@ -98,7 +98,7 @@ void auth_event_operations_routes::register_routes(
     router->add_route(list_auth_events_built);
     registry->register_route(list_auth_events_built);
 
-    BOOST_LOG_SEV(lg(), info) << "auth_event_operations routes registered: " << 1 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "auth_event_operations routes registered: " << 1 << " endpoint(s)";
 }
 
 }

@@ -45,7 +45,7 @@ workflow_handler::workflow_handler(ores::nats::service::client& nats,
 
 void workflow_handler::retry_instance(ores::nats::message msg) {
     const auto correlation_id = ores::nats::extract_or_generate_correlation_id(msg);
-    BOOST_LOG_SEV(lg(), info) << "retry_instance correlation_id=" << correlation_id;
+    ORES_LOG_SEV(lg(), info) << "retry_instance correlation_id=" << correlation_id;
 
     auto ctx_expected = ores::service::service::make_request_context(
         ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>(signer_));
@@ -97,12 +97,12 @@ void workflow_handler::retry_instance(ores::nats::message msg) {
         resp.message = outcome.reason;
         resp.step_index = outcome.step_index;
         resp.step_name = outcome.step_name;
-        BOOST_LOG_SEV(lg(), info) << "retry_instance " << (outcome.resumed ? "resumed" : "refused")
-                                  << " workflow=" << req->workflow_instance_id
-                                  << (outcome.resumed ? " step=" + outcome.step_name :
-                                                        " reason=" + outcome.reason);
+        ORES_LOG_SEV(lg(), info) << "retry_instance " << (outcome.resumed ? "resumed" : "refused")
+                                 << " workflow=" << req->workflow_instance_id
+                                 << (outcome.resumed ? " step=" + outcome.step_name :
+                                                       " reason=" + outcome.reason);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
         resp.success = false;
         resp.message = e.what();
     }

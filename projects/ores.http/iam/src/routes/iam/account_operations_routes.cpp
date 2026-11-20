@@ -185,7 +185,7 @@ void account_operations_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering account_operations routes";
+    ORES_LOG_SEV(lg(), info) << "Registering account_operations routes";
 
     auto save_account_route = router->post("/api/v1/iam/accounts/put")
                                   .summary("Save account")
@@ -305,7 +305,7 @@ void account_operations_routes::register_routes(
     router->add_route(change_password_built);
     registry->register_route(change_password_built);
 
-    BOOST_LOG_SEV(lg(), info) << "account_operations routes registered: " << 8 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "account_operations routes registered: " << 8 << " endpoint(s)";
 }
 
 }

@@ -61,7 +61,7 @@ std::optional<domain::batch> batch_of_run(const ores::database::context& ctx,
 }
 
 void run_files_handler::list_run_files(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
+    ORES_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
 
     const auto req = decode<list_run_files_request>(msg);
     if (!req) {
@@ -138,7 +138,7 @@ void run_files_handler::list_run_files(ores::nats::message msg) {
 
         resp.success = true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "list_run_files failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "list_run_files failed: " << e.what();
         resp.success = false;
         resp.message = e.what();
     }

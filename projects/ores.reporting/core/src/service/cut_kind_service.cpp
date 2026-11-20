@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/cut_kind.hpp"
 #include "ores.reporting.api/messaging/cut_kind_protocol.hpp"
 #include "ores.reporting.core/repository/cut_kind_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -446,25 +444,25 @@ cut_kind_service::prepare_change(const messaging::cut_kind_change& change,
 
 std::vector<domain::cut_kind> cut_kind_service::list_kinds(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all cut kinds";
+    ORES_LOG_SEV(lg(), debug) << "Listing all cut kinds";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cut_kind_service::count_kinds() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cut kinds count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total cut kinds count";
     return repo_.get_total_kind_count(ctx_);
 }
 
 
 std::optional<domain::cut_kind> cut_kind_service::get_kind_at_version(const std::string& code,
                                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cut kind at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting cut kind at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::cut_kind> cut_kind_service::find_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding cut kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding cut kind. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -478,11 +476,11 @@ std::vector<domain::cut_kind> cut_kind_service::get_kinds(const std::vector<std:
 void cut_kind_service::save_kind(const domain::cut_kind& v) {
     if (v.code.empty())
         throw std::invalid_argument("Cut Kind code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving cut kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving cut kind. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved cut kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved cut kind. " << "code: " << v.code;
 }
 
 void cut_kind_service::save_kinds(const std::vector<domain::cut_kind>& kinds) {
@@ -490,7 +488,7 @@ void cut_kind_service::save_kinds(const std::vector<domain::cut_kind>& kinds) {
         if (e.code.empty())
             throw std::invalid_argument("Cut Kind code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << kinds.size() << " cut kinds";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << kinds.size() << " cut kinds";
     auto ts = kinds;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -499,9 +497,9 @@ void cut_kind_service::save_kinds(const std::vector<domain::cut_kind>& kinds) {
 }
 
 void cut_kind_service::delete_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cut kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing cut kind. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed cut kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed cut kind. " << "code: " << code;
 }
 
 void cut_kind_service::delete_kinds(const std::vector<std::string>& codes) {
@@ -509,7 +507,7 @@ void cut_kind_service::delete_kinds(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::cut_kind> cut_kind_service::get_kind_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for cut kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for cut kind. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

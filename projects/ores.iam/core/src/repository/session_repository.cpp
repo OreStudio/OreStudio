@@ -31,11 +31,9 @@
 #include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.core/repository/session_entity.hpp"
 #include "ores.iam.core/repository/session_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -221,8 +219,8 @@ void session_repository::write(const context& ctx, const std::vector<domain::ses
 void session_repository::write(const context& ctx,
                                const domain::session& v,
                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing session. " << "id: " << v.id
-                               << " start_time: " << v.start_time;
+    ORES_LOG_SEV(lg(), debug) << "Writing session. " << "id: " << v.id
+                              << " start_time: " << v.start_time;
     const auto t = session_apply_claim(
         v,
         claim,
@@ -240,7 +238,7 @@ void session_repository::write(const context& ctx,
 void session_repository::write(const context& ctx,
                                const std::vector<domain::session>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing sessions. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing sessions. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("session_repository::write: one claim is needed for each row");
     std::vector<domain::session> to_read;
@@ -276,8 +274,8 @@ std::vector<domain::session> session_repository::read_latest(const context& ctx)
 std::vector<domain::session> session_repository::read_latest(const context& ctx,
                                                              const std::string& id,
                                                              const std::string& start_time) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest session. " << "id: " << id
-                               << " start_time: " << start_time;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest session. " << "id: " << id
+                              << " start_time: " << start_time;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<session_entity>> |
@@ -293,7 +291,7 @@ std::vector<domain::session> session_repository::read_latest(const context& ctx,
 
 std::vector<domain::session> session_repository::read_latest_by_id(const context& ctx,
                                                                    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest session by id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest session by id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id);
@@ -325,7 +323,7 @@ session_repository::read_latest_by_id(const context& ctx, const std::vector<std:
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sessions by id. Count: " << ids.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sessions by id. Count: " << ids.size();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids));
@@ -342,8 +340,8 @@ session_repository::read_latest_by_id(const context& ctx, const std::vector<std:
 std::vector<domain::session> session_repository::read_all(const context& ctx,
                                                           const std::string& id,
                                                           const std::string& start_time) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all session versions. " << "id: " << id
-                               << " start_time: " << start_time;
+    ORES_LOG_SEV(lg(), debug) << "Reading all session versions. " << "id: " << id
+                              << " start_time: " << start_time;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<session_entity>> |
@@ -363,8 +361,8 @@ session_repository::remove_status session_repository::remove(const context& ctx,
                                                              const std::string& id,
                                                              const std::string& start_time,
                                                              std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing session. " << "id: " << id
-                               << " start_time: " << start_time;
+    ORES_LOG_SEV(lg(), debug) << "Removing session. " << "id: " << id
+                              << " start_time: " << start_time;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -393,8 +391,8 @@ session_repository::read_latest(const context& ctx,
                                 std::uint32_t limit,
                                 const ores::utility::domain::order& order,
                                 const std::optional<messaging::sessions_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sessions with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sessions with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -412,7 +410,7 @@ session_repository::read_latest(const context& ctx,
 
 std::uint32_t session_repository::get_total_session_count(
     const context& ctx, const std::optional<messaging::sessions_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active session count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active session count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_entity>> |

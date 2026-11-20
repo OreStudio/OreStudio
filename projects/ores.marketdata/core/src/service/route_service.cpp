@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/route.hpp"
 #include "ores.marketdata.api/messaging/route_protocol.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -503,25 +501,25 @@ route_service::prepare_change(const messaging::route_change& change,
 
 
 std::vector<domain::route> route_service::list_routes(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all routes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all routes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t route_service::count_routes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total routes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total routes count";
     return repo_.get_total_route_count(ctx_);
 }
 
 
 std::optional<domain::route> route_service::get_route_at_version(const boost::uuids::uuid& id,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting route at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting route at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::route> route_service::get_route(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting route. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting route. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -530,7 +528,7 @@ std::optional<domain::route> route_service::get_route(const boost::uuids::uuid& 
 
 std::optional<domain::route>
 route_service::get_route_by_publisher_code(const std::string& publisher_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting route by publisher_code: " << publisher_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting route by publisher_code: " << publisher_code;
     messaging::route_key k;
     k.publisher_code = publisher_code;
     auto found = route_read_one(repo_, ctx_, k);
@@ -546,11 +544,11 @@ std::vector<domain::route> route_service::get_routes(const std::vector<std::stri
 void route_service::save_route(const domain::route& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Route id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving route. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving route. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved route. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved route. " << "id: " << v.id;
 }
 
 void route_service::save_routes(const std::vector<domain::route>& routes) {
@@ -558,7 +556,7 @@ void route_service::save_routes(const std::vector<domain::route>& routes) {
         if (e.id.is_nil())
             throw std::invalid_argument("Route id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << routes.size() << " routes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << routes.size() << " routes";
     auto ts = routes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -567,9 +565,9 @@ void route_service::save_routes(const std::vector<domain::route>& routes) {
 }
 
 void route_service::delete_route(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing route. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing route. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed route. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed route. " << "id: " << id;
 }
 
 void route_service::delete_routes(const std::vector<std::string>& ids) {
@@ -577,7 +575,7 @@ void route_service::delete_routes(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::route> route_service::get_route_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for route. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for route. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

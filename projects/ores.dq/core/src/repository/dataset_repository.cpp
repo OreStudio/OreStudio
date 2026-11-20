@@ -31,9 +31,7 @@
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.core/repository/dataset_entity.hpp"
 #include "ores.dq.core/repository/dataset_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -208,7 +206,7 @@ void dataset_repository::write(const context& ctx, const std::vector<domain::dat
 void dataset_repository::write(const context& ctx,
                                const domain::dataset& v,
                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing dataset. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing dataset. " << "id: " << v.id;
     const auto t = dataset_apply_claim(v,
                                        claim,
                                        dataset_claim_reads_current(claim) ?
@@ -221,7 +219,7 @@ void dataset_repository::write(const context& ctx,
 void dataset_repository::write(const context& ctx,
                                const std::vector<domain::dataset>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing datasets. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing datasets. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("dataset_repository::write: one claim is needed for each row");
     std::vector<domain::dataset> to_read;
@@ -253,7 +251,7 @@ std::vector<domain::dataset> dataset_repository::read_latest(const context& ctx)
 
 std::vector<domain::dataset> dataset_repository::read_latest(const context& ctx,
                                                              const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest dataset. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<dataset_entity>> |
                        query_builder::where("id"_c == id && "valid_to"_c == max);
@@ -268,7 +266,7 @@ std::vector<domain::dataset> dataset_repository::read_latest(const context& ctx,
 
 std::vector<domain::dataset> dataset_repository::read_latest_by_code(const context& ctx,
                                                                      const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest dataset by code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<dataset_entity>> |
                        query_builder::where("code"_c == code && "valid_to"_c == max);
@@ -300,7 +298,7 @@ dataset_repository::read_latest_by_code(const context& ctx, const std::vector<st
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by code. Count: " << codes.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest datasets by code. Count: " << codes.size();
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<dataset_entity>> |
                        query_builder::where("code"_c.in(codes) && "valid_to"_c == max);
@@ -315,7 +313,7 @@ dataset_repository::read_latest_by_code(const context& ctx, const std::vector<st
 
 std::vector<domain::dataset> dataset_repository::read_any_by_code(const context& ctx,
                                                                   const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any dataset by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading any dataset by code: " << code;
     const auto query = query_builder::read<std::vector<dataset_entity>> |
                        query_builder::where("code"_c == code) |
                        query_builder::order_by("valid_from"_c.desc()) | query_builder::limit(1);
@@ -331,7 +329,7 @@ std::vector<domain::dataset> dataset_repository::read_any_by_code(const context&
 
 std::vector<domain::dataset> dataset_repository::read_all(const context& ctx,
                                                           const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all dataset versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all dataset versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<dataset_entity>> |
                        query_builder::where("id"_c == id) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
@@ -347,8 +345,8 @@ std::vector<domain::dataset> dataset_repository::read_all(const context& ctx,
 std::optional<domain::dataset> dataset_repository::read_at_version(const context& ctx,
                                                                    const std::string& id,
                                                                    std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading dataset at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading dataset at version. " << "id: " << id
+                              << " version: " << version;
     const auto query = query_builder::read<std::vector<dataset_entity>> |
                        query_builder::where("id"_c == id && "version"_c == version) |
                        query_builder::limit(1);
@@ -368,7 +366,7 @@ std::optional<domain::dataset> dataset_repository::read_at_version(const context
 dataset_repository::remove_status dataset_repository::remove(const context& ctx,
                                                              const std::string& id,
                                                              std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing dataset. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing dataset. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -406,8 +404,8 @@ dataset_repository::read_latest(const context& ctx,
                                 const ores::utility::domain::order& order,
                                 const std::optional<messaging::datasets_filter>& filter,
                                 const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest datasets with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<dataset_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -425,7 +423,7 @@ std::uint32_t
 dataset_repository::get_total_dataset_count(const context& ctx,
                                             const std::optional<messaging::datasets_filter>& filter,
                                             const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active dataset count";
 
     const auto query = query_builder::read<std::vector<dataset_entity>>;
 

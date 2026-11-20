@@ -20,7 +20,7 @@
 #ifndef ORES_SECURITY_CRYPTO_PASSWORD_HASHER_HPP
 #define ORES_SECURITY_CRYPTO_PASSWORD_HASHER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/export.hpp"
 #include <string>
 

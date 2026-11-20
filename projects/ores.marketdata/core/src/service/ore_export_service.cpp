@@ -218,9 +218,9 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
     repository::fx_vol_surface_publish_repository surface_repo;
 
     const auto series = series_repo.read_latest(ctx_);
-    BOOST_LOG_SEV(lg(), info) << "market data export: read " << series.size() << " series in "
-                              << lapped() << " ms"
-                              << (date ? ", valuing at the close of the day" : ", with no date");
+    ORES_LOG_SEV(lg(), info) << "market data export: read " << series.size() << " series in "
+                             << lapped() << " ms"
+                             << (date ? ", valuing at the close of the day" : ", with no date");
 
     // One read for the tenant answers every series, because a read for each series
     // pays the planner once for every chunk of the observation and tick tables.
@@ -229,8 +229,8 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
         const auto id = o.series_id;
         latest[id].push_back(std::move(o));
     }
-    BOOST_LOG_SEV(lg(), info) << "market data export: read the current observations of "
-                              << latest.size() << " series in " << lapped() << " ms";
+    ORES_LOG_SEV(lg(), info) << "market data export: read the current observations of "
+                             << latest.size() << " series in " << lapped() << " ms";
 
     std::map<boost::uuids::uuid, std::vector<domain::market_observation>> at_close;
     if (date) {
@@ -240,9 +240,9 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
             at_close[id].push_back(std::move(o));
             ++points;
         }
-        BOOST_LOG_SEV(lg(), info) << "market data export: read " << points
-                                  << " points at the close of the day for " << at_close.size()
-                                  << " series in " << lapped() << " ms";
+        ORES_LOG_SEV(lg(), info) << "market data export: read " << points
+                                 << " points at the close of the day for " << at_close.size()
+                                 << " series in " << lapped() << " ms";
     }
 
     std::vector<ores::ore::market::market_datum> data;
@@ -283,8 +283,8 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
             // A surface reaches ORE only as it was published: the newest published set at or before
             // the close, each point an FX option quote. A candidate is never written.
             if (s.derivation_config_id.is_nil()) {
-                BOOST_LOG_SEV(lg(), debug) << "market data export: surface series " << s.id
-                                           << " has no blueprint, so it has no published set";
+                ORES_LOG_SEV(lg(), debug) << "market data export: surface series " << s.id
+                                          << " has no blueprint, so it has no published set";
                 continue;
             }
             const auto published =
@@ -292,8 +292,8 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
             const auto set = std::ranges::find_if(
                 published, [&](const auto& p) { return !date || p.as_of <= close; });
             if (set == published.end()) {
-                BOOST_LOG_SEV(lg(), debug) << "market data export: surface series " << s.id
-                                           << " has no published set at or before the close";
+                ORES_LOG_SEV(lg(), debug) << "market data export: surface series " << s.id
+                                          << " has no published set at or before the close";
                 continue;
             }
             for (const auto& o : observations) {
@@ -356,8 +356,8 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
         return d.key.starts_with("FX_OPTION/") && surface_pairs.contains(pair_prefix_of(d.key));
     });
     std::ranges::move(surface_points, std::back_inserter(data));
-    BOOST_LOG_SEV(lg(), info) << "market data export: built " << data.size() << " datum(s) and "
-                              << fixings.size() << " fixing(s) in " << lapped() << " ms";
+    ORES_LOG_SEV(lg(), info) << "market data export: built " << data.size() << " datum(s) and "
+                             << fixings.size() << " fixing(s) in " << lapped() << " ms";
 
     ore_export_result result;
     result.series_count = exported_series;
@@ -374,7 +374,7 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
     ores::ore::market::serialize_fixings(fixing_text, fixings);
     result.fixings = fixing_text.str();
 
-    BOOST_LOG_SEV(lg(), info)
+    ORES_LOG_SEV(lg(), info)
         << "Exported " << result.series_count << " series, " << result.observation_count
         << " observation(s), " << result.fixing_count << " fixing(s) in "
         << std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - began).count()

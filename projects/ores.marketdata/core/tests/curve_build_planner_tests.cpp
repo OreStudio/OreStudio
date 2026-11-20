@@ -19,7 +19,6 @@
  */
 #include "ores.marketdata.core/service/curve_build_planner.hpp"
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
@@ -57,7 +56,7 @@ TEST_CASE("a_projection_curve_is_planned_after_the_curve_it_discounts_off", plan
     const std::vector<curve_build_node> curves{projection("USD-LIBOR-3M", "USD-OIS"),
                                                projection("USD-LIBOR-6M", "USD-OIS"),
                                                funding("USD-OIS")};
-    BOOST_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
+    ORES_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
 
     const auto plan = plan_curve_builds(curves);
     REQUIRE(plan.has_value());
@@ -72,7 +71,7 @@ TEST_CASE("a_projection_whose_funding_curve_is_not_in_the_set_is_unbuildable", p
 
     const std::vector<curve_build_node> curves{funding("USD-OIS"),
                                                projection("USD-LIBOR-3M", "USD-EURIBOR")};
-    BOOST_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
+    ORES_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
 
     const auto plan = plan_curve_builds(curves);
     REQUIRE(plan.has_value());
@@ -93,7 +92,7 @@ TEST_CASE("a_curve_reading_an_unbuildable_curve_is_unbuildable_too", planner_tag
         projection("USD-LIBOR-3M", "GBP-OIS"),
         projection("USD-LIBOR-3M-BASIS", "USD-LIBOR-3M"),
         projection("USD-LIBOR-6M-BASIS", "USD-LIBOR-3M-BASIS")};
-    BOOST_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
+    ORES_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
 
     const auto plan = plan_curve_builds(curves);
     REQUIRE(plan.has_value());
@@ -114,7 +113,7 @@ TEST_CASE("each_level_holds_the_curves_the_level_before_it_frees", planner_tags)
     const std::vector<curve_build_node> curves{projection("USD-LIBOR-6M", "USD-LIBOR-3M"),
                                                projection("USD-LIBOR-3M", "USD-OIS"),
                                                funding("USD-OIS")};
-    BOOST_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
+    ORES_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
 
     const auto plan = plan_curve_builds(curves);
     REQUIRE(plan.has_value());
@@ -129,7 +128,7 @@ TEST_CASE("a_cycle_is_refused_by_the_plan_not_discovered_by_a_retry", planner_ta
 
     const std::vector<curve_build_node> curves{funding("USD-OIS"),
                                                projection("USD-LIBOR-3M", "USD-LIBOR-3M")};
-    BOOST_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
+    ORES_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
 
     const auto plan = plan_curve_builds(curves);
     REQUIRE_FALSE(plan.has_value());
@@ -143,7 +142,7 @@ TEST_CASE("two_curves_that_discount_off_each_other_are_refused", planner_tags) {
     const std::vector<curve_build_node> curves{projection("USD-LIBOR-3M", "USD-LIBOR-6M"),
                                                projection("USD-LIBOR-6M", "USD-LIBOR-3M"),
                                                funding("USD-OIS")};
-    BOOST_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
+    ORES_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
 
     const auto plan = plan_curve_builds(curves);
     REQUIRE_FALSE(plan.has_value());
@@ -155,7 +154,7 @@ TEST_CASE("a_set_that_names_one_curve_twice_is_refused", planner_tags) {
     auto lg(make_logger(test_suite));
 
     const std::vector<curve_build_node> curves{funding("USD-OIS"), funding("USD-OIS")};
-    BOOST_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
+    ORES_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
 
     const auto plan = plan_curve_builds(curves);
     REQUIRE_FALSE(plan.has_value());
@@ -168,7 +167,7 @@ TEST_CASE("a_curve_that_reads_nothing_is_the_whole_first_level", planner_tags) {
 
     const std::vector<curve_build_node> curves{
         funding("USD-OIS"), funding("GBP-OIS"), funding("EUR-EURIBOR-3M")};
-    BOOST_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
+    ORES_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
 
     const auto plan = plan_curve_builds(curves);
     REQUIRE(plan.has_value());
@@ -180,7 +179,7 @@ TEST_CASE("an_empty_set_plans_no_level", planner_tags) {
     auto lg(make_logger(test_suite));
 
     const std::vector<curve_build_node> curves{};
-    BOOST_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
+    ORES_LOG_SEV(lg, info) << "planning " << curves.size() << " curve(s)";
 
     const auto plan = plan_curve_builds(curves);
     REQUIRE(plan.has_value());

@@ -25,7 +25,7 @@
 #endif
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.service/app/delivery_meter.hpp"
 #include "ores.marketdata.service/app/demand_calculator.hpp"
 #include "ores.marketdata.service/export.hpp"

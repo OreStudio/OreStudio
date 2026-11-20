@@ -27,7 +27,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/synthetic/ir_curve_generation_config_process_parameter_value_web_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -106,7 +106,7 @@ TEST_CASE(
     CHECK(has(http_method::delete_, "/api/synthetic/ir-parameter-values"));
     CHECK(has(http_method::get, "/api/synthetic/ir-parameter-values/key/{key}"));
     CHECK(has(http_method::get, "/api/synthetic/ir-parameter-values/by/{parent}"));
-    BOOST_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
 }
 
 TEST_CASE("ir_curve_generation_config_process_parameter_value_web_routes_names_the_resource_in_its_"

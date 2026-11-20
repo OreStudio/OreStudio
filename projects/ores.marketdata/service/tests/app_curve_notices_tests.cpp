@@ -26,8 +26,7 @@
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
@@ -109,7 +108,7 @@ public:
                     notices_test_lg(),
                     "Closing the notice test's reader account");
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(notices_test_lg(), warn)
+                ORES_LOG_SEV(notices_test_lg(), warn)
                     << "The notice test's reader account was left behind: " << e.what();
             }
         }

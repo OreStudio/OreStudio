@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.telemetry.core/domain/semantic_conventions.hpp"
 #include "ores.telemetry.core/domain/telemetry_context.hpp"
 #include "ores.telemetry.core/generators/span_id_generator.hpp"
@@ -61,8 +61,8 @@ TEST_CASE("telemetry_context_is_valid_when_properly_constructed", "[telemetry_co
     REQUIRE(tctx.context().trace_flags == 0x01);
     REQUIRE(tctx.resource_ptr() == res);
     REQUIRE(tctx.get_resource().service_name() == "test.service");
-    BOOST_LOG_SEV(lg, debug) << "Created telemetry context with trace: "
-                             << tctx.get_trace_id().to_hex();
+    ORES_LOG_SEV(lg, debug) << "Created telemetry context with trace: "
+                            << tctx.get_trace_id().to_hex();
 }
 
 TEST_CASE("telemetry_context_start_span_creates_child", "[telemetry_context]") {
@@ -89,7 +89,7 @@ TEST_CASE("telemetry_context_start_span_creates_child", "[telemetry_context]") {
     // Child span should have start time set
     REQUIRE(child_span.start_time.time_since_epoch().count() > 0);
 
-    BOOST_LOG_SEV(lg, debug) << "Created child span: " << child_span.context.span.to_hex();
+    ORES_LOG_SEV(lg, debug) << "Created child span: " << child_span.context.span.to_hex();
 }
 
 TEST_CASE("telemetry_context_start_linked_trace_creates_new_trace", "[telemetry_context]") {
@@ -116,8 +116,8 @@ TEST_CASE("telemetry_context_start_linked_trace_creates_new_trace", "[telemetry_
     REQUIRE(it != linked_span.links[0].attrs.end());
     REQUIRE(std::get<std::string>(it->second) == semconv::link::triggered_by);
 
-    BOOST_LOG_SEV(lg, debug) << "Created linked trace: " << linked_span.context.trace.to_hex()
-                             << " linked from: " << parent_ctx.get_trace_id().to_hex();
+    ORES_LOG_SEV(lg, debug) << "Created linked trace: " << linked_span.context.trace.to_hex()
+                            << " linked from: " << parent_ctx.get_trace_id().to_hex();
 }
 
 TEST_CASE("telemetry_context_shares_resource", "[telemetry_context]") {
@@ -195,7 +195,7 @@ TEST_CASE("resource_from_environment_populates_attributes", "[telemetry_context]
     REQUIRE(res.host_id().has_value());
     REQUIRE_FALSE(res.host_id().value().empty());
 
-    BOOST_LOG_SEV(lg, debug) << "Resource - service: " << res.service_name().value()
-                             << ", host: " << res.host_name().value()
-                             << ", host_id: " << res.host_id().value();
+    ORES_LOG_SEV(lg, debug) << "Resource - service: " << res.service_name().value()
+                            << ", host: " << res.host_name().value()
+                            << ", host_id: " << res.host_id().value();
 }

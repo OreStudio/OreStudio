@@ -18,8 +18,7 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -41,7 +40,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>

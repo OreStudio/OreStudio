@@ -25,7 +25,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/iam/signup_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
@@ -83,7 +83,7 @@ TEST_CASE("signup_routes_registers_every_declared_operation", "[routes]") {
         CHECK(found != routes.end());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 1 route(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 1 route(s).";
 }
 
 TEST_CASE("signup_routes_requires_a_session_where_the_message_does", "[routes]") {
@@ -109,5 +109,5 @@ TEST_CASE("signup_routes_requires_a_session_where_the_message_does", "[routes]")
         CHECK(found->auth_declared);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 1 route(s).";
+    ORES_LOG_SEV(lg, debug) << "Checked the auth flag of 1 route(s).";
 }

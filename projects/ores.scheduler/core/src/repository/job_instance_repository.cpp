@@ -72,7 +72,7 @@ parse_rows(const std::vector<std::vector<std::optional<std::string>>>& rows) {
 
 std::int64_t job_instance_repository::write_started(const context& ctx,
                                                     const domain::job_instance& inst) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing started job instance for: " << inst.job_definition_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing started job instance for: " << inst.job_definition_id;
 
     const auto job_def_id = boost::uuids::to_string(inst.job_definition_id);
     const auto tenant_id = inst.tenant_id ? boost::uuids::to_string(*inst.tenant_id) : "";
@@ -103,7 +103,7 @@ std::int64_t job_instance_repository::write_started(const context& ctx,
         throw std::runtime_error("Failed to retrieve new job_instance id from database.");
 
     const auto new_id = std::stoll(*rows[0][0]);
-    BOOST_LOG_SEV(lg(), debug) << "Created job instance id: " << new_id;
+    ORES_LOG_SEV(lg(), debug) << "Created job instance id: " << new_id;
     return new_id;
 }
 
@@ -113,7 +113,7 @@ void job_instance_repository::write_completed(
     const std::chrono::system_clock::time_point& triggered_at,
     domain::job_status status,
     const std::string& error) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing completed status for job instance: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Writing completed status for job instance: " << id;
 
     const auto completed_at =
         ores::platform::time::datetime::to_iso8601_utc(std::chrono::system_clock::now());
@@ -140,7 +140,7 @@ void job_instance_repository::write_completed(
 
 std::vector<domain::job_instance> job_instance_repository::read_latest(
     const context& ctx, const boost::uuids::uuid& job_definition_id, std::size_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest job instances for: " << job_definition_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest job instances for: " << job_definition_id;
 
     const auto job_def_id_str = boost::uuids::to_string(job_definition_id);
     const auto limit_str = std::to_string(limit);
@@ -158,14 +158,14 @@ std::vector<domain::job_instance> job_instance_repository::read_latest(
         ctx, sql, {job_def_id_str, limit_str}, lg(), "Reading latest job instances.");
 
     auto result = parse_rows(rows);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieved " << result.size()
-                               << " job instances for: " << job_definition_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieved " << result.size()
+                              << " job instances for: " << job_definition_id;
     return result;
 }
 
 std::vector<domain::job_instance> job_instance_repository::read_all_latest(const context& ctx,
                                                                            std::size_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all latest job instances, limit=" << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading all latest job instances, limit=" << limit;
 
     const auto limit_str = std::to_string(limit);
 
@@ -181,14 +181,14 @@ std::vector<domain::job_instance> job_instance_repository::read_all_latest(const
         ctx, sql, {limit_str}, lg(), "Reading all latest job instances.");
 
     auto result = parse_rows(rows);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieved " << result.size() << " job instances.";
+    ORES_LOG_SEV(lg(), debug) << "Retrieved " << result.size() << " job instances.";
     return result;
 }
 
 std::optional<std::chrono::system_clock::time_point>
 job_instance_repository::last_run_at(const context& ctx,
                                      const boost::uuids::uuid& job_definition_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Querying last_run_at for: " << job_definition_id;
+    ORES_LOG_SEV(lg(), debug) << "Querying last_run_at for: " << job_definition_id;
 
     const auto job_def_id_str = boost::uuids::to_string(job_definition_id);
 

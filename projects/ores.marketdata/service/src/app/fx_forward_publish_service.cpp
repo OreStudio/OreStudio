@@ -22,7 +22,7 @@
 #include "ores.inbox.core/repository/approval_decision_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_point_repository.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_repository.hpp"
@@ -162,7 +162,7 @@ void apply_forward_publish(const context& ctx,
     } catch (const std::exception& e) {
         // An id that is not a uuid is not a request; anything else is logged so a store failure
         // is not read as a missing request.
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
+        ORES_LOG_SEV(lg(), ores::logging::warn)
             << "Reading approval request " << request_id << ": " << e.what();
         request = std::nullopt;
     }

@@ -28,7 +28,7 @@
 #include "ores.compute.api/domain/grid_sample.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/grid_sample_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::compute::repository {
 

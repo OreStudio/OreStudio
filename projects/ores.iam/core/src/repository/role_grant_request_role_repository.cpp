@@ -30,9 +30,7 @@
 #include "ores.iam.api/domain/role_grant_request_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/role_grant_request_role_entity.hpp"
 #include "ores.iam.core/repository/role_grant_request_role_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -194,9 +192,9 @@ void role_grant_request_role_repository::write(
 void role_grant_request_role_repository::write(
     const domain::role_grant_request_role& role_grant_request_role,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing role grant request role to database: "
-                               << role_grant_request_role.request_id << "/"
-                               << role_grant_request_role.role_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing role grant request role to database: "
+                              << role_grant_request_role.request_id << "/"
+                              << role_grant_request_role.role_id;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(role_grant_request_role.request_id, role_grant_request_role.role_id) :
@@ -211,8 +209,8 @@ void role_grant_request_role_repository::write(
 void role_grant_request_role_repository::write(
     const std::vector<domain::role_grant_request_role>& role_grant_request_roles,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing role grant request roles to database. Count: "
-                               << role_grant_request_roles.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing role grant request roles to database. Count: "
+                              << role_grant_request_roles.size();
     if (claims.size() != role_grant_request_roles.size())
         throw std::invalid_argument(
             "role_grant_request_role_repository::write: one claim is needed for each row");
@@ -253,8 +251,8 @@ std::vector<domain::role_grant_request_role> role_grant_request_role_repository:
 
 std::vector<domain::role_grant_request_role>
 role_grant_request_role_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request roles with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role grant request roles with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
@@ -274,8 +272,8 @@ role_grant_request_role_repository::read_latest(std::uint32_t offset, std::uint3
 std::vector<domain::role_grant_request_role>
 role_grant_request_role_repository::read_latest(const boost::uuids::uuid& request_id,
                                                 const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request role. " << request_id << "/"
-                               << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role grant request role. " << request_id << "/"
+                              << role_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto request_id_str = boost::uuids::to_string(request_id);
@@ -296,7 +294,7 @@ role_grant_request_role_repository::read_latest(const boost::uuids::uuid& reques
 }
 
 std::uint32_t role_grant_request_role_repository::get_total_role_grant_request_role_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role grant request roles count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active role grant request roles count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -305,14 +303,13 @@ std::uint32_t role_grant_request_role_repository::get_total_role_grant_request_r
 
     const auto count = query_builder::execute_count_query<role_grant_request_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role grant request roles");
-    BOOST_LOG_SEV(lg(), debug) << "Total active role grant request roles count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active role grant request roles count: " << count;
     return count;
 }
 
 std::vector<domain::role_grant_request_role>
 role_grant_request_role_repository::read_latest_by_request(const boost::uuids::uuid& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request roles. Request: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role grant request roles. Request: " << request_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto request_id_str = boost::uuids::to_string(request_id);
@@ -336,7 +333,7 @@ role_grant_request_role_repository::read_latest_by_request(const boost::uuids::u
 
 std::vector<domain::role_grant_request_role>
 role_grant_request_role_repository::read_latest_by_role(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request roles. Role: " << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role grant request roles. Role: " << role_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto role_id_str = boost::uuids::to_string(role_id);
@@ -362,8 +359,8 @@ role_grant_request_role_repository::read_latest_by_request(const boost::uuids::u
                                                            std::uint32_t offset,
                                                            std::uint32_t limit) {
     const auto request_id_str = boost::uuids::to_string(request_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request roles. Request: " << request_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role grant request roles. Request: " << request_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -389,8 +386,8 @@ std::uint32_t
 role_grant_request_role_repository::get_total_role_grant_request_role_count_by_request(
     const boost::uuids::uuid& request_id) {
     const auto request_id_str = boost::uuids::to_string(request_id);
-    BOOST_LOG_SEV(lg(), debug)
-        << "Retrieving total active role grant request roles count. Request: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active role grant request roles count. Request: "
+                              << request_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -401,16 +398,16 @@ role_grant_request_role_repository::get_total_role_grant_request_role_count_by_r
 
     const auto count = query_builder::execute_count_query<role_grant_request_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role grant request roles");
-    BOOST_LOG_SEV(lg(), debug) << "Total active role grant request roles count by request: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active role grant request roles count by request: "
+                              << count;
     return count;
 }
 
 std::uint32_t role_grant_request_role_repository::get_total_role_grant_request_role_count_by_role(
     const boost::uuids::uuid& role_id) {
     const auto role_id_str = boost::uuids::to_string(role_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role grant request roles count. Role: "
-                               << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active role grant request roles count. Role: "
+                              << role_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -420,14 +417,14 @@ std::uint32_t role_grant_request_role_repository::get_total_role_grant_request_r
 
     const auto count = query_builder::execute_count_query<role_grant_request_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role grant request roles");
-    BOOST_LOG_SEV(lg(), debug) << "Total active role grant request roles count by role: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active role grant request roles count by role: " << count;
     return count;
 }
 
 std::vector<role_grant_request_role_history_row>
 role_grant_request_role_repository::read_all_by_request(const boost::uuids::uuid& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the role grant request roles. Request: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the role grant request roles. Request: "
+                              << request_id;
 
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -479,8 +476,8 @@ role_grant_request_role_repository::remove_status
 role_grant_request_role_repository::remove(const boost::uuids::uuid& request_id,
                                            const boost::uuids::uuid& role_id,
                                            std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing role grant request role from database: " << request_id
-                               << "/" << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing role grant request role from database: " << request_id
+                              << "/" << role_id;
 
     const auto current = read_latest(request_id, role_id);
     if (current.empty())
@@ -527,8 +524,8 @@ void role_grant_request_role_repository::remove(const std::vector<boost::uuids::
 }
 
 void role_grant_request_role_repository::remove_by_request(const boost::uuids::uuid& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all role grant request roles from database: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all role grant request roles from database: "
+                              << request_id;
 
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();

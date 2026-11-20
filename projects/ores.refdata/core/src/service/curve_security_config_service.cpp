@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_security_config.hpp"
 #include "ores.refdata.api/messaging/curve_security_config_protocol.hpp"
 #include "ores.refdata.core/repository/curve_security_config_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -469,12 +467,12 @@ ores::utility::domain::result curve_security_config_service::prepare_change(
 
 std::vector<domain::curve_security_config>
 curve_security_config_service::list_security_configs(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve security configs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve security configs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_security_config_service::count_security_configs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve security configs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve security configs count";
     return repo_.get_total_security_config_count(ctx_);
 }
 
@@ -482,14 +480,14 @@ std::uint32_t curve_security_config_service::count_security_configs() {
 std::optional<domain::curve_security_config>
 curve_security_config_service::get_security_config_at_version(const boost::uuids::uuid& id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve security config at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve security config at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_security_config>
 curve_security_config_service::get_security_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve security config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve security config. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -504,11 +502,11 @@ curve_security_config_service::get_security_configs(const std::vector<std::strin
 void curve_security_config_service::save_security_config(const domain::curve_security_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Security Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve security config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve security config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve security config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve security config. " << "id: " << v.id;
 }
 
 void curve_security_config_service::save_security_configs(
@@ -517,7 +515,7 @@ void curve_security_config_service::save_security_configs(
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Security Config id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << security_configs.size() << " curve security configs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << security_configs.size() << " curve security configs";
     auto ts = security_configs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -526,9 +524,9 @@ void curve_security_config_service::save_security_configs(
 }
 
 void curve_security_config_service::delete_security_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve security config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve security config. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve security config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve security config. " << "id: " << id;
 }
 
 void curve_security_config_service::delete_security_configs(const std::vector<std::string>& ids) {
@@ -537,7 +535,7 @@ void curve_security_config_service::delete_security_configs(const std::vector<st
 
 std::vector<domain::curve_security_config>
 curve_security_config_service::get_security_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve security config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve security config. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

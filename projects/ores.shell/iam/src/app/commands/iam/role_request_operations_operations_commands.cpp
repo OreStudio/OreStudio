@@ -96,7 +96,7 @@ void role_request_operations_operations_commands::register_commands(cli::Menu& r
 
 void role_request_operations_operations_commands::process_ask_for_roles(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating ask-for-roles request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating ask-for-roles request.";
 
     using request_type = ores::iam::messaging::ask_for_roles_request;
 
@@ -151,7 +151,7 @@ void role_request_operations_operations_commands::process_ask_for_roles(
 
 void role_request_operations_operations_commands::process_get_request_roles(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-request-roles request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-request-roles request.";
 
     using request_type = ores::iam::messaging::get_request_roles_request;
 

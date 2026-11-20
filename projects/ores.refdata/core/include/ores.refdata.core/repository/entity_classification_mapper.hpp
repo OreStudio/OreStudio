@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_ENTITY_CLASSIFICATION_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_ENTITY_CLASSIFICATION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/entity_classification.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/entity_classification_entity.hpp"

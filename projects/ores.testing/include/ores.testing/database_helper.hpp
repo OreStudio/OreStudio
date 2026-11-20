@@ -21,7 +21,7 @@
 #define ORES_TESTING_DATABASE_HELPER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/export.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"

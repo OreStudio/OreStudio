@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_cashflow.hpp"
 #include "ores.reporting.api/domain/report_cashflow_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/report_cashflow_protocol.hpp"
 #include "ores.reporting.core/repository/report_cashflow_entity.hpp"
 #include "ores.reporting.core/repository/report_cashflow_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -245,14 +243,14 @@ void report_cashflow_repository::write(const context& ctx, const domain::report_
 }
 
 void report_cashflow_repository::insert(const context& ctx, const domain::report_cashflow& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting report cashflow. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Inserting report cashflow. " << "id: " << v.id;
     query_builder::execute_write_query(
         ctx, report_cashflow_mapper::map(v), lg(), "Inserting report cashflow into database.");
 }
 
 void report_cashflow_repository::insert(const context& ctx,
                                         const std::vector<domain::report_cashflow>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting report cashflows. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Inserting report cashflows. Count: " << v.size();
     query_builder::execute_write_query(
         ctx, report_cashflow_mapper::map(v), lg(), "Inserting report cashflows into database.");
 }
@@ -270,7 +268,7 @@ void report_cashflow_repository::write(const context& ctx,
 void report_cashflow_repository::write(const context& ctx,
                                        const domain::report_cashflow& v,
                                        const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report cashflow. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing report cashflow. " << "id: " << v.id;
     const auto t = report_cashflow_apply_claim(v,
                                                claim,
                                                report_cashflow_claim_reads_current(claim) ?
@@ -284,7 +282,7 @@ void report_cashflow_repository::write(
     const context& ctx,
     const std::vector<domain::report_cashflow>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report cashflows. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing report cashflows. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "report_cashflow_repository::write: one claim is needed for each row");
@@ -320,7 +318,7 @@ std::vector<domain::report_cashflow> report_cashflow_repository::read_latest(con
 
 std::vector<domain::report_cashflow>
 report_cashflow_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report cashflow. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report cashflow. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -338,7 +336,7 @@ report_cashflow_repository::read_latest(const context& ctx, const std::string& i
 
 std::vector<domain::report_cashflow> report_cashflow_repository::read_all(const context& ctx,
                                                                           const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all report cashflow versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all report cashflow versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_cashflow_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -355,7 +353,7 @@ std::vector<domain::report_cashflow> report_cashflow_repository::read_all(const 
 
 report_cashflow_repository::remove_status report_cashflow_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report cashflow. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing report cashflow. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -385,8 +383,8 @@ std::vector<domain::report_cashflow> report_cashflow_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::report_cashflows_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report cashflows with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report cashflows with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_cashflow_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -408,7 +406,7 @@ std::uint32_t report_cashflow_repository::get_total_cashflow_count(
     const context& ctx,
     const std::optional<messaging::report_cashflows_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report cashflow count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active report cashflow count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_cashflow_entity>> |

@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/range_bound.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -495,12 +493,12 @@ market_observation_service::prepare_change(const messaging::market_observation_c
 
 std::vector<domain::market_observation>
 market_observation_service::list_market_observations(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all market observations";
+    ORES_LOG_SEV(lg(), debug) << "Listing all market observations";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t market_observation_service::count_market_observations() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total market observations count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total market observations count";
     return repo_.get_total_market_observation_count(ctx_);
 }
 
@@ -509,21 +507,21 @@ std::vector<domain::market_observation>
 market_observation_service::list_market_observations_by_series_id(const std::string& series_id,
                                                                   std::uint32_t offset,
                                                                   std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing market observations by series_id: " << series_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing market observations by series_id: " << series_id;
     return repo_.read_latest_by_series_id(ctx_, series_id, offset, limit);
 }
 
 std::uint32_t
 market_observation_service::count_market_observations_by_series_id(const std::string& series_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total market observations count by series_id: "
-                               << series_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total market observations count by series_id: "
+                              << series_id;
     return repo_.get_total_market_observation_count_by_series_id(ctx_, series_id);
 }
 
 
 std::optional<domain::market_observation>
 market_observation_service::get_market_observation(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market observation. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting market observation. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -538,11 +536,11 @@ market_observation_service::get_market_observations(const std::vector<std::strin
 void market_observation_service::save_market_observation(const domain::market_observation& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Market Observation id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market observation. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving market observation. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market observation. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved market observation. " << "id: " << v.id;
 }
 
 void market_observation_service::save_market_observations(
@@ -551,7 +549,7 @@ void market_observation_service::save_market_observations(
         if (e.id.is_nil())
             throw std::invalid_argument("Market Observation id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << market_observations.size() << " market observations";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << market_observations.size() << " market observations";
     auto ts = market_observations;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -560,9 +558,9 @@ void market_observation_service::save_market_observations(
 }
 
 void market_observation_service::delete_market_observation(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market observation. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market observation. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed market observation. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed market observation. " << "id: " << id;
 }
 
 void market_observation_service::delete_market_observations(const std::vector<std::string>& ids) {
@@ -571,7 +569,7 @@ void market_observation_service::delete_market_observations(const std::vector<st
 
 std::vector<domain::market_observation>
 market_observation_service::get_market_observation_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market observation. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for market observation. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

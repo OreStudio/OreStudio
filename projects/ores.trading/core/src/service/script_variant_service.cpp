@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/script_variant.hpp"
 #include "ores.trading.api/messaging/script_variant_protocol.hpp"
 #include "ores.trading.core/repository/script_variant_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -449,28 +447,28 @@ script_variant_service::prepare_change(const messaging::script_variant_change& c
 
 std::vector<domain::script_variant> script_variant_service::list_variants(std::uint32_t offset,
                                                                           std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all script variants";
+    ORES_LOG_SEV(lg(), debug) << "Listing all script variants";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t script_variant_service::count_variants() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total script variants count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total script variants count";
     return repo_.get_total_variant_count(ctx_);
 }
 
 
 std::optional<domain::script_variant> script_variant_service::get_variant_at_version(
     const std::string& script_name, const std::string& purpose, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script variant at version. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting script variant at version. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, script_name, purpose, version);
 }
 
 std::optional<domain::script_variant>
 script_variant_service::get_variant(const std::string& script_name, const std::string& purpose) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script variant. " << "script_name: " << script_name
-                               << " purpose: " << purpose;
+    ORES_LOG_SEV(lg(), debug) << "Getting script variant. " << "script_name: " << script_name
+                              << " purpose: " << purpose;
     auto results = repo_.read_latest(ctx_, script_name, purpose);
     if (results.empty())
         return std::nullopt;
@@ -488,13 +486,13 @@ void script_variant_service::save_variant(const domain::script_variant& v) {
         throw std::invalid_argument("Script Variant script_name cannot be empty.");
     if (v.purpose.empty())
         throw std::invalid_argument("Script Variant purpose cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving script variant. " << "script_name: " << v.script_name
-                               << " purpose: " << v.purpose;
+    ORES_LOG_SEV(lg(), debug) << "Saving script variant. " << "script_name: " << v.script_name
+                              << " purpose: " << v.purpose;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved script variant. " << "script_name: " << v.script_name
-                              << " purpose: " << v.purpose;
+    ORES_LOG_SEV(lg(), info) << "Saved script variant. " << "script_name: " << v.script_name
+                             << " purpose: " << v.purpose;
 }
 
 void script_variant_service::save_variants(const std::vector<domain::script_variant>& variants) {
@@ -504,7 +502,7 @@ void script_variant_service::save_variants(const std::vector<domain::script_vari
         if (e.purpose.empty())
             throw std::invalid_argument("Script Variant purpose cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << variants.size() << " script variants";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << variants.size() << " script variants";
     auto ts = variants;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -514,11 +512,11 @@ void script_variant_service::save_variants(const std::vector<domain::script_vari
 
 void script_variant_service::delete_variant(const std::string& script_name,
                                             const std::string& purpose) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing script variant. " << "script_name: " << script_name
-                               << " purpose: " << purpose;
-    repo_.remove(ctx_, script_name, purpose);
-    BOOST_LOG_SEV(lg(), info) << "Removed script variant. " << "script_name: " << script_name
+    ORES_LOG_SEV(lg(), debug) << "Removing script variant. " << "script_name: " << script_name
                               << " purpose: " << purpose;
+    repo_.remove(ctx_, script_name, purpose);
+    ORES_LOG_SEV(lg(), info) << "Removed script variant. " << "script_name: " << script_name
+                             << " purpose: " << purpose;
 }
 
 void script_variant_service::delete_variants(const std::vector<std::string>& script_names,
@@ -529,8 +527,8 @@ void script_variant_service::delete_variants(const std::vector<std::string>& scr
 std::vector<domain::script_variant>
 script_variant_service::get_variant_history(const std::string& script_name,
                                             const std::string& purpose) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for script variant. "
-                               << "script_name: " << script_name << " purpose: " << purpose;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for script variant. "
+                              << "script_name: " << script_name << " purpose: " << purpose;
     return repo_.read_all(ctx_, script_name, purpose);
 }
 

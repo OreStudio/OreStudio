@@ -20,8 +20,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/messaging/history_protocol.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/domain/party_country.hpp"
 #include "ores.refdata.api/domain/party_country_json_io.hpp" // IWYU pragma: keep.
@@ -37,7 +36,6 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_helpers.hpp"
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
@@ -99,7 +97,7 @@ TEST_CASE("write_single_party_country", "[repository][party_country]") {
     const auto& alpha2_code = all[0].alpha2_code;
 
     auto pc = make_party_country(h, party_id, alpha2_code);
-    BOOST_LOG_SEV(lg, debug) << "Party country: " << pc;
+    ORES_LOG_SEV(lg, debug) << "Party country: " << pc;
     repo.write(pc);
 
     const auto read_pcs = repo.read_latest(pc.party_id, pc.country_alpha2_code);
@@ -131,7 +129,7 @@ TEST_CASE("write_multiple_party_countries", "[repository][party_country]") {
         pcs.push_back(make_party_country(h, system_party_id, c.alpha2_code));
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Party countries: " << pcs;
+    ORES_LOG_SEV(lg, debug) << "Party countries: " << pcs;
     repo.write(pcs);
 
     const auto read_pcs = repo.read_latest_by_party(system_party_id);
@@ -166,7 +164,7 @@ TEST_CASE("read_latest_party_countries_by_party", "[repository][party_country]")
     repo.write(pc);
 
     auto read_pcs = repo.read_latest_by_party(system_party_id);
-    BOOST_LOG_SEV(lg, debug) << "Read party countries: " << read_pcs;
+    ORES_LOG_SEV(lg, debug) << "Read party countries: " << read_pcs;
 
     REQUIRE(!read_pcs.empty());
     bool found = false;
@@ -200,7 +198,7 @@ TEST_CASE("read_latest_party_countries_by_country", "[repository][party_country]
     repo.write(pc);
 
     auto read_pcs = repo.read_latest_by_country(alpha2_code);
-    BOOST_LOG_SEV(lg, debug) << "Read party countries: " << read_pcs;
+    ORES_LOG_SEV(lg, debug) << "Read party countries: " << read_pcs;
 
     REQUIRE(read_pcs.size() >= 1);
     CHECK(read_pcs[0].party_id == system_party_id);
@@ -262,10 +260,10 @@ TEST_CASE("read_nonexistent_party_country", "[repository][party_country]") {
     repo.write(keeper);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent party ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent party ID: " << nonexistent_id;
 
     auto read_pcs = repo.read_latest(nonexistent_id, keeper.country_alpha2_code);
-    BOOST_LOG_SEV(lg, debug) << "Read party countries: " << read_pcs;
+    ORES_LOG_SEV(lg, debug) << "Read party countries: " << read_pcs;
 
     const auto answered_with_another_key = std::ranges::any_of(
         read_pcs, [&](const party_country& r) { return r.party_id == nonexistent_id; });

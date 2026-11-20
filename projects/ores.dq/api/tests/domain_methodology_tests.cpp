@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.api/domain/methodology_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/methodology_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -40,7 +40,7 @@ TEST_CASE("create_methodology_with_valid_fields", "[domain]") {
     sut.implementation_details = "Uses 30-day rolling window";
     sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
-    BOOST_LOG_SEV(lg, info) << "Methodology: " << sut;
+    ORES_LOG_SEV(lg, info) << "Methodology: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.name == "Moving Average Calculation");
@@ -64,7 +64,7 @@ TEST_CASE("methodology_convert_single_to_table", "[domain]") {
     std::vector<methodology> methodologies = {m};
     auto table = convert_to_table(methodologies);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Name"));

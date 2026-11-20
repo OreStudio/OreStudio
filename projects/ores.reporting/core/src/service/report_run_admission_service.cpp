@@ -18,12 +18,10 @@
  *
  */
 #include "ores.reporting.core/service/report_run_admission_service.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.reporting.api/domain/report_trigger_event.hpp"
 #include "ores.reporting.core/repository/report_trigger_event_repository.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
@@ -99,9 +97,9 @@ report_run_admission_service::receipt report_run_admission_service::admit(const 
     trigger.party_id = p.party_id;
 
     repository::report_trigger_event_repository().write(ctx_, trigger);
-    BOOST_LOG_SEV(lg(), info) << "Recorded " << p.trigger_type << " report trigger "
-                              << boost::uuids::to_string(trigger_id) << " for definition "
-                              << boost::uuids::to_string(p.definition_id);
+    ORES_LOG_SEV(lg(), info) << "Recorded " << p.trigger_type << " report trigger "
+                             << boost::uuids::to_string(trigger_id) << " for definition "
+                             << boost::uuids::to_string(p.definition_id);
 
     domain::report_instance inst;
     inst.id = rg();

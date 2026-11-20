@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/logging_listener.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_case_info.hpp>
@@ -36,7 +36,7 @@ TEST_CASE("reports_the_module_name_it_was_given", "[testing]") {
 
     logging_listener::set_test_module_name("ores.other.tests");
     const auto module = logging_listener::extract_module_name();
-    BOOST_LOG_SEV(lg, ores::logging::info) << "Module: " << module;
+    ORES_LOG_SEV(lg, ores::logging::info) << "Module: " << module;
     CHECK(module == "ores.other.tests");
 
     logging_listener::set_test_module_name("ores.testing.tests");
@@ -51,7 +51,7 @@ TEST_CASE("takes_the_suite_name_from_the_first_tag", "[testing]") {
         Catch::NameAndTags("a case", "[my_suite][other]"),
         Catch::SourceLineInfo(__FILE__, static_cast<std::size_t>(__LINE__)));
     const auto suite = logging_listener::extract_suite_name(info);
-    BOOST_LOG_SEV(lg, ores::logging::info) << "Suite: " << suite;
+    ORES_LOG_SEV(lg, ores::logging::info) << "Suite: " << suite;
 
     CHECK(suite == "my_suite");
 }
@@ -64,7 +64,7 @@ TEST_CASE("names_the_default_suite_when_a_case_has_no_tags", "[testing]") {
         Catch::NameAndTags("a case", ""),
         Catch::SourceLineInfo(__FILE__, static_cast<std::size_t>(__LINE__)));
     const auto suite = logging_listener::extract_suite_name(info);
-    BOOST_LOG_SEV(lg, ores::logging::info) << "Suite: " << suite;
+    ORES_LOG_SEV(lg, ores::logging::info) << "Suite: " << suite;
 
     CHECK(suite == "default_suite");
 }

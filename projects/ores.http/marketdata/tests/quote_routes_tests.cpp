@@ -23,7 +23,7 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/marketdata/quote_board.hpp"
 #include "ores.http/routes/marketdata/quote_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>

@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_CROSS_CURRENCY_FIX_FLOAT_SWAP_TERMS_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_swap_terms.hpp"
 #include "ores.refdata.api/messaging/cross_currency_fix_float_swap_terms_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

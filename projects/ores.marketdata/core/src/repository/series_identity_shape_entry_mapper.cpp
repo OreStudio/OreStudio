@@ -24,12 +24,10 @@
  */
 #include "ores.marketdata.core/repository/series_identity_shape_entry_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape_entry.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape_entry_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.core/repository/series_identity_shape_entry_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -41,7 +39,7 @@ using namespace ores::database::repository;
 
 domain::series_identity_shape_entry
 series_identity_shape_entry_mapper::map(const series_identity_shape_entry_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::series_identity_shape_entry r;
     r.version = v.version;
@@ -57,13 +55,13 @@ series_identity_shape_entry_mapper::map(const series_identity_shape_entry_entity
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 series_identity_shape_entry_entity
 series_identity_shape_entry_mapper::map(const domain::series_identity_shape_entry& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     series_identity_shape_entry_entity r;
     r.id = v.id;
@@ -78,7 +76,7 @@ series_identity_shape_entry_mapper::map(const domain::series_identity_shape_entr
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

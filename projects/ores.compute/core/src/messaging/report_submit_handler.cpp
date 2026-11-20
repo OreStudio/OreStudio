@@ -76,8 +76,8 @@ void report_submit_handler::submit(ores::nats::delivery delivery) {
     }
     const auto& req = *parsed;
 
-    BOOST_LOG_SEV(lg(), info) << "submit_compute starting | instance=" << req.report_instance_id
-                              << " tarballs=" << req.tarball_uris.size();
+    ORES_LOG_SEV(lg(), info) << "submit_compute starting | instance=" << req.report_instance_id
+                             << " tarballs=" << req.tarball_uris.size();
 
     try {
         if (req.tarball_uris.empty()) {
@@ -118,7 +118,7 @@ void report_submit_handler::submit(ores::nats::delivery delivery) {
         service::batch_service batch_svc(tenant_ctx);
         batch_svc.save_batch(batch);
 
-        BOOST_LOG_SEV(lg(), info) << "Created compute batch: " << batch_id;
+        ORES_LOG_SEV(lg(), info) << "Created compute batch: " << batch_id;
 
         // ── Resolve the application version ───────────────────────────
         // A workunit must name one and the table refuses a nil value. The
@@ -178,9 +178,9 @@ void report_submit_handler::submit(ores::nats::delivery delivery) {
         repository::workflow_batch_link_repository link_repo;
         link_repo.write(tenant_ctx, link);
 
-        BOOST_LOG_SEV(lg(), info) << "submit_compute deferred | instance=" << req.report_instance_id
-                                  << " batch=" << batch_id << " workunits=" << workunit_ids.size()
-                                  << " step=" << wf->step_id;
+        ORES_LOG_SEV(lg(), info) << "submit_compute deferred | instance=" << req.report_instance_id
+                                 << " batch=" << batch_id << " workunits=" << workunit_ids.size()
+                                 << " step=" << wf->step_id;
 
         // The batch, its workunits and the link that defers this step's outcome
         // to the batch bridge are all committed, and the bridge holds the step's
@@ -189,7 +189,7 @@ void report_submit_handler::submit(ores::nats::delivery delivery) {
         std::move(delivery).commit();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "submit_compute failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "submit_compute failed: " << e.what();
         wf->fail(e.what());
         // The failure reaches the engine, so the delivery is done with;
         // redelivering would only report the same failure again.

@@ -24,11 +24,9 @@
  */
 #include "ores.refdata.core/repository/business_day_convention_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/business_day_convention_type.hpp"
 #include "ores.refdata.api/domain/business_day_convention_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/business_day_convention_type_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -38,7 +36,7 @@ using namespace ores::database::repository;
 
 domain::business_day_convention_type
 business_day_convention_type_mapper::map(const business_day_convention_type_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::business_day_convention_type r;
     r.version = v.version;
@@ -53,13 +51,13 @@ business_day_convention_type_mapper::map(const business_day_convention_type_enti
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 business_day_convention_type_entity
 business_day_convention_type_mapper::map(const domain::business_day_convention_type& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     business_day_convention_type_entity r;
     r.code = v.code;
@@ -73,7 +71,7 @@ business_day_convention_type_mapper::map(const domain::business_day_convention_t
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

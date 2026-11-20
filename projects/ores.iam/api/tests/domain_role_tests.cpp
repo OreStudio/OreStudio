@@ -20,7 +20,7 @@
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.api/domain/role_codes.hpp"
 #include "ores.iam.api/domain/role_json_io.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -49,7 +49,7 @@ TEST_CASE("create_role_with_valid_fields", "[domain]") {
     sut.description = "SuperAdmin role with full system access";
     sut.modified_by = "system";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 1);
-    BOOST_LOG_SEV(lg, info) << "Role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.name == "SuperAdmin");
@@ -67,7 +67,7 @@ TEST_CASE("create_trading_role", "[domain]") {
     sut.description = "Trading role with currency management permissions";
     sut.modified_by = "admin";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 10, 30);
-    BOOST_LOG_SEV(lg, info) << "Role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name == "Trading");
 }
@@ -82,7 +82,7 @@ TEST_CASE("create_sales_role", "[domain]") {
     sut.description = "Sales role with read-only access";
     sut.modified_by = "admin";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 11);
-    BOOST_LOG_SEV(lg, info) << "Role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name == "Sales");
 }
@@ -97,7 +97,7 @@ TEST_CASE("create_operations_role", "[domain]") {
     sut.description = "Operations role with system monitoring capabilities";
     sut.modified_by = "admin";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 11, 30);
-    BOOST_LOG_SEV(lg, info) << "Role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name == "Operations");
 }
@@ -112,7 +112,7 @@ TEST_CASE("create_support_role", "[domain]") {
     sut.description = "Support role with account management capabilities";
     sut.modified_by = "admin";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 12);
-    BOOST_LOG_SEV(lg, info) << "Role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name == "Support");
 }
@@ -130,7 +130,7 @@ TEST_CASE("role_with_specific_uuid", "[domain]") {
     sut.description = "A custom role for testing";
     sut.modified_by = "tester";
     sut.recorded_at = datetime::make_timepoint(2025, 2, 1, 9);
-    BOOST_LOG_SEV(lg, info) << "Role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.version == 2);
     CHECK(sut.name == "CustomRole");
@@ -146,7 +146,7 @@ TEST_CASE("role_serialization_to_json", "[domain]") {
     sut.description = "Role for serialization testing";
     sut.modified_by = "serializer";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 20, 14);
-    BOOST_LOG_SEV(lg, info) << "Role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Role: " << sut;
 
     std::ostringstream os;
     os << sut;
@@ -161,7 +161,7 @@ TEST_CASE("role_fields_default_to_empty", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;
-    BOOST_LOG_SEV(lg, info) << "Role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name.empty());
     CHECK(sut.description.empty());
@@ -180,7 +180,7 @@ TEST_CASE("create_role_with_faker", "[domain]") {
     sut.description = std::string(faker::lorem::sentence());
     sut.modified_by = std::string(faker::internet::username());
     sut.recorded_at = datetime::make_timepoint(2025, 1, faker::number::integer(1, 28));
-    BOOST_LOG_SEV(lg, info) << "Role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(sut.version <= 10);
@@ -203,7 +203,7 @@ TEST_CASE("create_multiple_random_roles", "[domain]") {
         sut.modified_by =
             std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
         sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 12);
-        BOOST_LOG_SEV(lg, info) << "Role " << i << ":" << sut;
+        ORES_LOG_SEV(lg, info) << "Role " << i << ":" << sut;
 
         CHECK(sut.version >= 1);
         CHECK(!sut.name.empty());
@@ -221,14 +221,14 @@ TEST_CASE("well_known_role_names_are_consistent", "[domain]") {
     CHECK(std::string(operations) == "Operations");
     CHECK(std::string(support) == "Support");
 
-    BOOST_LOG_SEV(lg, info) << "All well-known role names validated";
+    ORES_LOG_SEV(lg, info) << "All well-known role names validated";
 }
 
 TEST_CASE("role_version_defaults_to_zero", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;
-    BOOST_LOG_SEV(lg, info) << "Default role version: " << sut.version;
+    ORES_LOG_SEV(lg, info) << "Default role version: " << sut.version;
 
     CHECK(sut.version == 0);
 }

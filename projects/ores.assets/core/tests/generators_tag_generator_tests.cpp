@@ -20,7 +20,7 @@
 #include "ores.assets.api/domain/tag.hpp"         // IWYU pragma: keep.
 #include "ores.assets.api/domain/tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets.api/generators/tag_generator.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
@@ -36,7 +36,7 @@ TEST_CASE("generate_single_tag", "[generators]") {
 
     generation_context ctx;
     auto tag = generate_synthetic_tag(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated tag: " << tag;
+    ORES_LOG_SEV(lg, debug) << "Generated tag: " << tag;
 
     CHECK(!tag.id.is_nil());
     CHECK(!tag.name.empty());
@@ -50,7 +50,7 @@ TEST_CASE("generate_multiple_tags", "[generators]") {
 
     generation_context ctx;
     auto tags_list = generate_synthetic_tags(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated tags: " << tags_list;
+    ORES_LOG_SEV(lg, debug) << "Generated tags: " << tags_list;
 
     CHECK(tags_list.size() == 3);
 }
@@ -60,7 +60,7 @@ TEST_CASE("generate_tags_with_distinct_names", "[generators]") {
 
     generation_context ctx;
     auto tags_list = generate_synthetic_tags(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated tags: " << tags_list;
+    ORES_LOG_SEV(lg, debug) << "Generated tags: " << tags_list;
 
     CHECK(tags_list.size() == 3);
 

@@ -26,7 +26,7 @@
 #define ORES_WORKFLOW_CORE_SERVICE_WORKFLOW_STEP_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.api/messaging/workflow_step_protocol.hpp"
 #include "ores.workflow.core/export.hpp"

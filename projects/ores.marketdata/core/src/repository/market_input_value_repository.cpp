@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_input_value.hpp"
 #include "ores.marketdata.api/domain/market_input_value_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/messaging/market_input_value_protocol.hpp"
 #include "ores.marketdata.core/repository/market_input_value_entity.hpp"
 #include "ores.marketdata.core/repository/market_input_value_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -222,7 +220,7 @@ void market_input_value_repository::write(const context& ctx, const domain::mark
 
 void market_input_value_repository::insert(const context& ctx,
                                            const domain::market_input_value& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market input value. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Inserting market input value. " << "id: " << v.id;
     query_builder::execute_write_query(ctx,
                                        market_input_value_mapper::map(v),
                                        lg(),
@@ -231,7 +229,7 @@ void market_input_value_repository::insert(const context& ctx,
 
 void market_input_value_repository::insert(const context& ctx,
                                            const std::vector<domain::market_input_value>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market input values. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Inserting market input values. Count: " << v.size();
     query_builder::execute_write_query(ctx,
                                        market_input_value_mapper::map(v),
                                        lg(),
@@ -252,7 +250,7 @@ void market_input_value_repository::write(const context& ctx,
 void market_input_value_repository::write(const context& ctx,
                                           const domain::market_input_value& v,
                                           const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market input value. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing market input value. " << "id: " << v.id;
     const auto t =
         market_input_value_apply_claim(v,
                                        claim,
@@ -267,7 +265,7 @@ void market_input_value_repository::write(
     const context& ctx,
     const std::vector<domain::market_input_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market input values. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing market input values. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "market_input_value_repository::write: one claim is needed for each row");
@@ -306,7 +304,7 @@ market_input_value_repository::read_latest(const context& ctx) {
 
 std::vector<domain::market_input_value>
 market_input_value_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market input value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market input value. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -324,7 +322,7 @@ market_input_value_repository::read_latest(const context& ctx, const std::string
 
 std::vector<domain::market_input_value>
 market_input_value_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all market input value versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all market input value versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_input_value_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -341,7 +339,7 @@ market_input_value_repository::read_all(const context& ctx, const std::string& i
 
 market_input_value_repository::remove_status market_input_value_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market input value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market input value. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -371,8 +369,8 @@ std::vector<domain::market_input_value> market_input_value_repository::read_late
     const ores::utility::domain::order& order,
     const std::optional<messaging::market_input_values_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market input values with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market input values with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_input_value_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -394,7 +392,7 @@ std::uint32_t market_input_value_repository::get_total_value_count(
     const context& ctx,
     const std::optional<messaging::market_input_values_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market input value count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active market input value count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_input_value_entity>> |

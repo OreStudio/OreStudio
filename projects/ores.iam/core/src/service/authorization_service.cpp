@@ -46,7 +46,7 @@ authorization_service::authorization_service(const context& ctx, event_bus* even
     , account_permission_repo_(ctx)
     , role_permission_repo_(ctx)
     , event_bus_(event_bus) {
-    BOOST_LOG_SEV(lg(), info) << "Authorization service initialized.";
+    ORES_LOG_SEV(lg(), info) << "Authorization service initialized.";
 }
 
 // ============================================================================
@@ -54,13 +54,13 @@ authorization_service::authorization_service(const context& ctx, event_bus* even
 // ============================================================================
 
 std::vector<domain::permission> authorization_service::list_permissions() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all permissions.";
+    ORES_LOG_SEV(lg(), debug) << "Listing all permissions.";
     return permission_repo_.read_latest(ctx_);
 }
 
 std::optional<domain::permission>
 authorization_service::find_permission_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding permission by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding permission by code: " << code;
     auto permissions = permission_repo_.read_latest_by_code(ctx_, code);
     if (permissions.empty()) {
         return std::nullopt;
@@ -70,7 +70,7 @@ authorization_service::find_permission_by_code(const std::string& code) {
 
 domain::permission authorization_service::create_permission(const std::string& code,
                                                             const std::string& description) {
-    BOOST_LOG_SEV(lg(), info) << "Creating permission: " << code;
+    ORES_LOG_SEV(lg(), info) << "Creating permission: " << code;
 
     if (code.empty()) {
         throw std::invalid_argument("Permission code cannot be empty.");
@@ -89,7 +89,7 @@ domain::permission authorization_service::create_permission(const std::string& c
 
     permission_repo_.write(ctx_, perm);
 
-    BOOST_LOG_SEV(lg(), info) << "Created permission: " << code << " with ID: " << perm.id;
+    ORES_LOG_SEV(lg(), info) << "Created permission: " << code << " with ID: " << perm.id;
     return perm;
 }
 
@@ -98,12 +98,12 @@ domain::permission authorization_service::create_permission(const std::string& c
 // ============================================================================
 
 std::vector<domain::role> authorization_service::list_roles() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all roles.";
+    ORES_LOG_SEV(lg(), debug) << "Listing all roles.";
     return role_repo_.read_latest(ctx_);
 }
 
 std::optional<domain::role> authorization_service::find_role(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding role by ID: " << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Finding role by ID: " << role_id;
     auto roles = role_repo_.read_latest(ctx_, boost::lexical_cast<std::string>(role_id));
     if (roles.empty()) {
         return std::nullopt;
@@ -112,7 +112,7 @@ std::optional<domain::role> authorization_service::find_role(const boost::uuids:
 }
 
 std::optional<domain::role> authorization_service::find_role_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding role by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Finding role by name: " << name;
     auto roles = role_repo_.read_latest_by_name(ctx_, name);
     if (roles.empty()) {
         return std::nullopt;
@@ -124,7 +124,7 @@ domain::role authorization_service::create_role(const std::string& name,
                                                 const std::string& description,
                                                 const std::vector<std::string>& permission_codes,
                                                 const std::string& modified_by) {
-    BOOST_LOG_SEV(lg(), info) << "Creating role: " << name;
+    ORES_LOG_SEV(lg(), info) << "Creating role: " << name;
 
     if (name.empty()) {
         throw std::invalid_argument("Role name cannot be empty.");
@@ -169,14 +169,14 @@ domain::role authorization_service::create_role(const std::string& name,
         role_permission_repo_.write(rp);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Created role: " << name << " with ID: " << role.id << " and "
-                              << permission_codes.size() << " permissions.";
+    ORES_LOG_SEV(lg(), info) << "Created role: " << name << " with ID: " << role.id << " and "
+                             << permission_codes.size() << " permissions.";
     return role;
 }
 
 std::vector<std::string>
 authorization_service::get_role_permissions(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting permissions for role: " << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting permissions for role: " << role_id;
 
     auto role_perms = role_permission_repo_.read_latest_by_role(role_id);
     std::vector<std::string> codes;
@@ -214,8 +214,8 @@ authorization_service::replace_role_permissions(const boost::uuids::uuid& caller
      * permission learns nothing about whether the role exists.
      */
     if (!has_permission(caller_id, domain::permissions::roles_update)) {
-        BOOST_LOG_SEV(lg(), warn) << "Bundle write for role " << role_id << " denied: caller "
-                                  << caller_id << " lacks " << domain::permissions::roles_update;
+        ORES_LOG_SEV(lg(), warn) << "Bundle write for role " << role_id << " denied: caller "
+                                 << caller_id << " lacks " << domain::permissions::roles_update;
         answer.result.outcome = outcome::denied;
         answer.result.code = domain::permissions::roles_update;
         answer.result.message = std::string("Permission denied: ") +
@@ -224,7 +224,7 @@ authorization_service::replace_role_permissions(const boost::uuids::uuid& caller
     }
 
     if (!find_role(role_id)) {
-        BOOST_LOG_SEV(lg(), warn) << "Bundle write for a role that does not exist: " << role_id;
+        ORES_LOG_SEV(lg(), warn) << "Bundle write for a role that does not exist: " << role_id;
         answer.result.outcome = outcome::missing;
         answer.result.code = boost::lexical_cast<std::string>(role_id);
         answer.result.message = "Role not found: " + boost::lexical_cast<std::string>(role_id);
@@ -241,7 +241,7 @@ authorization_service::replace_role_permissions(const boost::uuids::uuid& caller
     for (const auto& code : permission_codes) {
         auto permission = find_permission_by_code(code);
         if (!permission) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Bundle write names a code that is not a permission: " << code;
             answer.result.outcome = outcome::invalid;
             answer.result.code = code;
@@ -302,8 +302,8 @@ authorization_service::replace_role_permissions(const boost::uuids::uuid& caller
 
     answer.permission_codes = get_role_permissions(role_id);
 
-    BOOST_LOG_SEV(lg(), info) << "Role " << role_id << " bundles " << answer.permission_codes.size()
-                              << " permission(s).";
+    ORES_LOG_SEV(lg(), info) << "Role " << role_id << " bundles " << answer.permission_codes.size()
+                             << " permission(s).";
     return answer;
 }
 
@@ -315,7 +315,7 @@ void authorization_service::assign_role(const boost::uuids::uuid& account_id,
                                         const std::string& assigned_by,
                                         const std::string& change_commentary,
                                         const std::string& change_reason_code) {
-    BOOST_LOG_SEV(lg(), info) << "Assigning role " << role_id << " to account " << account_id;
+    ORES_LOG_SEV(lg(), info) << "Assigning role " << role_id << " to account " << account_id;
 
     // Verify role exists
     auto role = find_role(role_id);
@@ -325,8 +325,8 @@ void authorization_service::assign_role(const boost::uuids::uuid& account_id,
 
     // Check if already assigned
     if (!account_role_repo_.read_latest(account_id, role_id).empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Role " << role_id << " already assigned to account "
-                                  << account_id;
+        ORES_LOG_SEV(lg(), warn) << "Role " << role_id << " already assigned to account "
+                                 << account_id;
         return;
     }
 
@@ -342,7 +342,7 @@ void authorization_service::assign_role(const boost::uuids::uuid& account_id,
 
     account_role_repo_.write(ar);
 
-    BOOST_LOG_SEV(lg(), info) << "Role " << role->name << " assigned to account " << account_id;
+    ORES_LOG_SEV(lg(), info) << "Role " << role->name << " assigned to account " << account_id;
 
     // Publish events
     if (event_bus_) {
@@ -358,11 +358,11 @@ void authorization_service::assign_role(const boost::uuids::uuid& account_id,
 
 void authorization_service::revoke_role(const boost::uuids::uuid& account_id,
                                         const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), info) << "Revoking role " << role_id << " from account " << account_id;
+    ORES_LOG_SEV(lg(), info) << "Revoking role " << role_id << " from account " << account_id;
 
     account_role_repo_.remove(account_id, role_id);
 
-    BOOST_LOG_SEV(lg(), info) << "Role " << role_id << " revoked from account " << account_id;
+    ORES_LOG_SEV(lg(), info) << "Role " << role_id << " revoked from account " << account_id;
 
     // Publish events
     if (event_bus_) {
@@ -378,7 +378,7 @@ void authorization_service::revoke_role(const boost::uuids::uuid& account_id,
 
 std::vector<domain::role>
 authorization_service::get_account_roles(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting roles for account: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting roles for account: " << account_id;
 
     // Use optimized single-query approach that fetches roles with permissions
     return account_permission_repo_.read_roles_with_permissions(account_id);
@@ -393,9 +393,8 @@ std::optional<boost::uuids::uuid> authorization_service::caller_account() const 
 
     const auto found = accounts.read_latest_by_username(ctx_, ctx_.actor());
     if (found.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "The actor '" << ctx_.actor()
-                                  << "' names no account in tenant "
-                                  << ctx_.tenant_id().to_string();
+        ORES_LOG_SEV(lg(), warn) << "The actor '" << ctx_.actor() << "' names no account in tenant "
+                                 << ctx_.tenant_id().to_string();
         return std::nullopt;
     }
     return found.front().id;
@@ -411,8 +410,8 @@ account_access authorization_service::read_account_access(const boost::uuids::uu
                                                           const boost::uuids::uuid& account_id) {
     account_access answer;
     if (!has_permission(caller_id, domain::permissions::roles_read)) {
-        BOOST_LOG_SEV(lg(), warn) << "Access read for account " << account_id << " denied: caller "
-                                  << caller_id << " lacks " << domain::permissions::roles_read;
+        ORES_LOG_SEV(lg(), warn) << "Access read for account " << account_id << " denied: caller "
+                                 << caller_id << " lacks " << domain::permissions::roles_read;
         answer.result.outcome = ores::utility::domain::outcome::denied;
         answer.result.code = domain::permissions::roles_read;
         answer.result.message = std::string("Permission denied: ") +
@@ -714,7 +713,7 @@ messaging::role_holders_response authorization_service::read_role_holders(
 
 std::vector<account_access_entry>
 authorization_service::compose_account_access(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Composing access for account: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Composing access for account: " << account_id;
 
     /*
      * The junction row carries the assignment tail and names the role; the
@@ -736,9 +735,8 @@ authorization_service::compose_account_access(const boost::uuids::uuid& account_
              * account holds. The caller is told why rather than left to
              * notice the difference.
              */
-            BOOST_LOG_SEV(lg(), warn)
-                << "Account " << account_id
-                << " holds a role that cannot be read: " << assignment.role_id;
+            ORES_LOG_SEV(lg(), warn) << "Account " << account_id
+                                     << " holds a role that cannot be read: " << assignment.role_id;
             continue;
         }
         account_access_entry entry;
@@ -757,8 +755,8 @@ authorization_service::compose_account_access(const boost::uuids::uuid& account_
                   return lhs.role.name < rhs.role.name;
               });
 
-    BOOST_LOG_SEV(lg(), debug) << "Account " << account_id << " holds " << result.size()
-                               << " role(s).";
+    ORES_LOG_SEV(lg(), debug) << "Account " << account_id << " holds " << result.size()
+                              << " role(s).";
     return result;
 }
 
@@ -768,13 +766,13 @@ authorization_service::compose_account_access(const boost::uuids::uuid& account_
 
 std::vector<std::string>
 authorization_service::get_effective_permissions(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Computing effective permissions for account: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Computing effective permissions for account: " << account_id;
 
     // Use optimized single-query approach with JOINs
     auto result = account_permission_repo_.read_effective_permissions(account_id);
 
-    BOOST_LOG_SEV(lg(), debug) << "Account " << account_id << " has " << result.size()
-                               << " effective permissions.";
+    ORES_LOG_SEV(lg(), debug) << "Account " << account_id << " has " << result.size()
+                              << " effective permissions.";
     return result;
 }
 

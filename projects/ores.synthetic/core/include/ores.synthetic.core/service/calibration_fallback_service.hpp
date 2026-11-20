@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_SERVICE_CALIBRATION_FALLBACK_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/calibration_fallback.hpp"
 #include "ores.synthetic.api/messaging/calibration_fallback_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

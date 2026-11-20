@@ -24,11 +24,9 @@
  */
 #include "ores.refdata.core/repository/currency_currency_group_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_currency_group.hpp"
 #include "ores.refdata.api/domain/currency_currency_group_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/currency_currency_group_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -38,7 +36,7 @@ using namespace ores::database::repository;
 
 domain::currency_currency_group
 currency_currency_group_mapper::map(const currency_currency_group_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::currency_currency_group r;
     r.version = v.version;
@@ -51,13 +49,13 @@ currency_currency_group_mapper::map(const currency_currency_group_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 currency_currency_group_entity
 currency_currency_group_mapper::map(const domain::currency_currency_group& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     currency_currency_group_entity r;
     r.currency_iso_code = v.currency_iso_code;
@@ -69,7 +67,7 @@ currency_currency_group_mapper::map(const domain::currency_currency_group& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

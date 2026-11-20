@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/equity_pairwise_variance_swap_instrument.hpp"
 #include "ores.trading.api/messaging/equity_pairwise_variance_swap_instrument_protocol.hpp"
 #include "ores.trading.core/repository/equity_pairwise_variance_swap_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -516,13 +514,13 @@ ores::utility::domain::result equity_pairwise_variance_swap_instrument_service::
 std::vector<domain::equity_pairwise_variance_swap_instrument>
 equity_pairwise_variance_swap_instrument_service::list_equity_pairwise_variance_swap_instruments(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all equity pairwise variance swap instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all equity pairwise variance swap instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t equity_pairwise_variance_swap_instrument_service::
     count_equity_pairwise_variance_swap_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total equity pairwise variance swap instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total equity pairwise variance swap instruments count";
     return repo_.get_total_equity_pairwise_variance_swap_instrument_count(ctx_);
 }
 
@@ -531,16 +529,16 @@ std::optional<domain::equity_pairwise_variance_swap_instrument>
 equity_pairwise_variance_swap_instrument_service::
     get_equity_pairwise_variance_swap_instrument_at_version(const boost::uuids::uuid& trade_id,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity pairwise variance swap instrument at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity pairwise variance swap instrument at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::equity_pairwise_variance_swap_instrument>
 equity_pairwise_variance_swap_instrument_service::get_equity_pairwise_variance_swap_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity pairwise variance swap instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity pairwise variance swap instrument. "
+                              << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -559,13 +557,13 @@ void equity_pairwise_variance_swap_instrument_service::
     if (v.identity.trade_id.is_nil())
         throw std::invalid_argument(
             "Equity Pairwise Variance Swap Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity pairwise variance swap instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving equity pairwise variance swap instrument. "
+                              << "trade_id: " << v.identity.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved equity pairwise variance swap instrument. "
-                              << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved equity pairwise variance swap instrument. "
+                             << "trade_id: " << v.identity.trade_id;
 }
 
 void equity_pairwise_variance_swap_instrument_service::
@@ -577,8 +575,8 @@ void equity_pairwise_variance_swap_instrument_service::
             throw std::invalid_argument(
                 "Equity Pairwise Variance Swap Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_pairwise_variance_swap_instruments.size()
-                               << " equity pairwise variance swap instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << equity_pairwise_variance_swap_instruments.size()
+                              << " equity pairwise variance swap instruments";
     auto ts = equity_pairwise_variance_swap_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -588,11 +586,11 @@ void equity_pairwise_variance_swap_instrument_service::
 
 void equity_pairwise_variance_swap_instrument_service::
     delete_equity_pairwise_variance_swap_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing equity pairwise variance swap instrument. "
-                               << "trade_id: " << trade_id;
-    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed equity pairwise variance swap instrument. "
+    ORES_LOG_SEV(lg(), debug) << "Removing equity pairwise variance swap instrument. "
                               << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    ORES_LOG_SEV(lg(), info) << "Removed equity pairwise variance swap instrument. "
+                             << "trade_id: " << trade_id;
 }
 
 void equity_pairwise_variance_swap_instrument_service::
@@ -603,8 +601,8 @@ void equity_pairwise_variance_swap_instrument_service::
 std::vector<domain::equity_pairwise_variance_swap_instrument>
 equity_pairwise_variance_swap_instrument_service::
     get_equity_pairwise_variance_swap_instrument_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for equity pairwise variance swap instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for equity pairwise variance swap instrument. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

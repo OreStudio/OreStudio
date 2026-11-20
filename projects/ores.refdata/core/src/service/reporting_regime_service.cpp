@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/reporting_regime.hpp"
 #include "ores.refdata.api/messaging/reporting_regime_protocol.hpp"
 #include "ores.refdata.core/repository/reporting_regime_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -452,29 +450,29 @@ reporting_regime_service::prepare_change(const messaging::reporting_regime_chang
 
 std::vector<domain::reporting_regime> reporting_regime_service::list_regimes(std::uint32_t offset,
                                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all reporting regimes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all reporting regimes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t reporting_regime_service::count_regimes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total reporting regimes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total reporting regimes count";
     return repo_.get_total_regime_count(ctx_);
 }
 
 
 std::optional<domain::reporting_regime> reporting_regime_service::get_regime_at_version(
     const std::string& code, const std::string& coding_scheme_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting reporting regime at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting reporting regime at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::reporting_regime>
 reporting_regime_service::get_regime(const std::string& code,
                                      const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting reporting regime. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting reporting regime. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -492,13 +490,13 @@ void reporting_regime_service::save_regime(const domain::reporting_regime& v) {
         throw std::invalid_argument("Reporting Regime code cannot be empty.");
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument("Reporting Regime coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving reporting regime. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving reporting regime. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved reporting regime. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved reporting regime. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void reporting_regime_service::save_regimes(const std::vector<domain::reporting_regime>& regimes) {
@@ -508,7 +506,7 @@ void reporting_regime_service::save_regimes(const std::vector<domain::reporting_
         if (e.coding_scheme_code.empty())
             throw std::invalid_argument("Reporting Regime coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << regimes.size() << " reporting regimes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << regimes.size() << " reporting regimes";
     auto ts = regimes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -518,11 +516,11 @@ void reporting_regime_service::save_regimes(const std::vector<domain::reporting_
 
 void reporting_regime_service::delete_regime(const std::string& code,
                                              const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing reporting regime. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed reporting regime. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing reporting regime. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed reporting regime. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void reporting_regime_service::delete_regimes(const std::vector<std::string>& codes,
@@ -533,8 +531,8 @@ void reporting_regime_service::delete_regimes(const std::vector<std::string>& co
 std::vector<domain::reporting_regime>
 reporting_regime_service::get_regime_history(const std::string& code,
                                              const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for reporting regime. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for reporting regime. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

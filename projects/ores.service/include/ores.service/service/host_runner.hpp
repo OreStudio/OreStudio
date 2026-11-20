@@ -20,7 +20,7 @@
 #ifndef ORES_SERVICE_SERVICE_HOST_RUNNER_HPP
 #define ORES_SERVICE_SERVICE_HOST_RUNNER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include <functional>

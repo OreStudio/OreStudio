@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/crypto/sha256.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -30,7 +30,7 @@ TEST_CASE("sha256_hex_digest_of_empty_string", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const auto result = sha256::hex_digest("");
-    BOOST_LOG_SEV(lg, info) << "Empty digest: " << result;
+    ORES_LOG_SEV(lg, info) << "Empty digest: " << result;
 
     CHECK(result == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
 }
@@ -39,7 +39,7 @@ TEST_CASE("sha256_hex_digest_of_known_string", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const auto result = sha256::hex_digest("hello world");
-    BOOST_LOG_SEV(lg, info) << "Digest: " << result;
+    ORES_LOG_SEV(lg, info) << "Digest: " << result;
 
     CHECK(result == "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9");
 }
@@ -54,7 +54,7 @@ TEST_CASE("sha256_hex_digest_of_file_matches_hex_digest", "[crypto]") {
     }
 
     const auto result = sha256::hex_digest_of_file(tmp);
-    BOOST_LOG_SEV(lg, info) << "File digest: " << result;
+    ORES_LOG_SEV(lg, info) << "File digest: " << result;
 
     CHECK(result == sha256::hex_digest("hello world"));
 

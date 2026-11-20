@@ -65,8 +65,8 @@ std::size_t ore_hierarchy_builder::find_or_add_portfolio(const std::string& name
 }
 
 std::vector<import_node> ore_hierarchy_builder::build() {
-    BOOST_LOG_SEV(lg(), debug) << "Building hierarchy from " << portfolio_files_.size()
-                               << " portfolio files";
+    ORES_LOG_SEV(lg(), debug) << "Building hierarchy from " << portfolio_files_.size()
+                              << " portfolio files";
 
     std::vector<import_node> nodes;
 
@@ -75,7 +75,7 @@ std::vector<import_node> ore_hierarchy_builder::build() {
         const auto components = filtered_components(relative);
 
         if (components.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "No usable path components for: " << file;
+            ORES_LOG_SEV(lg(), warn) << "No usable path components for: " << file;
             continue;
         }
 
@@ -96,7 +96,7 @@ std::vector<import_node> ore_hierarchy_builder::build() {
         nodes.push_back(std::move(book_node));
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Hierarchy built: " << nodes.size() << " nodes";
+    ORES_LOG_SEV(lg(), info) << "Hierarchy built: " << nodes.size() << " nodes";
     return nodes;
 }
 

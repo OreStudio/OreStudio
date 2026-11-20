@@ -20,7 +20,7 @@
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.analytics.quant/domain/process_parameter_validation.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -104,7 +104,7 @@ resolve_fx_start_from(ores::nats::service::nats_client& auth_nats,
     if (items.empty() && cfg.price_source == "fixing") {
         const auto series = listed != nullptr ? *listed : md.list_series();
         if (!series) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
+            ORES_LOG_SEV(lg(), ores::logging::warn)
                 << "Feed " << cfg.source_name
                 << " could not read the series that cover its pair: " << series.error();
             out.source.note = "The series that cover the pair could not be read: " + series.error();
@@ -368,12 +368,12 @@ make_fx_spot_feed(ores::nats::service::client& nats,
         initial_price = resolved.level;
         if (resolved.stdevs)
             stdevs = std::move(*resolved.stdevs);
-        BOOST_LOG_SEV(lg(), info) << "Feed " << cfg.source_name << " starts at " << initial_price
-                                  << (start.from_fixing ?
-                                          " from " + start.item + " (" + start.provider_code + ")" +
-                                              (start.inverted ? ", inverted" : "") :
-                                          std::string(", its fixed level"))
-                                  << (start.note.empty() ? "" : ". " + start.note);
+        ORES_LOG_SEV(lg(), info) << "Feed " << cfg.source_name << " starts at " << initial_price
+                                 << (start.from_fixing ?
+                                         " from " + start.item + " (" + start.provider_code + ")" +
+                                             (start.inverted ? ", inverted" : "") :
+                                         std::string(", its fixed level"))
+                                 << (start.note.empty() ? "" : ". " + start.note);
     }
     // A run that took no fixing records the level it kept, so its start states the level the run
     // began at even after a later calibration moves the config's level. The config holds the level
@@ -382,7 +382,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
         if (const auto kept = ores::utility::decimal::decimal::from_double(initial_price))
             start.value = *kept;
         else
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Feed " << cfg.source_name << " records no start level: " << kept.error();
     }
 
@@ -396,11 +396,11 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                         " did not start: " + calibrated.error() + ".");
         const auto& choice = *calibrated;
         start.variance = choice.record;
-        BOOST_LOG_SEV(lg(), info) << "Feed " << cfg.source_name
-                                  << " carries a GJR-GARCH variance from calibration "
-                                  << choice.record.calibration_id << " version "
-                                  << choice.record.calibration_version << ", persistence "
-                                  << choice.record.persistence;
+        ORES_LOG_SEV(lg(), info) << "Feed " << cfg.source_name
+                                 << " carries a GJR-GARCH variance from calibration "
+                                 << choice.record.calibration_id << " version "
+                                 << choice.record.calibration_version << ", persistence "
+                                 << choice.record.persistence;
         process = ores::analytics::quant::service::process_factory::make_gjr_garch_process(
             cfg.process_type,
             std::move(means),
@@ -540,7 +540,7 @@ std::string fx_spot_feed::tick(const ores::analytics::quant::service::tick_conte
         driven ? process_->next_with_normal(context.driver()) : process_->next(elapsed_ticks);
     const auto value = std::format("{}", price);
     if (n == 1 || n % 100 == 0) {
-        BOOST_LOG_SEV(lg(), ores::logging::info)
+        ORES_LOG_SEV(lg(), ores::logging::info)
             << "SYNTHETIC PUBLISH: subject='" << published_subject() << "' oresmd_uri='"
             << quote_uri_ << "' count=" << n << " value=" << value;
     }

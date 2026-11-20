@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_REPOSITORY_DELIVERY_COUNT_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/delivery_count.hpp"
 #include "ores.marketdata.api/messaging/delivery_count_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"

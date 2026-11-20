@@ -88,7 +88,7 @@ context test_database_manager::make_context() {
                                           .service_account = opts.user};
 
     context ctx = context_factory::make_context(db_cfg);
-    BOOST_LOG_SEV(lg(), info) << "Database context created successfully";
+    ORES_LOG_SEV(lg(), info) << "Database context created successfully";
     return ctx;
 }
 
@@ -109,7 +109,7 @@ database::database_options test_database_manager::make_database_options() {
 }
 
 std::string test_database_manager::generate_test_tenant_code(const std::string& test_suite_name) {
-    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    ORES_LOG_SCOPED_TAG(lg(), "Tag", "TestSuite");
 
     // Get current timestamp
     const auto now = ores::platform::time::datetime::to_local_display_string(
@@ -140,7 +140,7 @@ std::string test_database_manager::generate_test_tenant_code(const std::string& 
     }
 
     const auto tenant_code = suite + suffix_text;
-    BOOST_LOG_SEV(lg(), info) << "Generated test tenant code: " << tenant_code;
+    ORES_LOG_SEV(lg(), info) << "Generated test tenant code: " << tenant_code;
 
     return tenant_code;
 }
@@ -149,10 +149,10 @@ std::string test_database_manager::provision_test_tenant(database::context& ctx,
                                                          const std::string& tenant_code,
                                                          const std::string& description) {
     using database::service::tenant_context;
-    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    ORES_LOG_SCOPED_TAG(lg(), "Tag", "TestSuite");
 
-    BOOST_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code << " (" << description
-                              << ")";
+    ORES_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code << " (" << description
+                             << ")";
 
     ctx = tenant_context::with_system_tenant(ctx);
 
@@ -167,13 +167,13 @@ std::string test_database_manager::provision_test_tenant(database::context& ctx,
 
     if (results.empty()) {
         const auto error_msg = "Provisioner returned no tenant_id for " + tenant_code;
-        BOOST_LOG_SEV(lg(), error) << error_msg;
+        ORES_LOG_SEV(lg(), error) << error_msg;
         throw std::runtime_error(error_msg);
     }
 
     const auto& tenant_id = results[0];
-    BOOST_LOG_SEV(lg(), info) << "Successfully provisioned test tenant: " << tenant_code
-                              << " (id: " << tenant_id << ")";
+    ORES_LOG_SEV(lg(), info) << "Successfully provisioned test tenant: " << tenant_code
+                             << " (id: " << tenant_id << ")";
 
     /*
      * A test tenant holds the world data its components' guards read. The
@@ -189,15 +189,15 @@ std::string test_database_manager::provision_test_tenant(database::context& ctx,
 void test_database_manager::terminate_test_tenant(database::context& ctx,
                                                   const std::string& tenant_id) {
     using database::service::tenant_context;
-    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    ORES_LOG_SCOPED_TAG(lg(), "Tag", "TestSuite");
 
-    BOOST_LOG_SEV(lg(), info) << "Terminating test tenant: " << tenant_id;
+    ORES_LOG_SEV(lg(), info) << "Terminating test tenant: " << tenant_id;
 
     try {
         ctx = tenant_context::with_system_tenant(ctx);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to set system tenant context for "
-                                  << "termination: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to set system tenant context for "
+                                 << "termination: " << e.what();
         return;
     }
 
@@ -210,18 +210,18 @@ void test_database_manager::terminate_test_tenant(database::context& ctx,
             lg(),
             "Terminating test tenant");
 
-        BOOST_LOG_SEV(lg(), info) << "Successfully terminated test tenant: " << tenant_id
-                                  << ". Data preserved for analysis.";
+        ORES_LOG_SEV(lg(), info) << "Successfully terminated test tenant: " << tenant_id
+                                 << ". Data preserved for analysis.";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to terminate test tenant " << tenant_id << ": "
-                                  << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to terminate test tenant " << tenant_id << ": "
+                                 << e.what();
         // Don't throw - cleanup should be best-effort
     }
 }
 
 void test_database_manager::close_orphaned_synthetic_rows(
     const database::context& ctx, const std::vector<std::string>& table_names) {
-    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    ORES_LOG_SCOPED_TAG(lg(), "Tag", "TestSuite");
 
     for (const auto& table_name : table_names) {
         const auto sql = "DELETE FROM \"" + table_name +
@@ -237,9 +237,9 @@ void test_database_manager::close_orphaned_synthetic_rows(
                 {std::string(system_tenant_id)},
                 lg(),
                 "Closing orphaned synthetic rows in " + table_name);
-            BOOST_LOG_SEV(lg(), info) << "Closed orphaned synthetic rows in " << table_name;
+            ORES_LOG_SEV(lg(), info) << "Closed orphaned synthetic rows in " << table_name;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Failed to close orphaned synthetic rows in " << table_name << ": " << e.what();
         }
     }
@@ -247,8 +247,7 @@ void test_database_manager::close_orphaned_synthetic_rows(
 
 void test_database_manager::set_test_tenant_id_env(const std::string& tenant_id) {
     const std::string variable = prefix + "TENANT_ID";
-    BOOST_LOG_SEV(lg(), info) << "Setting " << variable
-                              << " environment variable to: " << tenant_id;
+    ORES_LOG_SEV(lg(), info) << "Setting " << variable << " environment variable to: " << tenant_id;
 
     environment::set_value(variable, tenant_id);
 }

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
@@ -64,7 +64,7 @@ TEST_CASE("create_curve_observation_with_tenor", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_curve_observation("1Y", "0.034567");
-    BOOST_LOG_SEV(lg, info) << "Curve observation: " << sut;
+    ORES_LOG_SEV(lg, info) << "Curve observation: " << sut;
 
     CHECK(!sut.id.is_nil());
     CHECK(!sut.series_id.is_nil());
@@ -89,7 +89,7 @@ TEST_CASE("create_observation_without_a_coordinate", "[domain]") {
     sut.observation_datetime = std::chrono::sys_days{std::chrono::year{2024} /
                                                      std::chrono::month{6} / std::chrono::day{1}};
     sut.value = "1.08450";
-    BOOST_LOG_SEV(lg, info) << "Observation without a coordinate: " << sut;
+    ORES_LOG_SEV(lg, info) << "Observation without a coordinate: " << sut;
 
     CHECK(sut.oresmd_uri.empty());
     CHECK(sut.value == "1.08450");
@@ -104,7 +104,7 @@ TEST_CASE("create_surface_observation_with_a_compound_coordinate", "[domain]") {
     auto sut = make_curve_observation("1y", "0.1234");
     sut.oresmd_uri = "oresmd://ir/eur?tenor=2y&type=vol&quote=swaption&expiry=1y&delta=ATM&"
                      "model=rate_lnvol";
-    BOOST_LOG_SEV(lg, info) << "Surface observation: " << sut;
+    ORES_LOG_SEV(lg, info) << "Surface observation: " << sut;
 
     CHECK(sut.oresmd_uri.find("expiry=1y") != std::string::npos);
     CHECK(sut.oresmd_uri.find("delta=ATM") != std::string::npos);
@@ -118,7 +118,7 @@ TEST_CASE("market_observation_json_serialisation", "[domain]") {
     std::ostringstream os;
     os << sut;
     const std::string json_output = os.str();
-    BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
+    ORES_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("0.041200") != std::string::npos);
@@ -136,7 +136,7 @@ TEST_CASE("create_multiple_observations_for_curve", "[domain]") {
     for (const auto& tenor : tenors) {
         observations.push_back(make_curve_observation(tenor, "0.035000"));
     }
-    BOOST_LOG_SEV(lg, info) << "Curve point count: " << observations.size();
+    ORES_LOG_SEV(lg, info) << "Curve point count: " << observations.size();
 
     CHECK(observations.size() == tenors.size());
     for (std::size_t i = 0; i < tenors.size(); ++i) {

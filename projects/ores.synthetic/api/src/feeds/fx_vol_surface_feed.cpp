@@ -20,7 +20,7 @@
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include "ores.analytics.quant/math/fx_pair_market.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"

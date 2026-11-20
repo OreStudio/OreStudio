@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <array>
 #include <utility>
 
@@ -71,7 +71,7 @@ rr::refusal refusal_for(std::string_view code) {
         if (m.service_code == code)
             return rr::refusal{m.status, std::string(m.code), std::string(code)};
     }
-    BOOST_LOG_SEV(lg(), warn) << "Unknown service refusal: " << code;
+    ORES_LOG_SEV(lg(), warn) << "Unknown service refusal: " << code;
     return rr::refusal{
         http_status::bad_gateway, "upstream-unavailable", std::string(rr::unanswered)};
 }
@@ -81,7 +81,7 @@ void refuse_refused(const ores::nats::service::request_refused_error& e) {
 }
 
 void refuse_undecodable(std::string_view subject, const std::string& detail) {
-    BOOST_LOG_SEV(lg(), error) << "Failed to decode the reply on " << subject << ": " << detail;
+    ORES_LOG_SEV(lg(), error) << "Failed to decode the reply on " << subject << ": " << detail;
     rr::refuse(http_status::bad_gateway, "internal", std::string(rr::unanswered));
 }
 
@@ -90,7 +90,7 @@ void refuse_lapsed(const ores::nats::service::session_expired_error& e) {
 }
 
 http_response unanswered(std::string_view subject, const std::exception& e) {
-    BOOST_LOG_SEV(lg(), error) << "No answer on " << subject << ": " << e.what();
+    ORES_LOG_SEV(lg(), error) << "No answer on " << subject << ": " << e.what();
     return http_response::api_error(
         http_status::bad_gateway, "internal", std::string(rr::unanswered));
 }

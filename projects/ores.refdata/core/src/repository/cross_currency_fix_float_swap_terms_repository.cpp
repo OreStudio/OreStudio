@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_swap_terms.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_swap_terms_json_io.hpp" // IWYU pragma: keep.
@@ -34,7 +33,6 @@
 #include "ores.refdata.core/repository/cross_currency_fix_float_swap_terms_entity.hpp"
 #include "ores.refdata.core/repository/cross_currency_fix_float_swap_terms_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -235,7 +233,7 @@ void cross_currency_fix_float_swap_terms_repository::write(
     const context& ctx,
     const domain::cross_currency_fix_float_swap_terms& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing cross currency fix float swap terms. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing cross currency fix float swap terms. " << "id: " << v.id;
     const auto t = cross_currency_fix_float_swap_terms_apply_claim(
         v,
         claim,
@@ -252,8 +250,7 @@ void cross_currency_fix_float_swap_terms_repository::write(
     const context& ctx,
     const std::vector<domain::cross_currency_fix_float_swap_terms>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing cross currency fix float swap terms. Count: "
-                               << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing cross currency fix float swap terms. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("cross_currency_fix_float_swap_terms_repository::write: one "
                                     "claim is needed for each row");
@@ -297,8 +294,8 @@ cross_currency_fix_float_swap_terms_repository::read_latest(const context& ctx) 
 std::vector<domain::cross_currency_fix_float_swap_terms>
 cross_currency_fix_float_swap_terms_repository::read_latest(const context& ctx,
                                                             const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest cross currency fix float swap terms. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest cross currency fix float swap terms. "
+                              << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -336,8 +333,8 @@ cross_currency_fix_float_swap_terms_repository::read_latest(const context& ctx,
 std::vector<domain::cross_currency_fix_float_swap_terms>
 cross_currency_fix_float_swap_terms_repository::read_all(const context& ctx,
                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all cross currency fix float swap terms versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all cross currency fix float swap terms versions. "
+                              << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<cross_currency_fix_float_swap_terms_entity>> |
@@ -359,8 +356,8 @@ std::optional<domain::cross_currency_fix_float_swap_terms>
 cross_currency_fix_float_swap_terms_repository::read_at_version(const context& ctx,
                                                                 const std::string& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading cross currency fix float swap terms at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading cross currency fix float swap terms at version. "
+                              << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<cross_currency_fix_float_swap_terms_entity>> |
@@ -391,7 +388,7 @@ cross_currency_fix_float_swap_terms_repository::read_latest_by_convention_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::cross_currency_fix_float_swap_terms_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading latest cross currency fix float swap terms. convention_id: " << convention_id
         << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
@@ -420,7 +417,7 @@ std::uint32_t cross_currency_fix_float_swap_terms_repository::
         const context& ctx,
         const std::string& convention_id,
         const std::optional<messaging::cross_currency_fix_float_swap_terms_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active cross currency fix float swap terms count. convention_id: "
         << convention_id;
     static constexpr auto max = db_timestamp::max();
@@ -446,7 +443,7 @@ cross_currency_fix_float_swap_terms_repository::read_by_convention_id_as_of(
     const std::string& convention_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading cross currency fix float swap terms as of window. convention_id: "
         << convention_id;
 
@@ -474,7 +471,7 @@ cross_currency_fix_float_swap_terms_repository::remove_status
 cross_currency_fix_float_swap_terms_repository::remove(const context& ctx,
                                                        const std::string& id,
                                                        std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cross currency fix float swap terms. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing cross currency fix float swap terms. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -523,8 +520,8 @@ cross_currency_fix_float_swap_terms_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::cross_currency_fix_float_swap_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest cross currency fix float swap terms with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest cross currency fix float swap terms with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<cross_currency_fix_float_swap_terms_entity>> |
@@ -550,7 +547,7 @@ cross_currency_fix_float_swap_terms_repository::get_total_cross_currency_fix_flo
     const context& ctx,
     const std::optional<messaging::cross_currency_fix_float_swap_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active cross currency fix float swap terms count";
 
     const auto tid = ctx.tenant_id().to_string();

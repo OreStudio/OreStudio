@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.api/domain/route.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <regex>
@@ -43,7 +43,7 @@ using namespace ores::logging;
 
 TEST_CASE("route_match_simple_path", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing route matching for simple path";
+    ORES_LOG_SEV(lg, info) << "Testing route matching for simple path";
 
     auto sut = make_route("/health", std::regex("^/health$"), {});
 
@@ -56,7 +56,7 @@ TEST_CASE("route_match_simple_path", "[route]") {
 
 TEST_CASE("route_match_simple_path_no_match", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing route non-matching for different path";
+    ORES_LOG_SEV(lg, info) << "Testing route non-matching for different path";
 
     auto sut = make_route("/health", std::regex("^/health$"), {});
 
@@ -69,7 +69,7 @@ TEST_CASE("route_match_simple_path_no_match", "[route]") {
 
 TEST_CASE("route_match_with_single_parameter", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing route matching with single path parameter";
+    ORES_LOG_SEV(lg, info) << "Testing route matching with single path parameter";
 
     auto sut = make_route("/users/{id}", std::regex("^/users/([^/]+)$"), {"id"});
 
@@ -83,7 +83,7 @@ TEST_CASE("route_match_with_single_parameter", "[route]") {
 
 TEST_CASE("route_match_with_multiple_parameters", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing route matching with multiple path parameters";
+    ORES_LOG_SEV(lg, info) << "Testing route matching with multiple path parameters";
 
     auto sut = make_route("/users/{userId}/posts/{postId}",
                           std::regex("^/users/([^/]+)/posts/([^/]+)$"),
@@ -100,7 +100,7 @@ TEST_CASE("route_match_with_multiple_parameters", "[route]") {
 
 TEST_CASE("route_match_with_uuid_parameter", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing route matching with UUID path parameter";
+    ORES_LOG_SEV(lg, info) << "Testing route matching with UUID path parameter";
 
     auto sut = make_route("/accounts/{id}", std::regex("^/accounts/([^/]+)$"), {"id"});
 
@@ -114,7 +114,7 @@ TEST_CASE("route_match_with_uuid_parameter", "[route]") {
 
 TEST_CASE("route_match_partial_path_no_match", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing route non-matching for partial path";
+    ORES_LOG_SEV(lg, info) << "Testing route non-matching for partial path";
 
     auto sut = make_route("/users/{id}", std::regex("^/users/([^/]+)$"), {"id"});
 
@@ -127,7 +127,7 @@ TEST_CASE("route_match_partial_path_no_match", "[route]") {
 
 TEST_CASE("route_match_extra_segments_no_match", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing route non-matching for extra path segments";
+    ORES_LOG_SEV(lg, info) << "Testing route non-matching for extra path segments";
 
     auto sut = make_route("/users/{id}", std::regex("^/users/([^/]+)$"), {"id"});
 
@@ -140,7 +140,7 @@ TEST_CASE("route_match_extra_segments_no_match", "[route]") {
 
 TEST_CASE("route_default_construction", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing route default construction";
+    ORES_LOG_SEV(lg, info) << "Testing route default construction";
 
     route sut;
 
@@ -157,7 +157,7 @@ TEST_CASE("route_default_construction", "[route]") {
 
 TEST_CASE("query_param_default_construction", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing query_param default construction";
+    ORES_LOG_SEV(lg, info) << "Testing query_param default construction";
 
     query_param sut;
 
@@ -170,7 +170,7 @@ TEST_CASE("query_param_default_construction", "[route]") {
 
 TEST_CASE("request_body_schema_default_construction", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing request_body_schema default construction";
+    ORES_LOG_SEV(lg, info) << "Testing request_body_schema default construction";
 
     request_body_schema sut;
 
@@ -182,7 +182,7 @@ TEST_CASE("request_body_schema_default_construction", "[route]") {
 
 TEST_CASE("response_schema_default_construction", "[route]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing response_schema default construction";
+    ORES_LOG_SEV(lg, info) << "Testing response_schema default construction";
 
     response_schema sut;
 

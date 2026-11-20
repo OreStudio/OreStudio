@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/settlement_type.hpp"
 #include "ores.trading.api/messaging/settlement_type_protocol.hpp"
 #include "ores.trading.core/repository/settlement_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -445,12 +443,12 @@ settlement_type_service::prepare_change(const messaging::settlement_type_change&
 
 std::vector<domain::settlement_type>
 settlement_type_service::list_settlement_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all settlement types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all settlement types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t settlement_type_service::count_settlement_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total settlement types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total settlement types count";
     return repo_.get_total_settlement_type_count(ctx_);
 }
 
@@ -458,14 +456,14 @@ std::uint32_t settlement_type_service::count_settlement_types() {
 std::optional<domain::settlement_type>
 settlement_type_service::get_settlement_type_at_version(const std::string& code,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting settlement type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting settlement type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::settlement_type>
 settlement_type_service::get_settlement_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting settlement type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting settlement type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -480,11 +478,11 @@ settlement_type_service::get_settlement_types(const std::vector<std::string>& co
 void settlement_type_service::save_settlement_type(const domain::settlement_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Settlement Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving settlement type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving settlement type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved settlement type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved settlement type. " << "code: " << v.code;
 }
 
 void settlement_type_service::save_settlement_types(
@@ -493,7 +491,7 @@ void settlement_type_service::save_settlement_types(
         if (e.code.empty())
             throw std::invalid_argument("Settlement Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << settlement_types.size() << " settlement types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << settlement_types.size() << " settlement types";
     auto ts = settlement_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -502,9 +500,9 @@ void settlement_type_service::save_settlement_types(
 }
 
 void settlement_type_service::delete_settlement_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing settlement type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing settlement type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed settlement type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed settlement type. " << "code: " << code;
 }
 
 void settlement_type_service::delete_settlement_types(const std::vector<std::string>& codes) {
@@ -513,7 +511,7 @@ void settlement_type_service::delete_settlement_types(const std::vector<std::str
 
 std::vector<domain::settlement_type>
 settlement_type_service::get_settlement_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for settlement type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for settlement type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

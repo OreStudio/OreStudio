@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <chrono>
 #include <cstddef>
 #include <string>

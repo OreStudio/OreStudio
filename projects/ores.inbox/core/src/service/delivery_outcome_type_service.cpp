@@ -28,10 +28,8 @@
 #include "ores.inbox.api/domain/delivery_outcome_type.hpp"
 #include "ores.inbox.api/messaging/delivery_outcome_type_protocol.hpp"
 #include "ores.inbox.core/repository/delivery_outcome_type_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <map>
@@ -184,19 +182,19 @@ delivery_outcome_type_service::get_many_delivery_outcome_types(
 std::vector<domain::delivery_outcome_type>
 delivery_outcome_type_service::list_delivery_outcome_types(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all delivery outcome types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all delivery outcome types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t delivery_outcome_type_service::count_delivery_outcome_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total delivery outcome types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total delivery outcome types count";
     return repo_.get_total_delivery_outcome_type_count(ctx_);
 }
 
 
 std::optional<domain::delivery_outcome_type>
 delivery_outcome_type_service::get_delivery_outcome_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting delivery outcome type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting delivery outcome type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -212,11 +210,11 @@ void delivery_outcome_type_service::save_delivery_outcome_type(
     const domain::delivery_outcome_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Delivery Outcome Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving delivery outcome type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving delivery outcome type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved delivery outcome type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved delivery outcome type. " << "code: " << v.code;
 }
 
 void delivery_outcome_type_service::save_delivery_outcome_types(
@@ -225,8 +223,8 @@ void delivery_outcome_type_service::save_delivery_outcome_types(
         if (e.code.empty())
             throw std::invalid_argument("Delivery Outcome Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << delivery_outcome_types.size()
-                               << " delivery outcome types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << delivery_outcome_types.size()
+                              << " delivery outcome types";
     auto ts = delivery_outcome_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -235,9 +233,9 @@ void delivery_outcome_type_service::save_delivery_outcome_types(
 }
 
 void delivery_outcome_type_service::delete_delivery_outcome_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing delivery outcome type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing delivery outcome type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed delivery outcome type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed delivery outcome type. " << "code: " << code;
 }
 
 void delivery_outcome_type_service::delete_delivery_outcome_types(

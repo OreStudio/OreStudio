@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/fx_forward_publish_spot.hpp"
 #include "ores.marketdata.api/domain/fx_forward_publish_spot_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/messaging/fx_forward_publish_spot_protocol.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_spot_entity.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_spot_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -228,7 +226,7 @@ void fx_forward_publish_spot_repository::write(
 void fx_forward_publish_spot_repository::write(const context& ctx,
                                                const domain::fx_forward_publish_spot& v,
                                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX forward publish spot. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing FX forward publish spot. " << "id: " << v.id;
     const auto t =
         fx_forward_publish_spot_apply_claim(v,
                                             claim,
@@ -245,7 +243,7 @@ void fx_forward_publish_spot_repository::write(
     const context& ctx,
     const std::vector<domain::fx_forward_publish_spot>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX forward publish spots. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing FX forward publish spots. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "fx_forward_publish_spot_repository::write: one claim is needed for each row");
@@ -285,7 +283,7 @@ fx_forward_publish_spot_repository::read_latest(const context& ctx) {
 
 std::vector<domain::fx_forward_publish_spot>
 fx_forward_publish_spot_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest FX forward publish spot. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest FX forward publish spot. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -304,7 +302,7 @@ fx_forward_publish_spot_repository::read_latest(const context& ctx, const std::s
 
 std::vector<domain::fx_forward_publish_spot>
 fx_forward_publish_spot_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all FX forward publish spot versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all FX forward publish spot versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_forward_publish_spot_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -321,8 +319,8 @@ fx_forward_publish_spot_repository::read_all(const context& ctx, const std::stri
 
 std::optional<domain::fx_forward_publish_spot> fx_forward_publish_spot_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading FX forward publish spot at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading FX forward publish spot at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<fx_forward_publish_spot_entity>> |
@@ -344,7 +342,7 @@ std::optional<domain::fx_forward_publish_spot> fx_forward_publish_spot_repositor
 
 fx_forward_publish_spot_repository::remove_status fx_forward_publish_spot_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX forward publish spot. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing FX forward publish spot. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -383,8 +381,8 @@ std::vector<domain::fx_forward_publish_spot> fx_forward_publish_spot_repository:
     const ores::utility::domain::order& order,
     const std::optional<messaging::fx_forward_publish_spots_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest FX forward publish spots with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest FX forward publish spots with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_forward_publish_spot_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -406,7 +404,7 @@ std::uint32_t fx_forward_publish_spot_repository::get_total_spot_count(
     const context& ctx,
     const std::optional<messaging::fx_forward_publish_spots_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active FX forward publish spot count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active FX forward publish spot count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_forward_publish_spot_entity>> |

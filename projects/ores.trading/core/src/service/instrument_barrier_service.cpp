@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/instrument_barrier.hpp"
 #include "ores.trading.api/messaging/instrument_barrier_protocol.hpp"
 #include "ores.trading.core/repository/instrument_barrier_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -529,12 +527,12 @@ instrument_barrier_service::prepare_change(const messaging::instrument_barrier_c
 
 std::vector<domain::instrument_barrier>
 instrument_barrier_service::list_instrument_barriers(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all instrument barriers";
+    ORES_LOG_SEV(lg(), debug) << "Listing all instrument barriers";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t instrument_barrier_service::count_instrument_barriers() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total instrument barriers count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total instrument barriers count";
     return repo_.get_total_instrument_barrier_count(ctx_);
 }
 
@@ -543,14 +541,14 @@ std::vector<domain::instrument_barrier>
 instrument_barrier_service::list_instrument_barriers_by_trade_id(const std::string& trade_id,
                                                                  std::uint32_t offset,
                                                                  std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing instrument barriers by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing instrument barriers by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t
 instrument_barrier_service::count_instrument_barriers_by_trade_id(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total instrument barriers count by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total instrument barriers count by trade_id: "
+                              << trade_id;
     return repo_.get_total_instrument_barrier_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -560,10 +558,9 @@ instrument_barrier_service::get_instrument_barrier_at_version(const std::string&
                                                               const std::string& barrier_role,
                                                               const std::string& sequence_number,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument barrier at version. "
-                               << "trade_id: " << trade_id << " barrier_role: " << barrier_role
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting instrument barrier at version. "
+                              << "trade_id: " << trade_id << " barrier_role: " << barrier_role
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, barrier_role, sequence_number, version);
 }
 
@@ -571,9 +568,9 @@ std::optional<domain::instrument_barrier>
 instrument_barrier_service::get_instrument_barrier(const std::string& trade_id,
                                                    const std::string& barrier_role,
                                                    const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument barrier. " << "trade_id: " << trade_id
-                               << " barrier_role: " << barrier_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting instrument barrier. " << "trade_id: " << trade_id
+                              << " barrier_role: " << barrier_role
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, barrier_role, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -592,15 +589,15 @@ void instrument_barrier_service::save_instrument_barrier(const domain::instrumen
         throw std::invalid_argument("Instrument Barrier trade_id cannot be empty.");
     if (v.barrier_role.empty())
         throw std::invalid_argument("Instrument Barrier barrier_role cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving instrument barrier. " << "trade_id: " << v.trade_id
-                               << " barrier_role: " << v.barrier_role
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving instrument barrier. " << "trade_id: " << v.trade_id
+                              << " barrier_role: " << v.barrier_role
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved instrument barrier. " << "trade_id: " << v.trade_id
-                              << " barrier_role: " << v.barrier_role
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved instrument barrier. " << "trade_id: " << v.trade_id
+                             << " barrier_role: " << v.barrier_role
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void instrument_barrier_service::save_instrument_barriers(
@@ -611,7 +608,7 @@ void instrument_barrier_service::save_instrument_barriers(
         if (e.barrier_role.empty())
             throw std::invalid_argument("Instrument Barrier barrier_role cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << instrument_barriers.size() << " instrument barriers";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << instrument_barriers.size() << " instrument barriers";
     auto ts = instrument_barriers;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -622,13 +619,13 @@ void instrument_barrier_service::save_instrument_barriers(
 void instrument_barrier_service::delete_instrument_barrier(const std::string& trade_id,
                                                            const std::string& barrier_role,
                                                            const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument barrier. " << "trade_id: " << trade_id
-                               << " barrier_role: " << barrier_role
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, barrier_role, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed instrument barrier. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing instrument barrier. " << "trade_id: " << trade_id
                               << " barrier_role: " << barrier_role
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, barrier_role, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed instrument barrier. " << "trade_id: " << trade_id
+                             << " barrier_role: " << barrier_role
+                             << " sequence_number: " << sequence_number;
 }
 
 void instrument_barrier_service::delete_instrument_barriers(
@@ -642,9 +639,9 @@ std::vector<domain::instrument_barrier>
 instrument_barrier_service::get_instrument_barrier_history(const std::string& trade_id,
                                                            const std::string& barrier_role,
                                                            const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument barrier. "
-                               << "trade_id: " << trade_id << " barrier_role: " << barrier_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for instrument barrier. "
+                              << "trade_id: " << trade_id << " barrier_role: " << barrier_role
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, barrier_role, sequence_number);
 }
 

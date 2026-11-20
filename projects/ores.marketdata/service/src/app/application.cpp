@@ -119,7 +119,7 @@ application::application() = default;
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.marketdata.service", 0, 1);
 
     // One threshold per instrument kind, when the deployment states one. A read
@@ -139,10 +139,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         // from an earlier run loses them here. The delete is idempotent.
         admin.delete_stream(nats.make_stream_name("synthetic_ticks"));
         admin.delete_stream(nats.make_stream_name("marketdata_ticks"));
-        BOOST_LOG_SEV(lg(), info)
+        ORES_LOG_SEV(lg(), info)
             << "JetStream tick streams retired: synthetic_ticks, marketdata_ticks";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to retire the JetStream tick streams: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Failed to retire the JetStream tick streams: " << e.what();
         throw;
     }
 
@@ -164,11 +164,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                               .host = cfg.database.host,
                                                               .database = cfg.database.database,
                                                               .port = cfg.database.port});
-        BOOST_LOG_SEV(lg(), info) << "Ticks are stored in the tick table as '"
-                                  << cfg.tick_writer_user << "'";
+        ORES_LOG_SEV(lg(), info) << "Ticks are stored in the tick table as '"
+                                 << cfg.tick_writer_user << "'";
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "No tick writer role is set, so ticks are republished and "
-                                     "not stored";
+        ORES_LOG_SEV(lg(), warn) << "No tick writer role is set, so ticks are republished and "
+                                    "not stored";
     }
     auto ingest =
         std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge, ticks);
@@ -242,37 +242,37 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // refreshes both.
     auto route_refresh_sub =
         event_bus.subscribe<mdm::route_event>([ingest, supervisor](const mdm::route_event&) {
-            BOOST_LOG_SEV(lg(), info) << "Route changed — refreshing ingest loop and demand.";
+            ORES_LOG_SEV(lg(), info) << "Route changed — refreshing ingest loop and demand.";
             ingest->refresh();
             supervisor->request_refresh();
         });
     auto subscription_refresh_sub =
         event_bus.subscribe<mdm::subscription_event>([supervisor](const mdm::subscription_event&) {
-            BOOST_LOG_SEV(lg(), info) << "Subscription changed — refreshing adapter demand.";
+            ORES_LOG_SEV(lg(), info) << "Subscription changed — refreshing adapter demand.";
             supervisor->request_refresh();
         });
     auto source_refresh_sub =
         event_bus.subscribe<mdm::feed_event>([ingest, supervisor](const mdm::feed_event&) {
-            BOOST_LOG_SEV(lg(), info) << "Source changed — refreshing ingest loop and demand.";
+            ORES_LOG_SEV(lg(), info) << "Source changed — refreshing ingest loop and demand.";
             ingest->refresh();
             supervisor->request_refresh();
         });
     auto vendor_instrument_refresh_sub =
         event_bus.subscribe<mdm::market_data_vendor_instrument_event>(
             [ingest, supervisor](const mdm::market_data_vendor_instrument_event&) {
-                BOOST_LOG_SEV(lg(), info)
+                ORES_LOG_SEV(lg(), info)
                     << "Vendor instrument changed — refreshing ingest loop and demand.";
                 ingest->refresh();
                 supervisor->request_refresh();
             });
     auto feed_scope_refresh_sub =
         event_bus.subscribe<mdm::feed_scope_event>([supervisor](const mdm::feed_scope_event&) {
-            BOOST_LOG_SEV(lg(), info) << "Feed scope changed — refreshing demand.";
+            ORES_LOG_SEV(lg(), info) << "Feed scope changed — refreshing demand.";
             supervisor->request_refresh();
         });
     auto mapping_refresh_sub = event_bus.subscribe<mdm::market_data_mapping_event>(
         [ingest, supervisor](const mdm::market_data_mapping_event&) {
-            BOOST_LOG_SEV(lg(), info) << "Mapping changed — refreshing ingest loop and demand.";
+            ORES_LOG_SEV(lg(), info) << "Mapping changed — refreshing ingest loop and demand.";
             ingest->refresh();
             supervisor->request_refresh();
         });
@@ -288,17 +288,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         "ores_refdata_crm_enabled_derived_pairs");
     auto crm_topology_sub = event_bus.subscribe<rdm::crm_topology_config_event>(
         [crm_bridge](const rdm::crm_topology_config_event&) {
-            BOOST_LOG_SEV(lg(), info) << "CRM topology config changed — refreshing CRM engines.";
+            ORES_LOG_SEV(lg(), info) << "CRM topology config changed — refreshing CRM engines.";
             crm_bridge->refresh();
         });
     auto crm_driver_pair_sub = event_bus.subscribe<rdm::crm_driver_pair_event>(
         [crm_bridge](const rdm::crm_driver_pair_event&) {
-            BOOST_LOG_SEV(lg(), info) << "CRM driver pair changed — refreshing CRM engines.";
+            ORES_LOG_SEV(lg(), info) << "CRM driver pair changed — refreshing CRM engines.";
             crm_bridge->refresh();
         });
     auto crm_enabled_derived_pair_sub = event_bus.subscribe<rdm::crm_enabled_derived_pair_event>(
         [crm_bridge](const rdm::crm_enabled_derived_pair_event&) {
-            BOOST_LOG_SEV(lg(), info)
+            ORES_LOG_SEV(lg(), info)
                 << "CRM enabled derived pair changed — refreshing CRM engines.";
             crm_bridge->refresh();
         });

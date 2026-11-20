@@ -33,7 +33,7 @@ account_permission_repository::account_permission_repository(const context& ctx)
 
 std::vector<std::string>
 account_permission_repository::read_effective_permissions(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading effective permissions for account: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading effective permissions for account: " << account_id;
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
 
@@ -47,7 +47,7 @@ account_permission_repository::read_effective_permissions(const boost::uuids::uu
 
 std::vector<domain::role>
 account_permission_repository::read_roles_with_permissions(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading roles with permissions for account: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading roles with permissions for account: " << account_id;
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
 
@@ -75,7 +75,7 @@ account_permission_repository::read_roles_with_permissions(const boost::uuids::u
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Read roles with permissions. Total: " << result.size();
+    ORES_LOG_SEV(lg(), debug) << "Read roles with permissions. Total: " << result.size();
     return result;
 }
 

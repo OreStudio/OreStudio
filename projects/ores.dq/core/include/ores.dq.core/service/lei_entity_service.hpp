@@ -30,7 +30,7 @@
 #include "ores.dq.api/messaging/lei_entity_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/lei_entity_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>

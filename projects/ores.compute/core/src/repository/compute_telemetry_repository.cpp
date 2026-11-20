@@ -44,7 +44,7 @@ using ores::platform::time::datetime;
 
 std::vector<domain::node_sample>
 compute_telemetry_repository::latest_node_samples(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute node samples";
+    ORES_LOG_SEV(lg(), debug) << "Reading latest compute node samples";
 
     // DISTINCT ON (host_id) returns exactly one row per host, the most recent,
     // in a single query. The row-level-security policy decides which rows the
@@ -89,7 +89,7 @@ compute_telemetry_repository::latest_node_samples(const context& ctx) {
 
 domain::grid_sample compute_telemetry_repository::compute_grid_stats(
     const context& ctx, std::optional<boost::uuids::uuid> party, bool fleet) {
-    BOOST_LOG_SEV(lg(), debug) << "Computing grid stats via SQL aggregations";
+    ORES_LOG_SEV(lg(), debug) << "Computing grid stats via SQL aggregations";
     const auto tid = ctx.tenant_id().to_string();
 
     static const std::string sql = "SELECT * FROM ores_compute_grid_stats_fn($1::uuid, "
@@ -211,8 +211,8 @@ compute_telemetry_repository::grid_series_in_range(const context& ctx,
     const auto axis = make_series_axis(start, end, bucket_seconds);
     const long long count = axis.count;
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading grid samples as " << count << " bucket(s) of "
-                               << bucket_seconds << "s";
+    ORES_LOG_SEV(lg(), debug) << "Reading grid samples as " << count << " bucket(s) of "
+                              << bucket_seconds << "s";
 
     // The job counters are the session's own tenant's. The poller writes one row for
     // each party at one instant, so the rows of an instant are summed, and the session
@@ -332,7 +332,7 @@ compute_telemetry_repository::grid_series_in_range(const context& ctx,
 }
 
 grid_usage compute_telemetry_repository::grid_usage_by_scope(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the grid usage by party";
+    ORES_LOG_SEV(lg(), debug) << "Reading the grid usage by party";
 
     // The policies decide the rows: the session's own tenant, and the parties it
     // acts for. The query names no tenant, and a session of the system tenant reads
@@ -413,8 +413,8 @@ compute_telemetry_repository::node_series_in_range(const context& ctx,
     const auto axis = make_series_axis(start, end, bucket_seconds);
     const long long count = axis.count;
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading node samples as " << count << " bucket(s) of "
-                               << bucket_seconds << "s";
+    ORES_LOG_SEV(lg(), debug) << "Reading node samples as " << count << " bucket(s) of "
+                              << bucket_seconds << "s";
 
     // One row per node and bucket that holds a sample. The interval counters are
     // summed, the counters that count from the wrapper's start take the newest

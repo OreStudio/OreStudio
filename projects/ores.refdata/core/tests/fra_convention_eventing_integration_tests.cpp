@@ -27,8 +27,7 @@
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -47,7 +46,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
@@ -140,7 +138,7 @@ TEST_CASE("write_fra_convention_publishes_an_event", "[eventing][integration]") 
     v.change_reason_code = "system.test";
     v.party_id = *party_ctx.party_id();
     const auto id_str = v.id;
-    BOOST_LOG_SEV(lg, debug) << "FRA Convention: " << v;
+    ORES_LOG_SEV(lg, debug) << "FRA Convention: " << v;
 
     fra_convention_repository repo;
     repo.write(party_ctx, v);
@@ -157,8 +155,8 @@ TEST_CASE("write_fra_convention_publishes_an_event", "[eventing][integration]") 
     std::vector<ores::nats::message> received;
     for (int attempt = 1; attempt <= max_attempts && received.empty(); ++attempt) {
         if (attempt > 1) {
-            BOOST_LOG_SEV(lg, warn) << "No matching notification yet; re-driving write"
-                                    << " (attempt " << attempt << " of " << max_attempts << ")";
+            ORES_LOG_SEV(lg, warn) << "No matching notification yet; re-driving write"
+                                   << " (attempt " << attempt << " of " << max_attempts << ")";
             repo.write(party_ctx, v);
         }
         for (int i = 0; i < polls_per_attempt && received.empty(); ++i) {
@@ -180,19 +178,19 @@ TEST_CASE("write_fra_convention_publishes_an_event", "[eventing][integration]") 
         // Exhausted the budget: report what the observer did see so a
         // genuinely broken chain is diagnosable, not a bare empty check.
         const auto final_snapshot = observer.snapshot();
-        BOOST_LOG_SEV(lg, error) << "No notification for fra_convention " << id_str << " after "
-                                 << max_attempts << " writes; observer received "
-                                 << final_snapshot.size() << " message(s) in total";
+        ORES_LOG_SEV(lg, error) << "No notification for fra_convention " << id_str << " after "
+                                << max_attempts << " writes; observer received "
+                                << final_snapshot.size() << " message(s) in total";
         for (const auto& msg : final_snapshot)
-            BOOST_LOG_SEV(lg, error) << "  unexpected message on subject '" << msg.subject << "', "
-                                     << msg.data.size() << " bytes";
+            ORES_LOG_SEV(lg, error) << "  unexpected message on subject '" << msg.subject << "', "
+                                    << msg.data.size() << " bytes";
     }
     REQUIRE_FALSE(received.empty());
     // The envelope names the tenant that owns the row, so a relay can pass the
     // event on only to a reader of that tenant.
     REQUIRE(received.front().headers.contains(std::string(ores::nats::headers::x_tenant_id)));
-    BOOST_LOG_SEV(lg, info) << "Received " << received.size()
-                            << " matching NATS notification(s) for fra_convention " << id_str;
+    ORES_LOG_SEV(lg, info) << "Received " << received.size()
+                           << " matching NATS notification(s) for fra_convention " << id_str;
 
     // 5. CRUD round trip on the same row: update through the
     // repository, read the version history through the service, and

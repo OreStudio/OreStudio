@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/synthetic/process_preview_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -76,7 +76,7 @@ const std::string ladder_row =
 
 TEST_CASE("process_previews_refuse_a_malformed_request", "[process_preview]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing each preview's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing each preview's refusals";
 
     CHECK(preview_status(fx_paths, fx_run("[]", "10")) == http_status::bad_request);
     CHECK(preview_status(fx_paths, fx_run("[0,1]", "10")) == http_status::bad_request);
@@ -120,7 +120,7 @@ TEST_CASE("process_previews_refuse_a_malformed_request", "[process_preview]") {
 
 TEST_CASE("process_previews_forward_a_well_formed_request", "[process_preview]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an accepted preview reaches the service";
+    ORES_LOG_SEV(lg, info) << "Testing that an accepted preview reaches the service";
 
     // The client is not connected, so an accepted request fails at the forward step.
     CHECK(preview_status(fx_paths, fx_run("[0]", "10")) == http_status::bad_gateway);

@@ -29,10 +29,8 @@
 #include "ores.dq.api/domain/treatment_dimension.hpp"
 #include "ores.dq.api/messaging/treatment_dimension_protocol.hpp"
 #include "ores.dq.core/repository/treatment_dimension_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -455,12 +453,12 @@ treatment_dimension_service::prepare_change(const messaging::treatment_dimension
 
 std::vector<domain::treatment_dimension>
 treatment_dimension_service::list_dimensions(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all treatment dimensions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all treatment dimensions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t treatment_dimension_service::count_dimensions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total treatment dimensions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total treatment dimensions count";
     return repo_.get_total_dimension_count(ctx_);
 }
 
@@ -468,14 +466,14 @@ std::uint32_t treatment_dimension_service::count_dimensions() {
 std::optional<domain::treatment_dimension>
 treatment_dimension_service::get_dimension_at_version(const std::string& code,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting treatment dimension at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting treatment dimension at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::treatment_dimension>
 treatment_dimension_service::get_dimension(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting treatment dimension. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting treatment dimension. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -490,11 +488,11 @@ treatment_dimension_service::get_dimensions(const std::vector<std::string>& code
 void treatment_dimension_service::save_dimension(const domain::treatment_dimension& v) {
     if (v.code.empty())
         throw std::invalid_argument("Treatment Dimension code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving treatment dimension. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving treatment dimension. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved treatment dimension. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved treatment dimension. " << "code: " << v.code;
 }
 
 void treatment_dimension_service::save_dimensions(
@@ -503,7 +501,7 @@ void treatment_dimension_service::save_dimensions(
         if (e.code.empty())
             throw std::invalid_argument("Treatment Dimension code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << dimensions.size() << " treatment dimensions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << dimensions.size() << " treatment dimensions";
     auto ts = dimensions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -512,9 +510,9 @@ void treatment_dimension_service::save_dimensions(
 }
 
 void treatment_dimension_service::delete_dimension(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing treatment dimension. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing treatment dimension. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed treatment dimension. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed treatment dimension. " << "code: " << code;
 }
 
 void treatment_dimension_service::delete_dimensions(const std::vector<std::string>& codes) {
@@ -523,7 +521,7 @@ void treatment_dimension_service::delete_dimensions(const std::vector<std::strin
 
 std::vector<domain::treatment_dimension>
 treatment_dimension_service::get_dimension_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for treatment dimension. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for treatment dimension. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

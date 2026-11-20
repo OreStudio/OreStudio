@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/engine_settings_group.hpp"
 #include "ores.reporting.api/domain/engine_settings_group_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/engine_settings_group_protocol.hpp"
 #include "ores.reporting.core/repository/engine_settings_group_entity.hpp"
 #include "ores.reporting.core/repository/engine_settings_group_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -216,7 +214,7 @@ void engine_settings_group_repository::write(const context& ctx,
 void engine_settings_group_repository::write(const context& ctx,
                                              const domain::engine_settings_group& v,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing engine settings group. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing engine settings group. " << "code: " << v.code;
     const auto t =
         engine_settings_group_apply_claim(v,
                                           claim,
@@ -233,7 +231,7 @@ void engine_settings_group_repository::write(
     const context& ctx,
     const std::vector<domain::engine_settings_group>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing engine settings groups. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing engine settings groups. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "engine_settings_group_repository::write: one claim is needed for each row");
@@ -273,7 +271,7 @@ engine_settings_group_repository::read_latest(const context& ctx) {
 
 std::vector<domain::engine_settings_group>
 engine_settings_group_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest engine settings group. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest engine settings group. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -292,8 +290,7 @@ engine_settings_group_repository::read_latest(const context& ctx, const std::str
 
 std::vector<domain::engine_settings_group>
 engine_settings_group_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all engine settings group versions. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all engine settings group versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<engine_settings_group_entity>> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code) |
@@ -310,8 +307,8 @@ engine_settings_group_repository::read_all(const context& ctx, const std::string
 
 std::optional<domain::engine_settings_group> engine_settings_group_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading engine settings group at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading engine settings group at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<engine_settings_group_entity>> |
@@ -333,7 +330,7 @@ std::optional<domain::engine_settings_group> engine_settings_group_repository::r
 
 engine_settings_group_repository::remove_status engine_settings_group_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing engine settings group. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing engine settings group. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -372,8 +369,8 @@ std::vector<domain::engine_settings_group> engine_settings_group_repository::rea
     const ores::utility::domain::order& order,
     const std::optional<messaging::engine_settings_groups_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest engine settings groups with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest engine settings groups with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<engine_settings_group_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -395,7 +392,7 @@ std::uint32_t engine_settings_group_repository::get_total_group_count(
     const context& ctx,
     const std::optional<messaging::engine_settings_groups_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active engine settings group count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active engine settings group count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<engine_settings_group_entity>> |

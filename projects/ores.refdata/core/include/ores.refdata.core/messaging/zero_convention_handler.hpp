@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_ZERO_CONVENTION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
@@ -74,7 +74,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_zero_conventions(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,21 +89,20 @@ public:
         }
         auto req = decode<list_zero_conventions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::zero_convention_service svc(req_ctx);
         try {
             auto response = svc.list_zero_conventions(*req);
-            BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(zero_convention_handler_lg(), error)
+            ORES_LOG_SEV(zero_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_zero_conventions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -123,7 +122,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_zero_convention(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -138,21 +137,20 @@ public:
         }
         auto req = decode<get_zero_convention_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::zero_convention_service svc(req_ctx);
         try {
             auto response = svc.get_zero_convention(*req);
-            BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(zero_convention_handler_lg(), error)
+            ORES_LOG_SEV(zero_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_zero_convention_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -172,7 +170,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_zero_conventions(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -187,21 +185,20 @@ public:
         }
         auto req = decode<get_many_zero_conventions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::zero_convention_service svc(req_ctx);
         try {
             auto response = svc.get_many_zero_conventions(*req);
-            BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(zero_convention_handler_lg(), error)
+            ORES_LOG_SEV(zero_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_zero_conventions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -221,7 +218,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_zero_convention(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -236,21 +233,20 @@ public:
         }
         auto req = decode<put_zero_convention_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::zero_convention_service svc(req_ctx);
         try {
             auto response = svc.put_zero_convention(*req);
-            BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(zero_convention_handler_lg(), error)
+            ORES_LOG_SEV(zero_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_zero_convention_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -270,7 +266,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_zero_conventions(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -285,21 +281,20 @@ public:
         }
         auto req = decode<put_many_zero_conventions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::zero_convention_service svc(req_ctx);
         try {
             auto response = svc.put_many_zero_conventions(*req);
-            BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(zero_convention_handler_lg(), error)
+            ORES_LOG_SEV(zero_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_zero_conventions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -319,7 +314,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_zero_convention(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -334,21 +329,20 @@ public:
         }
         auto req = decode<delete_zero_convention_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::zero_convention_service svc(req_ctx);
         try {
             auto response = svc.delete_zero_convention(*req);
-            BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(zero_convention_handler_lg(), error)
+            ORES_LOG_SEV(zero_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_zero_convention_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -368,7 +362,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_zero_conventions(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -383,21 +377,20 @@ public:
         }
         auto req = decode<delete_many_zero_conventions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::zero_convention_service svc(req_ctx);
         try {
             auto response = svc.delete_many_zero_conventions(*req);
-            BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(zero_convention_handler_lg(), error)
+            ORES_LOG_SEV(zero_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_zero_conventions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -417,7 +410,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_zero_convention_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -432,21 +425,20 @@ public:
         }
         auto req = decode<list_zero_convention_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::zero_convention_service svc(req_ctx);
         try {
             auto response = svc.list_zero_convention_versions(*req);
-            BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(zero_convention_handler_lg(), error)
+            ORES_LOG_SEV(zero_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_zero_convention_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -466,7 +458,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_zero_convention_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -481,21 +473,20 @@ public:
         }
         auto req = decode<get_zero_convention_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::zero_convention_service svc(req_ctx);
         try {
             auto response = svc.get_zero_convention_version(*req);
-            BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(zero_convention_handler_lg(), error)
+            ORES_LOG_SEV(zero_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_zero_convention_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

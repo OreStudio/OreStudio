@@ -31,7 +31,7 @@ The full template source. Edit here and re-tangle with
 #define {{full_name_upper}}_APP_APPLICATION_HPP
 
 #include <boost/asio/awaitable.hpp>
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "{{full_name}}/config/options.hpp"

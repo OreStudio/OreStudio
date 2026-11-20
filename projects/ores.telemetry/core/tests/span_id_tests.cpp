@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.telemetry.core/domain/span_id.hpp"
 #include "ores.telemetry.core/generators/span_id_generator.hpp"
 #include "test_suite.hpp"
@@ -35,7 +35,7 @@ TEST_CASE("default_span_id_is_invalid", "[span_id]") {
     span_id id;
     REQUIRE(id.to_hex() == "0000000000000000");
     REQUIRE_FALSE(id.is_valid());
-    BOOST_LOG_SEV(lg, debug) << "Default span_id: " << id.to_hex();
+    ORES_LOG_SEV(lg, debug) << "Default span_id: " << id.to_hex();
 }
 
 TEST_CASE("generated_span_id_is_valid", "[span_id]") {
@@ -44,7 +44,7 @@ TEST_CASE("generated_span_id_is_valid", "[span_id]") {
     const auto id = gen();
 
     REQUIRE(id.is_valid());
-    BOOST_LOG_SEV(lg, debug) << "Generated span_id: " << id.to_hex();
+    ORES_LOG_SEV(lg, debug) << "Generated span_id: " << id.to_hex();
 }
 
 TEST_CASE("span_id_to_hex_produces_16_chars", "[span_id]") {

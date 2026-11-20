@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -473,25 +471,25 @@ role_service::prepare_change(const messaging::role_change& change,
 
 
 std::vector<domain::role> role_service::list_roles(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all roles";
+    ORES_LOG_SEV(lg(), debug) << "Listing all roles";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t role_service::count_roles() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total roles count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total roles count";
     return repo_.get_total_role_count(ctx_);
 }
 
 
 std::optional<domain::role> role_service::get_role_at_version(const boost::uuids::uuid& id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting role at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting role at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::role> role_service::get_role(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting role. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting role. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -499,7 +497,7 @@ std::optional<domain::role> role_service::get_role(const boost::uuids::uuid& id)
 }
 
 std::optional<domain::role> role_service::get_role_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting role by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting role by name: " << name;
     messaging::role_key k;
     k.name = name;
     auto found = role_read_one(repo_, ctx_, k);
@@ -515,11 +513,11 @@ std::vector<domain::role> role_service::get_roles(const std::vector<std::string>
 void role_service::save_role(const domain::role& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Role id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving role. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving role. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved role. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved role. " << "id: " << v.id;
 }
 
 void role_service::save_roles(const std::vector<domain::role>& roles) {
@@ -527,7 +525,7 @@ void role_service::save_roles(const std::vector<domain::role>& roles) {
         if (e.id.is_nil())
             throw std::invalid_argument("Role id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " roles";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " roles";
     auto ts = roles;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -536,9 +534,9 @@ void role_service::save_roles(const std::vector<domain::role>& roles) {
 }
 
 void role_service::delete_role(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing role. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing role. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed role. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed role. " << "id: " << id;
 }
 
 void role_service::delete_roles(const std::vector<std::string>& ids) {
@@ -546,7 +544,7 @@ void role_service::delete_roles(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::role> role_service::get_role_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for role. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for role. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

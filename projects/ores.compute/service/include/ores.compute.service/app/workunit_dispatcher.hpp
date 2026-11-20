@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include <string>
 

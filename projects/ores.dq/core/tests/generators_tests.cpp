@@ -29,7 +29,7 @@
 #include "ores.dq.api/generators/origin_dimension_generator.hpp"
 #include "ores.dq.api/generators/subject_area_generator.hpp"
 #include "ores.dq.api/generators/treatment_dimension_generator.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -46,7 +46,7 @@ TEST_CASE("catalog_generator_produces_valid_instance", "[generators]") {
     generation_context ctx;
     auto sut = generate_synthetic_catalog(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated catalog: " << sut.name;
+    ORES_LOG_SEV(lg, info) << "Generated catalog: " << sut.name;
 
     CHECK(sut.version == 0);
     CHECK(!sut.name.empty());

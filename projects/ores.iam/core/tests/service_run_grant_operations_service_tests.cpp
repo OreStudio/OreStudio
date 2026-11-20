@@ -28,7 +28,7 @@
 #include "ores.iam.core/repository/role_repository.hpp"
 #include "ores.iam.core/service/run_grant_operations_service.hpp"
 #include "ores.iam.core/service/run_grant_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/generation/generation_context.hpp"
@@ -122,7 +122,7 @@ TEST_CASE("create_run_grant_records_the_grant_for_a_role_the_person_holds",
 
     run_grant_operations_service sut(ctx);
     const auto resp = sut.create_run_grant(request_for(r, resource_name()));
-    BOOST_LOG_SEV(lg, info) << "Response: " << resp.message;
+    ORES_LOG_SEV(lg, info) << "Response: " << resp.message;
 
     REQUIRE(resp.success);
     CHECK(resp.created);

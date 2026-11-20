@@ -21,7 +21,7 @@
 #define ORES_ORE_SERVICE_MESSAGING_REPORT_PACKAGE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"

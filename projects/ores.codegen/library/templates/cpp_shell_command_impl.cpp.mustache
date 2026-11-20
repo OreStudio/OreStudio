@@ -123,7 +123,7 @@ void {{entity_singular}}_commands::register_commands(cli::Menu& root_menu, nats_
 
 void {{entity_singular}}_commands::process_{{identifier}}(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating {{command}} request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating {{command}} request.";
 
     using request_type = messaging::{{request}};
     if constexpr (request_type::requires_session) {

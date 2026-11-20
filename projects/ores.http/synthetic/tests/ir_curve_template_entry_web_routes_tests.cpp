@@ -27,7 +27,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/synthetic/ir_curve_template_entry_web_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -102,7 +102,7 @@ TEST_CASE("ir_curve_template_entry_web_routes_registers_the_screen_addresses", "
     CHECK(has(http_method::delete_, "/api/synthetic/ir-template-entries"));
     CHECK(has(http_method::get, "/api/synthetic/ir-template-entries/key/{key}"));
     CHECK(has(http_method::get, "/api/synthetic/ir-template-entries/by/{parent}"));
-    BOOST_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
 }
 
 TEST_CASE("ir_curve_template_entry_web_routes_names_the_resource_in_its_catalogue_entry",

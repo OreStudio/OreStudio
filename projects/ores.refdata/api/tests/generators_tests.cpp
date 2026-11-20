@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/generators/contact_type_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_contact_information_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
@@ -47,7 +47,7 @@ TEST_CASE("party_generator_produces_valid_instance", "[generators]") {
     generation_context ctx;
     auto sut = generate_synthetic_party(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated party: " << sut.full_name;
+    ORES_LOG_SEV(lg, info) << "Generated party: " << sut.full_name;
 
     CHECK(sut.version == 0);
     CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());

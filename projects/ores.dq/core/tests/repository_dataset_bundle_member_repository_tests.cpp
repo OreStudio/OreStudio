@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/dataset_bundle_member_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/dataset_bundle_member_generator.hpp"
 #include "ores.dq.core/repository/dataset_bundle_member_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -48,11 +48,11 @@ TEST_CASE("write_single_dataset_bundle_member", "[repository]") {
     member.tenant_id = h.tenant_id().to_string();
     member.change_reason_code = "system.test";
 
-    BOOST_LOG_SEV(lg, debug) << "Dataset bundle member: " << member;
+    ORES_LOG_SEV(lg, debug) << "Dataset bundle member: " << member;
     repo.write(member);
 
     auto read_members = repo.read_latest_by_bundle(member.bundle_code);
-    BOOST_LOG_SEV(lg, debug) << "Read members: " << read_members;
+    ORES_LOG_SEV(lg, debug) << "Read members: " << read_members;
 
     REQUIRE(read_members.size() == 1);
     CHECK(read_members[0].bundle_code == member.bundle_code);
@@ -72,11 +72,11 @@ TEST_CASE("write_multiple_dataset_bundle_members", "[repository]") {
         m.tenant_id = h.tenant_id().to_string();
         m.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Dataset bundle members: " << members;
+    ORES_LOG_SEV(lg, debug) << "Dataset bundle members: " << members;
     repo.write(members);
 
     auto read_members = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read members: " << read_members;
+    ORES_LOG_SEV(lg, debug) << "Read members: " << read_members;
 
     for (const auto& written : members) {
         bool found = false;
@@ -104,12 +104,12 @@ TEST_CASE("read_latest_dataset_bundle_members", "[repository]") {
         m.tenant_id = h.tenant_id().to_string();
         m.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written members: " << written_members;
+    ORES_LOG_SEV(lg, debug) << "Written members: " << written_members;
 
     repo.write(written_members);
 
     auto read_members = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read members: " << read_members;
+    ORES_LOG_SEV(lg, debug) << "Read members: " << read_members;
 
     for (const auto& written : written_members) {
         bool found = false;
@@ -137,13 +137,13 @@ TEST_CASE("read_latest_dataset_bundle_members_by_bundle", "[repository]") {
     member.change_reason_code = "system.test";
 
     const auto target_bundle_code = member.bundle_code;
-    BOOST_LOG_SEV(lg, debug) << "Write member: " << member;
+    ORES_LOG_SEV(lg, debug) << "Write member: " << member;
     repo.write(member);
 
-    BOOST_LOG_SEV(lg, debug) << "Target bundle code: " << target_bundle_code;
+    ORES_LOG_SEV(lg, debug) << "Target bundle code: " << target_bundle_code;
 
     auto read_members = repo.read_latest_by_bundle(target_bundle_code);
-    BOOST_LOG_SEV(lg, debug) << "Read members: " << read_members;
+    ORES_LOG_SEV(lg, debug) << "Read members: " << read_members;
 
     REQUIRE(!read_members.empty());
     for (const auto& m : read_members) {

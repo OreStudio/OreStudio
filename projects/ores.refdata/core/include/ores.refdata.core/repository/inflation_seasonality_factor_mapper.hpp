@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_INFLATION_SEASONALITY_FACTOR_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_INFLATION_SEASONALITY_FACTOR_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/inflation_seasonality_factor_entity.hpp"

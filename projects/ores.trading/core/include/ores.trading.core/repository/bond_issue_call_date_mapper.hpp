@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_BOND_ISSUE_CALL_DATE_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_BOND_ISSUE_CALL_DATE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_entity.hpp"

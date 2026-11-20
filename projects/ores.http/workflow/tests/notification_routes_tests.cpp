@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -56,7 +56,7 @@ bool notice_holds(const std::string& body, const std::string& part) {
 
 TEST_CASE("the_notices_a_person_holds_are_one_page_or_a_refusal", "[workflow_notices]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the page of notices";
+    ORES_LOG_SEV(lg, info) << "Testing the page of notices";
 
     CHECK(answer_at<workflow_routes>(
               http_method::get, notices_pattern, http_request{}, notices_pattern)
@@ -76,7 +76,7 @@ TEST_CASE("the_notices_a_person_holds_are_one_page_or_a_refusal", "[workflow_not
 
 TEST_CASE("the_notices_a_person_holds_take_a_page_and_that_is_all", "[workflow_notices]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the parameter a page of notices does not name";
+    ORES_LOG_SEV(lg, info) << "Testing the parameter a page of notices does not name";
 
     http_request req;
     req.query_params["kind"] = "inbox.role_granted";
@@ -93,7 +93,7 @@ TEST_CASE("the_notices_a_person_holds_take_a_page_and_that_is_all", "[workflow_n
 
 TEST_CASE("the_unread_count_reaches_the_service", "[workflow_notices]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the unread count with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing the unread count with no service behind it";
 
     CHECK(
         answer_at<workflow_routes>(http_method::get, unread_pattern, http_request{}, unread_pattern)
@@ -102,7 +102,7 @@ TEST_CASE("the_unread_count_reaches_the_service", "[workflow_notices]") {
 
 TEST_CASE("a_mark_names_the_notices_or_states_none", "[workflow_notices]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the body a mark takes";
+    ORES_LOG_SEV(lg, info) << "Testing the body a mark takes";
 
     const std::vector<std::string> bodies = {
         R"({})", R"({"ids":["not-a-notice"]})", R"({"ids":[],"more":1})"};
@@ -128,7 +128,7 @@ TEST_CASE("a_mark_names_the_notices_or_states_none", "[workflow_notices]") {
 
 TEST_CASE("a_clear_names_the_notices_or_states_none", "[workflow_notices]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the body a clear takes";
+    ORES_LOG_SEV(lg, info) << "Testing the body a clear takes";
 
     http_request missing;
     missing.body = R"({})";

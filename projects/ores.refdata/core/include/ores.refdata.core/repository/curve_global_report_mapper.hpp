@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURVE_GLOBAL_REPORT_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURVE_GLOBAL_REPORT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/curve_global_report.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/curve_global_report_entity.hpp"

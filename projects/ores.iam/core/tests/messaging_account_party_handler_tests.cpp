@@ -22,7 +22,7 @@
 #include "ores.iam.api/domain/account_party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/messaging/account_operations_handler.hpp"
 #include "ores.iam.core/messaging/account_party_handler.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -80,7 +80,7 @@ TEST_CASE("stamp_account_party_preserves_target_party_id", "[messaging]") {
 
     ores::iam::messaging::stamp_account_party(ap, h.context());
 
-    BOOST_LOG_SEV(lg, debug) << "Stamped account_party: " << ap;
+    ORES_LOG_SEV(lg, debug) << "Stamped account_party: " << ap;
 
     CHECK(ap.party_id == target_party.id);
     CHECK(!ap.tenant_id.empty());

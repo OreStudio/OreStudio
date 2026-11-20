@@ -17,10 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/logger.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.logging/logging_exception.hpp"
 #include "ores.logging/logging_options.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "test_suite.hpp"
 #include <boost/program_options.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -56,7 +56,7 @@ TEST_CASE("read_options_returns_nullopt_without_log_enabled", "[logging]") {
 
     const std::vector<std::string> args;
     const auto result(read_options(args));
-    BOOST_LOG_SEV(lg, ores::logging::info) << "has value: " << result.has_value();
+    ORES_LOG_SEV(lg, ores::logging::info) << "has value: " << result.has_value();
 
     CHECK_FALSE(result.has_value());
 }
@@ -67,7 +67,7 @@ TEST_CASE("make_options_description_lists_every_logging_option", "[logging]") {
     std::ostringstream os;
     os << logging_configuration::make_options_description(default_log_file);
     const std::string description(os.str());
-    BOOST_LOG_SEV(lg, ores::logging::info) << description;
+    ORES_LOG_SEV(lg, ores::logging::info) << description;
 
     CHECK(description.contains("log-enabled"));
     CHECK(description.contains("log-level"));
@@ -84,7 +84,7 @@ TEST_CASE("read_options_returns_defaults_when_logging_enabled", "[logging]") {
     const std::vector<std::string> args{"--log-enabled", "--log-level", "debug"};
     const auto result(read_options(args));
     REQUIRE(result.has_value());
-    BOOST_LOG_SEV(lg, ores::logging::info) << *result;
+    ORES_LOG_SEV(lg, ores::logging::info) << *result;
 
     CHECK(result->severity == "debug");
     /* No filename and no directory: this logs to the console and writes no
@@ -104,7 +104,7 @@ TEST_CASE("read_options_reads_console_pid_and_replica_index", "[logging]") {
         "--log-enabled", "--log-to-console", "--log-include-pid", "--log-replica-index", "3"};
     const auto result(read_options(args));
     REQUIRE(result.has_value());
-    BOOST_LOG_SEV(lg, ores::logging::info) << *result;
+    ORES_LOG_SEV(lg, ores::logging::info) << *result;
 
     CHECK(result->output_to_console);
     CHECK(result->include_pid);
@@ -115,7 +115,7 @@ TEST_CASE("read_options_rejects_invalid_log_level", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--log-enabled", "--log-level", "fatal"};
-    BOOST_LOG_SEV(lg, ores::logging::info) << "log level: fatal";
+    ORES_LOG_SEV(lg, ores::logging::info) << "log level: fatal";
 
     CHECK_THROWS_AS(read_options(args), logging_exception);
 }

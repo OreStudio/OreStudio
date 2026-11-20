@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/market_scenario_value.hpp"
 #include "ores.marketdata.api/messaging/market_scenario_value_protocol.hpp"
 #include "ores.marketdata.core/repository/market_scenario_value_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -42,7 +41,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -440,19 +438,19 @@ ores::utility::domain::result market_scenario_value_service::prepare_change(
 
 std::vector<domain::market_scenario_value>
 market_scenario_value_service::list_values(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all market scenario values";
+    ORES_LOG_SEV(lg(), debug) << "Listing all market scenario values";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t market_scenario_value_service::count_values() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total market scenario values count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total market scenario values count";
     return repo_.get_total_value_count(ctx_);
 }
 
 
 std::optional<domain::market_scenario_value>
 market_scenario_value_service::get_value(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market scenario value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting market scenario value. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -467,11 +465,11 @@ market_scenario_value_service::get_values(const std::vector<std::string>& ids) {
 void market_scenario_value_service::save_value(const domain::market_scenario_value& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Market Scenario Value id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market scenario value. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving market scenario value. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market scenario value. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved market scenario value. " << "id: " << v.id;
 }
 
 void market_scenario_value_service::save_values(
@@ -480,7 +478,7 @@ void market_scenario_value_service::save_values(
         if (e.id.is_nil())
             throw std::invalid_argument("Market Scenario Value id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << values.size() << " market scenario values";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << values.size() << " market scenario values";
     auto ts = values;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -489,9 +487,9 @@ void market_scenario_value_service::save_values(
 }
 
 void market_scenario_value_service::delete_value(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market scenario value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market scenario value. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed market scenario value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed market scenario value. " << "id: " << id;
 }
 
 void market_scenario_value_service::delete_values(const std::vector<std::string>& ids) {
@@ -500,7 +498,7 @@ void market_scenario_value_service::delete_values(const std::vector<std::string>
 
 std::vector<domain::market_scenario_value>
 market_scenario_value_service::get_value_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market scenario value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for market scenario value. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

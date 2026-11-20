@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/structure_member.hpp"
 #include "ores.trading.api/messaging/structure_member_protocol.hpp"
 #include "ores.trading.core/repository/structure_member_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -454,12 +452,12 @@ structure_member_service::prepare_change(const messaging::structure_member_chang
 
 std::vector<domain::structure_member> structure_member_service::list_members(std::uint32_t offset,
                                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all structure members";
+    ORES_LOG_SEV(lg(), debug) << "Listing all structure members";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t structure_member_service::count_members() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total structure members count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total structure members count";
     return repo_.get_total_member_count(ctx_);
 }
 
@@ -467,14 +465,14 @@ std::uint32_t structure_member_service::count_members() {
 std::optional<domain::structure_member>
 structure_member_service::get_member_at_version(const boost::uuids::uuid& trade_id,
                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting structure member at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting structure member at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::structure_member>
 structure_member_service::get_member(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting structure member. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting structure member. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -489,11 +487,11 @@ structure_member_service::get_members(const std::vector<std::string>& trade_ids)
 void structure_member_service::save_member(const domain::structure_member& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Structure Member trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving structure member. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving structure member. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved structure member. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved structure member. " << "trade_id: " << v.trade_id;
 }
 
 void structure_member_service::save_members(const std::vector<domain::structure_member>& members) {
@@ -501,7 +499,7 @@ void structure_member_service::save_members(const std::vector<domain::structure_
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Structure Member trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << members.size() << " structure members";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << members.size() << " structure members";
     auto ts = members;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -510,9 +508,9 @@ void structure_member_service::save_members(const std::vector<domain::structure_
 }
 
 void structure_member_service::delete_member(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing structure member. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing structure member. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed structure member. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed structure member. " << "trade_id: " << trade_id;
 }
 
 void structure_member_service::delete_members(const std::vector<std::string>& trade_ids) {
@@ -521,8 +519,8 @@ void structure_member_service::delete_members(const std::vector<std::string>& tr
 
 std::vector<domain::structure_member>
 structure_member_service::get_member_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for structure member. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for structure member. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

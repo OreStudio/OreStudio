@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/equity_tarf_instrument.hpp"
 #include "ores.trading.api/messaging/equity_tarf_instrument_protocol.hpp"
 #include "ores.trading.core/repository/equity_tarf_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -474,12 +472,12 @@ ores::utility::domain::result equity_tarf_instrument_service::prepare_change(
 std::vector<domain::equity_tarf_instrument>
 equity_tarf_instrument_service::list_equity_tarf_instruments(std::uint32_t offset,
                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all equity target redemption forwards";
+    ORES_LOG_SEV(lg(), debug) << "Listing all equity target redemption forwards";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t equity_tarf_instrument_service::count_equity_tarf_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total equity target redemption forwards count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total equity target redemption forwards count";
     return repo_.get_total_equity_tarf_instrument_count(ctx_);
 }
 
@@ -487,15 +485,15 @@ std::uint32_t equity_tarf_instrument_service::count_equity_tarf_instruments() {
 std::optional<domain::equity_tarf_instrument>
 equity_tarf_instrument_service::get_equity_tarf_instrument_at_version(
     const boost::uuids::uuid& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity target redemption forward at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity target redemption forward at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::equity_tarf_instrument>
 equity_tarf_instrument_service::get_equity_tarf_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity target redemption forward. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity target redemption forward. "
+                              << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -512,13 +510,13 @@ void equity_tarf_instrument_service::save_equity_tarf_instrument(
     const domain::equity_tarf_instrument& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Equity Tarf Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity target redemption forward. "
-                               << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving equity target redemption forward. "
+                              << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved equity target redemption forward. "
-                              << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved equity target redemption forward. "
+                             << "trade_id: " << v.trade_id;
 }
 
 void equity_tarf_instrument_service::save_equity_tarf_instruments(
@@ -527,8 +525,8 @@ void equity_tarf_instrument_service::save_equity_tarf_instruments(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Equity Tarf Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_tarf_instruments.size()
-                               << " equity target redemption forwards";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << equity_tarf_instruments.size()
+                              << " equity target redemption forwards";
     auto ts = equity_tarf_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -538,11 +536,11 @@ void equity_tarf_instrument_service::save_equity_tarf_instruments(
 
 void equity_tarf_instrument_service::delete_equity_tarf_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing equity target redemption forward. "
-                               << "trade_id: " << trade_id;
-    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed equity target redemption forward. "
+    ORES_LOG_SEV(lg(), debug) << "Removing equity target redemption forward. "
                               << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    ORES_LOG_SEV(lg(), info) << "Removed equity target redemption forward. "
+                             << "trade_id: " << trade_id;
 }
 
 void equity_tarf_instrument_service::delete_equity_tarf_instruments(
@@ -552,8 +550,8 @@ void equity_tarf_instrument_service::delete_equity_tarf_instruments(
 
 std::vector<domain::equity_tarf_instrument>
 equity_tarf_instrument_service::get_equity_tarf_instrument_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for equity target redemption forward. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for equity target redemption forward. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

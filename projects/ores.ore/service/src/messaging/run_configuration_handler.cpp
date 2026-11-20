@@ -120,8 +120,8 @@ void run_configuration_handler::import_run_configuration(ores::nats::message msg
                      ores::nats::headers::with_publish_identity(
                          ores::nats::service::forwarded_caller_headers(msg), swm.instance_id));
 
-    BOOST_LOG_SEV(lg(), info) << "run configuration import dispatched | corr=" << correlation_id
-                              << " instance=" << instance_id;
+    ORES_LOG_SEV(lg(), info) << "run configuration import dispatched | corr=" << correlation_id
+                             << " instance=" << instance_id;
     reply(nats_,
           msg,
           import_run_configuration_response{.success = true,
@@ -161,8 +161,8 @@ void run_configuration_handler::export_run_configuration(ores::nats::message msg
         response.message = std::format("Exported {} files.", response.files.size());
         reply(nats_, msg, response);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "run configuration export refused | corr=" << correlation_id
-                                  << " " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "run configuration export refused | corr=" << correlation_id
+                                 << " " << e.what();
         reply(nats_, msg, export_run_configuration_response{.message = e.what()});
     }
 }
@@ -193,16 +193,16 @@ void run_configuration_import_handler::execute(ores::nats::delivery delivery) {
                           .with_correlation_id(req->correlation_id);
         const auto result =
             import_run(owners, req->report_definition_id, req->name, files_of(req->files));
-        BOOST_LOG_SEV(lg(), info) << "run configuration imported | corr=" << req->correlation_id
-                                  << " stored=" << result.stored.size();
+        ORES_LOG_SEV(lg(), info) << "run configuration imported | corr=" << req->correlation_id
+                                 << " stored=" << result.stored.size();
         for (const auto& warning : result.warnings)
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "run configuration import | corr=" << req->correlation_id << " " << warning;
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "run configuration import failed | corr="
-                                  << req->correlation_id << " " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "run configuration import failed | corr=" << req->correlation_id
+                                 << " " << e.what();
         wf->fail(e.what());
         std::move(delivery).commit();
     }
@@ -232,9 +232,8 @@ void run_configuration_import_handler::rollback(ores::nats::delivery delivery) {
         wf->complete("{}");
         std::move(delivery).commit();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "run configuration rollback failed | corr=" << req->correlation_id << " "
-            << e.what();
+        ORES_LOG_SEV(lg(), error) << "run configuration rollback failed | corr="
+                                  << req->correlation_id << " " << e.what();
         wf->fail(e.what());
         std::move(delivery).commit();
     }

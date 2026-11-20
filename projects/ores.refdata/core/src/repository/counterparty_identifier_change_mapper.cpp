@@ -24,12 +24,10 @@
  */
 #include "ores.refdata.core/repository/counterparty_identifier_change_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier_change.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier_change_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/counterparty_identifier_change_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
@@ -42,7 +40,7 @@ using namespace ores::database::repository;
 
 domain::counterparty_identifier_change
 counterparty_identifier_change_mapper::map(const counterparty_identifier_change_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::counterparty_identifier_change r;
     r.version = v.version;
@@ -65,13 +63,13 @@ counterparty_identifier_change_mapper::map(const counterparty_identifier_change_
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 counterparty_identifier_change_entity
 counterparty_identifier_change_mapper::map(const domain::counterparty_identifier_change& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     counterparty_identifier_change_entity r;
     r.id = v.id;
@@ -93,7 +91,7 @@ counterparty_identifier_change_mapper::map(const domain::counterparty_identifier
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

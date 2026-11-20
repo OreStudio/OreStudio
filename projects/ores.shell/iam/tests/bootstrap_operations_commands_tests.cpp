@@ -22,7 +22,7 @@
  * Template: cpp_shell_operation_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/iam/bootstrap_operations_commands.hpp"
@@ -64,7 +64,7 @@ TEST_CASE("bootstrap_operations_registers_every_declared_command", "[commands]")
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 2 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 2 command(s).";
 }
 
 TEST_CASE("bootstrap_operations_process_status_reaches_the_transport", "[commands]") {
@@ -80,7 +80,7 @@ TEST_CASE("bootstrap_operations_process_status_reaches_the_transport", "[command
     command_feedback::reset();
     bootstrap_operations_commands::process_status(out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -101,7 +101,7 @@ TEST_CASE("bootstrap_operations_process_create_initial_admin_reports_the_expecte
     command_feedback::reset();
     bootstrap_operations_commands::process_create_initial_admin(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -125,7 +125,7 @@ TEST_CASE("bootstrap_operations_process_create_initial_admin_reaches_the_transpo
                                                                     "sample",
                                                                 });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);

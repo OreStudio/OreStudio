@@ -16,7 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
@@ -41,7 +41,7 @@ using namespace ores::logging;
 void round_trip_messages(const std::filesystem::path& path) {
     auto lg(make_logger(test_suite));
 
-    BOOST_LOG_SEV(lg, debug) << "Importing: " << path.string();
+    ORES_LOG_SEV(lg, debug) << "Importing: " << path.string();
 
     const auto original = ores::ore::xml::importer::import_calendar_adjustments(path);
     REQUIRE_FALSE(original.empty());
@@ -52,7 +52,7 @@ void round_trip_messages(const std::filesystem::path& path) {
     const auto reread = ores::ore::xml::importer::import_calendar_adjustments_text(written);
     REQUIRE(reread.size() == original.size());
 
-    BOOST_LOG_SEV(lg, info) << "calendar adjustments: " << original.size();
+    ORES_LOG_SEV(lg, info) << "calendar adjustments: " << original.size();
 
     for (std::size_t i = 0; i < original.size(); ++i) {
         INFO("calendar " << i);

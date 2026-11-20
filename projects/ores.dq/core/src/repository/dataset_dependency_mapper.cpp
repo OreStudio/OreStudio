@@ -27,7 +27,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::dataset_dependency dataset_dependency_mapper::map(const dataset_dependency_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::dataset_dependency r;
     r.tenant_id = v.tenant_id;
@@ -37,7 +37,7 @@ domain::dataset_dependency dataset_dependency_mapper::map(const dataset_dependen
     r.modified_by = v.modified_by;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 

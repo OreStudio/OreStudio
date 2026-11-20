@@ -28,7 +28,7 @@
 #include "ores.analytics.api/domain/sensitivity_asset_class.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/sensitivity_asset_class_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::analytics::repository {
 

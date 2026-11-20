@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/tenant.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -497,25 +495,25 @@ tenant_service::prepare_change(const messaging::tenant_change& change,
 
 std::vector<domain::tenant> tenant_service::list_tenants(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all tenants";
+    ORES_LOG_SEV(lg(), debug) << "Listing all tenants";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t tenant_service::count_tenants() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total tenants count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total tenants count";
     return repo_.get_total_tenant_count(ctx_);
 }
 
 
 std::optional<domain::tenant> tenant_service::get_tenant_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenant at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenant at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::tenant> tenant_service::get_tenant(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenant. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -523,7 +521,7 @@ std::optional<domain::tenant> tenant_service::get_tenant(const boost::uuids::uui
 }
 
 std::optional<domain::tenant> tenant_service::get_tenant_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenant by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenant by code: " << code;
     messaging::tenant_key k;
     k.code = code;
     auto found = tenant_read_one(repo_, ctx_, k);
@@ -539,11 +537,11 @@ std::vector<domain::tenant> tenant_service::get_tenants(const std::vector<std::s
 void tenant_service::save_tenant(const domain::tenant& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Tenant id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenant. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving tenant. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenant. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved tenant. " << "id: " << v.id;
 }
 
 void tenant_service::save_tenants(const std::vector<domain::tenant>& tenants) {
@@ -551,7 +549,7 @@ void tenant_service::save_tenants(const std::vector<domain::tenant>& tenants) {
         if (e.id.is_nil())
             throw std::invalid_argument("Tenant id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << tenants.size() << " tenants";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << tenants.size() << " tenants";
     auto ts = tenants;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -560,9 +558,9 @@ void tenant_service::save_tenants(const std::vector<domain::tenant>& tenants) {
 }
 
 void tenant_service::delete_tenant(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing tenant. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed tenant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed tenant. " << "id: " << id;
 }
 
 void tenant_service::delete_tenants(const std::vector<std::string>& ids) {
@@ -570,7 +568,7 @@ void tenant_service::delete_tenants(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::tenant> tenant_service::get_tenant_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenant. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for tenant. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

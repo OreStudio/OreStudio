@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.core/stream/change_feed.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -46,7 +46,7 @@ ores::nats::message entity_event(std::string subject, std::string tenant, std::s
 
 TEST_CASE("a_subject_names_its_component_collection_and_action", "[change_feed]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an event subject is read from its end";
+    ORES_LOG_SEV(lg, info) << "Testing that an event subject is read from its end";
 
     const auto address = parse_entity_event_subject("iam.v1.events.tenant_types.created");
 
@@ -59,7 +59,7 @@ TEST_CASE("a_subject_names_its_component_collection_and_action", "[change_feed]"
 
 TEST_CASE("the_deployment_prefix_in_front_of_a_subject_is_ignored", "[change_feed]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a prefixed subject still parses";
+    ORES_LOG_SEV(lg, info) << "Testing that a prefixed subject still parses";
 
     const auto address =
         parse_entity_event_subject("ores.dev.local.trading.v1.events.fx_spot_trades.updated");
@@ -72,7 +72,7 @@ TEST_CASE("the_deployment_prefix_in_front_of_a_subject_is_ignored", "[change_fee
 
 TEST_CASE("a_subject_that_is_not_an_entity_event_is_refused", "[change_feed]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the subjects the feed must not record";
+    ORES_LOG_SEV(lg, info) << "Testing the subjects the feed must not record";
 
     // A command subject, an events collection with no action, and a version that is
     // not one.
@@ -86,7 +86,7 @@ TEST_CASE("a_subject_that_is_not_an_entity_event_is_refused", "[change_feed]") {
 
 TEST_CASE("an_event_records_the_collection_its_tenant_and_its_party", "[change_feed]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an event becomes a change";
+    ORES_LOG_SEV(lg, info) << "Testing that an event becomes a change";
 
     change_coalescer coalescer;
     change_feed feed(coalescer);
@@ -103,7 +103,7 @@ TEST_CASE("an_event_records_the_collection_its_tenant_and_its_party", "[change_f
 
 TEST_CASE("an_event_of_one_collection_from_two_tenants_is_two_changes", "[change_feed]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that tenancy is part of the change";
+    ORES_LOG_SEV(lg, info) << "Testing that tenancy is part of the change";
 
     change_coalescer coalescer;
     change_feed feed(coalescer);
@@ -119,7 +119,7 @@ TEST_CASE("an_event_of_one_collection_from_two_tenants_is_two_changes", "[change
 
 TEST_CASE("an_event_with_no_tenant_records_nothing", "[change_feed]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an event nobody could be shown is dropped";
+    ORES_LOG_SEV(lg, info) << "Testing that an event nobody could be shown is dropped";
 
     change_coalescer coalescer;
     change_feed feed(coalescer);
@@ -130,7 +130,7 @@ TEST_CASE("an_event_with_no_tenant_records_nothing", "[change_feed]") {
 
 TEST_CASE("a_subject_that_is_not_an_event_records_nothing", "[change_feed]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a stray message is dropped";
+    ORES_LOG_SEV(lg, info) << "Testing that a stray message is dropped";
 
     change_coalescer coalescer;
     change_feed feed(coalescer);
@@ -141,7 +141,7 @@ TEST_CASE("a_subject_that_is_not_an_event_records_nothing", "[change_feed]") {
 
 TEST_CASE("the_subscription_pattern_uses_whole_token_wildcards", "[change_feed]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the pattern the server subscribes with";
+    ORES_LOG_SEV(lg, info) << "Testing the pattern the server subscribes with";
 
     /*
      * A NATS wildcard is a whole token. A token that only ends in an asterisk, such

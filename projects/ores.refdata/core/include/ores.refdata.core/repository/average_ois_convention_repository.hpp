@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_AVERAGE_OIS_CONVENTION_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/average_ois_convention.hpp"
 #include "ores.refdata.api/messaging/average_ois_convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_REPOSITORY_VARIANCE_CALIBRATION_INPUT_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/variance_calibration_input.hpp"
 #include "ores.synthetic.api/messaging/variance_calibration_input_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

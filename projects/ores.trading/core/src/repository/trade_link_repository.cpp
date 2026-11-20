@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/trade_link.hpp"
 #include "ores.trading.api/domain/trade_link_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/trade_link_protocol.hpp"
 #include "ores.trading.core/repository/trade_link_entity.hpp"
 #include "ores.trading.core/repository/trade_link_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -241,9 +239,8 @@ void trade_link_repository::write(const context& ctx, const std::vector<domain::
 void trade_link_repository::write(const context& ctx,
                                   const domain::trade_link& v,
                                   const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade link. " << "from_trade_id: " << v.from_trade_id
-                               << " to_trade_id: " << v.to_trade_id
-                               << " link_type: " << v.link_type;
+    ORES_LOG_SEV(lg(), debug) << "Writing trade link. " << "from_trade_id: " << v.from_trade_id
+                              << " to_trade_id: " << v.to_trade_id << " link_type: " << v.link_type;
     const auto t = trade_link_apply_claim(v,
                                           claim,
                                           trade_link_claim_reads_current(claim) ?
@@ -259,7 +256,7 @@ void trade_link_repository::write(const context& ctx,
 void trade_link_repository::write(const context& ctx,
                                   const std::vector<domain::trade_link>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade links. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing trade links. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "trade_link_repository::write: one claim is needed for each row");
@@ -296,9 +293,8 @@ std::vector<domain::trade_link> trade_link_repository::read_latest(const context
                                                                    const std::string& from_trade_id,
                                                                    const std::string& to_trade_id,
                                                                    const std::string& link_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade link. "
-                               << "from_trade_id: " << from_trade_id
-                               << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest trade link. " << "from_trade_id: " << from_trade_id
+                              << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -320,9 +316,9 @@ std::vector<domain::trade_link> trade_link_repository::read_all(const context& c
                                                                 const std::string& from_trade_id,
                                                                 const std::string& to_trade_id,
                                                                 const std::string& link_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all trade link versions. "
-                               << "from_trade_id: " << from_trade_id
-                               << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
+    ORES_LOG_SEV(lg(), debug) << "Reading all trade link versions. "
+                              << "from_trade_id: " << from_trade_id
+                              << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<trade_link_entity>> |
@@ -344,10 +340,10 @@ trade_link_repository::read_at_version(const context& ctx,
                                        const std::string& to_trade_id,
                                        const std::string& link_type,
                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading trade link at version. "
-                               << "from_trade_id: " << from_trade_id
-                               << " to_trade_id: " << to_trade_id << " link_type: " << link_type
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading trade link at version. "
+                              << "from_trade_id: " << from_trade_id
+                              << " to_trade_id: " << to_trade_id << " link_type: " << link_type
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<trade_link_entity>> |
@@ -375,8 +371,8 @@ trade_link_repository::remove(const context& ctx,
                               const std::string& to_trade_id,
                               const std::string& link_type,
                               std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade link. " << "from_trade_id: " << from_trade_id
-                               << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
+    ORES_LOG_SEV(lg(), debug) << "Removing trade link. " << "from_trade_id: " << from_trade_id
+                              << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
     const auto current = read_latest(ctx, from_trade_id, to_trade_id, link_type);
     if (current.empty())
         return remove_status::missing;
@@ -419,8 +415,8 @@ trade_link_repository::read_latest(const context& ctx,
                                    const ores::utility::domain::order& order,
                                    const std::optional<messaging::trade_links_filter>& filter,
                                    const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade links with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest trade links with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_link_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -441,7 +437,7 @@ std::uint32_t trade_link_repository::get_total_link_count(
     const context& ctx,
     const std::optional<messaging::trade_links_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade link count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active trade link count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_link_entity>> |

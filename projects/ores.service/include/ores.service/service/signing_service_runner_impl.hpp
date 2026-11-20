@@ -60,7 +60,7 @@ run_signing_service(boost::asio::io_context& io_ctx,
     add_shutdown_signals(signals);
 
     auto signer = ores::security::jwt::jwt_authenticator::create_rs256_signer(jwt_private_key);
-    BOOST_LOG_SEV(lg, info) << "RS256 signer initialised.";
+    ORES_LOG_SEV(lg, info) << "RS256 signer initialised.";
 
     std::function<std::vector<ores::nats::service::subscription>()> bound =
         [&nats, ctx = std::move(ctx), signer = std::move(signer), &register_fn]() mutable {

@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_REPOSITORY_EQUITY_STRIKE_RESETTABLE_OPTION_INSTRUMENT_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/equity_strike_resettable_option_instrument.hpp"
 #include "ores.trading.api/messaging/equity_strike_resettable_option_instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"

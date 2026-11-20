@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/ore_parameter_value_set_value.hpp"
 #include "ores.reporting.api/messaging/ore_parameter_value_set_value_protocol.hpp"
 #include "ores.reporting.core/repository/ore_parameter_value_set_value_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -471,12 +469,12 @@ ores::utility::domain::result ore_parameter_value_set_value_service::prepare_cha
 
 std::vector<domain::ore_parameter_value_set_value>
 ore_parameter_value_set_value_service::list_values(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all ore parameter value set values";
+    ORES_LOG_SEV(lg(), debug) << "Listing all ore parameter value set values";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ore_parameter_value_set_value_service::count_values() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ore parameter value set values count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total ore parameter value set values count";
     return repo_.get_total_value_count(ctx_);
 }
 
@@ -484,14 +482,14 @@ std::uint32_t ore_parameter_value_set_value_service::count_values() {
 std::optional<domain::ore_parameter_value_set_value>
 ore_parameter_value_set_value_service::get_value_at_version(const std::string& code,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ore parameter value set value at version. "
-                               << "code: " << code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting ore parameter value set value at version. "
+                              << "code: " << code << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::ore_parameter_value_set_value>
 ore_parameter_value_set_value_service::find_value(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding ore parameter value set value. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding ore parameter value set value. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -507,11 +505,11 @@ void ore_parameter_value_set_value_service::save_value(
     const domain::ore_parameter_value_set_value& v) {
     if (v.code.empty())
         throw std::invalid_argument("Ore Parameter Value Set Value code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving ore parameter value set value. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving ore parameter value set value. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved ore parameter value set value. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved ore parameter value set value. " << "code: " << v.code;
 }
 
 void ore_parameter_value_set_value_service::save_values(
@@ -520,7 +518,7 @@ void ore_parameter_value_set_value_service::save_values(
         if (e.code.empty())
             throw std::invalid_argument("Ore Parameter Value Set Value code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << values.size() << " ore parameter value set values";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << values.size() << " ore parameter value set values";
     auto ts = values;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -529,9 +527,9 @@ void ore_parameter_value_set_value_service::save_values(
 }
 
 void ore_parameter_value_set_value_service::delete_value(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ore parameter value set value. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing ore parameter value set value. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed ore parameter value set value. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed ore parameter value set value. " << "code: " << code;
 }
 
 void ore_parameter_value_set_value_service::delete_values(const std::vector<std::string>& codes) {
@@ -540,8 +538,8 @@ void ore_parameter_value_set_value_service::delete_values(const std::vector<std:
 
 std::vector<domain::ore_parameter_value_set_value>
 ore_parameter_value_set_value_service::get_value_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for ore parameter value set value. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for ore parameter value set value. "
+                              << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.telemetry.core/messaging/nats_samples_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
@@ -82,7 +82,7 @@ TEST_CASE("create_single_telemetry_entry", "[repository]") {
     telemetry_repository repo;
 
     auto entry = make_test_entry();
-    BOOST_LOG_SEV(lg, debug) << "Entry ID: " << boost::uuids::to_string(entry.id);
+    ORES_LOG_SEV(lg, debug) << "Entry ID: " << boost::uuids::to_string(entry.id);
 
     repo.create(h.context(), entry);
 
@@ -96,7 +96,7 @@ TEST_CASE("create_single_telemetry_entry", "[repository]") {
     CHECK(results[0].source == telemetry_source::client);
     CHECK(results[0].level == "info");
 
-    BOOST_LOG_SEV(lg, debug) << "Telemetry entry created and read back successfully";
+    ORES_LOG_SEV(lg, debug) << "Telemetry entry created and read back successfully";
 }
 
 TEST_CASE("create_and_query_telemetry_entry", "[repository]") {
@@ -108,7 +108,7 @@ TEST_CASE("create_and_query_telemetry_entry", "[repository]") {
     auto entry = make_test_entry();
     entry.message = "Unique query test message";
     entry.tag = "query-test";
-    BOOST_LOG_SEV(lg, debug) << "Creating entry with ID: " << boost::uuids::to_string(entry.id);
+    ORES_LOG_SEV(lg, debug) << "Creating entry with ID: " << boost::uuids::to_string(entry.id);
 
     repo.create(h.context(), entry);
 
@@ -120,7 +120,7 @@ TEST_CASE("create_and_query_telemetry_entry", "[repository]") {
     q.limit = 100;
 
     auto results = repo.query(h.context(), q);
-    BOOST_LOG_SEV(lg, debug) << "Query returned " << results.size() << " entries";
+    ORES_LOG_SEV(lg, debug) << "Query returned " << results.size() << " entries";
 
     REQUIRE(results.size() >= 1);
 
@@ -154,7 +154,7 @@ TEST_CASE("create_batch_telemetry_entries", "[repository]") {
         batch.entries.push_back(std::move(entry));
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Creating batch of " << batch.size() << " entries";
+    ORES_LOG_SEV(lg, debug) << "Creating batch of " << batch.size() << " entries";
 
     auto count = repo.create_batch(h.context(), batch);
 
@@ -175,7 +175,7 @@ TEST_CASE("create_batch_telemetry_entries", "[repository]") {
           std::set<std::string>{
               "Batch entry 0", "Batch entry 1", "Batch entry 2", "Batch entry 3", "Batch entry 4"});
 
-    BOOST_LOG_SEV(lg, debug) << "Batch created and read back successfully";
+    ORES_LOG_SEV(lg, debug) << "Batch created and read back successfully";
 }
 
 TEST_CASE("read_by_session", "[repository]") {
@@ -196,11 +196,11 @@ TEST_CASE("read_by_session", "[repository]") {
         repo.create(h.context(), entry);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Reading entries for session: "
-                             << boost::uuids::to_string(session_id);
+    ORES_LOG_SEV(lg, debug) << "Reading entries for session: "
+                            << boost::uuids::to_string(session_id);
 
     auto results = repo.read_by_session(h.context(), session_id);
-    BOOST_LOG_SEV(lg, debug) << "Read " << results.size() << " entries";
+    ORES_LOG_SEV(lg, debug) << "Read " << results.size() << " entries";
 
     REQUIRE(results.size() == 3);
 
@@ -230,7 +230,7 @@ TEST_CASE("count_telemetry_entries", "[repository]") {
     repo.create(h.context(), entry);
 
     const auto after = repo.count(h.context(), q);
-    BOOST_LOG_SEV(lg, debug) << "Count before: " << before << ", after: " << after;
+    ORES_LOG_SEV(lg, debug) << "Count before: " << before << ", after: " << after;
 
     CHECK(before == 0);
     CHECK(after == 1);
@@ -257,8 +257,8 @@ TEST_CASE("get_telemetry_summary", "[repository]") {
     repo.create(h.context(), error_entry);
 
     const auto after = repo.get_summary(h.context(), 24);
-    BOOST_LOG_SEV(lg, debug) << "Summary delta: total=" << (after.total_logs - before.total_logs)
-                             << " errors=" << (after.error_count - before.error_count);
+    ORES_LOG_SEV(lg, debug) << "Summary delta: total=" << (after.total_logs - before.total_logs)
+                            << " errors=" << (after.error_count - before.error_count);
 
     CHECK(after.total_logs - before.total_logs == 2);
     CHECK(after.error_count - before.error_count == 1);
@@ -277,7 +277,7 @@ TEST_CASE("create_and_list_service_sample", "[repository]") {
     sample.instance_id = boost::uuids::to_string(gen());
     sample.host_id = boost::uuids::to_string(gen());
     sample.version = "1.0.0-test";
-    BOOST_LOG_SEV(lg, debug) << "Instance ID: " << sample.instance_id;
+    ORES_LOG_SEV(lg, debug) << "Instance ID: " << sample.instance_id;
 
     repo.insert_service_sample(h.context(), sample);
 
@@ -291,7 +291,7 @@ TEST_CASE("create_and_list_service_sample", "[repository]") {
     CHECK(it->host_id == sample.host_id);
     CHECK(it->version == sample.version);
 
-    BOOST_LOG_SEV(lg, debug) << "Service sample read back with host id " << it->host_id;
+    ORES_LOG_SEV(lg, debug) << "Service sample read back with host id " << it->host_id;
 }
 
 TEST_CASE("list_service_roster_states_every_expected_instance", "[repository]") {
@@ -347,8 +347,8 @@ TEST_CASE("list_service_roster_states_every_expected_instance", "[repository]") 
         else if (slot.service_name == silent)
             silent_slots.push_back(slot);
     }
-    BOOST_LOG_SEV(lg, debug) << "Roster slots: reporting=" << reporting_slots.size()
-                             << " silent=" << silent_slots.size();
+    ORES_LOG_SEV(lg, debug) << "Roster slots: reporting=" << reporting_slots.size()
+                            << " silent=" << silent_slots.size();
 
     REQUIRE(reporting_slots.size() == 2);
     CHECK(reporting_slots[0].display_name == "Roster Test Service");

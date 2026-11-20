@@ -368,8 +368,8 @@ void provision_commands::process_setup(std::ostream& out,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Provisioning system: admin " << username << ", tenant "
-                              << fields->code;
+    ORES_LOG_SEV(lg(), info) << "Provisioning system: admin " << username << ", tenant "
+                             << fields->code;
 
     out << "[1/4] Creating initial admin account '" << username << "'..." << std::endl;
     iam::messaging::create_initial_admin_request admin_req;
@@ -416,7 +416,7 @@ void provision_commands::process_setup(std::ostream& out,
                           outcome == workflow_run_commands::follow_result::continues_elsewhere ?
                               tenant_setup::continues_elsewhere :
                               tenant_setup::finished);
-    BOOST_LOG_SEV(lg(), info) << "System provisioned; tenant " << fields->code;
+    ORES_LOG_SEV(lg(), info) << "System provisioned; tenant " << fields->code;
 }
 
 void provision_commands::process_tenant(std::ostream& out,
@@ -459,7 +459,7 @@ void provision_commands::process_tenant(std::ostream& out,
                           outcome == workflow_run_commands::follow_result::continues_elsewhere ?
                               tenant_setup::continues_elsewhere :
                               tenant_setup::finished);
-    BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; " << fields->code;
+    ORES_LOG_SEV(lg(), info) << "Tenant provisioned; " << fields->code;
 }
 
 /**
@@ -515,7 +515,7 @@ void provision_commands::process_party(std::ostream& out,
 
     out << "✓ Party '" << party << "' provisioned." << std::endl;
     out << "Next: accounts set-default-party \"" << party << "\" to work in it." << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Party provisioned: " << party;
+    ORES_LOG_SEV(lg(), info) << "Party provisioned: " << party;
 }
 
 }

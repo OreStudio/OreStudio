@@ -26,13 +26,11 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party_counterparty.hpp"
 #include "ores.refdata.api/domain/party_counterparty_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_counterparty_entity.hpp"
 #include "ores.refdata.core/repository/party_counterparty_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -193,9 +191,9 @@ void party_counterparty_repository::write(
 
 void party_counterparty_repository::write(const domain::party_counterparty& party_counterparty,
                                           const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party counterparty to database: "
-                               << party_counterparty.party_id << "/"
-                               << party_counterparty.counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing party counterparty to database: "
+                              << party_counterparty.party_id << "/"
+                              << party_counterparty.counterparty_id;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(party_counterparty.party_id, party_counterparty.counterparty_id) :
@@ -208,8 +206,8 @@ void party_counterparty_repository::write(const domain::party_counterparty& part
 void party_counterparty_repository::write(
     const std::vector<domain::party_counterparty>& party_counterparties,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party counterparties to database. Count: "
-                               << party_counterparties.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing party counterparties to database. Count: "
+                              << party_counterparties.size();
     if (claims.size() != party_counterparties.size())
         throw std::invalid_argument(
             "party_counterparty_repository::write: one claim is needed for each row");
@@ -249,8 +247,8 @@ std::vector<domain::party_counterparty> party_counterparty_repository::read_late
 
 std::vector<domain::party_counterparty>
 party_counterparty_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party counterparties with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_counterparty_entity>> |
@@ -269,8 +267,8 @@ party_counterparty_repository::read_latest(std::uint32_t offset, std::uint32_t l
 std::vector<domain::party_counterparty>
 party_counterparty_repository::read_latest(const boost::uuids::uuid& party_id,
                                            const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparty. " << party_id << "/"
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party counterparty. " << party_id << "/"
+                              << counterparty_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
@@ -290,7 +288,7 @@ party_counterparty_repository::read_latest(const boost::uuids::uuid& party_id,
 }
 
 std::uint32_t party_counterparty_repository::get_total_party_counterparty_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party counterparties count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active party counterparties count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -299,13 +297,13 @@ std::uint32_t party_counterparty_repository::get_total_party_counterparty_count(
 
     const auto count = query_builder::execute_count_query<party_counterparty_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party counterparties");
-    BOOST_LOG_SEV(lg(), debug) << "Total active party counterparties count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active party counterparties count: " << count;
     return count;
 }
 
 std::vector<domain::party_counterparty>
 party_counterparty_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Party: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Party: " << party_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
@@ -328,8 +326,8 @@ party_counterparty_repository::read_latest_by_party(const boost::uuids::uuid& pa
 
 std::vector<domain::party_counterparty> party_counterparty_repository::read_latest_by_counterparty(
     const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Counterparty: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Counterparty: "
+                              << counterparty_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
@@ -354,8 +352,8 @@ std::vector<domain::party_counterparty> party_counterparty_repository::read_late
 std::vector<domain::party_counterparty> party_counterparty_repository::read_latest_by_party(
     const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
     const auto party_id_str = boost::uuids::to_string(party_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Party: " << party_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Party: " << party_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -379,8 +377,8 @@ std::vector<domain::party_counterparty> party_counterparty_repository::read_late
 std::uint32_t party_counterparty_repository::get_total_party_counterparty_count_by_party(
     const boost::uuids::uuid& party_id) {
     const auto party_id_str = boost::uuids::to_string(party_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party counterparties count. Party: "
-                               << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active party counterparties count. Party: "
+                              << party_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -390,15 +388,15 @@ std::uint32_t party_counterparty_repository::get_total_party_counterparty_count_
 
     const auto count = query_builder::execute_count_query<party_counterparty_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party counterparties");
-    BOOST_LOG_SEV(lg(), debug) << "Total active party counterparties count by party: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active party counterparties count by party: " << count;
     return count;
 }
 
 std::vector<domain::party_counterparty> party_counterparty_repository::read_latest_by_counterparty(
     const boost::uuids::uuid& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Counterparty: "
-                               << counterparty_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Counterparty: "
+                              << counterparty_id << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -423,7 +421,7 @@ std::vector<domain::party_counterparty> party_counterparty_repository::read_late
 std::uint32_t party_counterparty_repository::get_total_party_counterparty_count_by_counterparty(
     const boost::uuids::uuid& counterparty_id) {
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active party counterparties count. Counterparty: " << counterparty_id;
     static constexpr auto max = db_timestamp::max();
 
@@ -435,15 +433,15 @@ std::uint32_t party_counterparty_repository::get_total_party_counterparty_count_
 
     const auto count = query_builder::execute_count_query<party_counterparty_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party counterparties");
-    BOOST_LOG_SEV(lg(), debug) << "Total active party counterparties count by counterparty: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active party counterparties count by counterparty: "
+                              << count;
     return count;
 }
 
 std::vector<party_counterparty_history_row>
 party_counterparty_repository::read_all_by_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the party counterparties. Party: "
-                               << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the party counterparties. Party: "
+                              << party_id;
 
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -494,8 +492,8 @@ party_counterparty_repository::remove_status
 party_counterparty_repository::remove(const boost::uuids::uuid& party_id,
                                       const boost::uuids::uuid& counterparty_id,
                                       std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party counterparty from database: " << party_id << "/"
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing party counterparty from database: " << party_id << "/"
+                              << counterparty_id;
 
     const auto current = read_latest(party_id, counterparty_id);
     if (current.empty())
@@ -542,7 +540,7 @@ void party_counterparty_repository::remove(
 }
 
 void party_counterparty_repository::remove_by_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all party counterparties from database: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all party counterparties from database: " << party_id;
 
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();

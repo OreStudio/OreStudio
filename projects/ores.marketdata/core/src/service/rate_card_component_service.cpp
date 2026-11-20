@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/rate_card_component.hpp"
 #include "ores.marketdata.api/messaging/rate_card_component_protocol.hpp"
 #include "ores.marketdata.core/repository/rate_card_component_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -510,12 +508,12 @@ rate_card_component_service::prepare_change(const messaging::rate_card_component
 
 std::vector<domain::rate_card_component>
 rate_card_component_service::list_rate_card_components(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all rate card components";
+    ORES_LOG_SEV(lg(), debug) << "Listing all rate card components";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t rate_card_component_service::count_rate_card_components() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total rate card components count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total rate card components count";
     return repo_.get_total_rate_card_component_count(ctx_);
 }
 
@@ -523,14 +521,14 @@ std::uint32_t rate_card_component_service::count_rate_card_components() {
 std::optional<domain::rate_card_component>
 rate_card_component_service::get_rate_card_component_at_version(const boost::uuids::uuid& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting rate card component at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting rate card component at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::rate_card_component>
 rate_card_component_service::get_rate_card_component(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting rate card component. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting rate card component. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -539,7 +537,7 @@ rate_card_component_service::get_rate_card_component(const boost::uuids::uuid& i
 
 std::optional<domain::rate_card_component>
 rate_card_component_service::get_rate_card_component_by_driver(const std::string& driver) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting rate card component by driver: " << driver;
+    ORES_LOG_SEV(lg(), debug) << "Getting rate card component by driver: " << driver;
     messaging::rate_card_component_key k;
     k.driver = driver;
     auto found = rate_card_component_read_one(repo_, ctx_, k);
@@ -556,11 +554,11 @@ rate_card_component_service::get_rate_card_components(const std::vector<std::str
 void rate_card_component_service::save_rate_card_component(const domain::rate_card_component& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Rate Card Component id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving rate card component. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving rate card component. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved rate card component. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved rate card component. " << "id: " << v.id;
 }
 
 void rate_card_component_service::save_rate_card_components(
@@ -569,8 +567,8 @@ void rate_card_component_service::save_rate_card_components(
         if (e.id.is_nil())
             throw std::invalid_argument("Rate Card Component id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << rate_card_components.size()
-                               << " rate card components";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << rate_card_components.size()
+                              << " rate card components";
     auto ts = rate_card_components;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -579,9 +577,9 @@ void rate_card_component_service::save_rate_card_components(
 }
 
 void rate_card_component_service::delete_rate_card_component(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing rate card component. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing rate card component. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed rate card component. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed rate card component. " << "id: " << id;
 }
 
 void rate_card_component_service::delete_rate_card_components(const std::vector<std::string>& ids) {
@@ -590,7 +588,7 @@ void rate_card_component_service::delete_rate_card_components(const std::vector<
 
 std::vector<domain::rate_card_component>
 rate_card_component_service::get_rate_card_component_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for rate card component. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for rate card component. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/trade_id_type.hpp"
 #include "ores.trading.api/domain/trade_id_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_id_type_table.hpp"
@@ -55,7 +55,7 @@ TEST_CASE("create_trade_id_type_with_valid_fields", "[domain]") {
     auto sut = make_trade_id_type("UTI", "Unique Trade Identifier");
     sut.modified_by = "admin";
     sut.performed_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "Trade ID type: " << sut;
+    ORES_LOG_SEV(lg, info) << "Trade ID type: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "UTI");
@@ -68,7 +68,7 @@ TEST_CASE("trade_id_type_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_trade_id_type("USI", "Unique Swap Identifier");
-    BOOST_LOG_SEV(lg, info) << "Trade ID type: " << sut;
+    ORES_LOG_SEV(lg, info) << "Trade ID type: " << sut;
 
     std::ostringstream os;
     os << sut;
@@ -90,7 +90,7 @@ TEST_CASE("create_trade_id_type_with_faker", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Synthetic test data";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Trade ID type: " << sut;
+    ORES_LOG_SEV(lg, info) << "Trade ID type: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(!sut.code.empty());
@@ -103,7 +103,7 @@ TEST_CASE("create_multiple_random_trade_id_types", "[domain]") {
     const std::vector<std::string> codes = {"UTI", "USI", "Internal", "CICI"};
     for (const auto& code : codes) {
         auto sut = make_trade_id_type(code);
-        BOOST_LOG_SEV(lg, info) << "Trade ID type: " << sut;
+        ORES_LOG_SEV(lg, info) << "Trade ID type: " << sut;
         CHECK(sut.code == code);
     }
 }
@@ -114,7 +114,7 @@ TEST_CASE("trade_id_type_convert_single_to_table", "[domain]") {
     std::vector<trade_id_type> items = {make_trade_id_type("Internal", "Internal trade reference")};
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("Internal") != std::string::npos);
@@ -129,7 +129,7 @@ TEST_CASE("trade_id_type_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("IdType0") != std::string::npos);
@@ -143,7 +143,7 @@ TEST_CASE("trade_id_type_convert_empty_vector_to_table", "[domain]") {
     std::vector<trade_id_type> items;
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     CHECK(table.find("Version") != std::string::npos);
 }
@@ -167,7 +167,7 @@ TEST_CASE("trade_id_type_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
     for (const auto& item : items)

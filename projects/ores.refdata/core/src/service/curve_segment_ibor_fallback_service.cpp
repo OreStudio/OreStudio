@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_segment_ibor_fallback.hpp"
 #include "ores.refdata.api/messaging/curve_segment_ibor_fallback_protocol.hpp"
 #include "ores.refdata.core/repository/curve_segment_ibor_fallback_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -476,12 +474,12 @@ ores::utility::domain::result curve_segment_ibor_fallback_service::prepare_chang
 std::vector<domain::curve_segment_ibor_fallback>
 curve_segment_ibor_fallback_service::list_segment_ibor_fallbacks(std::uint32_t offset,
                                                                  std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve segment ibor fallbacks";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve segment ibor fallbacks";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_segment_ibor_fallback_service::count_segment_ibor_fallbacks() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve segment ibor fallbacks count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve segment ibor fallbacks count";
     return repo_.get_total_segment_ibor_fallback_count(ctx_);
 }
 
@@ -489,14 +487,14 @@ std::uint32_t curve_segment_ibor_fallback_service::count_segment_ibor_fallbacks(
 std::optional<domain::curve_segment_ibor_fallback>
 curve_segment_ibor_fallback_service::get_segment_ibor_fallback_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment ibor fallback at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment ibor fallback at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_segment_ibor_fallback>
 curve_segment_ibor_fallback_service::get_segment_ibor_fallback(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment ibor fallback. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment ibor fallback. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -513,11 +511,11 @@ void curve_segment_ibor_fallback_service::save_segment_ibor_fallback(
     const domain::curve_segment_ibor_fallback& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Segment Ibor Fallback id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve segment ibor fallback. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve segment ibor fallback. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve segment ibor fallback. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve segment ibor fallback. " << "id: " << v.id;
 }
 
 void curve_segment_ibor_fallback_service::save_segment_ibor_fallbacks(
@@ -526,8 +524,8 @@ void curve_segment_ibor_fallback_service::save_segment_ibor_fallbacks(
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Segment Ibor Fallback id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << segment_ibor_fallbacks.size()
-                               << " curve segment ibor fallbacks";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << segment_ibor_fallbacks.size()
+                              << " curve segment ibor fallbacks";
     auto ts = segment_ibor_fallbacks;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -537,9 +535,9 @@ void curve_segment_ibor_fallback_service::save_segment_ibor_fallbacks(
 
 void curve_segment_ibor_fallback_service::delete_segment_ibor_fallback(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve segment ibor fallback. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve segment ibor fallback. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve segment ibor fallback. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve segment ibor fallback. " << "id: " << id;
 }
 
 void curve_segment_ibor_fallback_service::delete_segment_ibor_fallbacks(
@@ -549,8 +547,8 @@ void curve_segment_ibor_fallback_service::delete_segment_ibor_fallbacks(
 
 std::vector<domain::curve_segment_ibor_fallback>
 curve_segment_ibor_fallback_service::get_segment_ibor_fallback_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve segment ibor fallback. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve segment ibor fallback. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

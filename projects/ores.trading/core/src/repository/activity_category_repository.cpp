@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/activity_category.hpp"
 #include "ores.trading.api/domain/activity_category_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/activity_category_protocol.hpp"
 #include "ores.trading.core/repository/activity_category_entity.hpp"
 #include "ores.trading.core/repository/activity_category_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -214,7 +212,7 @@ void activity_category_repository::write(const context& ctx,
 void activity_category_repository::write(const context& ctx,
                                          const domain::activity_category& v,
                                          const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing activity category. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing activity category. " << "code: " << v.code;
     const auto t = activity_category_apply_claim(v,
                                                  claim,
                                                  activity_category_claim_reads_current(claim) ?
@@ -228,7 +226,7 @@ void activity_category_repository::write(
     const context& ctx,
     const std::vector<domain::activity_category>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing activity categorys. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing activity categorys. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "activity_category_repository::write: one claim is needed for each row");
@@ -265,7 +263,7 @@ activity_category_repository::read_latest(const context& ctx) {
 
 std::vector<domain::activity_category>
 activity_category_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest activity category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest activity category. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -283,7 +281,7 @@ activity_category_repository::read_latest(const context& ctx, const std::string&
 
 std::vector<domain::activity_category>
 activity_category_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all activity category versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all activity category versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<activity_category_entity>> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code) |
@@ -299,8 +297,8 @@ activity_category_repository::read_all(const context& ctx, const std::string& co
 
 std::optional<domain::activity_category> activity_category_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading activity category at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading activity category at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<activity_category_entity>> |
@@ -322,7 +320,7 @@ std::optional<domain::activity_category> activity_category_repository::read_at_v
 
 activity_category_repository::remove_status activity_category_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing activity category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing activity category. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -361,8 +359,8 @@ std::vector<domain::activity_category> activity_category_repository::read_latest
     const ores::utility::domain::order& order,
     const std::optional<messaging::activity_categories_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest activity categorys with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest activity categorys with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<activity_category_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -384,7 +382,7 @@ std::uint32_t activity_category_repository::get_total_activity_category_count(
     const context& ctx,
     const std::optional<messaging::activity_categories_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active activity category count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active activity category count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<activity_category_entity>> |

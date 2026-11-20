@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_APP_FEED_INGEST_LOOP_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"

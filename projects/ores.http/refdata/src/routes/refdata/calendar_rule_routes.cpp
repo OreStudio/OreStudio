@@ -366,7 +366,7 @@ void calendar_rule_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering calendar_rules routes";
+    ORES_LOG_SEV(lg(), info) << "Registering calendar_rules routes";
 
     auto list_route =
         router->get("/api/v1/reference-data/calendar_rules")
@@ -538,7 +538,7 @@ void calendar_rule_routes::register_routes(
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "calendar_rules routes registered: " << 11 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "calendar_rules routes registered: " << 11 << " endpoint(s)";
 }
 
 }

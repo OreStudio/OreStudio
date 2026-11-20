@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/bond_issue_leg.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/bond_issue_leg_entity.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -205,8 +203,8 @@ void bond_issue_leg_repository::write(const context& ctx,
 void bond_issue_leg_repository::write(const context& ctx,
                                       const domain::bond_issue_leg& v,
                                       const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond issue leg. " << "issue_id: " << v.issue_id
-                               << " leg_number: " << v.leg_number;
+    ORES_LOG_SEV(lg(), debug) << "Writing bond issue leg. " << "issue_id: " << v.issue_id
+                              << " leg_number: " << v.leg_number;
     const auto t = bond_issue_leg_apply_claim(
         v,
         claim,
@@ -221,7 +219,7 @@ void bond_issue_leg_repository::write(
     const context& ctx,
     const std::vector<domain::bond_issue_leg>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond issue legs. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing bond issue legs. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "bond_issue_leg_repository::write: one claim is needed for each row");
@@ -257,8 +255,8 @@ std::vector<domain::bond_issue_leg> bond_issue_leg_repository::read_latest(const
 
 std::vector<domain::bond_issue_leg> bond_issue_leg_repository::read_latest(
     const context& ctx, const std::string& issue_id, const std::string& leg_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond issue leg. " << "issue_id: " << issue_id
-                               << " leg_number: " << leg_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond issue leg. " << "issue_id: " << issue_id
+                              << " leg_number: " << leg_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_leg_entity>> |
@@ -276,8 +274,8 @@ std::vector<domain::bond_issue_leg> bond_issue_leg_repository::read_latest(
 
 std::vector<domain::bond_issue_leg> bond_issue_leg_repository::read_all(
     const context& ctx, const std::string& issue_id, const std::string& leg_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all bond issue leg versions. "
-                               << "issue_id: " << issue_id << " leg_number: " << leg_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading all bond issue leg versions. " << "issue_id: " << issue_id
+                              << " leg_number: " << leg_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_leg_entity>> |
                        query_builder::where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
@@ -297,8 +295,8 @@ bond_issue_leg_repository::read_at_version(const context& ctx,
                                            const std::string& issue_id,
                                            const std::string& leg_number,
                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading bond issue leg at version. " << "issue_id: " << issue_id
-                               << " leg_number: " << leg_number << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading bond issue leg at version. " << "issue_id: " << issue_id
+                              << " leg_number: " << leg_number << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<bond_issue_leg_entity>> |
@@ -325,8 +323,8 @@ bond_issue_leg_repository::remove(const context& ctx,
                                   const std::string& issue_id,
                                   const std::string& leg_number,
                                   std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond issue leg. " << "issue_id: " << issue_id
-                               << " leg_number: " << leg_number;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond issue leg. " << "issue_id: " << issue_id
+                              << " leg_number: " << leg_number;
     const auto current = read_latest(ctx, issue_id, leg_number);
     if (current.empty())
         return remove_status::missing;
@@ -366,8 +364,8 @@ bond_issue_leg_repository::read_latest(const context& ctx,
                                        std::uint32_t limit,
                                        const ores::utility::domain::order& order,
                                        const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond issue legs with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond issue legs with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_leg_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -386,7 +384,7 @@ bond_issue_leg_repository::read_latest(const context& ctx,
 std::uint32_t
 bond_issue_leg_repository::get_total_bond_issue_leg_count(const context& ctx,
                                                           const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond issue leg count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active bond issue leg count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_leg_entity>> |

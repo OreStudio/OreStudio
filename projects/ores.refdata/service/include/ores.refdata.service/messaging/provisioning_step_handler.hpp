@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -76,7 +76,7 @@ public:
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
+            ORES_LOG_SEV(lg(), ores::logging::warn)
                 << "Ignored a command with no workflow headers: " << msg.subject;
             std::move(delivery).reject();
             return;
@@ -112,7 +112,7 @@ public:
             // The work could not be done, and nothing here says it never will
             // be. The step fails, which stops the run or starts its
             // compensation; a person or a resume decides whether to try again.
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Step " << wf->step_id << " failed: " << e.what();
             wf->fail(e.what());
         }
@@ -147,7 +147,7 @@ private:
             throw std::runtime_error("The calendars were not built: " + std::string(e.what()));
         }
 
-        BOOST_LOG_SEV(lg(), ores::logging::info)
+        ORES_LOG_SEV(lg(), ores::logging::info)
             << "build_calendars: wrote " << rows << " day(s) for tenant " << command.tenant_id;
         wf.record("Wrote " + std::to_string(rows) + " holiday calendar day(s)");
         // Nothing downstream reads this step's result: the kinds that consume a

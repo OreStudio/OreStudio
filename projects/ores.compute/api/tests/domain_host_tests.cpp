@@ -20,7 +20,7 @@
 #include "ores.compute.api/domain/host.hpp"
 #include "ores.compute.api/domain/host_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/host_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -46,7 +46,7 @@ TEST_CASE("create_host_with_valid_fields", "[domain]") {
     sut.gpu_type = "A100";
     sut.credit_total = 1234.5;
 
-    BOOST_LOG_SEV(lg, info) << "Host: " << sut;
+    ORES_LOG_SEV(lg, info) << "Host: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "admin");
@@ -72,7 +72,7 @@ TEST_CASE("create_host_without_gpu", "[domain]") {
     sut.gpu_type = "";
     sut.credit_total = 0.0;
 
-    BOOST_LOG_SEV(lg, info) << "Host: " << sut;
+    ORES_LOG_SEV(lg, info) << "Host: " << sut;
 
     CHECK(sut.cpu_count == 16);
     CHECK(sut.gpu_type.empty());
@@ -96,7 +96,7 @@ TEST_CASE("create_host_with_specific_uuid", "[domain]") {
     sut.gpu_type = "H100";
     sut.credit_total = 9999.99;
 
-    BOOST_LOG_SEV(lg, info) << "Host: " << sut;
+    ORES_LOG_SEV(lg, info) << "Host: " << sut;
 
     CHECK(sut.version == 2);
     CHECK(sut.external_id == "worker-node-99");
@@ -120,7 +120,7 @@ TEST_CASE("host_insertion_operator", "[domain]") {
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "Host JSON: " << json_output;
+    ORES_LOG_SEV(lg, info) << "Host JSON: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("test-node-01") != std::string::npos);
@@ -143,7 +143,7 @@ TEST_CASE("host_convert_single_to_table", "[domain]") {
     std::vector<host> hosts = {h};
     auto table = convert_to_table(hosts);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("compute-node-01") != std::string::npos);
@@ -169,7 +169,7 @@ TEST_CASE("host_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(hosts);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("node-0") != std::string::npos);
@@ -183,7 +183,7 @@ TEST_CASE("host_convert_empty_vector_to_table", "[domain]") {
     std::vector<host> hosts;
     auto table = convert_to_table(hosts);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     // The header row survives an empty result set.
     CHECK(!table.empty());
@@ -204,7 +204,7 @@ TEST_CASE("create_host_with_faker", "[domain]") {
     sut.gpu_type = "";
     sut.credit_total = static_cast<double>(faker::number::integer(0, 100000));
 
-    BOOST_LOG_SEV(lg, info) << "Host: " << sut;
+    ORES_LOG_SEV(lg, info) << "Host: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(sut.version <= 10);
@@ -235,7 +235,7 @@ TEST_CASE("host_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(hosts);
 
-    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
     for (const auto& h : hosts) {

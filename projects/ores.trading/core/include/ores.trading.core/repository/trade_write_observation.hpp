@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.database/repository/entity_write_observer.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/autocallable_instrument_entity.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_entity.hpp"

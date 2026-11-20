@@ -27,8 +27,6 @@
 #include "ores.dq.api/domain/lei_bic.hpp"
 #include "ores.dq.api/domain/lei_bic_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/lei_bic_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::dq::repository {
@@ -37,26 +35,26 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::lei_bic lei_bic_mapper::map(const lei_bic_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::lei_bic r;
     r.tenant_id = v.tenant_id;
     r.lei = v.lei;
     r.bic = v.bic;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 lei_bic_entity lei_bic_mapper::map(const domain::lei_bic& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     lei_bic_entity r;
     r.lei = v.lei;
     r.tenant_id = v.tenant_id;
     r.bic = v.bic;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

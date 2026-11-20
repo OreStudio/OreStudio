@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_TENOR_RESOLUTION_ALGORITHM_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_TENOR_RESOLUTION_ALGORITHM_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/tenor_resolution_algorithm.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/tenor_resolution_algorithm_entity.hpp"

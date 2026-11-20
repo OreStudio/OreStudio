@@ -26,7 +26,7 @@
 #define ORES_REPORTING_CORE_REPOSITORY_CONFIGURATION_ANALYTIC_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/configuration_analytic.hpp"
 #include "ores.reporting.api/messaging/configuration_analytic_protocol.hpp"
 #include "ores.reporting.core/export.hpp"

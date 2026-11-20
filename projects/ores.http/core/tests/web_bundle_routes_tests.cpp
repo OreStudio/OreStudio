@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.http.core/routes/web_bundle_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -174,7 +174,7 @@ fetch_bundle(std::uint16_t port, const std::string& target, const std::string& a
 
 TEST_CASE("the_bundle_is_served_with_the_headers_its_files_deserve", "[web_bundle]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the cache headers of the application and its assets";
+    ORES_LOG_SEV(lg, info) << "Testing the cache headers of the application and its assets";
 
     built_bundle bundle;
     bundle_gateway gateway(bundle.root());
@@ -196,7 +196,7 @@ TEST_CASE("the_bundle_is_served_with_the_headers_its_files_deserve", "[web_bundl
 
 TEST_CASE("a_screen_path_is_answered_with_the_application", "[web_bundle]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the history fallback, deep in the application";
+    ORES_LOG_SEV(lg, info) << "Testing the history fallback, deep in the application";
 
     built_bundle bundle;
     bundle_gateway gateway(bundle.root());
@@ -211,7 +211,7 @@ TEST_CASE("a_screen_path_is_answered_with_the_application", "[web_bundle]") {
 
 TEST_CASE("a_missing_asset_and_an_api_path_are_not_the_application", "[web_bundle]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a breakage stays visible";
+    ORES_LOG_SEV(lg, info) << "Testing that a breakage stays visible";
 
     built_bundle bundle;
     bundle_gateway gateway(bundle.root());
@@ -226,7 +226,7 @@ TEST_CASE("a_missing_asset_and_an_api_path_are_not_the_application", "[web_bundl
 
 TEST_CASE("a_path_that_would_leave_the_bundle_finds_nothing", "[web_bundle]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the manifest is the only way to a file";
+    ORES_LOG_SEV(lg, info) << "Testing that the manifest is the only way to a file";
 
     built_bundle bundle;
     bundle_gateway gateway(bundle.root());
@@ -240,7 +240,7 @@ TEST_CASE("a_path_that_would_leave_the_bundle_finds_nothing", "[web_bundle]") {
 
 TEST_CASE("a_prebuilt_brotli_copy_is_sent_when_the_client_offers_it", "[web_bundle]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing compression at build time, not at request time";
+    ORES_LOG_SEV(lg, info) << "Testing compression at build time, not at request time";
 
     built_bundle bundle;
     bundle_gateway gateway(bundle.root());

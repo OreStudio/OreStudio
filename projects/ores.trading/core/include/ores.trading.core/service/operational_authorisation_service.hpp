@@ -24,7 +24,7 @@
 #include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>

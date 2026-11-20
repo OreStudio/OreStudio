@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_NETTING_AGREEMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/netting_agreement.hpp"
 #include "ores.refdata.api/messaging/netting_agreement_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

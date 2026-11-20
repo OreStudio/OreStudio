@@ -29,10 +29,8 @@
 #include "ores.inbox.api/domain/hold_reason.hpp"
 #include "ores.inbox.api/messaging/hold_reason_protocol.hpp"
 #include "ores.inbox.core/repository/hold_reason_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -441,25 +439,25 @@ hold_reason_service::prepare_change(const messaging::hold_reason_change& change,
 
 std::vector<domain::hold_reason> hold_reason_service::list_reasons(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all hold reasons";
+    ORES_LOG_SEV(lg(), debug) << "Listing all hold reasons";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t hold_reason_service::count_reasons() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total hold reasons count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total hold reasons count";
     return repo_.get_total_reason_count(ctx_);
 }
 
 
 std::optional<domain::hold_reason>
 hold_reason_service::get_reason_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting hold reason at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting hold reason at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::hold_reason> hold_reason_service::find_reason(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding hold reason. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding hold reason. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -474,11 +472,11 @@ hold_reason_service::get_reasons(const std::vector<std::string>& codes) {
 void hold_reason_service::save_reason(const domain::hold_reason& v) {
     if (v.code.empty())
         throw std::invalid_argument("Hold Reason code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving hold reason. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving hold reason. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved hold reason. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved hold reason. " << "code: " << v.code;
 }
 
 void hold_reason_service::save_reasons(const std::vector<domain::hold_reason>& reasons) {
@@ -486,7 +484,7 @@ void hold_reason_service::save_reasons(const std::vector<domain::hold_reason>& r
         if (e.code.empty())
             throw std::invalid_argument("Hold Reason code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << reasons.size() << " hold reasons";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << reasons.size() << " hold reasons";
     auto ts = reasons;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -495,9 +493,9 @@ void hold_reason_service::save_reasons(const std::vector<domain::hold_reason>& r
 }
 
 void hold_reason_service::delete_reason(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing hold reason. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing hold reason. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed hold reason. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed hold reason. " << "code: " << code;
 }
 
 void hold_reason_service::delete_reasons(const std::vector<std::string>& codes) {
@@ -505,7 +503,7 @@ void hold_reason_service::delete_reasons(const std::vector<std::string>& codes) 
 }
 
 std::vector<domain::hold_reason> hold_reason_service::get_reason_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for hold reason. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for hold reason. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

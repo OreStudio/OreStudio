@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/convention_kind_term.hpp"
 #include "ores.refdata.api/domain/convention_kind_term_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/convention_kind_term_protocol.hpp"
 #include "ores.refdata.core/repository/convention_kind_term_entity.hpp"
 #include "ores.refdata.core/repository/convention_kind_term_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -236,7 +234,7 @@ void convention_kind_term_repository::write(const context& ctx,
 void convention_kind_term_repository::write(const context& ctx,
                                             const domain::convention_kind_term& v,
                                             const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing convention kind term. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing convention kind term. " << "code: " << v.code;
     const auto t = convention_kind_term_apply_claim(
         v,
         claim,
@@ -253,7 +251,7 @@ void convention_kind_term_repository::write(
     const context& ctx,
     const std::vector<domain::convention_kind_term>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing convention kind terms. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing convention kind terms. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "convention_kind_term_repository::write: one claim is needed for each row");
@@ -295,7 +293,7 @@ convention_kind_term_repository::read_latest(const context& ctx) {
 
 std::vector<domain::convention_kind_term>
 convention_kind_term_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest convention kind term. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest convention kind term. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -315,7 +313,7 @@ convention_kind_term_repository::read_latest(const context& ctx, const std::stri
 
 std::vector<domain::convention_kind_term>
 convention_kind_term_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all convention kind term versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all convention kind term versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -334,8 +332,8 @@ convention_kind_term_repository::read_all(const context& ctx, const std::string&
 
 std::optional<domain::convention_kind_term> convention_kind_term_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading convention kind term at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading convention kind term at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<convention_kind_term_entity>> |
@@ -358,7 +356,7 @@ std::optional<domain::convention_kind_term> convention_kind_term_repository::rea
 
 convention_kind_term_repository::remove_status convention_kind_term_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing convention kind term. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing convention kind term. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -397,8 +395,8 @@ std::vector<domain::convention_kind_term> convention_kind_term_repository::read_
     const ores::utility::domain::order& order,
     const std::optional<messaging::convention_kind_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest convention kind terms with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest convention kind terms with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<convention_kind_term_entity>> |
@@ -421,7 +419,7 @@ std::uint32_t convention_kind_term_repository::get_total_term_count(
     const context& ctx,
     const std::optional<messaging::convention_kind_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active convention kind term count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active convention kind term count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

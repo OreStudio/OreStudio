@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/domain/market_fixing_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
 #include "ores.marketdata.core/repository/market_fixing_entity.hpp"
 #include "ores.marketdata.core/repository/market_fixing_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -219,14 +217,14 @@ void market_fixing_repository::write(const context& ctx, const domain::market_fi
 }
 
 void market_fixing_repository::insert(const context& ctx, const domain::market_fixing& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market fixing. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Inserting market fixing. " << "id: " << v.id;
     query_builder::execute_write_query(
         ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixing into database.");
 }
 
 void market_fixing_repository::insert(const context& ctx,
                                       const std::vector<domain::market_fixing>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market fixings. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Inserting market fixings. Count: " << v.size();
     query_builder::execute_write_query(
         ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixings into database.");
 }
@@ -244,7 +242,7 @@ void market_fixing_repository::write(const context& ctx,
 void market_fixing_repository::write(const context& ctx,
                                      const domain::market_fixing& v,
                                      const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market fixing. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing market fixing. " << "id: " << v.id;
     const auto t = market_fixing_apply_claim(
         v,
         claim,
@@ -259,7 +257,7 @@ void market_fixing_repository::write(
     const context& ctx,
     const std::vector<domain::market_fixing>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market fixings. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing market fixings. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "market_fixing_repository::write: one claim is needed for each row");
@@ -297,7 +295,7 @@ std::vector<domain::market_fixing> market_fixing_repository::read_latest(const c
 
 std::vector<domain::market_fixing> market_fixing_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market fixing. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market fixing. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -316,7 +314,7 @@ std::vector<domain::market_fixing> market_fixing_repository::read_latest(const c
 
 std::vector<domain::market_fixing> market_fixing_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all market fixing versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all market fixing versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -335,7 +333,7 @@ std::vector<domain::market_fixing> market_fixing_repository::read_all(const cont
 
 market_fixing_repository::remove_status market_fixing_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market fixing. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market fixing. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -364,8 +362,8 @@ market_fixing_repository::read_latest(const context& ctx,
                                       const ores::utility::domain::order& order,
                                       const std::optional<messaging::market_fixings_filter>& filter,
                                       const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market fixings with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market fixings with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_fixing_entity>> |
@@ -387,7 +385,7 @@ std::uint32_t market_fixing_repository::get_total_market_fixing_count(
     const context& ctx,
     const std::optional<messaging::market_fixings_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market fixing count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active market fixing count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -458,7 +456,7 @@ void market_fixing_repository::remove(const context& ctx, const std::vector<std:
 std::vector<domain::market_fixing>
 market_fixing_repository::read_latest_for_series(const context& ctx,
                                                  const boost::uuids::uuid& series_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest fixings for series: " << series_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest fixings for series: " << series_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);

@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/series_stream.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/generators/subscription_generator.hpp"

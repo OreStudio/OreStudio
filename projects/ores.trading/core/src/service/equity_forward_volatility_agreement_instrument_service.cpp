@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/equity_forward_volatility_agreement_instrument.hpp"
 #include "ores.trading.api/messaging/equity_forward_volatility_agreement_instrument_protocol.hpp"
 #include "ores.trading.core/repository/equity_forward_volatility_agreement_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -530,13 +528,13 @@ std::vector<domain::equity_forward_volatility_agreement_instrument>
 equity_forward_volatility_agreement_instrument_service::
     list_equity_forward_volatility_agreement_instruments(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all equity forward volatility agreement instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all equity forward volatility agreement instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t equity_forward_volatility_agreement_instrument_service::
     count_equity_forward_volatility_agreement_instruments() {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total equity forward volatility agreement instruments count";
     return repo_.get_total_equity_forward_volatility_agreement_instrument_count(ctx_);
 }
@@ -546,7 +544,7 @@ std::optional<domain::equity_forward_volatility_agreement_instrument>
 equity_forward_volatility_agreement_instrument_service::
     get_equity_forward_volatility_agreement_instrument_at_version(
         const boost::uuids::uuid& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting equity forward volatility agreement instrument at version. "
         << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
@@ -555,8 +553,8 @@ equity_forward_volatility_agreement_instrument_service::
 std::optional<domain::equity_forward_volatility_agreement_instrument>
 equity_forward_volatility_agreement_instrument_service::
     get_equity_forward_volatility_agreement_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity forward volatility agreement instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity forward volatility agreement instrument. "
+                              << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -575,13 +573,13 @@ void equity_forward_volatility_agreement_instrument_service::
     if (v.identity.trade_id.is_nil())
         throw std::invalid_argument(
             "Equity Forward Volatility Agreement Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity forward volatility agreement instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving equity forward volatility agreement instrument. "
+                              << "trade_id: " << v.identity.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved equity forward volatility agreement instrument. "
-                              << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved equity forward volatility agreement instrument. "
+                             << "trade_id: " << v.identity.trade_id;
 }
 
 void equity_forward_volatility_agreement_instrument_service::
@@ -593,9 +591,8 @@ void equity_forward_volatility_agreement_instrument_service::
             throw std::invalid_argument(
                 "Equity Forward Volatility Agreement Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving "
-                               << equity_forward_volatility_agreement_instruments.size()
-                               << " equity forward volatility agreement instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << equity_forward_volatility_agreement_instruments.size()
+                              << " equity forward volatility agreement instruments";
     auto ts = equity_forward_volatility_agreement_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -605,11 +602,11 @@ void equity_forward_volatility_agreement_instrument_service::
 
 void equity_forward_volatility_agreement_instrument_service::
     delete_equity_forward_volatility_agreement_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing equity forward volatility agreement instrument. "
-                               << "trade_id: " << trade_id;
-    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed equity forward volatility agreement instrument. "
+    ORES_LOG_SEV(lg(), debug) << "Removing equity forward volatility agreement instrument. "
                               << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    ORES_LOG_SEV(lg(), info) << "Removed equity forward volatility agreement instrument. "
+                             << "trade_id: " << trade_id;
 }
 
 void equity_forward_volatility_agreement_instrument_service::
@@ -621,7 +618,7 @@ void equity_forward_volatility_agreement_instrument_service::
 std::vector<domain::equity_forward_volatility_agreement_instrument>
 equity_forward_volatility_agreement_instrument_service::
     get_equity_forward_volatility_agreement_instrument_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting history for equity forward volatility agreement instrument. "
         << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);

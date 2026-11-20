@@ -30,9 +30,7 @@
 #include "ores.iam.api/domain/account_party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/account_party_entity.hpp"
 #include "ores.iam.core/repository/account_party_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -187,8 +185,8 @@ void account_party_repository::write(const std::vector<domain::account_party>& a
 
 void account_party_repository::write(const domain::account_party& account_party,
                                      const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account party to database: " << account_party.account_id
-                               << "/" << account_party.party_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing account party to database: " << account_party.account_id
+                              << "/" << account_party.party_id;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(account_party.account_id, account_party.party_id) :
                              std::vector<domain::account_party>{};
@@ -200,8 +198,8 @@ void account_party_repository::write(const domain::account_party& account_party,
 void account_party_repository::write(
     const std::vector<domain::account_party>& account_parties,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account parties to database. Count: "
-                               << account_parties.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing account parties to database. Count: "
+                              << account_parties.size();
     if (claims.size() != account_parties.size())
         throw std::invalid_argument(
             "account_party_repository::write: one claim is needed for each row");
@@ -237,8 +235,8 @@ std::vector<domain::account_party> account_party_repository::read_latest() {
 
 std::vector<domain::account_party> account_party_repository::read_latest(std::uint32_t offset,
                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account parties with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account parties with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_party_entity>> |
@@ -257,7 +255,7 @@ std::vector<domain::account_party> account_party_repository::read_latest(std::ui
 std::vector<domain::account_party>
 account_party_repository::read_latest(const boost::uuids::uuid& account_id,
                                       const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account party. " << account_id << "/" << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account party. " << account_id << "/" << party_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto account_id_str = boost::uuids::to_string(account_id);
@@ -277,7 +275,7 @@ account_party_repository::read_latest(const boost::uuids::uuid& account_id,
 }
 
 std::uint32_t account_party_repository::get_total_account_party_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account parties count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active account parties count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -286,13 +284,13 @@ std::uint32_t account_party_repository::get_total_account_party_count() {
 
     const auto count = query_builder::execute_count_query<account_party_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account parties");
-    BOOST_LOG_SEV(lg(), debug) << "Total active account parties count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active account parties count: " << count;
     return count;
 }
 
 std::vector<domain::account_party>
 account_party_repository::read_latest_by_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account parties. Account: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account parties. Account: " << account_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto account_id_str = boost::uuids::to_string(account_id);
@@ -315,7 +313,7 @@ account_party_repository::read_latest_by_account(const boost::uuids::uuid& accou
 
 std::vector<domain::account_party>
 account_party_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account parties. Party: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account parties. Party: " << party_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
@@ -338,8 +336,8 @@ account_party_repository::read_latest_by_party(const boost::uuids::uuid& party_i
 std::vector<domain::account_party> account_party_repository::read_latest_by_account(
     const boost::uuids::uuid& account_id, std::uint32_t offset, std::uint32_t limit) {
     const auto account_id_str = boost::uuids::to_string(account_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account parties. Account: " << account_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account parties. Account: " << account_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -363,8 +361,8 @@ std::vector<domain::account_party> account_party_repository::read_latest_by_acco
 std::uint32_t account_party_repository::get_total_account_party_count_by_account(
     const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::uuids::to_string(account_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account parties count. Account: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active account parties count. Account: "
+                              << account_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -375,15 +373,15 @@ std::uint32_t account_party_repository::get_total_account_party_count_by_account
 
     const auto count = query_builder::execute_count_query<account_party_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account parties");
-    BOOST_LOG_SEV(lg(), debug) << "Total active account parties count by account: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active account parties count by account: " << count;
     return count;
 }
 
 std::uint32_t account_party_repository::get_total_account_party_count_by_party(
     const boost::uuids::uuid& party_id) {
     const auto party_id_str = boost::uuids::to_string(party_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account parties count. Party: "
-                               << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active account parties count. Party: "
+                              << party_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -393,14 +391,14 @@ std::uint32_t account_party_repository::get_total_account_party_count_by_party(
 
     const auto count = query_builder::execute_count_query<account_party_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account parties");
-    BOOST_LOG_SEV(lg(), debug) << "Total active account parties count by party: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active account parties count by party: " << count;
     return count;
 }
 
 std::vector<account_party_history_row>
 account_party_repository::read_all_by_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the account parties. Account: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the account parties. Account: "
+                              << account_id;
 
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -451,8 +449,8 @@ account_party_repository::remove_status
 account_party_repository::remove(const boost::uuids::uuid& account_id,
                                  const boost::uuids::uuid& party_id,
                                  std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account party from database: " << account_id << "/"
-                               << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing account party from database: " << account_id << "/"
+                              << party_id;
 
     const auto current = read_latest(account_id, party_id);
     if (current.empty())
@@ -498,7 +496,7 @@ void account_party_repository::remove(const std::vector<boost::uuids::uuid>& acc
 }
 
 void account_party_repository::remove_by_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all account parties from database: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all account parties from database: " << account_id;
 
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();

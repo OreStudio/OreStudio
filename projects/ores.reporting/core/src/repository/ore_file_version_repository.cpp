@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/ore_file_version.hpp"
 #include "ores.reporting.api/domain/ore_file_version_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/ore_file_version_protocol.hpp"
 #include "ores.reporting.core/repository/ore_file_version_entity.hpp"
 #include "ores.reporting.core/repository/ore_file_version_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -232,7 +230,7 @@ void ore_file_version_repository::write(const context& ctx,
 void ore_file_version_repository::write(const context& ctx,
                                         const domain::ore_file_version& v,
                                         const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing ORE file version. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing ORE file version. " << "id: " << v.id;
     const auto t =
         ore_file_version_apply_claim(v,
                                      claim,
@@ -247,7 +245,7 @@ void ore_file_version_repository::write(
     const context& ctx,
     const std::vector<domain::ore_file_version>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing ORE file versions. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing ORE file versions. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "ore_file_version_repository::write: one claim is needed for each row");
@@ -283,7 +281,7 @@ std::vector<domain::ore_file_version> ore_file_version_repository::read_latest(c
 
 std::vector<domain::ore_file_version>
 ore_file_version_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest ORE file version. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest ORE file version. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -301,7 +299,7 @@ ore_file_version_repository::read_latest(const context& ctx, const std::string& 
 
 std::vector<domain::ore_file_version> ore_file_version_repository::read_all(const context& ctx,
                                                                             const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all ORE file version versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all ORE file version versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_file_version_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -317,8 +315,8 @@ std::vector<domain::ore_file_version> ore_file_version_repository::read_all(cons
 
 std::optional<domain::ore_file_version> ore_file_version_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading ORE file version at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading ORE file version at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<ore_file_version_entity>> |
@@ -345,8 +343,8 @@ std::vector<domain::ore_file_version> ore_file_version_repository::read_latest_b
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::ore_file_versions_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest ORE file versions. ore_file_code: "
-                               << ore_file_code << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest ORE file versions. ore_file_code: "
+                              << ore_file_code << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -370,8 +368,8 @@ std::uint32_t ore_file_version_repository::get_total_version_count_by_ore_file_c
     const context& ctx,
     const std::string& ore_file_code,
     const std::optional<messaging::ore_file_versions_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ORE file versions count. ore_file_code: "
-                               << ore_file_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active ORE file versions count. ore_file_code: "
+                              << ore_file_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -391,7 +389,7 @@ std::uint32_t ore_file_version_repository::get_total_version_count_by_ore_file_c
 
 ore_file_version_repository::remove_status ore_file_version_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ORE file version. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing ORE file version. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -430,8 +428,8 @@ std::vector<domain::ore_file_version> ore_file_version_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::ore_file_versions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest ORE file versions with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest ORE file versions with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_file_version_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -453,7 +451,7 @@ std::uint32_t ore_file_version_repository::get_total_version_count(
     const context& ctx,
     const std::optional<messaging::ore_file_versions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ORE file version count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active ORE file version count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_file_version_entity>> |

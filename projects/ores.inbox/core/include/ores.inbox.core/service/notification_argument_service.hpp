@@ -30,7 +30,7 @@
 #include "ores.inbox.api/messaging/notification_argument_protocol.hpp"
 #include "ores.inbox.core/export.hpp"
 #include "ores.inbox.core/repository/notification_argument_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <optional>

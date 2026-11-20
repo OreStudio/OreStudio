@@ -21,7 +21,7 @@
 #define ORES_REPORTING_CORE_MESSAGING_REPORT_SCHEDULING_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -104,16 +104,16 @@ public:
                             const std::string& expression) noexcept {
         try {
             if (auto written = set_expression(svc, std::move(definition), expression); !written)
-                BOOST_LOG_SEV(report_scheduling_handler_lg(), warn)
+                ORES_LOG_SEV(report_scheduling_handler_lg(), warn)
                     << "A schedule expression could not be restored: " << written.error();
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_scheduling_handler_lg(), warn)
+            ORES_LOG_SEV(report_scheduling_handler_lg(), warn)
                 << "A schedule expression could not be restored: " << e.what();
         }
     }
 
     void schedule(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_scheduling_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_scheduling_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -208,14 +208,14 @@ public:
                                                        .scheduled_count = scheduled_count,
                                                        .failed_ids = std::move(failed_ids)});
         } else {
-            BOOST_LOG_SEV(report_scheduling_handler_lg(), warn)
+            ORES_LOG_SEV(report_scheduling_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(report_scheduling_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(report_scheduling_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void unschedule(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_scheduling_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_scheduling_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -260,10 +260,10 @@ public:
                                                          .unscheduled_count = unscheduled_count,
                                                          .failed_ids = std::move(failed_ids)});
         } else {
-            BOOST_LOG_SEV(report_scheduling_handler_lg(), warn)
+            ORES_LOG_SEV(report_scheduling_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(report_scheduling_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(report_scheduling_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     /**
@@ -275,7 +275,7 @@ public:
      * session and not the service's.
      */
     void get_next_fire(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_scheduling_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_scheduling_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -290,7 +290,7 @@ public:
         }
         auto req = decode<get_next_fire_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_scheduling_handler_lg(), warn)
+            ORES_LOG_SEV(report_scheduling_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -301,14 +301,14 @@ public:
         try {
             response = scheduler.next_fire_for_definitions(req->definition_ids);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_scheduling_handler_lg(), error)
+            ORES_LOG_SEV(report_scheduling_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             response.result.outcome = ores::utility::domain::outcome::failed;
             response.result.code = "internal_error";
             response.result.message = e.what();
         }
         reply(nats_, msg, response);
-        BOOST_LOG_SEV(report_scheduling_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(report_scheduling_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

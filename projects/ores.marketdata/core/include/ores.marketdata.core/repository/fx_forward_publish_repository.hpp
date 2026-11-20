@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_REPOSITORY_FX_FORWARD_PUBLISH_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/fx_forward_publish.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_publish_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"

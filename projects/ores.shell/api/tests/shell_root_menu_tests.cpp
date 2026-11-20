@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
@@ -60,7 +60,7 @@ TEST_CASE("insert_menu_refuses_a_second_owner_of_one_name", "[shell_root_menu]")
         CHECK(std::string(e.what()).find("accounts") != std::string::npos);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "A duplicate menu name is refused.";
+    ORES_LOG_SEV(lg, debug) << "A duplicate menu name is refused.";
 }
 
 TEST_CASE("insert_menu_accepts_two_different_names", "[shell_root_menu]") {
@@ -96,7 +96,7 @@ TEST_CASE("extend_menu_adds_verbs_to_the_menu_another_unit_owns", "[shell_root_m
     for (const auto& verb : {std::string{"list"}, std::string{"login"}, std::string{"lock"}})
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "One menu answers both units' verbs.";
+    ORES_LOG_SEV(lg, debug) << "One menu answers both units' verbs.";
 }
 
 TEST_CASE("apply_extensions_refuses_an_extension_for_an_unowned_name", "[shell_root_menu]") {

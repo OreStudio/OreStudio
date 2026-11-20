@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_SERVICE_SERIES_IDENTITY_SHAPE_ENTRY_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape_entry.hpp"
 #include "ores.marketdata.api/messaging/series_identity_shape_entry_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"

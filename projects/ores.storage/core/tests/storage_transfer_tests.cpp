@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
@@ -62,7 +62,7 @@ TEST_CASE("upload_puts_the_file_bytes_to_the_object_path", "[net]") {
 
     sut.upload("ores", "compute/packages/oscar-1.0/oscar.tar.gz", source.path());
 
-    BOOST_LOG_SEV(lg, info) << "Server saw target: " << server.last_target();
+    ORES_LOG_SEV(lg, info) << "Server saw target: " << server.last_target();
     CHECK(server.last_method() == "PUT");
     CHECK(server.last_target() == "/api/v1/storage/ores/compute/packages/oscar-1.0/oscar.tar.gz");
     CHECK(server.last_put_body() == content);
@@ -81,7 +81,7 @@ TEST_CASE("download_writes_the_exact_server_bytes", "[net]") {
     scoped_temp_file destination;
     sut.download("ores", "compute/packages/oscar-1.0/oscar.tar.gz", destination.path());
 
-    BOOST_LOG_SEV(lg, info) << "Server saw target: " << server.last_target();
+    ORES_LOG_SEV(lg, info) << "Server saw target: " << server.last_target();
     CHECK(server.last_target() == "/api/v1/storage/ores/compute/packages/oscar-1.0/oscar.tar.gz");
     CHECK(read_file(destination.path()) == content);
 }
@@ -100,7 +100,7 @@ TEST_CASE("upload_returning_response_returns_the_exact_server_body", "[net]") {
 
     const auto actual = sut.upload_returning_response("bucket", "key", source.path());
 
-    BOOST_LOG_SEV(lg, info) << "Response body: " << actual;
+    ORES_LOG_SEV(lg, info) << "Response body: " << actual;
     CHECK(actual == response);
 }
 
@@ -119,7 +119,7 @@ TEST_CASE("pack_and_upload_then_fetch_and_unpack_reproduces_the_tree", "[net]") 
     sut.pack_and_upload(source.path(), "ores", "compute/packages/tree.tar.gz");
 
     const auto uploaded = server.last_put_body();
-    BOOST_LOG_SEV(lg, info) << "Uploaded archive of " << uploaded.size() << " bytes";
+    ORES_LOG_SEV(lg, info) << "Uploaded archive of " << uploaded.size() << " bytes";
     CHECK(server.last_target() == "/api/v1/storage/ores/compute/packages/tree.tar.gz");
     CHECK(!uploaded.empty());
 
@@ -148,14 +148,14 @@ TEST_CASE("upload_blob_then_download_blob_round_trips_arbitrary_bytes", "[net]")
         "blobs", "binary/blob.bin", std::span<const char>(original.data(), original.size()));
 
     const auto compressed = server.last_put_body();
-    BOOST_LOG_SEV(lg, info) << "Uploaded compressed blob of " << compressed.size() << " bytes";
+    ORES_LOG_SEV(lg, info) << "Uploaded compressed blob of " << compressed.size() << " bytes";
     CHECK(!compressed.empty());
 
     server.set_get_body(compressed);
 
     const auto round_tripped = sut.download_blob("blobs", "binary/blob.bin");
 
-    BOOST_LOG_SEV(lg, info) << "Round-tripped " << round_tripped.size() << " bytes";
+    ORES_LOG_SEV(lg, info) << "Round-tripped " << round_tripped.size() << " bytes";
     CHECK(round_tripped == original);
 }
 
@@ -170,7 +170,7 @@ TEST_CASE("remove_targets_the_object_url_and_returns_the_server_answer", "[net]"
 
     const auto actual = sut.remove("ores", "ore/imports/abc.tar.gz");
 
-    BOOST_LOG_SEV(lg, info) << "Server saw " << server.last_method() << " " << server.last_target();
+    ORES_LOG_SEV(lg, info) << "Server saw " << server.last_method() << " " << server.last_target();
     CHECK(server.last_method() == "DELETE");
     CHECK(server.last_target() == "/api/v1/storage/ores/ore/imports/abc.tar.gz");
     CHECK(server.last_authorization() == "Bearer " + test_token);
@@ -189,7 +189,7 @@ TEST_CASE("list_asks_the_bucket_url_for_the_requested_page", "[net]") {
 
     const auto actual = sut.list("ores", "ore/imports/", 5, 25);
 
-    BOOST_LOG_SEV(lg, info) << "Server saw " << server.last_target();
+    ORES_LOG_SEV(lg, info) << "Server saw " << server.last_target();
     CHECK(server.last_method() == "GET");
     CHECK(server.last_target() == "/api/v1/storage/ores?prefix=ore/imports/&offset=5&limit=25");
     CHECK(actual == listing);
@@ -203,6 +203,6 @@ TEST_CASE("list_escapes_a_prefix_that_would_otherwise_change_the_query", "[net]"
 
     sut.list("ores", "a b&c=d", 0, 100);
 
-    BOOST_LOG_SEV(lg, info) << "Server saw " << server.last_target();
+    ORES_LOG_SEV(lg, info) << "Server saw " << server.last_target();
     CHECK(server.last_target() == "/api/v1/storage/ores?prefix=a%20b%26c%3Dd&offset=0&limit=100");
 }

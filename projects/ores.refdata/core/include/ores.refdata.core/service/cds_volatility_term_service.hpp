@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CDS_VOLATILITY_TERM_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
 #include "ores.refdata.api/messaging/cds_volatility_term_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

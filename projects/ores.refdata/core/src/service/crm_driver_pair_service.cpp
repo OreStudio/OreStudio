@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/crm_driver_pair.hpp"
 #include "ores.refdata.api/messaging/crm_driver_pair_protocol.hpp"
 #include "ores.refdata.core/repository/crm_driver_pair_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -454,12 +452,12 @@ crm_driver_pair_service::prepare_change(const messaging::crm_driver_pair_change&
 
 std::vector<domain::crm_driver_pair>
 crm_driver_pair_service::list_crm_driver_pairs(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all CRM driver pairs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all CRM driver pairs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t crm_driver_pair_service::count_crm_driver_pairs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CRM driver pairs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total CRM driver pairs count";
     return repo_.get_total_crm_driver_pair_count(ctx_);
 }
 
@@ -467,14 +465,14 @@ std::uint32_t crm_driver_pair_service::count_crm_driver_pairs() {
 std::optional<domain::crm_driver_pair>
 crm_driver_pair_service::get_crm_driver_pair_at_version(const boost::uuids::uuid& id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CRM driver pair at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting CRM driver pair at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::crm_driver_pair>
 crm_driver_pair_service::get_crm_driver_pair(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CRM driver pair. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting CRM driver pair. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -489,11 +487,11 @@ crm_driver_pair_service::get_crm_driver_pairs(const std::vector<std::string>& id
 void crm_driver_pair_service::save_crm_driver_pair(const domain::crm_driver_pair& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("CRM Driver Pair id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CRM driver pair. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving CRM driver pair. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CRM driver pair. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved CRM driver pair. " << "id: " << v.id;
 }
 
 void crm_driver_pair_service::save_crm_driver_pairs(
@@ -502,7 +500,7 @@ void crm_driver_pair_service::save_crm_driver_pairs(
         if (e.id.is_nil())
             throw std::invalid_argument("CRM Driver Pair id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << crm_driver_pairs.size() << " CRM driver pairs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << crm_driver_pairs.size() << " CRM driver pairs";
     auto ts = crm_driver_pairs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -511,9 +509,9 @@ void crm_driver_pair_service::save_crm_driver_pairs(
 }
 
 void crm_driver_pair_service::delete_crm_driver_pair(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CRM driver pair. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CRM driver pair. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed CRM driver pair. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed CRM driver pair. " << "id: " << id;
 }
 
 void crm_driver_pair_service::delete_crm_driver_pairs(const std::vector<std::string>& ids) {
@@ -522,7 +520,7 @@ void crm_driver_pair_service::delete_crm_driver_pairs(const std::vector<std::str
 
 std::vector<domain::crm_driver_pair>
 crm_driver_pair_service::get_crm_driver_pair_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CRM driver pair. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for CRM driver pair. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

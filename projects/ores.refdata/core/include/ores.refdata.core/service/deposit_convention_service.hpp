@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_DEPOSIT_CONVENTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.api/messaging/deposit_convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

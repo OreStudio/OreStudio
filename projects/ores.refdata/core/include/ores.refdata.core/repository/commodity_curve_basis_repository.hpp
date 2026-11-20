@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_COMMODITY_CURVE_BASIS_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/commodity_curve_basis.hpp"
 #include "ores.refdata.api/messaging/commodity_curve_basis_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

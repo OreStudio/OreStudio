@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/domain/party_scope.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/stamp_audit.hpp"
@@ -59,7 +59,7 @@ ores::reporting::domain::configuration make_header(const boost::uuids::uuid& par
 TEST_CASE("a context without a party does not inherit a pooled connection's party",
           "[reporting][session][database]") {
     auto lg(ores::logging::make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info)
+    ORES_LOG_SEV(lg, info)
         << "a context without a party does not inherit a pooled connection's party";
     ores::testing::scoped_database_helper h;
     const auto parties = ores::testing::make_two_parties(h);
@@ -80,7 +80,7 @@ TEST_CASE("a context without a party does not inherit a pooled connection's part
 
 TEST_CASE("an actor holding a quote reaches a pooled session", "[reporting][session][database]") {
     auto lg(ores::logging::make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "an actor holding a quote reaches a pooled session";
+    ORES_LOG_SEV(lg, info) << "an actor holding a quote reaches a pooled session";
     ores::testing::scoped_database_helper h;
     const auto parties = ores::testing::make_two_parties(h);
     const auto ctx = h.context().with_party(h.tenant_id(), parties.a, {parties.a}, "o'brien");

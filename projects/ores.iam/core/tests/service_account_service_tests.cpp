@@ -35,7 +35,7 @@
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
@@ -170,12 +170,12 @@ TEST_CASE("create_account_with_valid_data", "[service]") {
     service::account_operations_service sut(h.context());
 
     const auto e = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+    ORES_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
     // Note: Admin privileges are now managed via RBAC role assignments
     const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
-    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+    ORES_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.username == e.username);
     CHECK(a.email == e.email);
@@ -203,7 +203,7 @@ TEST_CASE("get_my_account_reads_the_callers_own_account_and_no_other", "[service
         theirs.username, theirs.email, faker::internet::password(), theirs.modified_by);
 
     const auto response = sut.get_my_account(a.id);
-    BOOST_LOG_SEV(lg, info) << "Own account: " << response.account.has_value();
+    ORES_LOG_SEV(lg, info) << "Own account: " << response.account.has_value();
 
     CHECK(response.result.outcome == ores::utility::domain::outcome::ok);
     REQUIRE(response.account.has_value());
@@ -317,14 +317,14 @@ TEST_CASE("create_multiple_accounts", "[service]") {
     service::account_operations_service sut(h.context());
 
     for (int i = 0; i < 5; ++i) {
-        BOOST_LOG_SEV(lg, info) << "Creating account: " << i;
+        ORES_LOG_SEV(lg, info) << "Creating account: " << i;
 
         const auto e = generate_synthetic_account(ctx);
-        BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+        ORES_LOG_SEV(lg, info) << "Expected: " << e;
 
         const std::string password = faker::internet::password();
         const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
-        BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+        ORES_LOG_SEV(lg, info) << "Actual: " << a;
 
         CHECK(a.username == e.username);
         CHECK(a.email == e.email);
@@ -341,7 +341,7 @@ TEST_CASE("create_account_with_empty_username_throws", "[service]") {
 
     auto e = generate_synthetic_account(ctx);
     e.username = "";
-    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+    ORES_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
     CHECK_THROWS_AS(sut.create_account(e.username, e.email, password, e.modified_by),
@@ -357,7 +357,7 @@ TEST_CASE("create_account_with_empty_email_throws", "[service]") {
 
     auto e = generate_synthetic_account(ctx);
     e.email = "";
-    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+    ORES_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
     CHECK_THROWS_AS(sut.create_account(e.username, e.email, password, e.modified_by),
@@ -372,7 +372,7 @@ TEST_CASE("create_account_with_empty_password_throws", "[service]") {
     service::account_operations_service sut(h.context());
 
     const auto e = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+    ORES_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string empty_password;
     CHECK_THROWS_AS(sut.create_account(e.username, e.email, empty_password, e.modified_by),
@@ -385,7 +385,7 @@ TEST_CASE("list_accounts_returns_existing_accounts", "[service]") {
     scoped_database_helper h;
     service::account_operations_service sut(h.context());
     const auto a = sut.list_accounts();
-    BOOST_LOG_SEV(lg, info) << "Current accounts in database: " << a.size();
+    ORES_LOG_SEV(lg, info) << "Current accounts in database: " << a.size();
     // Test database may have accounts from previous runs; just verify
     // the method returns successfully
     INFO("Number of accounts: " << a.size());
@@ -400,19 +400,19 @@ TEST_CASE("list_accounts_returns_created_accounts", "[service]") {
 
     // Count existing accounts from previous test runs
     const auto initial_count = sut.list_accounts().size();
-    BOOST_LOG_SEV(lg, info) << "Initial accounts: " << initial_count;
+    ORES_LOG_SEV(lg, info) << "Initial accounts: " << initial_count;
 
     const int new_accounts = 3;
     const auto expected_list = generate_synthetic_accounts(new_accounts, ctx);
 
     for (const auto& e : expected_list) {
         const std::string password = faker::internet::password();
-        BOOST_LOG_SEV(lg, info) << "Creating: " << e;
+        ORES_LOG_SEV(lg, info) << "Creating: " << e;
         sut.create_account(e.username, e.email, password, e.modified_by);
     }
 
     auto actual_list = sut.list_accounts();
-    BOOST_LOG_SEV(lg, info) << "Actual count: " << actual_list.size();
+    ORES_LOG_SEV(lg, info) << "Actual count: " << actual_list.size();
     CHECK(actual_list.size() == initial_count + new_accounts);
 }
 
@@ -424,7 +424,7 @@ TEST_CASE("login_with_valid_credentials", "[service]") {
     service::account_operations_service sut(h.context());
 
     auto e = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+    ORES_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
     const auto account = sut.create_account(e.username, e.email, password, e.modified_by);
@@ -444,7 +444,7 @@ TEST_CASE("login_with_invalid_password_throws", "[service]") {
     service::account_operations_service sut(h.context());
 
     auto e = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+    ORES_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
     const auto account = sut.create_account(e.username, e.email, password, e.modified_by);
@@ -459,12 +459,12 @@ TEST_CASE("login_with_nonexistent_username_throws", "[service]") {
     scoped_database_helper h;
     service::account_operations_service sut(h.context());
 
-    BOOST_LOG_SEV(lg, info) << "Attempting login with nonexistent username";
+    ORES_LOG_SEV(lg, info) << "Attempting login with nonexistent username";
     const std::string username = std::string(faker::internet::username());
     const std::string password = faker::internet::password();
     auto ip = internet::ipv4();
-    BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
-                            << " password: " << password << " IP: " << ip;
+    ORES_LOG_SEV(lg, info) << "Creating account: - username: " << username
+                           << " password: " << password << " IP: " << ip;
 
     CHECK_THROWS_AS(sut.login(username, password, ip), std::runtime_error);
 }
@@ -475,12 +475,12 @@ TEST_CASE("login_with_empty_username_throws", "[service]") {
     scoped_database_helper h;
     service::account_operations_service sut(h.context());
 
-    BOOST_LOG_SEV(lg, info) << "Attempting login with empty username";
+    ORES_LOG_SEV(lg, info) << "Attempting login with empty username";
     const std::string username;
     const std::string password = faker::internet::password();
     auto ip = internet::ipv4();
-    BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
-                            << " password: " << password << " IP: " << ip;
+    ORES_LOG_SEV(lg, info) << "Creating account: - username: " << username
+                           << " password: " << password << " IP: " << ip;
 
     CHECK_THROWS_AS(sut.login(username, password, ip), std::invalid_argument);
 }
@@ -492,10 +492,10 @@ TEST_CASE("login_with_empty_password_throws", "[service]") {
     auto ctx = ores::testing::make_generation_context(h);
     service::account_operations_service sut(h.context());
 
-    BOOST_LOG_SEV(lg, info) << "Attempting login with empty password";
+    ORES_LOG_SEV(lg, info) << "Attempting login with empty password";
 
     auto account = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+    ORES_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();
     sut.create_account(account.username, account.email, password, account.modified_by);
@@ -513,19 +513,19 @@ TEST_CASE("account_locks_after_multiple_failed_logins", "[service]") {
     service::account_operations_service sut(h.context());
 
     auto account = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+    ORES_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();
     sut.create_account(account.username, account.email, password, account.modified_by);
 
-    BOOST_LOG_SEV(lg, info) << "Attempting 5 failed logins to lock account";
+    ORES_LOG_SEV(lg, info) << "Attempting 5 failed logins to lock account";
 
     auto ip = internet::ipv4();
     for (int i = 0; i < 5; ++i) {
         try {
             sut.login(account.username, "wrong_password", ip);
         } catch (const std::runtime_error& e) {
-            BOOST_LOG_SEV(lg, info) << "Failed login attempt " << (i + 1) << ": " << e.what();
+            ORES_LOG_SEV(lg, info) << "Failed login attempt " << (i + 1) << ": " << e.what();
         }
     }
 
@@ -534,7 +534,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins", "[service]") {
         sut.login(account.username, password, ip);
         FAIL("Expected account to be locked.");
     } catch (const std::runtime_error& e) {
-        BOOST_LOG_SEV(lg, info) << "Account locked: " << e.what();
+        ORES_LOG_SEV(lg, info) << "Account locked: " << e.what();
         CHECK(std::string(e.what()).find("locked") != std::string::npos);
     }
 }
@@ -547,17 +547,17 @@ TEST_CASE("lock_account_successful", "[service]") {
     service::account_operations_service sut(h.context());
 
     const auto account = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+    ORES_LOG_SEV(lg, info) << "Account: " << account;
     const std::string password = faker::internet::password();
 
     const auto generated =
         sut.create_account(account.username, account.email, password, account.modified_by);
 
-    BOOST_LOG_SEV(lg, info) << "Locking account.";
+    ORES_LOG_SEV(lg, info) << "Locking account.";
     bool lock_result = sut.lock_account(generated.id);
     CHECK(lock_result == true);
 
-    BOOST_LOG_SEV(lg, info) << "Attempting login after lock";
+    ORES_LOG_SEV(lg, info) << "Attempting login after lock";
     auto ip = internet::ipv4();
     CHECK_THROWS_AS(sut.login(generated.username, password, ip), std::runtime_error);
 }
@@ -570,7 +570,7 @@ TEST_CASE("lock_nonexistent_account_returns_false", "[service]") {
 
     boost::uuids::random_generator gen;
     const auto non_existent_id = gen();
-    BOOST_LOG_SEV(lg, info) << "Attempting to lock nonexistent account: " << non_existent_id;
+    ORES_LOG_SEV(lg, info) << "Attempting to lock nonexistent account: " << non_existent_id;
 
     CHECK(sut.lock_account(non_existent_id) == false);
 }
@@ -583,13 +583,13 @@ TEST_CASE("unlock_account_successful", "[service]") {
     service::account_operations_service sut(h.context());
 
     const auto account = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+    ORES_LOG_SEV(lg, info) << "Account: " << account;
     const std::string password = faker::internet::password();
 
     const auto generated =
         sut.create_account(account.username, account.email, password, account.modified_by);
 
-    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
+    ORES_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
     auto ip = internet::ipv4();
     for (int i = 0; i < 5; ++i) {
         try {
@@ -598,11 +598,11 @@ TEST_CASE("unlock_account_successful", "[service]") {
         }
     }
 
-    BOOST_LOG_SEV(lg, info) << "Unlocking account.";
+    ORES_LOG_SEV(lg, info) << "Unlocking account.";
     bool unlock_result = sut.unlock_account(generated.id);
     CHECK(unlock_result == true);
 
-    BOOST_LOG_SEV(lg, info) << "Attempting login after unlock";
+    ORES_LOG_SEV(lg, info) << "Attempting login after unlock";
 
     // Should now be able to login successfully
     auto logged_in_account = sut.login(generated.username, password, ip).account;
@@ -618,7 +618,7 @@ TEST_CASE("unlock_nonexistent_account_returns_false", "[service]") {
 
     boost::uuids::random_generator gen;
     const auto non_existent_id = gen();
-    BOOST_LOG_SEV(lg, info) << "Attempting to unlock nonexistent account: " << non_existent_id;
+    ORES_LOG_SEV(lg, info) << "Attempting to unlock nonexistent account: " << non_existent_id;
 
     CHECK(sut.unlock_account(non_existent_id) == false);
 }
@@ -770,7 +770,7 @@ TEST_CASE("delete_nonexistent_account_throws", "[service]") {
 
     boost::uuids::random_generator gen;
     const auto non_existent_id = gen();
-    BOOST_LOG_SEV(lg, info) << "Attempting to delete nonexistent account: " << non_existent_id;
+    ORES_LOG_SEV(lg, info) << "Attempting to delete nonexistent account: " << non_existent_id;
 
     CHECK_THROWS_AS(sut.delete_account(non_existent_id), std::invalid_argument);
 }
@@ -783,18 +783,18 @@ TEST_CASE("login_with_different_ip_addresses", "[service]") {
     service::account_operations_service sut(h.context());
 
     auto account = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+    ORES_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();
     sut.create_account(account.username, account.email, password, account.modified_by);
 
-    BOOST_LOG_SEV(lg, info) << "Testing logins from different IPs.";
+    ORES_LOG_SEV(lg, info) << "Testing logins from different IPs.";
     for (int i = 0; i < 3; ++i) {
         auto ip = internet::ipv4();
         auto login = sut.login(account.username, password, ip).account;
 
-        BOOST_LOG_SEV(lg, info) << "Login " << i << " from IP: " << ip
-                                << " - account: " << account.username;
+        ORES_LOG_SEV(lg, info) << "Login " << i << " from IP: " << ip
+                               << " - account: " << account.username;
         CHECK(account.username == login.username);
     }
 }

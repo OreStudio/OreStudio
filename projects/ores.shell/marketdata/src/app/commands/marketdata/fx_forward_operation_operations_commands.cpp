@@ -68,7 +68,7 @@ void fx_forward_operation_operations_commands::register_commands(cli::Menu& root
 
 void fx_forward_operation_operations_commands::process_publish_fx_forward(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating publish-fx-forward request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating publish-fx-forward request.";
 
     using request_type = ores::marketdata::messaging::publish_fx_forward_request;
 
@@ -134,7 +134,7 @@ void fx_forward_operation_operations_commands::process_publish_fx_forward(
 
 void fx_forward_operation_operations_commands::process_get_published_fx_forward(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-published-fx-forward request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-published-fx-forward request.";
 
     using request_type = ores::marketdata::messaging::get_published_fx_forward_request;
 

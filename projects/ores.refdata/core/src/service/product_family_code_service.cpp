@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/product_family_code.hpp"
 #include "ores.refdata.api/messaging/product_family_code_protocol.hpp"
 #include "ores.refdata.core/repository/product_family_code_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -455,26 +453,26 @@ product_family_code_service::prepare_change(const messaging::product_family_code
 
 std::vector<domain::product_family_code>
 product_family_code_service::list_families(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all product families";
+    ORES_LOG_SEV(lg(), debug) << "Listing all product families";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t product_family_code_service::count_families() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total product families count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total product families count";
     return repo_.get_total_family_count(ctx_);
 }
 
 
 std::optional<domain::product_family_code>
 product_family_code_service::get_family_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting product family at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting product family at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::product_family_code>
 product_family_code_service::get_family(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting product family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting product family. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -489,11 +487,11 @@ product_family_code_service::get_families(const std::vector<std::string>& codes)
 void product_family_code_service::save_family(const domain::product_family_code& v) {
     if (v.code.empty())
         throw std::invalid_argument("Product Family Code code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving product family. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving product family. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved product family. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved product family. " << "code: " << v.code;
 }
 
 void product_family_code_service::save_families(
@@ -502,7 +500,7 @@ void product_family_code_service::save_families(
         if (e.code.empty())
             throw std::invalid_argument("Product Family Code code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << families.size() << " product families";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << families.size() << " product families";
     auto ts = families;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -511,9 +509,9 @@ void product_family_code_service::save_families(
 }
 
 void product_family_code_service::delete_family(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing product family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing product family. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed product family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed product family. " << "code: " << code;
 }
 
 void product_family_code_service::delete_families(const std::vector<std::string>& codes) {
@@ -522,7 +520,7 @@ void product_family_code_service::delete_families(const std::vector<std::string>
 
 std::vector<domain::product_family_code>
 product_family_code_service::get_family_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for product family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for product family. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

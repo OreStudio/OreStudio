@@ -135,7 +135,7 @@ void feed_ingest_loop::start() {
     // publisher's subject is one of them.
     const auto ingested = domain::ingest_subject_wildcards();
     const auto& wildcard = ingested.producers;
-    BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '" << wildcard << "'";
+    ORES_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '" << wildcard << "'";
     refresh();
     if (pipelined_) {
         announce_thread_ = std::thread(&feed_ingest_loop::announce_loop, this);
@@ -144,8 +144,8 @@ void feed_ingest_loop::start() {
     worker_ = std::thread(&feed_ingest_loop::worker_loop, this);
     tick_sub_ = nats_.subscribe(wildcard, [this](ores::nats::message msg) { on_tick(msg); });
     const auto& adapter_wildcard = ingested.adapters;
-    BOOST_LOG_SEV(lg(), info) << "Subscribing to the ticks of adapters on '" << adapter_wildcard
-                              << "'";
+    ORES_LOG_SEV(lg(), info) << "Subscribing to the ticks of adapters on '" << adapter_wildcard
+                             << "'";
     adapter_sub_ = nats_.subscribe(adapter_wildcard,
                                    [this](ores::nats::message msg) { on_adapter_tick(msg); });
     status_thread_ = std::thread(&feed_ingest_loop::status_loop, this);
@@ -235,9 +235,9 @@ void feed_ingest_loop::refresh() {
     }
     stats_ = std::move(kept);
 
-    BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << consumers_by_source_->by_source.size()
-                              << " source(s), " << routed << " route(s), "
-                              << translator_->source_count() << " catalogue source(s)";
+    ORES_LOG_SEV(lg(), info) << "Feed ingest loop: " << consumers_by_source_->by_source.size()
+                             << " source(s), " << routed << " route(s), "
+                             << translator_->source_count() << " catalogue source(s)";
 }
 
 std::shared_ptr<adapter_tick_translator> feed_ingest_loop::translator() const {
@@ -259,7 +259,7 @@ feed_ingest_loop::accept_adapter_tick(std::string_view adapter_id,
             first = adapter_drop_warned_.insert(key).second;
         }
         if (first)
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Dropping ticks of adapter '" << adapter_id << "': " << to_string(reason)
                 << " (first: " << tick.external_id << " " << tick.field << ")";
         return reason;
@@ -313,15 +313,15 @@ void feed_ingest_loop::on_adapter_tick(const ores::nats::message& msg) {
             std::nullopt :
             domain::adapter_ingress_subject_parts(std::string_view(msg.subject).substr(at));
     if (!parts) {
-        BOOST_LOG_SEV(lg(), warn) << "Dropping a tick on '" << msg.subject
-                                  << "': not an ingress subject of an adapter";
+        ORES_LOG_SEV(lg(), warn) << "Dropping a tick on '" << msg.subject
+                                 << "': not an ingress subject of an adapter";
         return;
     }
     auto tick = ores::nats::default_wire_codec().decode<ores::marketdata::messaging::adapter_tick>(
         msg.data);
     if (!tick) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to decode adapter_tick on '" << msg.subject
-                                  << "': " << tick.error().what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to decode adapter_tick on '" << msg.subject
+                                 << "': " << tick.error().what();
         return;
     }
     accept_adapter_tick(parts->adapter_id, *tick);
@@ -331,8 +331,8 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
     auto tick =
         ores::nats::default_wire_codec().decode<ores::marketdata::messaging::market_tick>(msg.data);
     if (!tick) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to decode market_tick on '" << msg.subject
-                                  << "': " << tick.error().what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to decode market_tick on '" << msg.subject
+                                 << "': " << tick.error().what();
         return;
     }
 
@@ -356,7 +356,7 @@ void feed_ingest_loop::worker_loop() {
                             drain_deadline_rep_.load(std::memory_order_relaxed)) {
             const auto lost = taken + queue_.size();
             shutdown_dropped_.fetch_add(lost, std::memory_order_relaxed);
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The ingest stopped with " << lost << " queued tick(s) that it did not store";
             break;
         }
@@ -372,7 +372,7 @@ void feed_ingest_loop::worker_loop() {
             const auto now = std::chrono::steady_clock::now();
             if (now - last_stale_log > std::chrono::seconds(10)) {
                 last_stale_log = now;
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "Dropped " << stale
                     << " tick(s) older than the age limit of their source: the ingest is behind "
                        "the feeds";
@@ -409,7 +409,7 @@ void feed_ingest_loop::worker_loop() {
                                      min_batch_ticks,
                                      batch_limit);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Failed to prepare a batch of " << count << " tick(s): " << e.what();
         }
     }
@@ -433,18 +433,18 @@ void feed_ingest_loop::warn_dropped(const ores::marketdata::messaging::market_ti
     switch (reason) {
         case tick_drop::unknown_source:
             if (unknown_warned_.insert(tick.source).second)
-                BOOST_LOG_SEV(lg(), warn) << "Dropping ticks for unknown source '" << tick.source
-                                          << "': the catalogue names no feed for it";
+                ORES_LOG_SEV(lg(), warn) << "Dropping ticks for unknown source '" << tick.source
+                                         << "': the catalogue names no feed for it";
             break;
         case tick_drop::unnameable_datum:
             if (unnameable_warned_.insert(tick.oresmd_uri).second)
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "Dropping ticks for '" << tick.oresmd_uri << "': it names no ORE datum";
             break;
         case tick_drop::not_a_number:
             if (bad_value_warned_.insert(tick.source).second)
-                BOOST_LOG_SEV(lg(), warn) << "Dropping ticks from source '" << tick.source
-                                          << "': value '" << tick.value << "' is not a number";
+                ORES_LOG_SEV(lg(), warn) << "Dropping ticks from source '" << tick.source
+                                         << "': value '" << tick.value << "' is not a number";
             break;
     }
 }
@@ -518,7 +518,7 @@ feed_ingest_loop::prepare(std::vector<ores::marketdata::messaging::market_tick> 
             try {
                 it.series_id = series_id_for(ctx_it->second, b, *batch->plans[i]->named, uuid_gen);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "Failed to prepare the tick for " << ticks[i].oresmd_uri << " from source '"
                     << ticks[i].source << "': " << e.what();
                 continue;
@@ -542,8 +542,8 @@ void feed_ingest_loop::commit_loop() {
         try {
             commit(**batch);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to copy a batch of " << (*batch)->ticks.size()
-                                       << " tick(s): " << e.what();
+            ORES_LOG_SEV(lg(), error) << "Failed to copy a batch of " << (*batch)->ticks.size()
+                                      << " tick(s): " << e.what();
             // The ticks are still republished, as when the store does not answer.
             for (auto& it : (*batch)->items) {
                 it.stored = false;
@@ -566,8 +566,8 @@ void feed_ingest_loop::announce_loop() {
         try {
             announce(**batch);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to announce a batch of " << (*batch)->ticks.size()
-                                       << " tick(s): " << e.what();
+            ORES_LOG_SEV(lg(), error) << "Failed to announce a batch of " << (*batch)->ticks.size()
+                                      << " tick(s): " << e.what();
         }
         in_flight_.fetch_sub(1, std::memory_order_release);
     }
@@ -618,7 +618,7 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
             nats_.publish(subject, payload);
             return true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Failed to publish a tick on '" << subject << "': " << e.what();
             return false;
         }
@@ -646,7 +646,7 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
             std::memory_order_relaxed);
 
         if (prev_count == 0)
-            BOOST_LOG_SEV(lg(), info)
+            ORES_LOG_SEV(lg(), info)
                 << "INGEST FIRST TICK: source='" << c.source_name << "' datum='" << tick.oresmd_uri
                 << "' subject='" << it.plan->delivery->feed_subject << "' value=" << tick.value;
 
@@ -862,15 +862,15 @@ void feed_ingest_loop::write_rows(prepared_batch& batch) {
             it.stored = true;
         ticks_stored_.fetch_add(batch.rows.size(), std::memory_order_relaxed);
         if (store_backoff_.note_success())
-            BOOST_LOG_SEV(lg(), info) << "The store answers again";
+            ORES_LOG_SEV(lg(), info) << "The store answers again";
         return;
     }
     for (auto& it : items)
         it.unavailable = true;
     if (store_backoff_.note_failure(std::chrono::steady_clock::now()))
-        BOOST_LOG_SEV(lg(), error) << "The store does not answer, so ticks are republished and "
-                                      "not stored: "
-                                   << failure;
+        ORES_LOG_SEV(lg(), error) << "The store does not answer, so ticks are republished and "
+                                     "not stored: "
+                                  << failure;
 }
 
 std::shared_ptr<const core::series_classifier>
@@ -933,7 +933,7 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
     if (existing.empty()) {
         const auto cl =
             classifier_for(tenant_ctx)->classify(core::classification_key_of(named.datum));
-        BOOST_LOG_SEV(lg(), info) << "Creating market series " << series_uri;
+        ORES_LOG_SEV(lg(), info) << "Creating market series " << series_uri;
 
         auto series = create_feed_series(
             tenant_ctx, owner, uuid_gen(), series_uri, cl, ctx_.service_account());
@@ -959,7 +959,7 @@ void feed_ingest_loop::status_loop() {
             try {
                 refresh();
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "Periodic refresh failed: " << e.what();
+                ORES_LOG_SEV(lg(), warn) << "Periodic refresh failed: " << e.what();
             }
             log_status();
             next = steady_clock::now() + status_interval_;
@@ -970,7 +970,7 @@ void feed_ingest_loop::status_loop() {
 void feed_ingest_loop::log_status() const {
     using namespace std::chrono;
     std::lock_guard lock(mu_);
-    BOOST_LOG_SEV(lg(), info)
+    ORES_LOG_SEV(lg(), info)
         << "INGEST STATUS: queue=" << queue_.size() << " dropped=" << queue_.dropped()
         << " stale=" << stale_dropped_.load(std::memory_order_relaxed)
         << " late_unpublished=" << late_unpublished_.load(std::memory_order_relaxed)
@@ -983,7 +983,7 @@ void feed_ingest_loop::log_status() const {
         << " fixings_rejected=" << fixings_->rejected()
         << " fixings_pending=" << fixings_->pending();
     if (stats_.empty()) {
-        BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: no active subscriptions";
+        ORES_LOG_SEV(lg(), info) << "INGEST STATUS: no active subscriptions";
         return;
     }
     const auto now = system_clock::now();
@@ -992,14 +992,14 @@ void feed_ingest_loop::log_status() const {
         const auto last_tp = system_clock::time_point{
             system_clock::duration{st->last_tick_rep.load(std::memory_order_relaxed)}};
         const bool ever = last_tp != system_clock::time_point::min();
-        BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: source='" << key.source_name << "' tenant='"
-                                  << key.tenant_id << "' party='" << key.party_id
-                                  << "' ticks=" << count
-                                  << (ever ? std::format(
-                                                 " last_tick={}s ago lag={}ms",
-                                                 duration_cast<seconds>(now - last_tp).count(),
-                                                 st->last_lag_ms.load(std::memory_order_relaxed)) :
-                                             std::string(" last_tick=never"));
+        ORES_LOG_SEV(lg(), info) << "INGEST STATUS: source='" << key.source_name << "' tenant='"
+                                 << key.tenant_id << "' party='" << key.party_id
+                                 << "' ticks=" << count
+                                 << (ever ? std::format(
+                                                " last_tick={}s ago lag={}ms",
+                                                duration_cast<seconds>(now - last_tp).count(),
+                                                st->last_lag_ms.load(std::memory_order_relaxed)) :
+                                            std::string(" last_tick=never"));
     }
 }
 

@@ -28,7 +28,7 @@
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/run_grant_operations_service.hpp"
 #include "ores.iam.core/service/run_grant_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -235,7 +235,7 @@ TEST_CASE("exchange_run_grant_issues_a_token_naming_the_grant_the_run_and_the_se
     const auto signer = signer_for_tests();
     const auto resp = run_grant_operations_service(f.caller(), signer)
                           .exchange_run_grant(exchange_request(f.grant_id, f.tenant_id, "run-1"));
-    BOOST_LOG_SEV(lg, info) << "Response: " << resp.message;
+    ORES_LOG_SEV(lg, info) << "Response: " << resp.message;
 
     REQUIRE(resp.success);
     REQUIRE_FALSE(resp.token.empty());

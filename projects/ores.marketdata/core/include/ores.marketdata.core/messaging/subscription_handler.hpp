@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_SUBSCRIPTION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/subscription_protocol.hpp"
 #include "ores.marketdata.core/service/subscription_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -74,7 +74,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_subscriptions(ores::nats::message msg) {
-        BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,20 +89,20 @@ public:
         }
         auto req = decode<list_subscriptions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::subscription_service svc(req_ctx);
         try {
             auto response = svc.list_subscriptions(*req);
-            BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(subscription_handler_lg(), error)
+            ORES_LOG_SEV(subscription_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_subscriptions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -122,7 +122,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_subscription(ores::nats::message msg) {
-        BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -137,20 +137,20 @@ public:
         }
         auto req = decode<get_subscription_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::subscription_service svc(req_ctx);
         try {
             auto response = svc.get_subscription(*req);
-            BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(subscription_handler_lg(), error)
+            ORES_LOG_SEV(subscription_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_subscription_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -170,7 +170,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_subscriptions(ores::nats::message msg) {
-        BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -185,20 +185,20 @@ public:
         }
         auto req = decode<get_many_subscriptions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::subscription_service svc(req_ctx);
         try {
             auto response = svc.get_many_subscriptions(*req);
-            BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(subscription_handler_lg(), error)
+            ORES_LOG_SEV(subscription_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_subscriptions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -218,7 +218,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_subscription(ores::nats::message msg) {
-        BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -233,20 +233,20 @@ public:
         }
         auto req = decode<put_subscription_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::subscription_service svc(req_ctx);
         try {
             auto response = svc.put_subscription(*req);
-            BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(subscription_handler_lg(), error)
+            ORES_LOG_SEV(subscription_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_subscription_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -266,7 +266,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_subscriptions(ores::nats::message msg) {
-        BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -281,20 +281,20 @@ public:
         }
         auto req = decode<put_many_subscriptions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::subscription_service svc(req_ctx);
         try {
             auto response = svc.put_many_subscriptions(*req);
-            BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(subscription_handler_lg(), error)
+            ORES_LOG_SEV(subscription_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_subscriptions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -314,7 +314,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_subscription(ores::nats::message msg) {
-        BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -329,20 +329,20 @@ public:
         }
         auto req = decode<delete_subscription_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::subscription_service svc(req_ctx);
         try {
             auto response = svc.delete_subscription(*req);
-            BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(subscription_handler_lg(), error)
+            ORES_LOG_SEV(subscription_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_subscription_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -362,7 +362,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_subscriptions(ores::nats::message msg) {
-        BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -377,20 +377,20 @@ public:
         }
         auto req = decode<delete_many_subscriptions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::subscription_service svc(req_ctx);
         try {
             auto response = svc.delete_many_subscriptions(*req);
-            BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(subscription_handler_lg(), error)
+            ORES_LOG_SEV(subscription_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_subscriptions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -410,7 +410,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_subscription_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -425,20 +425,20 @@ public:
         }
         auto req = decode<list_subscription_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::subscription_service svc(req_ctx);
         try {
             auto response = svc.list_subscription_versions(*req);
-            BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(subscription_handler_lg(), error)
+            ORES_LOG_SEV(subscription_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_subscription_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -458,7 +458,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_subscription_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(subscription_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -473,20 +473,20 @@ public:
         }
         auto req = decode<get_subscription_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::subscription_service svc(req_ctx);
         try {
             auto response = svc.get_subscription_version(*req);
-            BOOST_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(subscription_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(subscription_handler_lg(), error)
+            ORES_LOG_SEV(subscription_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_subscription_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

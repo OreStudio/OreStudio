@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_REPOSITORY_LIVE_TENANT_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <set>

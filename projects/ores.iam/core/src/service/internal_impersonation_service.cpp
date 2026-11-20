@@ -19,7 +19,7 @@
  */
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
@@ -69,13 +69,13 @@ std::string internal_impersonation_service::mint_token(const context& ctx,
 
     auto token = signer_.create_token(claims);
     if (!token) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to mint internal impersonation token for account "
-                                   << claims.subject << " (party " << *claims.party_id << ")";
+        ORES_LOG_SEV(lg(), error) << "Failed to mint internal impersonation token for account "
+                                  << claims.subject << " (party " << *claims.party_id << ")";
         return {};
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Minted internal impersonation token: account " << claims.subject
-                              << ", party " << *claims.party_id << ", ttl " << ttl.count() << "s";
+    ORES_LOG_SEV(lg(), info) << "Minted internal impersonation token: account " << claims.subject
+                             << ", party " << *claims.party_id << ", ttl " << ttl.count() << "s";
     return *token;
 }
 

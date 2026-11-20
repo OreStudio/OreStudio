@@ -26,7 +26,6 @@
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.core/repository/dataset_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -491,25 +489,25 @@ dataset_service::prepare_change(const messaging::dataset_change& change,
 
 std::vector<domain::dataset> dataset_service::list_datasets(std::uint32_t offset,
                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all datasets";
+    ORES_LOG_SEV(lg(), debug) << "Listing all datasets";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t dataset_service::count_datasets() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total datasets count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total datasets count";
     return repo_.get_total_dataset_count(ctx_);
 }
 
 
 std::optional<domain::dataset> dataset_service::get_dataset_at_version(const boost::uuids::uuid& id,
                                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting dataset at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting dataset at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::dataset> dataset_service::get_dataset(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting dataset. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting dataset. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -517,7 +515,7 @@ std::optional<domain::dataset> dataset_service::get_dataset(const boost::uuids::
 }
 
 std::optional<domain::dataset> dataset_service::get_dataset_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting dataset by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting dataset by code: " << code;
     messaging::dataset_key k;
     k.code = code;
     auto found = dataset_read_one(repo_, ctx_, k);
@@ -533,11 +531,11 @@ std::vector<domain::dataset> dataset_service::get_datasets(const std::vector<std
 void dataset_service::save_dataset(const domain::dataset& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Dataset id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving dataset. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving dataset. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved dataset. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved dataset. " << "id: " << v.id;
 }
 
 void dataset_service::save_datasets(const std::vector<domain::dataset>& datasets) {
@@ -545,7 +543,7 @@ void dataset_service::save_datasets(const std::vector<domain::dataset>& datasets
         if (e.id.is_nil())
             throw std::invalid_argument("Dataset id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << datasets.size() << " datasets";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << datasets.size() << " datasets";
     auto ts = datasets;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -554,9 +552,9 @@ void dataset_service::save_datasets(const std::vector<domain::dataset>& datasets
 }
 
 void dataset_service::delete_dataset(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing dataset. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing dataset. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed dataset. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed dataset. " << "id: " << id;
 }
 
 void dataset_service::delete_datasets(const std::vector<std::string>& ids) {
@@ -564,7 +562,7 @@ void dataset_service::delete_datasets(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::dataset> dataset_service::get_dataset_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for dataset. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for dataset. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

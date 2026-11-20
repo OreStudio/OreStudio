@@ -31,13 +31,13 @@ change_routes::change_routes(std::shared_ptr<stream::change_hub> hub,
                              std::chrono::milliseconds keep_alive)
     : hub_(std::move(hub))
     , keep_alive_(keep_alive) {
-    BOOST_LOG_SEV(lg(), debug) << "Change routes initialized";
+    ORES_LOG_SEV(lg(), debug) << "Change routes initialized";
 }
 
 void change_routes::register_routes(std::shared_ptr<http::net::router> router,
                                     std::shared_ptr<http::openapi::endpoint_registry> registry) {
 
-    BOOST_LOG_SEV(lg(), info) << "Registering the change stream";
+    ORES_LOG_SEV(lg(), info) << "Registering the change stream";
 
     auto changes = router->get("/api/v1/changes")
                        .summary("Follow the changes")
@@ -75,7 +75,7 @@ void change_routes::register_routes(std::shared_ptr<http::net::router> router,
     router->add_route(watch_built);
     registry->register_route(watch_built);
 
-    BOOST_LOG_SEV(lg(), info) << "Change routes registered: 3 endpoints";
+    ORES_LOG_SEV(lg(), info) << "Change routes registered: 3 endpoints";
 }
 
 std::optional<std::unordered_set<std::string>>
@@ -131,13 +131,13 @@ domain::http_response change_routes::handle_watch(const domain::http_request& re
                                                  "invalid-request",
                                                  "The watch set is not one the browser sends."});
     if (!watches_.watch(session_of(req), std::move(*collections)))
-        BOOST_LOG_SEV(lg(), debug) << "A watch set arrived for a session with no stream open";
+        ORES_LOG_SEV(lg(), debug) << "A watch set arrived for a session with no stream open";
     return domain::http_response::json(R"({"ok":true})");
 }
 
 boost::asio::awaitable<domain::http_response>
 change_routes::handle_changes(const domain::http_request& req, bool watched) {
-    BOOST_LOG_SEV(lg(), debug) << "Opening a change stream";
+    ORES_LOG_SEV(lg(), debug) << "Opening a change stream";
 
     domain::http_response resp;
     resp.status = domain::http_status::ok;
@@ -168,7 +168,7 @@ change_routes::handle_changes(const domain::http_request& req, bool watched) {
     if (const auto seen = req.get_header("last-event-id"); !seen.empty()) {
         resumed = stream::change_hub::read_id(seen);
         if (!resumed) {
-            BOOST_LOG_SEV(lg(), warn) << "Last-Event-ID is not a frame id: " << seen;
+            ORES_LOG_SEV(lg(), warn) << "Last-Event-ID is not a frame id: " << seen;
             // An id no frame of this process could have carried is answered as a gap.
             resumed = stream::change_hub::resume_point{};
         }

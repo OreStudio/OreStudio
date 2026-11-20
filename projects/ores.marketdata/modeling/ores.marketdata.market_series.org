@@ -407,7 +407,7 @@ the data quality publish handler also calls.
 
 #+begin_src cpp :name backfill_identity :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
     void backfill_identity(ores::nats::message msg) {
-        BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(market_series_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -420,7 +420,7 @@ the data quality publish handler also calls.
         }
         auto req = decode<backfill_series_identity_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -448,9 +448,9 @@ the data quality publish handler also calls.
                            " with an unreadable URI, " + std::to_string(done.refused) +
                            " refused by their shape and " + std::to_string(done.unstated) +
                            " in a family no shape states.";
-            BOOST_LOG_SEV(market_series_handler_lg(), info) << msg.subject << ": " << resp.message;
+            ORES_LOG_SEV(market_series_handler_lg(), info) << msg.subject << ": " << resp.message;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_series_handler_lg(), error)
+            ORES_LOG_SEV(market_series_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.message = e.what();
         }
@@ -528,7 +528,7 @@ could not read it.
                            std::chrono::steady_clock::now() - began)
                     .count();
             };
-            BOOST_LOG_SEV(market_series_handler_lg(), info)
+            ORES_LOG_SEV(market_series_handler_lg(), info)
                 << "export_to_storage: exporting for valuation date '"
                 << req->valuation_date.value_or("") << "' to " << req->storage_bucket << "/"
                 << req->storage_key;
@@ -541,7 +541,7 @@ could not read it.
                                                           ores::nats::service::extract_bearer(msg));
             transfer.upload_blob(req->storage_bucket, req->storage_key, written.market_data);
             transfer.upload_blob(req->storage_bucket, req->fixings_storage_key, written.fixings);
-            BOOST_LOG_SEV(market_series_handler_lg(), info)
+            ORES_LOG_SEV(market_series_handler_lg(), info)
                 << "export_to_storage: built the export in " << exported_ms
                 << " ms and uploaded it in " << (since() - exported_ms) << " ms";
 
@@ -554,13 +554,13 @@ could not read it.
             resp.message = "Exported " + std::to_string(written.series_count) +
                            " series as ORE market data to storage.";
 
-            BOOST_LOG_SEV(market_series_handler_lg(), info)
+            ORES_LOG_SEV(market_series_handler_lg(), info)
                 << "export_to_storage: wrote " << written.market_data.size()
                 << " bytes of ORE market data for " << written.series_count << " series ("
                 << written.observation_count << " observations, " << written.fixing_count
                 << " fixings) to " << req->storage_bucket << "/" << req->storage_key;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_series_handler_lg(), error)
+            ORES_LOG_SEV(market_series_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.message = e.what();
         }

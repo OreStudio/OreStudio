@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/instrument_underlying.hpp"
 #include "ores.trading.api/messaging/instrument_underlying_protocol.hpp"
 #include "ores.trading.core/repository/instrument_underlying_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -547,12 +545,12 @@ ores::utility::domain::result instrument_underlying_service::prepare_change(
 std::vector<domain::instrument_underlying>
 instrument_underlying_service::list_instrument_underlyings(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all instrument underlyings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all instrument underlyings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t instrument_underlying_service::count_instrument_underlyings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total instrument underlyings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total instrument underlyings count";
     return repo_.get_total_instrument_underlying_count(ctx_);
 }
 
@@ -561,14 +559,14 @@ std::vector<domain::instrument_underlying>
 instrument_underlying_service::list_instrument_underlyings_by_trade_id(const std::string& trade_id,
                                                                        std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing instrument underlyings by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing instrument underlyings by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t instrument_underlying_service::count_instrument_underlyings_by_trade_id(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total instrument underlyings count by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total instrument underlyings count by trade_id: "
+                              << trade_id;
     return repo_.get_total_instrument_underlying_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -579,11 +577,9 @@ instrument_underlying_service::get_instrument_underlying_at_version(
     const std::string& underlying_role,
     const std::string& sequence_number,
     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument underlying at version. "
-                               << "trade_id: " << trade_id
-                               << " underlying_role: " << underlying_role
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting instrument underlying at version. "
+                              << "trade_id: " << trade_id << " underlying_role: " << underlying_role
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, underlying_role, sequence_number, version);
 }
 
@@ -591,9 +587,9 @@ std::optional<domain::instrument_underlying>
 instrument_underlying_service::get_instrument_underlying(const std::string& trade_id,
                                                          const std::string& underlying_role,
                                                          const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument underlying. " << "trade_id: " << trade_id
-                               << " underlying_role: " << underlying_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting instrument underlying. " << "trade_id: " << trade_id
+                              << " underlying_role: " << underlying_role
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, underlying_role, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -614,15 +610,15 @@ void instrument_underlying_service::save_instrument_underlying(
         throw std::invalid_argument("Instrument Underlying trade_id cannot be empty.");
     if (v.underlying_role.empty())
         throw std::invalid_argument("Instrument Underlying underlying_role cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving instrument underlying. " << "trade_id: " << v.trade_id
-                               << " underlying_role: " << v.underlying_role
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving instrument underlying. " << "trade_id: " << v.trade_id
+                              << " underlying_role: " << v.underlying_role
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved instrument underlying. " << "trade_id: " << v.trade_id
-                              << " underlying_role: " << v.underlying_role
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved instrument underlying. " << "trade_id: " << v.trade_id
+                             << " underlying_role: " << v.underlying_role
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void instrument_underlying_service::save_instrument_underlyings(
@@ -633,8 +629,8 @@ void instrument_underlying_service::save_instrument_underlyings(
         if (e.underlying_role.empty())
             throw std::invalid_argument("Instrument Underlying underlying_role cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << instrument_underlyings.size()
-                               << " instrument underlyings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << instrument_underlyings.size()
+                              << " instrument underlyings";
     auto ts = instrument_underlyings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -646,13 +642,13 @@ void instrument_underlying_service::delete_instrument_underlying(
     const std::string& trade_id,
     const std::string& underlying_role,
     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument underlying. " << "trade_id: " << trade_id
-                               << " underlying_role: " << underlying_role
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, underlying_role, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed instrument underlying. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing instrument underlying. " << "trade_id: " << trade_id
                               << " underlying_role: " << underlying_role
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, underlying_role, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed instrument underlying. " << "trade_id: " << trade_id
+                             << " underlying_role: " << underlying_role
+                             << " sequence_number: " << sequence_number;
 }
 
 void instrument_underlying_service::delete_instrument_underlyings(
@@ -667,10 +663,9 @@ instrument_underlying_service::get_instrument_underlying_history(
     const std::string& trade_id,
     const std::string& underlying_role,
     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument underlying. "
-                               << "trade_id: " << trade_id
-                               << " underlying_role: " << underlying_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for instrument underlying. "
+                              << "trade_id: " << trade_id << " underlying_role: " << underlying_role
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, underlying_role, sequence_number);
 }
 

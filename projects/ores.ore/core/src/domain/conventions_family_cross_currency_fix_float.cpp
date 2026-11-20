@@ -36,8 +36,8 @@ using namespace conventions_fields;
 
 ores::refdata::messaging::cross_currency_fix_float_convention_item
 conventions_mapper::map_cross_currency_fix_float(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency fix-float convention: "
-                               << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping cross-currency fix-float convention: "
+                              << text_of(v, "Id");
 
     ores::refdata::messaging::cross_currency_fix_float_convention_item r;
     refdata::domain::convention central;

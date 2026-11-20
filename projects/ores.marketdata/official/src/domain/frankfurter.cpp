@@ -150,7 +150,7 @@ std::expected<std::vector<published_fixing>, std::string> frankfurter_fetcher::f
     }
     if (refused > 0) {
         misbased_ += refused;
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
+        ORES_LOG_SEV(lg(), ores::logging::warn)
             << "Refused " << refused << " rates of '" << key << "' whose base is not the pivot '"
             << pivot->second << "'";
     }

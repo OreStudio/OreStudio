@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/domain/wire_format.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"

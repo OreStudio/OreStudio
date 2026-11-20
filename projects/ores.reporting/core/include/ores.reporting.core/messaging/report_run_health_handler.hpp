@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
@@ -95,7 +95,7 @@ public:
      * run reads are gated by.
      */
     void get_run_health(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_run_health_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_run_health_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -110,7 +110,7 @@ public:
         }
         auto req = decode<get_run_health_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_run_health_handler_lg(), warn)
+            ORES_LOG_SEV(report_run_health_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -121,10 +121,10 @@ public:
             get_report_instance_health_request read;
             read.instance_ids.push_back(req->report_instance_id);
             const auto response = project_run_health(svc.get_report_instance_health(read));
-            BOOST_LOG_SEV(report_run_health_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_run_health_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_run_health_handler_lg(), error)
+            ORES_LOG_SEV(report_run_health_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_run_health_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

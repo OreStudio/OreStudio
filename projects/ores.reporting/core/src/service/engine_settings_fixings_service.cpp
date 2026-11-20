@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/engine_settings_fixings.hpp"
 #include "ores.reporting.api/messaging/engine_settings_fixings_protocol.hpp"
 #include "ores.reporting.core/repository/engine_settings_fixings_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <chrono>
@@ -45,7 +44,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -517,12 +515,12 @@ ores::utility::domain::result engine_settings_fixings_service::prepare_change(
 std::vector<domain::engine_settings_fixings>
 engine_settings_fixings_service::list_engine_settings_fixings(std::uint32_t offset,
                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all engine settings fixings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all engine settings fixings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t engine_settings_fixings_service::count_engine_settings_fixings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total engine settings fixings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total engine settings fixings count";
     return repo_.get_total_engine_settings_fixings_count(ctx_);
 }
 
@@ -530,14 +528,14 @@ std::uint32_t engine_settings_fixings_service::count_engine_settings_fixings() {
 std::vector<domain::engine_settings_fixings>
 engine_settings_fixings_service::list_engine_settings_fixings_by_engine_settings_id(
     const std::string& engine_settings_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing engine settings fixings by engine_settings_id: "
-                               << engine_settings_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing engine settings fixings by engine_settings_id: "
+                              << engine_settings_id;
     return repo_.read_latest_by_engine_settings_id(ctx_, engine_settings_id, offset, limit);
 }
 
 std::uint32_t engine_settings_fixings_service::count_engine_settings_fixings_by_engine_settings_id(
     const std::string& engine_settings_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total engine settings fixings count by engine_settings_id: "
         << engine_settings_id;
     return repo_.get_total_engine_settings_fixings_count_by_engine_settings_id(ctx_,
@@ -547,15 +545,15 @@ std::uint32_t engine_settings_fixings_service::count_engine_settings_fixings_by_
 std::vector<domain::engine_settings_fixings>
 engine_settings_fixings_service::list_engine_settings_fixings_by_engine_settings_id(
     const boost::uuids::uuid& engine_settings_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing engine settings fixings by engine_settings_id: "
-                               << engine_settings_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing engine settings fixings by engine_settings_id: "
+                              << engine_settings_id;
     return repo_.read_latest_by_engine_settings_id(
         ctx_, boost::uuids::to_string(engine_settings_id), offset, limit);
 }
 
 std::uint32_t engine_settings_fixings_service::count_engine_settings_fixings_by_engine_settings_id(
     const boost::uuids::uuid& engine_settings_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total engine settings fixings count by engine_settings_id: "
         << engine_settings_id;
     return repo_.get_total_engine_settings_fixings_count_by_engine_settings_id(
@@ -568,7 +566,7 @@ engine_settings_fixings_service::list_engine_settings_fixings_by_engine_settings
     const std::string& engine_settings_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Listing engine settings fixings by engine_settings_id as of window: "
         << engine_settings_id;
     return repo_.read_by_engine_settings_id_as_of(
@@ -578,14 +576,14 @@ engine_settings_fixings_service::list_engine_settings_fixings_by_engine_settings
 std::optional<domain::engine_settings_fixings>
 engine_settings_fixings_service::get_engine_settings_fixings_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting engine settings fixings at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting engine settings fixings at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::engine_settings_fixings>
 engine_settings_fixings_service::get_engine_settings_fixings(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting engine settings fixings. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting engine settings fixings. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -601,11 +599,11 @@ void engine_settings_fixings_service::save_engine_settings_fixings(
     const domain::engine_settings_fixings& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Engine Settings Fixings id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving engine settings fixings. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving engine settings fixings. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved engine settings fixings. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved engine settings fixings. " << "id: " << v.id;
 }
 
 void engine_settings_fixings_service::save_engine_settings_fixings(
@@ -614,8 +612,8 @@ void engine_settings_fixings_service::save_engine_settings_fixings(
         if (e.id.is_nil())
             throw std::invalid_argument("Engine Settings Fixings id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << engine_settings_fixings.size()
-                               << " engine settings fixings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << engine_settings_fixings.size()
+                              << " engine settings fixings";
     auto ts = engine_settings_fixings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -624,9 +622,9 @@ void engine_settings_fixings_service::save_engine_settings_fixings(
 }
 
 void engine_settings_fixings_service::delete_engine_settings_fixings(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing engine settings fixings. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing engine settings fixings. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed engine settings fixings. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed engine settings fixings. " << "id: " << id;
 }
 
 void engine_settings_fixings_service::delete_engine_settings_fixings(
@@ -636,7 +634,7 @@ void engine_settings_fixings_service::delete_engine_settings_fixings(
 
 std::vector<domain::engine_settings_fixings>
 engine_settings_fixings_service::get_engine_settings_fixings_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for engine settings fixings. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for engine settings fixings. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

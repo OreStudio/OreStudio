@@ -171,7 +171,7 @@ the machine's id and then reads its states.
 std::vector<domain::fsm_state>
 fsm_state_repository::read_latest_by_machine_name(const context& ctx,
                                                   const std::string& machine_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states for machine: " << machine_name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest fsm states for machine: " << machine_name;
     static constexpr auto max = db_timestamp::max();
 
     // The raw read takes the timestamp as text: MAX_TIMESTAMP is the same
@@ -186,7 +186,7 @@ fsm_state_repository::read_latest_by_machine_name(const context& ctx,
         "Reading fsm machine id by name");
 
     if (machine_ids.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No fsm machine named: " << machine_name;
+        ORES_LOG_SEV(lg(), warn) << "No fsm machine named: " << machine_name;
         return {};
     }
 

@@ -68,7 +68,7 @@ day_counter_classification_rows(const http_request& req, nats_client& session) {
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
     if (reply.total > reply.day_counters.size())
-        BOOST_LOG_SEV(day_counter_classification_routes_lg(), warn)
+        ORES_LOG_SEV(day_counter_classification_routes_lg(), warn)
             << "The day-counter list holds " << reply.total << " rows; one page read "
             << reply.day_counters.size();
     return std::move(reply.day_counters);
@@ -110,9 +110,9 @@ day_counter_classification_routes::handle_list(const http_request& req, nats_cli
         try {
             labels = classification_routes::labels_of(req, session, "day_counter");
         } catch (const rr::refusal& refusal) {
-            BOOST_LOG_SEV(lg(), warn) << "Labels could not be read: " << refusal.message;
+            ORES_LOG_SEV(lg(), warn) << "Labels could not be read: " << refusal.message;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Labels could not be read: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Labels could not be read: " << e.what();
         }
         cr::sort_rows(rows);
         std::string out = "{\"rows\":[";
@@ -125,7 +125,7 @@ day_counter_classification_routes::handle_list(const http_request& req, nats_cli
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -152,7 +152,7 @@ day_counter_classification_routes::handle_create(const http_request& req, nats_c
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -181,7 +181,7 @@ day_counter_classification_routes::handle_update(const http_request& req, nats_c
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -219,7 +219,7 @@ day_counter_classification_routes::handle_order(const http_request& req, nats_cl
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -244,7 +244,7 @@ day_counter_classification_routes::handle_delete(const http_request& req, nats_c
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -271,7 +271,7 @@ day_counter_classification_routes::handle_label(const http_request& req, nats_cl
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -281,7 +281,7 @@ void day_counter_classification_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering the day-counter classification routes";
+    ORES_LOG_SEV(lg(), info) << "Registering the day-counter classification routes";
 
     auto list_route =
         router->get("/api/classifications/day-counter")

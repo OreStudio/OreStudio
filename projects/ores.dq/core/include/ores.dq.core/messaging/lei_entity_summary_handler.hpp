@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -65,7 +65,7 @@ public:
         , verifier_(verifier) {}
 
     void summary(ores::nats::message msg) {
-        BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Handling " << msg.subject;
         /*
          * The payload is read with the deployment's own wire codec, not as
          * JSON: a caller reaches this subject through the platform's transport,
@@ -122,17 +122,17 @@ public:
             }
             resp.success = true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), error)
+            ORES_LOG_SEV(dq_lei_entity_summary_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.error_message = e.what();
         }
-        BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void search(ores::nats::message msg) {
-        BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Handling " << msg.subject;
         const auto parsed = ores::service::messaging::decode<search_lei_entities_request>(msg);
         if (!parsed) {
             search_lei_entities_response err_resp;
@@ -175,12 +175,12 @@ public:
             }
             resp.success = true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), error)
+            ORES_LOG_SEV(dq_lei_entity_summary_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.error_message = e.what();
         }
-        BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 

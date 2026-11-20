@@ -22,7 +22,7 @@
 #include "ores.iam.api/generators/tenant_generator.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -50,7 +50,7 @@ TEST_CASE("write_single_tenant", "[repository]") {
     tenant_repository repo;
     auto t = generate_synthetic_tenant(gen_ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
+    ORES_LOG_SEV(lg, debug) << "Tenant: " << t;
     CHECK_NOTHROW(repo.write(sys_ctx, t));
 }
 
@@ -64,7 +64,7 @@ TEST_CASE("write_multiple_tenants", "[repository]") {
     tenant_repository repo;
     auto tenants = generate_synthetic_tenants(3, gen_ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Tenants: " << tenants;
+    ORES_LOG_SEV(lg, debug) << "Tenants: " << tenants;
     CHECK_NOTHROW(repo.write(sys_ctx, tenants));
 }
 
@@ -78,11 +78,11 @@ TEST_CASE("read_latest_tenants", "[repository]") {
     tenant_repository repo;
     auto written = generate_synthetic_tenants(3, gen_ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Written tenants: " << written;
+    ORES_LOG_SEV(lg, debug) << "Written tenants: " << written;
     repo.write(sys_ctx, written);
 
     auto read_tenants = repo.read_latest(sys_ctx);
-    BOOST_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
+    ORES_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
 
     CHECK(!read_tenants.empty());
     CHECK(read_tenants.size() >= written.size());
@@ -99,13 +99,13 @@ TEST_CASE("read_latest_tenant_by_id", "[repository]") {
     auto t = generate_synthetic_tenant(gen_ctx);
     const auto target_id = t.id;
 
-    BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
+    ORES_LOG_SEV(lg, debug) << "Tenant: " << t;
     repo.write(sys_ctx, t);
 
-    BOOST_LOG_SEV(lg, debug) << "Target ID: " << target_id;
+    ORES_LOG_SEV(lg, debug) << "Target ID: " << target_id;
 
     auto read_tenants = repo.read_latest(sys_ctx, boost::uuids::to_string(target_id));
-    BOOST_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
+    ORES_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
 
     REQUIRE(read_tenants.size() == 1);
     // version, recorded_at and tenant_id are stamped by the database -- a
@@ -132,7 +132,7 @@ TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", "[repositor
     const auto target_id = t.id;
     const auto target_hostname = t.hostname;
 
-    BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
+    ORES_LOG_SEV(lg, debug) << "Tenant: " << t;
     repo.write(sys_ctx, t);
 
     // Tenant rows are system-owned (tenant_id = system, stamped by the
@@ -150,7 +150,7 @@ TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", "[repositor
         h.context().with_tenant(ores::utility::uuid::tenant_id::from_uuid(target_id).value(), "");
 
     auto scoped = repo.read_latest(own_ctx, boost::uuids::to_string(target_id));
-    BOOST_LOG_SEV(lg, debug) << "Repository read under own tenant: " << scoped;
+    ORES_LOG_SEV(lg, debug) << "Repository read under own tenant: " << scoped;
     REQUIRE(scoped.size() == 1);
     // As above: the database stamps version, recorded_at and tenant_id, and
     // every lookup below returns that same row, so one expected object serves
@@ -162,22 +162,22 @@ TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", "[repositor
     CHECK(scoped[0] == expected);
 
     auto by_id = read_active_tenant_by_id(own_ctx, target_id);
-    BOOST_LOG_SEV(lg, debug) << "Read tenants by id: " << by_id;
+    ORES_LOG_SEV(lg, debug) << "Read tenants by id: " << by_id;
     REQUIRE(by_id.size() == 1);
     CHECK(by_id[0] == expected);
 
     auto by_hostname = read_active_tenant_by_hostname(own_ctx, target_hostname);
-    BOOST_LOG_SEV(lg, debug) << "Read tenants by hostname: " << by_hostname;
+    ORES_LOG_SEV(lg, debug) << "Read tenants by hostname: " << by_hostname;
     REQUIRE(by_hostname.size() == 1);
     CHECK(by_hostname[0] == expected);
 
     auto bootstrap_by_id = read_active_tenant_by_id(sys_ctx, target_id);
-    BOOST_LOG_SEV(lg, debug) << "Bootstrap read tenants by id: " << bootstrap_by_id;
+    ORES_LOG_SEV(lg, debug) << "Bootstrap read tenants by id: " << bootstrap_by_id;
     REQUIRE(bootstrap_by_id.size() == 1);
     CHECK(bootstrap_by_id[0] == expected);
 
     auto bootstrap_by_hostname = read_active_tenant_by_hostname(sys_ctx, target_hostname);
-    BOOST_LOG_SEV(lg, debug) << "Bootstrap read tenants by hostname: " << bootstrap_by_hostname;
+    ORES_LOG_SEV(lg, debug) << "Bootstrap read tenants by hostname: " << bootstrap_by_hostname;
     REQUIRE(bootstrap_by_hostname.size() == 1);
     CHECK(bootstrap_by_hostname[0] == expected);
 
@@ -189,15 +189,15 @@ TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", "[repositor
         h.context().with_tenant(ores::utility::uuid::tenant_id::from_uuid(other_id).value(), "");
 
     auto foreign_scoped = repo.read_latest(foreign_ctx, boost::uuids::to_string(target_id));
-    BOOST_LOG_SEV(lg, debug) << "Peer repository read tenants: " << foreign_scoped;
+    ORES_LOG_SEV(lg, debug) << "Peer repository read tenants: " << foreign_scoped;
     CHECK(foreign_scoped.empty());
 
     auto foreign_by_id = read_active_tenant_by_id(foreign_ctx, target_id);
-    BOOST_LOG_SEV(lg, debug) << "Peer read tenants by id: " << foreign_by_id;
+    ORES_LOG_SEV(lg, debug) << "Peer read tenants by id: " << foreign_by_id;
     CHECK(foreign_by_id.empty());
 
     auto foreign_by_hostname = read_active_tenant_by_hostname(foreign_ctx, target_hostname);
-    BOOST_LOG_SEV(lg, debug) << "Peer read tenants by hostname: " << foreign_by_hostname;
+    ORES_LOG_SEV(lg, debug) << "Peer read tenants by hostname: " << foreign_by_hostname;
     CHECK(foreign_by_hostname.empty());
 }
 
@@ -210,10 +210,10 @@ TEST_CASE("read_nonexistent_tenant", "[repository]") {
     tenant_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_tenants = repo.read_latest(sys_ctx, boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
+    ORES_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
 
     CHECK(read_tenants.size() == 0);
 }

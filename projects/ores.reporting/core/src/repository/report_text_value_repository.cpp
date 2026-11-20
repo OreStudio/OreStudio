@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_text_value.hpp"
 #include "ores.reporting.api/domain/report_text_value_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/report_text_value_protocol.hpp"
 #include "ores.reporting.core/repository/report_text_value_entity.hpp"
 #include "ores.reporting.core/repository/report_text_value_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -228,14 +226,14 @@ void report_text_value_repository::write(const context& ctx, const domain::repor
 }
 
 void report_text_value_repository::insert(const context& ctx, const domain::report_text_value& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting report text value. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Inserting report text value. " << "id: " << v.id;
     query_builder::execute_write_query(
         ctx, report_text_value_mapper::map(v), lg(), "Inserting report text value into database.");
 }
 
 void report_text_value_repository::insert(const context& ctx,
                                           const std::vector<domain::report_text_value>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting report text values. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Inserting report text values. Count: " << v.size();
     query_builder::execute_write_query(
         ctx, report_text_value_mapper::map(v), lg(), "Inserting report text values into database.");
 }
@@ -253,7 +251,7 @@ void report_text_value_repository::write(const context& ctx,
 void report_text_value_repository::write(const context& ctx,
                                          const domain::report_text_value& v,
                                          const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report text value. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing report text value. " << "id: " << v.id;
     const auto t =
         report_text_value_apply_claim(v,
                                       claim,
@@ -268,7 +266,7 @@ void report_text_value_repository::write(
     const context& ctx,
     const std::vector<domain::report_text_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report text values. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing report text values. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "report_text_value_repository::write: one claim is needed for each row");
@@ -305,7 +303,7 @@ report_text_value_repository::read_latest(const context& ctx) {
 
 std::vector<domain::report_text_value>
 report_text_value_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report text value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report text value. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -323,7 +321,7 @@ report_text_value_repository::read_latest(const context& ctx, const std::string&
 
 std::vector<domain::report_text_value>
 report_text_value_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all report text value versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all report text value versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_text_value_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -340,7 +338,7 @@ report_text_value_repository::read_all(const context& ctx, const std::string& id
 
 report_text_value_repository::remove_status report_text_value_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report text value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing report text value. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -370,8 +368,8 @@ std::vector<domain::report_text_value> report_text_value_repository::read_latest
     const ores::utility::domain::order& order,
     const std::optional<messaging::report_text_values_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report text values with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report text values with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_text_value_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -393,7 +391,7 @@ std::uint32_t report_text_value_repository::get_total_value_count(
     const context& ctx,
     const std::optional<messaging::report_text_values_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report text value count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active report text value count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_text_value_entity>> |

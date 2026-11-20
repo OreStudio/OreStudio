@@ -20,7 +20,7 @@
 #ifndef ORES_ORE_CORE_HIERARCHY_ORE_HIERARCHY_BUILDER_HPP
 #define ORES_ORE_CORE_HIERARCHY_ORE_HIERARCHY_BUILDER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/hierarchy/import_node.hpp"
 #include <filesystem>

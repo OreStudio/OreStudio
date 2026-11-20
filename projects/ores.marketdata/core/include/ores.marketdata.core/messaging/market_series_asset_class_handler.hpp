@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_MARKET_SERIES_ASSET_CLASS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/market_series_asset_class_protocol.hpp"
 #include "ores.marketdata.core/service/market_series_asset_class_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -75,7 +75,7 @@ public:
      * @brief Serves marketdata.v1.market_series_asset_classes.list.
      */
     void list_market_series_asset_classes(ores::nats::message msg) {
-        BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -90,7 +90,7 @@ public:
         }
         auto req = decode<list_market_series_asset_classes_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), warn)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -98,14 +98,14 @@ public:
         service::market_series_asset_class_service svc(req_ctx);
         try {
             auto response = svc.list_market_series_asset_classes(*req);
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), error)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_market_series_asset_classes_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -119,7 +119,7 @@ public:
      * @brief Serves marketdata.v1.market_series_asset_classes.get.
      */
     void get_market_series_asset_class(ores::nats::message msg) {
-        BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -134,7 +134,7 @@ public:
         }
         auto req = decode<get_market_series_asset_class_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), warn)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -142,14 +142,14 @@ public:
         service::market_series_asset_class_service svc(req_ctx);
         try {
             auto response = svc.get_market_series_asset_class(*req);
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), error)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_market_series_asset_class_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -163,7 +163,7 @@ public:
      * @brief Serves marketdata.v1.market_series_asset_classes.get_many.
      */
     void get_many_market_series_asset_classes(ores::nats::message msg) {
-        BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -178,7 +178,7 @@ public:
         }
         auto req = decode<get_many_market_series_asset_classes_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), warn)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -186,14 +186,14 @@ public:
         service::market_series_asset_class_service svc(req_ctx);
         try {
             auto response = svc.get_many_market_series_asset_classes(*req);
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), error)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_market_series_asset_classes_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -207,7 +207,7 @@ public:
      * @brief Serves marketdata.v1.market_series_asset_classes.put.
      */
     void put_market_series_asset_class(ores::nats::message msg) {
-        BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -222,7 +222,7 @@ public:
         }
         auto req = decode<put_market_series_asset_class_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), warn)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -230,14 +230,14 @@ public:
         service::market_series_asset_class_service svc(req_ctx);
         try {
             auto response = svc.put_market_series_asset_class(*req);
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), error)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_market_series_asset_class_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -251,7 +251,7 @@ public:
      * @brief Serves marketdata.v1.market_series_asset_classes.put_many.
      */
     void put_many_market_series_asset_classes(ores::nats::message msg) {
-        BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -266,7 +266,7 @@ public:
         }
         auto req = decode<put_many_market_series_asset_classes_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), warn)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -274,14 +274,14 @@ public:
         service::market_series_asset_class_service svc(req_ctx);
         try {
             auto response = svc.put_many_market_series_asset_classes(*req);
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), error)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_market_series_asset_classes_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -295,7 +295,7 @@ public:
      * @brief Serves marketdata.v1.market_series_asset_classes.delete.
      */
     void delete_market_series_asset_class(ores::nats::message msg) {
-        BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -310,7 +310,7 @@ public:
         }
         auto req = decode<delete_market_series_asset_class_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), warn)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -318,14 +318,14 @@ public:
         service::market_series_asset_class_service svc(req_ctx);
         try {
             auto response = svc.delete_market_series_asset_class(*req);
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), error)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_market_series_asset_class_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -339,7 +339,7 @@ public:
      * @brief Serves marketdata.v1.market_series_asset_classes.delete_many.
      */
     void delete_many_market_series_asset_classes(ores::nats::message msg) {
-        BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -354,7 +354,7 @@ public:
         }
         auto req = decode<delete_many_market_series_asset_classes_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), warn)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -362,14 +362,14 @@ public:
         service::market_series_asset_class_service svc(req_ctx);
         try {
             auto response = svc.delete_many_market_series_asset_classes(*req);
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), error)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_market_series_asset_classes_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -383,7 +383,7 @@ public:
      * @brief Serves marketdata.v1.market_series_asset_classes.list_by_market_series_id.
      */
     void list_by_market_series_id_market_series_asset_classes(ores::nats::message msg) {
-        BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -398,7 +398,7 @@ public:
         }
         auto req = decode<list_by_market_series_id_market_series_asset_classes_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), warn)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -406,14 +406,14 @@ public:
         service::market_series_asset_class_service svc(req_ctx);
         try {
             auto response = svc.list_by_market_series_id_market_series_asset_classes(*req);
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), debug)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(market_series_asset_class_handler_lg(), error)
+            ORES_LOG_SEV(market_series_asset_class_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_market_series_id_market_series_asset_classes_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

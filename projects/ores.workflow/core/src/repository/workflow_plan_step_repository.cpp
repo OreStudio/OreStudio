@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.workflow.api/domain/workflow_plan_step.hpp"
 #include "ores.workflow.api/domain/workflow_plan_step_json_io.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_plan_step_protocol.hpp"
 #include "ores.workflow.core/repository/workflow_plan_step_entity.hpp"
 #include "ores.workflow.core/repository/workflow_plan_step_mapper.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -226,7 +224,7 @@ void workflow_plan_step_repository::write(const context& ctx,
 void workflow_plan_step_repository::write(const context& ctx,
                                           const domain::workflow_plan_step& v,
                                           const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing workflow plan step. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing workflow plan step. " << "id: " << v.id;
     const auto t =
         workflow_plan_step_apply_claim(v,
                                        claim,
@@ -241,7 +239,7 @@ void workflow_plan_step_repository::write(
     const context& ctx,
     const std::vector<domain::workflow_plan_step>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing workflow plan steps. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing workflow plan steps. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "workflow_plan_step_repository::write: one claim is needed for each row");
@@ -278,7 +276,7 @@ workflow_plan_step_repository::read_latest(const context& ctx) {
 
 std::vector<domain::workflow_plan_step>
 workflow_plan_step_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow plan step. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest workflow plan step. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<workflow_plan_step_entity>> |
                        query_builder::where("id"_c == id && "valid_to"_c == max);
@@ -294,7 +292,7 @@ workflow_plan_step_repository::read_latest(const context& ctx, const std::string
 
 std::vector<domain::workflow_plan_step>
 workflow_plan_step_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all workflow plan step versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all workflow plan step versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<workflow_plan_step_entity>> |
                        query_builder::where("id"_c == id) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
@@ -309,8 +307,8 @@ workflow_plan_step_repository::read_all(const context& ctx, const std::string& i
 
 std::optional<domain::workflow_plan_step> workflow_plan_step_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading workflow plan step at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading workflow plan step at version. " << "id: " << id
+                              << " version: " << version;
     const auto query = query_builder::read<std::vector<workflow_plan_step_entity>> |
                        query_builder::where("id"_c == id && "version"_c == version) |
                        query_builder::limit(1);
@@ -335,8 +333,8 @@ std::vector<domain::workflow_plan_step> workflow_plan_step_repository::read_late
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::workflow_plan_steps_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow plan steps. workflow_id: " << workflow_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest workflow plan steps. workflow_id: " << workflow_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<workflow_plan_step_entity>> |
                        query_builder::where("workflow_id"_c == workflow_id && "valid_to"_c == max) |
@@ -357,8 +355,8 @@ std::uint32_t workflow_plan_step_repository::get_total_plan_step_count_by_workfl
     const context& ctx,
     const std::string& workflow_id,
     const std::optional<messaging::workflow_plan_steps_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workflow plan steps count. workflow_id: "
-                               << workflow_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active workflow plan steps count. workflow_id: "
+                              << workflow_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto query = query_builder::read<std::vector<workflow_plan_step_entity>> |
@@ -375,7 +373,7 @@ std::uint32_t workflow_plan_step_repository::get_total_plan_step_count_by_workfl
 
 workflow_plan_step_repository::remove_status workflow_plan_step_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing workflow plan step. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing workflow plan step. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -414,8 +412,8 @@ std::vector<domain::workflow_plan_step> workflow_plan_step_repository::read_late
     const ores::utility::domain::order& order,
     const std::optional<messaging::workflow_plan_steps_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow plan steps with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest workflow plan steps with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<workflow_plan_step_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -435,7 +433,7 @@ std::uint32_t workflow_plan_step_repository::get_total_plan_step_count(
     const context& ctx,
     const std::optional<messaging::workflow_plan_steps_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workflow plan step count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active workflow plan step count";
 
     const auto query = query_builder::read<std::vector<workflow_plan_step_entity>>;
 

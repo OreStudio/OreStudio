@@ -28,7 +28,7 @@
 #include "ores.compute.api/domain/node_sample.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/node_sample_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::compute::repository {
 

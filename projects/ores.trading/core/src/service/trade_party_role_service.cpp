@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/trade_party_role.hpp"
 #include "ores.trading.api/messaging/trade_party_role_protocol.hpp"
 #include "ores.trading.core/repository/trade_party_role_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -495,40 +493,39 @@ trade_party_role_service::prepare_change(const messaging::trade_party_role_chang
 
 std::vector<domain::trade_party_role> trade_party_role_service::list_roles(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade party roles";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade party roles";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_party_role_service::count_roles() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade party roles count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade party roles count";
     return repo_.get_total_role_count(ctx_);
 }
 
 
 std::vector<domain::trade_party_role> trade_party_role_service::list_roles_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing trade party roles by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing trade party roles by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t trade_party_role_service::count_roles_by_trade_id(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade party roles count by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade party roles count by trade_id: " << trade_id;
     return repo_.get_total_role_count_by_trade_id(ctx_, trade_id);
 }
 
 
 std::optional<domain::trade_party_role> trade_party_role_service::get_role_at_version(
     const std::string& trade_id, const std::string& role, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade party role at version. "
-                               << "trade_id: " << trade_id << " role: " << role
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade party role at version. " << "trade_id: " << trade_id
+                              << " role: " << role << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, role, version);
 }
 
 std::optional<domain::trade_party_role>
 trade_party_role_service::get_role(const std::string& trade_id, const std::string& role) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade party role. " << "trade_id: " << trade_id
-                               << " role: " << role;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade party role. " << "trade_id: " << trade_id
+                              << " role: " << role;
     auto results = repo_.read_latest(ctx_, trade_id, role);
     if (results.empty())
         return std::nullopt;
@@ -546,13 +543,13 @@ void trade_party_role_service::save_role(const domain::trade_party_role& v) {
         throw std::invalid_argument("Trade Party Role trade_id cannot be empty.");
     if (v.role.empty())
         throw std::invalid_argument("Trade Party Role role cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade party role. " << "trade_id: " << v.trade_id
-                               << " role: " << v.role;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade party role. " << "trade_id: " << v.trade_id
+                              << " role: " << v.role;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade party role. " << "trade_id: " << v.trade_id
-                              << " role: " << v.role;
+    ORES_LOG_SEV(lg(), info) << "Saved trade party role. " << "trade_id: " << v.trade_id
+                             << " role: " << v.role;
 }
 
 void trade_party_role_service::save_roles(const std::vector<domain::trade_party_role>& roles) {
@@ -562,7 +559,7 @@ void trade_party_role_service::save_roles(const std::vector<domain::trade_party_
         if (e.role.empty())
             throw std::invalid_argument("Trade Party Role role cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " trade party roles";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " trade party roles";
     auto ts = roles;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -571,11 +568,11 @@ void trade_party_role_service::save_roles(const std::vector<domain::trade_party_
 }
 
 void trade_party_role_service::delete_role(const std::string& trade_id, const std::string& role) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade party role. " << "trade_id: " << trade_id
-                               << " role: " << role;
-    repo_.remove(ctx_, trade_id, role);
-    BOOST_LOG_SEV(lg(), info) << "Removed trade party role. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing trade party role. " << "trade_id: " << trade_id
                               << " role: " << role;
+    repo_.remove(ctx_, trade_id, role);
+    ORES_LOG_SEV(lg(), info) << "Removed trade party role. " << "trade_id: " << trade_id
+                             << " role: " << role;
 }
 
 void trade_party_role_service::delete_roles(const std::vector<std::string>& trade_ids,
@@ -585,8 +582,8 @@ void trade_party_role_service::delete_roles(const std::vector<std::string>& trad
 
 std::vector<domain::trade_party_role>
 trade_party_role_service::get_role_history(const std::string& trade_id, const std::string& role) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade party role. "
-                               << "trade_id: " << trade_id << " role: " << role;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade party role. "
+                              << "trade_id: " << trade_id << " role: " << role;
     return repo_.read_all(ctx_, trade_id, role);
 }
 

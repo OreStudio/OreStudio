@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -449,25 +447,25 @@ country_service::prepare_change(const messaging::country_change& change,
 
 std::vector<domain::country> country_service::list_countries(std::uint32_t offset,
                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all countries";
+    ORES_LOG_SEV(lg(), debug) << "Listing all countries";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t country_service::count_countries() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total countries count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total countries count";
     return repo_.get_total_country_count(ctx_);
 }
 
 
 std::optional<domain::country>
 country_service::get_country_at_version(const std::string& alpha2_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting country at version. " << "alpha2_code: " << alpha2_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting country at version. " << "alpha2_code: " << alpha2_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, alpha2_code, version);
 }
 
 std::optional<domain::country> country_service::get_country(const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting country. " << "alpha2_code: " << alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting country. " << "alpha2_code: " << alpha2_code;
     auto results = repo_.read_latest(ctx_, alpha2_code);
     if (results.empty())
         return std::nullopt;
@@ -482,11 +480,11 @@ country_service::get_countries(const std::vector<std::string>& alpha2_codes) {
 void country_service::save_country(const domain::country& v) {
     if (v.alpha2_code.empty())
         throw std::invalid_argument("Country alpha2_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving country. " << "alpha2_code: " << v.alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving country. " << "alpha2_code: " << v.alpha2_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved country. " << "alpha2_code: " << v.alpha2_code;
+    ORES_LOG_SEV(lg(), info) << "Saved country. " << "alpha2_code: " << v.alpha2_code;
 }
 
 void country_service::save_countries(const std::vector<domain::country>& countries) {
@@ -494,7 +492,7 @@ void country_service::save_countries(const std::vector<domain::country>& countri
         if (e.alpha2_code.empty())
             throw std::invalid_argument("Country alpha2_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << countries.size() << " countries";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << countries.size() << " countries";
     auto ts = countries;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -503,9 +501,9 @@ void country_service::save_countries(const std::vector<domain::country>& countri
 }
 
 void country_service::delete_country(const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing country. " << "alpha2_code: " << alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing country. " << "alpha2_code: " << alpha2_code;
     repo_.remove(ctx_, alpha2_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed country. " << "alpha2_code: " << alpha2_code;
+    ORES_LOG_SEV(lg(), info) << "Removed country. " << "alpha2_code: " << alpha2_code;
 }
 
 void country_service::delete_countries(const std::vector<std::string>& alpha2_codes) {
@@ -513,14 +511,14 @@ void country_service::delete_countries(const std::vector<std::string>& alpha2_co
 }
 
 std::vector<domain::country> country_service::get_country_history(const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for country. " << "alpha2_code: " << alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for country. " << "alpha2_code: " << alpha2_code;
     return repo_.read_all(ctx_, alpha2_code);
 }
 
 std::vector<domain::country> country_service::list_countries_for_party(
     const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing countries for party: " << party_id
-                               << " offset=" << offset << " limit=" << limit;
+    ORES_LOG_SEV(lg(), debug) << "Listing countries for party: " << party_id << " offset=" << offset
+                              << " limit=" << limit;
 
     const auto junctions = junction_repo_.read_latest_by_party(party_id);
     std::unordered_set<std::string> visible;
@@ -543,7 +541,7 @@ std::vector<domain::country> country_service::list_countries_for_party(
 }
 
 std::uint32_t country_service::count_countries_for_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Counting countries for party: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Counting countries for party: " << party_id;
     const auto junctions = junction_repo_.read_latest_by_party(party_id);
     return static_cast<std::uint32_t>(junctions.size());
 }

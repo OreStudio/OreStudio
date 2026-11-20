@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_BUSINESS_UNIT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

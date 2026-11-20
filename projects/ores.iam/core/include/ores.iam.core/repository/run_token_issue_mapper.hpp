@@ -28,7 +28,7 @@
 #include "ores.iam.api/domain/run_token_issue.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/run_token_issue_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::iam::repository {
 

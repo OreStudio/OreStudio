@@ -102,7 +102,7 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
         const auto& codec = ores::nats::default_wire_codec();
         const auto msg = nats.authenticated_request(Req::nats_subject, codec.encode(request));
         const auto took = elapsed_ms();
-        BOOST_LOG_SEV(nats_call_lg(), took > 5000 ? warn : debug)
+        ORES_LOG_SEV(nats_call_lg(), took > 5000 ? warn : debug)
             << Req::nats_subject << " answered in " << took << " ms";
 
         const auto err_it = msg.headers.find("X-Error");
@@ -120,7 +120,7 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
     } catch (const std::exception& e) {
         out_error = std::format(
             "Exception calling {} after {} ms: {}", Req::nats_subject, elapsed_ms(), e.what());
-        BOOST_LOG_SEV(nats_call_lg(), error) << out_error;
+        ORES_LOG_SEV(nats_call_lg(), error) << out_error;
         return std::nullopt;
     }
 }
@@ -170,13 +170,13 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
             service::report_error_recorder recorder(tenant_ctx);
             const auto failure = recorder.record_run_failure(instance_id, error_message);
             if (!failure.empty())
-                BOOST_LOG_SEV(lg(), error) << failure;
-            BOOST_LOG_SEV(lg(), info)
+                ORES_LOG_SEV(lg(), error) << failure;
+            ORES_LOG_SEV(lg(), info)
                 << "Marked report instance " << instance_id << " as failed: " << error_message;
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Failed to mark instance " << instance_id << " as failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Failed to mark instance " << instance_id
+                                  << " as failed: " << e.what();
     }
 }
 
@@ -265,8 +265,8 @@ void report_execution_handler::gather_trades(ores::nats::delivery delivery) {
     const auto& req = *parsed;
     run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
 
-    BOOST_LOG_SEV(lg(), info) << "gather_trades starting | instance=" << req.report_instance_id
-                              << " definition=" << req.definition_id;
+    ORES_LOG_SEV(lg(), info) << "gather_trades starting | instance=" << req.report_instance_id
+                             << " definition=" << req.definition_id;
 
     try {
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
@@ -308,8 +308,8 @@ void report_execution_handler::gather_trades(ores::nats::delivery delivery) {
             return;
         }
 
-        BOOST_LOG_SEV(lg(), info) << "gather_trades: resolved " << book_ids.size()
-                                  << " book(s) in scope";
+        ORES_LOG_SEV(lg(), info) << "gather_trades: resolved " << book_ids.size()
+                                 << " book(s) in scope";
 
         // ── Update instance state to running ─────────────────────────
         service::report_instance_service inst_svc(tenant_ctx);
@@ -366,14 +366,14 @@ void report_execution_handler::gather_trades(ores::nats::delivery delivery) {
         result.message =
             std::format("Gathered {} trades from {} books", exp_resp->trade_count, book_ids.size());
 
-        BOOST_LOG_SEV(lg(), info) << "gather_trades complete | instance=" << req.report_instance_id
-                                  << " trades=" << exp_resp->trade_count
-                                  << " books=" << book_ids.size();
+        ORES_LOG_SEV(lg(), info) << "gather_trades complete | instance=" << req.report_instance_id
+                                 << " trades=" << exp_resp->trade_count
+                                 << " books=" << book_ids.size();
 
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "gather_trades failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "gather_trades failed: " << e.what();
         mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
         std::move(delivery).commit();
@@ -399,8 +399,7 @@ void report_execution_handler::gather_market_data(ores::nats::delivery delivery)
     const auto& req = *parsed;
     run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
 
-    BOOST_LOG_SEV(lg(), info) << "gather_market_data starting | instance="
-                              << req.report_instance_id;
+    ORES_LOG_SEV(lg(), info) << "gather_market_data starting | instance=" << req.report_instance_id;
 
     try {
         // Ask marketdata service to export all series to storage.
@@ -425,10 +424,10 @@ void report_execution_handler::gather_market_data(ores::nats::delivery delivery)
         md_req.storage_bucket = std::string(ores::storage::api::object_keys::ores_bucket);
         md_req.storage_key = key;
         md_req.fixings_storage_key = service::fixings_storage_key(req.report_instance_id);
-        BOOST_LOG_SEV(lg(), info) << "gather_market_data asking marketdata to export | instance="
-                                  << req.report_instance_id
-                                  << " valuation_date=" << md_req.valuation_date.value_or("")
-                                  << " storage_key=" << md_req.storage_key;
+        ORES_LOG_SEV(lg(), info) << "gather_market_data asking marketdata to export | instance="
+                                 << req.report_instance_id
+                                 << " valuation_date=" << md_req.valuation_date.value_or("")
+                                 << " storage_key=" << md_req.storage_key;
 
         std::string err;
         auto owner = run_token_client(req.tenant_id, req.report_instance_id, false, err);
@@ -464,17 +463,17 @@ void report_execution_handler::gather_market_data(ores::nats::delivery delivery)
                 "{} carry a value from an earlier day",
                 md_resp->stale_count,
                 md_resp->carried_forward_count);
-            BOOST_LOG_SEV(lg(), warn) << "gather_market_data left out " << md_resp->stale_count
-                                      << " stale datum(s) | instance=" << req.report_instance_id;
+            ORES_LOG_SEV(lg(), warn) << "gather_market_data left out " << md_resp->stale_count
+                                     << " stale datum(s) | instance=" << req.report_instance_id;
         }
 
-        BOOST_LOG_SEV(lg(), info) << "gather_market_data complete | instance="
-                                  << req.report_instance_id << " series=" << md_resp->series_count;
+        ORES_LOG_SEV(lg(), info) << "gather_market_data complete | instance="
+                                 << req.report_instance_id << " series=" << md_resp->series_count;
 
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "gather_market_data failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "gather_market_data failed: " << e.what();
         mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
         std::move(delivery).commit();
@@ -499,10 +498,10 @@ void report_execution_handler::assemble_bundle(ores::nats::delivery delivery) {
     }
     const auto& req = *parsed;
 
-    BOOST_LOG_SEV(lg(), info) << "assemble_bundle starting | instance=" << req.report_instance_id
-                              << " trades_key=" << req.trades_storage_key
-                              << " market_data_key=" << req.market_data_storage_key
-                              << " fixings_key=" << req.fixings_storage_key;
+    ORES_LOG_SEV(lg(), info) << "assemble_bundle starting | instance=" << req.report_instance_id
+                             << " trades_key=" << req.trades_storage_key
+                             << " market_data_key=" << req.market_data_storage_key
+                             << " fixings_key=" << req.fixings_storage_key;
 
     try {
         if (req.trades_storage_key.empty()) {
@@ -549,13 +548,13 @@ void report_execution_handler::assemble_bundle(ores::nats::delivery delivery) {
                                      req.trade_count,
                                      req.series_count);
 
-        BOOST_LOG_SEV(lg(), info) << "assemble_bundle complete | instance="
-                                  << req.report_instance_id << " bundle=" << bundle_id;
+        ORES_LOG_SEV(lg(), info) << "assemble_bundle complete | instance=" << req.report_instance_id
+                                 << " bundle=" << bundle_id;
 
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "assemble_bundle failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "assemble_bundle failed: " << e.what();
         mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
         std::move(delivery).commit();
@@ -570,7 +569,7 @@ report_execution_handler::read_run_log_rows(const std::string& tenant_id,
         std::string err;
         const auto token = run_token(tenant_id, report_instance_id, err);
         if (token.empty()) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The log rows of result " << result_id << " were not read: " << err;
             return {};
         }
@@ -578,7 +577,7 @@ report_execution_handler::read_run_log_rows(const std::string& tenant_id,
         std::string bucket;
         std::string key;
         if (!ores::storage::net::storage_paths::split_object_path(uri, bucket, key)) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The log rows of result " << result_id << " name no readable location: " << uri;
             return {};
         }
@@ -593,14 +592,14 @@ report_execution_handler::read_run_log_rows(const std::string& tenant_id,
                     reasons += " ";
                 reasons += refusal;
             }
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The log rows of result " << result_id << " were refused: " << reasons;
             return {};
         }
         return read.rows;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "The log rows of result " << result_id
-                                  << " were not read: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "The log rows of result " << result_id
+                                 << " were not read: " << e.what();
         return {};
     }
 }
@@ -612,8 +611,8 @@ report_execution_handler::read_package_log_rows(const std::string& tenant_id,
         std::string err;
         const auto token = run_token(tenant_id, report_instance_id, err);
         if (token.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "The package log of report instance " << report_instance_id
-                                      << " was not read: " << err;
+            ORES_LOG_SEV(lg(), warn) << "The package log of report instance " << report_instance_id
+                                     << " was not read: " << err;
             return {};
         }
         ores::storage::net::storage_transfer transfer(http_base_url_, token);
@@ -623,14 +622,14 @@ report_execution_handler::read_package_log_rows(const std::string& tenant_id,
         const auto read =
             results::read_canonical_log_csv(std::string_view(body.data(), body.size()));
         if (!read.refusals.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "The package log of report instance " << report_instance_id
-                                      << " was refused: " << read.refusals.front();
+            ORES_LOG_SEV(lg(), warn) << "The package log of report instance " << report_instance_id
+                                     << " was refused: " << read.refusals.front();
             return {};
         }
         return read.rows;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "Report instance " << report_instance_id << " stores no package log: " << e.what();
+        ORES_LOG_SEV(lg(), debug) << "Report instance " << report_instance_id
+                                  << " stores no package log: " << e.what();
         return {};
     }
 }
@@ -655,18 +654,18 @@ report_execution_handler::record_run_logs(const std::string& tenant_id,
             ores::database::service::tenant_context::with_tenant(ctx_, tenant_id));
         const auto recorded = recorder.record_engine_errors(report_instance_id, rows);
         if (!recorded.failure.empty()) {
-            BOOST_LOG_SEV(lg(), error) << recorded.failure;
+            ORES_LOG_SEV(lg(), error) << recorded.failure;
             return {};
         }
-        BOOST_LOG_SEV(lg(), info) << "Recorded the log of " << result_ids.size()
-                                  << " result(s) for report instance " << report_instance_id << ": "
-                                  << recorded.stored.errors << " error(s), "
-                                  << recorded.stored.warnings << " warning(s), "
-                                  << recorded.stored.infos << " info row(s)";
+        ORES_LOG_SEV(lg(), info) << "Recorded the log of " << result_ids.size()
+                                 << " result(s) for report instance " << report_instance_id << ": "
+                                 << recorded.stored.errors << " error(s), "
+                                 << recorded.stored.warnings << " warning(s), "
+                                 << recorded.stored.infos << " info row(s)";
         return recorded.stored;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "The log rows of report instance " << report_instance_id
-                                  << " were not recorded: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "The log rows of report instance " << report_instance_id
+                                 << " were not recorded: " << e.what();
         return {};
     }
 }
@@ -690,8 +689,8 @@ void report_execution_handler::collect_results(ores::nats::delivery delivery) {
     const auto& req = *parsed;
     run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
 
-    BOOST_LOG_SEV(lg(), info) << "collect_compute_results starting | instance="
-                              << req.report_instance_id << " batch=" << req.batch_id;
+    ORES_LOG_SEV(lg(), info) << "collect_compute_results starting | instance="
+                             << req.report_instance_id << " batch=" << req.batch_id;
 
     // One way out of this step, so a run that cannot collect its results is
     // recorded as failed rather than left looking like one still working.
@@ -802,14 +801,14 @@ void report_execution_handler::collect_results(ores::nats::delivery delivery) {
         result.success = true;
         result.message = std::format("Retrieved {} bytes of run output to {}", body.size(), key);
 
-        BOOST_LOG_SEV(lg(), info) << "collect_compute_results complete | instance="
-                                  << req.report_instance_id << " output=" << key
-                                  << " bytes=" << body.size();
+        ORES_LOG_SEV(lg(), info) << "collect_compute_results complete | instance="
+                                 << req.report_instance_id << " output=" << key
+                                 << " bytes=" << body.size();
 
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "collect_compute_results failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "collect_compute_results failed: " << e.what();
         mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
         std::move(delivery).commit();
@@ -840,8 +839,8 @@ void report_execution_handler::resolve_prepared_input(ores::nats::delivery deliv
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "resolve_prepared_input complete | instance="
-                              << req.report_instance_id << " input=" << req.prepared_input_key;
+    ORES_LOG_SEV(lg(), info) << "resolve_prepared_input complete | instance="
+                             << req.report_instance_id << " input=" << req.prepared_input_key;
 
     // The archive is named, not read. Answering in the packaging phase's own
     // result type is what lets the substitution be invisible to what follows.
@@ -887,8 +886,8 @@ void report_execution_handler::post_process_results(ores::nats::delivery deliver
     const auto& req = *parsed;
     run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
 
-    BOOST_LOG_SEV(lg(), info) << "post_process_results starting | instance="
-                              << req.report_instance_id << " batch=" << req.batch_id;
+    ORES_LOG_SEV(lg(), info) << "post_process_results starting | instance="
+                             << req.report_instance_id << " batch=" << req.batch_id;
 
     const auto refuse = [&](const std::string& failure) {
         mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
@@ -1057,11 +1056,11 @@ void report_execution_handler::post_process_results(ores::nats::delivery deliver
                 refuse("The run's output was refused: " + reasons_of(read.refusals));
                 return;
             }
-            BOOST_LOG_SEV(lg(), info)
+            ORES_LOG_SEV(lg(), info)
                 << "Read " << read.files_read.size() << " output file(s) of result " << result_id;
             for (const auto& skipped : read.files_skipped)
-                BOOST_LOG_SEV(lg(), info) << "Skipped " << skipped << " of result " << result_id
-                                          << ": its definition does not store the family";
+                ORES_LOG_SEV(lg(), info) << "Skipped " << skipped << " of result " << result_id
+                                         << ": its definition does not store the family";
         }
 
         const auto loaded = metrics_loaded + cashflows_loaded + text_values_loaded;
@@ -1070,10 +1069,10 @@ void report_execution_handler::post_process_results(ores::nats::delivery deliver
             return;
         }
         uow.commit();
-        BOOST_LOG_SEV(lg(), info) << "Loaded " << metrics_loaded << " metric(s), "
-                                  << cashflows_loaded << " cashflow figure(s) and "
-                                  << text_values_loaded << " text value(s) in blocks of "
-                                  << load_block_size;
+        ORES_LOG_SEV(lg(), info) << "Loaded " << metrics_loaded << " metric(s), "
+                                 << cashflows_loaded << " cashflow figure(s) and "
+                                 << text_values_loaded << " text value(s) in blocks of "
+                                 << load_block_size;
 
         // The market state the run priced against belongs to the market data
         // store, and it is far too large to travel in a message: the manifests
@@ -1099,7 +1098,7 @@ void report_execution_handler::post_process_results(ores::nats::delivery deliver
             } else if (answer->result.outcome != ores::utility::domain::outcome::ok) {
                 market_state_note = "Its market state was not stored: " + answer->result.message;
             } else {
-                BOOST_LOG_SEV(lg(), info)
+                ORES_LOG_SEV(lg(), info)
                     << "Stored " << answer->rows << " market-state value(s) from " << answer->files
                     << " file(s) for " << req.report_instance_id;
             }
@@ -1107,7 +1106,7 @@ void report_execution_handler::post_process_results(ores::nats::delivery deliver
             market_state_note = std::string("Its market state was not stored: ") + e.what();
         }
         if (!market_state_note.empty()) {
-            BOOST_LOG_SEV(lg(), error) << market_state_note;
+            ORES_LOG_SEV(lg(), error) << market_state_note;
             market_state_note = " " + market_state_note;
         }
 
@@ -1122,13 +1121,13 @@ void report_execution_handler::post_process_results(ores::nats::delivery deliver
                         req.report_instance_id,
                         market_state_note);
 
-        BOOST_LOG_SEV(lg(), info) << "post_process_results complete | instance="
-                                  << req.report_instance_id << " rows=" << loaded;
+        ORES_LOG_SEV(lg(), info) << "post_process_results complete | instance="
+                                 << req.report_instance_id << " rows=" << loaded;
 
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "post_process_results failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "post_process_results failed: " << e.what();
         mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
         std::move(delivery).commit();
@@ -1153,9 +1152,9 @@ void report_execution_handler::ignore_compute_results(ores::nats::delivery deliv
     }
     const auto& req = *parsed;
 
-    BOOST_LOG_SEV(lg(), info) << "ignore_compute_results complete | instance="
-                              << req.report_instance_id << " batch=" << req.batch_id
-                              << " (results not ingested)";
+    ORES_LOG_SEV(lg(), info) << "ignore_compute_results complete | instance="
+                             << req.report_instance_id << " batch=" << req.batch_id
+                             << " (results not ingested)";
 
     collect_compute_results_result result;
     result.success = true;
@@ -1182,7 +1181,7 @@ void report_execution_handler::finalise(ores::nats::delivery delivery) {
     }
     const auto& req = *parsed;
 
-    BOOST_LOG_SEV(lg(), info) << "finalise starting | instance=" << req.report_instance_id;
+    ORES_LOG_SEV(lg(), info) << "finalise starting | instance=" << req.report_instance_id;
 
     try {
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
@@ -1203,7 +1202,7 @@ void report_execution_handler::finalise(ores::nats::delivery delivery) {
         // The run is terminal, so no token of it may stay in memory.
         run_tokens_.evict_run(req.report_instance_id);
 
-        BOOST_LOG_SEV(lg(), info) << "finalise complete | instance=" << req.report_instance_id;
+        ORES_LOG_SEV(lg(), info) << "finalise complete | instance=" << req.report_instance_id;
 
         finalise_report_result result;
         result.success = true;
@@ -1211,7 +1210,7 @@ void report_execution_handler::finalise(ores::nats::delivery delivery) {
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "finalise failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "finalise failed: " << e.what();
         wf->fail(e.what());
         std::move(delivery).commit();
     }
@@ -1235,8 +1234,8 @@ void report_execution_handler::fail(ores::nats::delivery delivery) {
     }
     const auto& req = *parsed;
 
-    BOOST_LOG_SEV(lg(), info) << "fail (compensation) | instance=" << req.report_instance_id
-                              << " error=" << req.error_message;
+    ORES_LOG_SEV(lg(), info) << "fail (compensation) | instance=" << req.report_instance_id
+                             << " error=" << req.error_message;
 
     try {
         mark_instance_failed(req.tenant_id, req.report_instance_id, req.error_message);
@@ -1247,7 +1246,7 @@ void report_execution_handler::fail(ores::nats::delivery delivery) {
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "fail handler error: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "fail handler error: " << e.what();
         wf->fail(e.what());
         std::move(delivery).commit();
     }

@@ -24,13 +24,11 @@
  */
 #include "ores.trading.core/repository/equity_tarf_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/equity_tarf_instrument.hpp"
 #include "ores.trading.api/domain/equity_tarf_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_tarf_instrument_entity.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
@@ -43,7 +41,7 @@ using namespace ores::database::repository;
 
 domain::equity_tarf_instrument
 equity_tarf_instrument_mapper::map(const equity_tarf_instrument_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::equity_tarf_instrument r;
     r.version = v.version;
@@ -62,13 +60,13 @@ equity_tarf_instrument_mapper::map(const equity_tarf_instrument_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 equity_tarf_instrument_entity
 equity_tarf_instrument_mapper::map(const domain::equity_tarf_instrument& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     equity_tarf_instrument_entity r;
     r.trade_id = v.trade_id;
@@ -86,7 +84,7 @@ equity_tarf_instrument_mapper::map(const domain::equity_tarf_instrument& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

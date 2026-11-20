@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/instrument_catalogue.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
@@ -173,7 +173,7 @@ mm::list_instruments_response list_instruments(const ores::database::context& ct
             // classify them yet, so it says so below rather than inventing a
             // row for one.
             ++skipped;
-            BOOST_LOG_SEV(instrument_catalogue_lg(), debug)
+            ORES_LOG_SEV(instrument_catalogue_lg(), debug)
                 << "Not catalogued, not a datum series: " << series.oresmd_uri;
             continue;
         }

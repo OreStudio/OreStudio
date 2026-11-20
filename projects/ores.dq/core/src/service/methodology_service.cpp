@@ -26,7 +26,6 @@
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.api/messaging/methodology_protocol.hpp"
 #include "ores.dq.core/repository/methodology_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -480,12 +478,12 @@ methodology_service::prepare_change(const messaging::methodology_change& change,
 
 std::vector<domain::methodology> methodology_service::list_methodologies(std::uint32_t offset,
                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all methodologies";
+    ORES_LOG_SEV(lg(), debug) << "Listing all methodologies";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t methodology_service::count_methodologies() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total methodologies count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total methodologies count";
     return repo_.get_total_methodology_count(ctx_);
 }
 
@@ -493,14 +491,14 @@ std::uint32_t methodology_service::count_methodologies() {
 std::optional<domain::methodology>
 methodology_service::get_methodology_at_version(const boost::uuids::uuid& id,
                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting methodology at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting methodology at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::methodology>
 methodology_service::get_methodology(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting methodology. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting methodology. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -509,7 +507,7 @@ methodology_service::get_methodology(const boost::uuids::uuid& id) {
 
 std::optional<domain::methodology>
 methodology_service::get_methodology_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting methodology by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting methodology by name: " << name;
     messaging::methodology_key k;
     k.name = name;
     auto found = methodology_read_one(repo_, ctx_, k);
@@ -526,11 +524,11 @@ methodology_service::get_methodologies(const std::vector<std::string>& ids) {
 void methodology_service::save_methodology(const domain::methodology& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Methodology id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving methodology. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving methodology. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved methodology. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved methodology. " << "id: " << v.id;
 }
 
 void methodology_service::save_methodologies(
@@ -539,7 +537,7 @@ void methodology_service::save_methodologies(
         if (e.id.is_nil())
             throw std::invalid_argument("Methodology id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << methodologies.size() << " methodologies";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << methodologies.size() << " methodologies";
     auto ts = methodologies;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -548,9 +546,9 @@ void methodology_service::save_methodologies(
 }
 
 void methodology_service::delete_methodology(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing methodology. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing methodology. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed methodology. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed methodology. " << "id: " << id;
 }
 
 void methodology_service::delete_methodologies(const std::vector<std::string>& ids) {
@@ -559,7 +557,7 @@ void methodology_service::delete_methodologies(const std::vector<std::string>& i
 
 std::vector<domain::methodology>
 methodology_service::get_methodology_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for methodology. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for methodology. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

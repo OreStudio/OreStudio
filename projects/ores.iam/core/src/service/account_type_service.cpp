@@ -29,10 +29,8 @@
 #include "ores.iam.api/domain/account_type.hpp"
 #include "ores.iam.api/messaging/account_type_protocol.hpp"
 #include "ores.iam.core/repository/account_type_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -441,25 +439,25 @@ account_type_service::prepare_change(const messaging::account_type_change& chang
 
 std::vector<domain::account_type> account_type_service::list_types(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all account types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all account types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t account_type_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total account types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total account types count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::account_type>
 account_type_service::get_type_at_version(const std::string& type, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting account type at version. " << "type: " << type
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting account type at version. " << "type: " << type
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, type, version);
 }
 
 std::optional<domain::account_type> account_type_service::find_type(const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding account type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Finding account type. " << "type: " << type;
     auto results = repo_.read_latest(ctx_, type);
     if (results.empty())
         return std::nullopt;
@@ -474,11 +472,11 @@ account_type_service::get_types(const std::vector<std::string>& types) {
 void account_type_service::save_type(const domain::account_type& v) {
     if (v.type.empty())
         throw std::invalid_argument("Account Type type cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving account type. " << "type: " << v.type;
+    ORES_LOG_SEV(lg(), debug) << "Saving account type. " << "type: " << v.type;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved account type. " << "type: " << v.type;
+    ORES_LOG_SEV(lg(), info) << "Saved account type. " << "type: " << v.type;
 }
 
 void account_type_service::save_types(const std::vector<domain::account_type>& types) {
@@ -486,7 +484,7 @@ void account_type_service::save_types(const std::vector<domain::account_type>& t
         if (e.type.empty())
             throw std::invalid_argument("Account Type type cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " account types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " account types";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -495,9 +493,9 @@ void account_type_service::save_types(const std::vector<domain::account_type>& t
 }
 
 void account_type_service::delete_type(const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Removing account type. " << "type: " << type;
     repo_.remove(ctx_, type);
-    BOOST_LOG_SEV(lg(), info) << "Removed account type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), info) << "Removed account type. " << "type: " << type;
 }
 
 void account_type_service::delete_types(const std::vector<std::string>& types) {
@@ -505,7 +503,7 @@ void account_type_service::delete_types(const std::vector<std::string>& types) {
 }
 
 std::vector<domain::account_type> account_type_service::get_type_history(const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for account type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for account type. " << "type: " << type;
     return repo_.read_all(ctx_, type);
 }
 

@@ -84,7 +84,7 @@ fmt_opt_tp(const std::optional<std::chrono::system_clock::time_point>& opt) {
 } // namespace
 
 void workflow_query_handler::list_instances(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "list_instances request received";
+    ORES_LOG_SEV(lg(), debug) << "list_instances request received";
 
     // Validate JWT and build tenant-scoped context.
     auto ctx_expected = ores::service::service::make_request_context(
@@ -122,7 +122,7 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
         // read_latest uses ctx.tenant_id() for RLS filtering.
         instances = instance_repo_.read_latest(req_ctx);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
         reply(nats_,
               msg,
               list_workflow_instance_summaries_response{.success = false, .message = e.what()});
@@ -196,13 +196,13 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
         resp.instances.push_back(std::move(s));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "list_instances returning " << resp.instances.size()
-                               << " instance(s)";
+    ORES_LOG_SEV(lg(), debug) << "list_instances returning " << resp.instances.size()
+                              << " instance(s)";
     reply(nats_, msg, resp);
 }
 
 void workflow_query_handler::get_steps(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "get_steps request received";
+    ORES_LOG_SEV(lg(), debug) << "get_steps request received";
 
     // Validate JWT and build tenant-scoped context.
     auto ctx_expected = ores::service::service::make_request_context(
@@ -331,13 +331,13 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
         resp.steps.push_back(std::move(ws));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "get_steps returning " << resp.steps.size() << " step(s)"
-                               << " for workflow=" << req->workflow_instance_id;
+    ORES_LOG_SEV(lg(), debug) << "get_steps returning " << resp.steps.size() << " step(s)"
+                              << " for workflow=" << req->workflow_instance_id;
     reply(nats_, msg, resp);
 }
 
 void workflow_query_handler::list_definitions(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "list_definitions request received";
+    ORES_LOG_SEV(lg(), debug) << "list_definitions request received";
 
     list_workflow_definitions_response resp;
     resp.success = true;
@@ -358,8 +358,8 @@ void workflow_query_handler::list_definitions(ores::nats::message msg) {
                 try {
                     steps = def.build_steps("", "", "");
                 } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), warn) << "Definition " << def.type_name
-                                              << " failed to build its steps: " << e.what();
+                    ORES_LOG_SEV(lg(), warn) << "Definition " << def.type_name
+                                             << " failed to build its steps: " << e.what();
                 }
             }
             ds.step_count = static_cast<int>(steps.size());
@@ -384,13 +384,13 @@ void workflow_query_handler::list_definitions(ores::nats::message msg) {
         return a.type_name < b.type_name;
     });
 
-    BOOST_LOG_SEV(lg(), debug) << "list_definitions returning " << resp.definitions.size()
-                               << " definition(s)";
+    ORES_LOG_SEV(lg(), debug) << "list_definitions returning " << resp.definitions.size()
+                              << " definition(s)";
     reply(nats_, msg, resp);
 }
 
 void workflow_query_handler::get_step_result(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "get_step_result request received";
+    ORES_LOG_SEV(lg(), debug) << "get_step_result request received";
 
     auto req = decode<get_step_result_request>(msg);
     if (!req || req->step_id.empty() || req->tenant_id.empty()) {
@@ -420,8 +420,8 @@ void workflow_query_handler::get_step_result(ores::nats::message msg) {
     // This runs on every step dispatch, so it stays off the database.
     const auto tenant = ores::utility::uuid::tenant_id::from_string(req->tenant_id);
     if (!tenant) {
-        BOOST_LOG_SEV(lg(), warn) << "get_step_result names tenant '" << req->tenant_id
-                                  << "', which is not a tenant id.";
+        ORES_LOG_SEV(lg(), warn) << "get_step_result names tenant '" << req->tenant_id
+                                 << "', which is not a tenant id.";
         reply(nats_, msg, get_step_result_response{.found = false});
         return;
     }
@@ -455,7 +455,7 @@ void workflow_query_handler::get_step_result(ores::nats::message msg) {
     const bool is_success =
         step_outcome == outcome::completed || step_outcome == outcome::completed_with_warnings;
 
-    BOOST_LOG_SEV(lg(), debug) << "get_step_result: step=" << req->step_id << " state=" << sname;
+    ORES_LOG_SEV(lg(), debug) << "get_step_result: step=" << req->step_id << " state=" << sname;
 
     std::vector<ores::workflow::messaging::step_log_entry> log;
     if (!step->step_log_json.empty()) {

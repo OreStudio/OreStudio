@@ -108,7 +108,7 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
     }
     auto req = decode<store_market_state_request>(msg);
     if (!req) {
-        BOOST_LOG_SEV(market_state_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        ORES_LOG_SEV(market_state_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         return;
     }
 
@@ -116,7 +116,7 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
     const auto refuse = [&](const std::string& failure) {
         response.result.outcome = ores::utility::domain::outcome::unavailable;
         response.result.message = failure;
-        BOOST_LOG_SEV(market_state_handler_lg(), error) << failure;
+        ORES_LOG_SEV(market_state_handler_lg(), error) << failure;
         reply(nats_, msg, response);
     };
 
@@ -146,7 +146,7 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
     response.left_alone.insert(
         response.left_alone.end(), outcome.skipped.begin(), outcome.skipped.end());
     for (const auto& skipped : outcome.skipped)
-        BOOST_LOG_SEV(market_state_handler_lg(), info)
+        ORES_LOG_SEV(market_state_handler_lg(), info)
             << "store_market_state | instance=" << req->report_instance_id << " skipped " << skipped
             << ": its definition does not store the family";
     response.refusals = outcome.refusals;
@@ -188,7 +188,7 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
     response.result.outcome = ores::utility::domain::outcome::ok;
     response.result.message = std::format(
         "Stored {} market-state value(s) from {} file(s).", response.rows, response.files);
-    BOOST_LOG_SEV(market_state_handler_lg(), info)
+    ORES_LOG_SEV(market_state_handler_lg(), info)
         << "store_market_state | instance=" << req->report_instance_id
         << " files=" << response.files << " rows=" << response.rows;
     reply(nats_, msg, response);

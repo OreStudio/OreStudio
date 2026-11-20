@@ -24,7 +24,7 @@
 #include "ores.inbox.api/messaging/approval_decision_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/text_form.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -225,7 +225,7 @@ notice_events(const http_request& req, nats_client& session, const std::string& 
         if (reply.notifications.size() < page)
             return events;
     }
-    BOOST_LOG_SEV(story_lg(), ores::logging::warn)
+    ORES_LOG_SEV(story_lg(), ores::logging::warn)
         << "The notices about request " << request_id
         << " were read to the page limit; older ones are not in the story.";
     return events;

@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_repo.hpp"
 #include "ores.trading.api/messaging/bond_repo_protocol.hpp"
 #include "ores.trading.core/repository/bond_repo_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -446,25 +444,25 @@ bond_repo_service::prepare_change(const messaging::bond_repo_change& change,
 
 std::vector<domain::bond_repo> bond_repo_service::list_repos(std::uint32_t offset,
                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond repos";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond repos";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_repo_service::count_repos() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond repos count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond repos count";
     return repo_.get_total_repo_count(ctx_);
 }
 
 
 std::optional<domain::bond_repo>
 bond_repo_service::get_repo_at_version(const boost::uuids::uuid& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond repo at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond repo at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::bond_repo> bond_repo_service::get_repo(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond repo. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond repo. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -479,11 +477,11 @@ bond_repo_service::get_repos(const std::vector<std::string>& trade_ids) {
 void bond_repo_service::save_repo(const domain::bond_repo& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Bond Repo trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond repo. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving bond repo. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond repo. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved bond repo. " << "trade_id: " << v.trade_id;
 }
 
 void bond_repo_service::save_repos(const std::vector<domain::bond_repo>& repos) {
@@ -491,7 +489,7 @@ void bond_repo_service::save_repos(const std::vector<domain::bond_repo>& repos) 
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Bond Repo trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << repos.size() << " bond repos";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << repos.size() << " bond repos";
     auto ts = repos;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -500,9 +498,9 @@ void bond_repo_service::save_repos(const std::vector<domain::bond_repo>& repos) 
 }
 
 void bond_repo_service::delete_repo(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond repo. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond repo. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed bond repo. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed bond repo. " << "trade_id: " << trade_id;
 }
 
 void bond_repo_service::delete_repos(const std::vector<std::string>& trade_ids) {
@@ -510,7 +508,7 @@ void bond_repo_service::delete_repos(const std::vector<std::string>& trade_ids) 
 }
 
 std::vector<domain::bond_repo> bond_repo_service::get_repo_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond repo. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond repo. " << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

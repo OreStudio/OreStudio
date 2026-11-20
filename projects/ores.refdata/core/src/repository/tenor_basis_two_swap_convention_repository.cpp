@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
 #include "ores.refdata.api/domain/tenor_basis_two_swap_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/tenor_basis_two_swap_convention_protocol.hpp"
 #include "ores.refdata.core/repository/tenor_basis_two_swap_convention_entity.hpp"
 #include "ores.refdata.core/repository/tenor_basis_two_swap_convention_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -219,7 +217,7 @@ void tenor_basis_two_swap_convention_repository::write(
     const context& ctx,
     const domain::tenor_basis_two_swap_convention& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing two-tenor basis swap convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing two-tenor basis swap convention. " << "id: " << v.id;
     const auto t = tenor_basis_two_swap_convention_apply_claim(
         v,
         claim,
@@ -236,7 +234,7 @@ void tenor_basis_two_swap_convention_repository::write(
     const context& ctx,
     const std::vector<domain::tenor_basis_two_swap_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing two-tenor basis swap conventions. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing two-tenor basis swap conventions. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "tenor_basis_two_swap_convention_repository::write: one claim is needed for each row");
@@ -276,8 +274,7 @@ tenor_basis_two_swap_convention_repository::read_latest(const context& ctx) {
 
 std::vector<domain::tenor_basis_two_swap_convention>
 tenor_basis_two_swap_convention_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest two-tenor basis swap convention. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest two-tenor basis swap convention. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -312,8 +309,8 @@ tenor_basis_two_swap_convention_repository::read_latest(const context& ctx, cons
 
 std::vector<domain::tenor_basis_two_swap_convention>
 tenor_basis_two_swap_convention_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all two-tenor basis swap convention versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all two-tenor basis swap convention versions. "
+                              << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_basis_two_swap_convention_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -332,8 +329,8 @@ std::optional<domain::tenor_basis_two_swap_convention>
 tenor_basis_two_swap_convention_repository::read_at_version(const context& ctx,
                                                             const std::string& id,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading two-tenor basis swap convention at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading two-tenor basis swap convention at version. "
+                              << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<tenor_basis_two_swap_convention_entity>> |
@@ -360,7 +357,7 @@ tenor_basis_two_swap_convention_repository::remove_status
 tenor_basis_two_swap_convention_repository::remove(const context& ctx,
                                                    const std::string& id,
                                                    std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing two-tenor basis swap convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing two-tenor basis swap convention. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -408,8 +405,8 @@ tenor_basis_two_swap_convention_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::tenor_basis_two_swap_conventions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest two-tenor basis swap conventions with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest two-tenor basis swap conventions with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_basis_two_swap_convention_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -432,7 +429,7 @@ tenor_basis_two_swap_convention_repository::get_total_tenor_basis_two_swap_conve
     const context& ctx,
     const std::optional<messaging::tenor_basis_two_swap_conventions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active two-tenor basis swap convention count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active two-tenor basis swap convention count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_basis_two_swap_convention_entity>> |

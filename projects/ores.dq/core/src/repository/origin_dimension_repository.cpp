@@ -31,9 +31,7 @@
 #include "ores.dq.api/messaging/origin_dimension_protocol.hpp"
 #include "ores.dq.core/repository/origin_dimension_entity.hpp"
 #include "ores.dq.core/repository/origin_dimension_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -213,7 +211,7 @@ void origin_dimension_repository::write(const context& ctx,
 void origin_dimension_repository::write(const context& ctx,
                                         const domain::origin_dimension& v,
                                         const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing origin dimension. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing origin dimension. " << "code: " << v.code;
     const auto t = origin_dimension_apply_claim(v,
                                                 claim,
                                                 origin_dimension_claim_reads_current(claim) ?
@@ -227,7 +225,7 @@ void origin_dimension_repository::write(
     const context& ctx,
     const std::vector<domain::origin_dimension>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing origin dimensions. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing origin dimensions. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "origin_dimension_repository::write: one claim is needed for each row");
@@ -262,7 +260,7 @@ std::vector<domain::origin_dimension> origin_dimension_repository::read_latest(c
 
 std::vector<domain::origin_dimension>
 origin_dimension_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest origin dimension. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest origin dimension. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<origin_dimension_entity>> |
                        query_builder::where("code"_c == code && "valid_to"_c == max);
@@ -278,7 +276,7 @@ origin_dimension_repository::read_latest(const context& ctx, const std::string& 
 
 std::vector<domain::origin_dimension>
 origin_dimension_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all origin dimension versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all origin dimension versions. " << "code: " << code;
     const auto query = query_builder::read<std::vector<origin_dimension_entity>> |
                        query_builder::where("code"_c == code) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
@@ -293,8 +291,8 @@ origin_dimension_repository::read_all(const context& ctx, const std::string& cod
 
 std::optional<domain::origin_dimension> origin_dimension_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading origin dimension at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading origin dimension at version. " << "code: " << code
+                              << " version: " << version;
     const auto query = query_builder::read<std::vector<origin_dimension_entity>> |
                        query_builder::where("code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
@@ -314,7 +312,7 @@ std::optional<domain::origin_dimension> origin_dimension_repository::read_at_ver
 
 origin_dimension_repository::remove_status origin_dimension_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing origin dimension. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing origin dimension. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -353,8 +351,8 @@ std::vector<domain::origin_dimension> origin_dimension_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::origin_dimensions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest origin dimensions with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest origin dimensions with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<origin_dimension_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -374,7 +372,7 @@ std::uint32_t origin_dimension_repository::get_total_dimension_count(
     const context& ctx,
     const std::optional<messaging::origin_dimensions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active origin dimension count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active origin dimension count";
 
     const auto query = query_builder::read<std::vector<origin_dimension_entity>>;
 

@@ -97,7 +97,7 @@ void history_commands::process_get(std::ostream& out,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Initiating history read for " << entity_type << " " << entity_id;
+    ORES_LOG_SEV(lg(), debug) << "Initiating history read for " << entity_type << " " << entity_id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to read history." << std::endl;
@@ -114,7 +114,7 @@ void history_commands::process_get(std::ostream& out,
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to read history: " << result->message;
+        ORES_LOG_SEV(lg(), warn) << "Failed to read history: " << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

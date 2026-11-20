@@ -25,7 +25,7 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_ENGINE_SETTINGS_FIXINGS_MAPPER_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_ENGINE_SETTINGS_FIXINGS_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/engine_settings_fixings.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/repository/engine_settings_fixings_entity.hpp"

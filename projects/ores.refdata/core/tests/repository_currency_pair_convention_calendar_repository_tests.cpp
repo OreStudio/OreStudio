@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/calendar.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_calendar_json_io.hpp" // IWYU pragma: keep.
@@ -40,7 +39,6 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
@@ -168,7 +166,7 @@ TEST_CASE("write_single_currency_pair_convention_calendar",
     cal_repo.write(h.context(), {calendars[0]});
 
     auto pcc = make_pair_convention_calendar(h, conventions[0].pair_code, calendars[0].code);
-    BOOST_LOG_SEV(lg, debug) << "Currency pair convention calendar: " << pcc;
+    ORES_LOG_SEV(lg, debug) << "Currency pair convention calendar: " << pcc;
     repo.write(pcc);
 
     const auto read_pccs = repo.read_latest(pcc.pair_code, pcc.calendar_code);
@@ -202,7 +200,7 @@ TEST_CASE("write_multiple_currency_pair_convention_calendars",
         pccs.push_back(make_pair_convention_calendar(h, conventions[1].pair_code, c.code));
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Currency pair convention calendars: " << pccs;
+    ORES_LOG_SEV(lg, debug) << "Currency pair convention calendars: " << pccs;
     repo.write(pccs);
 
     const auto read_pccs = repo.read_latest();
@@ -240,7 +238,7 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair",
     repo.write(pcc);
 
     auto read_pccs = repo.read_latest_by_pair(conventions[3].pair_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency pair convention calendars: " << read_pccs;
+    ORES_LOG_SEV(lg, debug) << "Read currency pair convention calendars: " << read_pccs;
 
     REQUIRE(!read_pccs.empty());
     bool found = false;
@@ -285,7 +283,7 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_returns_full_set_for_p
     repo.write(pccs);
 
     auto read_pccs = repo.read_latest_by_pair(conventions[7].pair_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency pair convention calendars: " << read_pccs;
+    ORES_LOG_SEV(lg, debug) << "Read currency pair convention calendars: " << read_pccs;
 
     std::vector<std::string> read_codes;
     read_codes.reserve(read_pccs.size());
@@ -323,7 +321,7 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_calendar",
     repo.write(pcc);
 
     auto read_pccs = repo.read_latest_by_calendar(calendars[4].code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency pair convention calendars: " << read_pccs;
+    ORES_LOG_SEV(lg, debug) << "Read currency pair convention calendars: " << read_pccs;
 
     REQUIRE(read_pccs.size() >= 1);
     CHECK(read_pccs[0].pair_code == conventions[4].pair_code);

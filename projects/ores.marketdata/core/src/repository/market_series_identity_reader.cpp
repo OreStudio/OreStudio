@@ -19,7 +19,7 @@
  */
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/ore_types.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"

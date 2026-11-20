@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_PARTY_ROLE_TYPE_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_PARTY_ROLE_TYPE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/party_role_type.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/party_role_type_entity.hpp"

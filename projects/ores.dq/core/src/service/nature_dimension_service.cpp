@@ -29,10 +29,8 @@
 #include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.dq.api/messaging/nature_dimension_protocol.hpp"
 #include "ores.dq.core/repository/nature_dimension_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -448,26 +446,26 @@ nature_dimension_service::prepare_change(const messaging::nature_dimension_chang
 
 std::vector<domain::nature_dimension>
 nature_dimension_service::list_dimensions(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all nature dimensions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all nature dimensions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t nature_dimension_service::count_dimensions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total nature dimensions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total nature dimensions count";
     return repo_.get_total_dimension_count(ctx_);
 }
 
 
 std::optional<domain::nature_dimension>
 nature_dimension_service::get_dimension_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting nature dimension at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting nature dimension at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::nature_dimension>
 nature_dimension_service::get_dimension(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting nature dimension. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting nature dimension. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -482,11 +480,11 @@ nature_dimension_service::get_dimensions(const std::vector<std::string>& codes) 
 void nature_dimension_service::save_dimension(const domain::nature_dimension& v) {
     if (v.code.empty())
         throw std::invalid_argument("Nature Dimension code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving nature dimension. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving nature dimension. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved nature dimension. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved nature dimension. " << "code: " << v.code;
 }
 
 void nature_dimension_service::save_dimensions(
@@ -495,7 +493,7 @@ void nature_dimension_service::save_dimensions(
         if (e.code.empty())
             throw std::invalid_argument("Nature Dimension code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << dimensions.size() << " nature dimensions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << dimensions.size() << " nature dimensions";
     auto ts = dimensions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -504,9 +502,9 @@ void nature_dimension_service::save_dimensions(
 }
 
 void nature_dimension_service::delete_dimension(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing nature dimension. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing nature dimension. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed nature dimension. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed nature dimension. " << "code: " << code;
 }
 
 void nature_dimension_service::delete_dimensions(const std::vector<std::string>& codes) {
@@ -515,7 +513,7 @@ void nature_dimension_service::delete_dimensions(const std::vector<std::string>&
 
 std::vector<domain::nature_dimension>
 nature_dimension_service::get_dimension_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for nature dimension. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for nature dimension. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

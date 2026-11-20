@@ -19,7 +19,7 @@
  */
 #include "ores.compute.wrapper/app/claim_loop.hpp"
 #include "ores.compute.api/messaging/claim_pacing.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include <exception>
 #include <random>
@@ -96,8 +96,8 @@ void claim_loop::run() {
     const auto& codec = ores::nats::default_wire_codec();
     int failures = 0;
 
-    BOOST_LOG_SEV(lg(), info) << "Claim loop started for platform " << platform_
-                              << ", polling every " << poll_interval_.count() << " ms";
+    ORES_LOG_SEV(lg(), info) << "Claim loop started for platform " << platform_
+                             << ", polling every " << poll_interval_.count() << " ms";
     while (!stopping_) {
         try {
             const claim_work_request request{.host_id = host_id_, .platform = platform_};
@@ -126,14 +126,14 @@ void claim_loop::run() {
                     .output_files_uri = response->output_files_uri,
                     .logs_uri = response->logs_uri,
                     .storage_token = response->storage_token};
-                BOOST_LOG_SEV(lg(), info) << "Claimed result " << job.result_id << " (attempt "
-                                          << response->attempt << ")";
+                ORES_LOG_SEV(lg(), info) << "Claimed result " << job.result_id << " (attempt "
+                                         << response->attempt << ")";
                 try {
                     on_job_(job);
                 } catch (const std::exception& e) {
                     // The handler reports its own outcome. A failure that escapes it is not a
                     // failed claim, so it does not slow the next ask.
-                    BOOST_LOG_SEV(lg(), error)
+                    ORES_LOG_SEV(lg(), error)
                         << "The job " << job.result_id << " ended with an error: " << e.what();
                 }
                 // The node is free again and asks at once, so a notice that came during the job
@@ -148,12 +148,12 @@ void claim_loop::run() {
         } catch (const std::exception& e) {
             ++failures;
             const auto delay = pacing::error_delay(failures, unit_random());
-            BOOST_LOG_SEV(lg(), warn) << "Claim failed (" << failures << " in a row): " << e.what()
-                                      << "; trying again in " << delay.count() << " ms";
+            ORES_LOG_SEV(lg(), warn) << "Claim failed (" << failures << " in a row): " << e.what()
+                                     << "; trying again in " << delay.count() << " ms";
             wait_for(delay);
         }
     }
-    BOOST_LOG_SEV(lg(), info) << "Claim loop stopped.";
+    ORES_LOG_SEV(lg(), info) << "Claim loop stopped.";
 }
 
 } // namespace ores::compute::wrapper::app

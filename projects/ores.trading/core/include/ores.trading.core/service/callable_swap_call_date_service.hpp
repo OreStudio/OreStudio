@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_CALLABLE_SWAP_CALL_DATE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
 #include "ores.trading.api/messaging/callable_swap_call_date_protocol.hpp"
 #include "ores.trading.core/export.hpp"

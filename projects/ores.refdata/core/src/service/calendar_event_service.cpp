@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/calendar_event.hpp"
 #include "ores.refdata.api/messaging/calendar_event_protocol.hpp"
 #include "ores.refdata.core/repository/calendar_event_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <chrono>
@@ -45,7 +44,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -551,26 +549,26 @@ calendar_event_service::prepare_change(const messaging::calendar_event_change& c
 
 std::vector<domain::calendar_event>
 calendar_event_service::list_calendar_events(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all calendar events";
+    ORES_LOG_SEV(lg(), debug) << "Listing all calendar events";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t calendar_event_service::count_calendar_events() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total calendar events count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total calendar events count";
     return repo_.get_total_calendar_event_count(ctx_);
 }
 
 
 std::vector<domain::calendar_event> calendar_event_service::list_calendar_events_by_calendar_code(
     const std::string& calendar_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing calendar events by calendar_code: " << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing calendar events by calendar_code: " << calendar_code;
     return repo_.read_latest_by_calendar_code(ctx_, calendar_code, offset, limit);
 }
 
 std::uint32_t
 calendar_event_service::count_calendar_events_by_calendar_code(const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total calendar events count by calendar_code: "
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting total calendar events count by calendar_code: "
+                              << calendar_code;
     return repo_.get_total_calendar_event_count_by_calendar_code(ctx_, calendar_code);
 }
 
@@ -580,23 +578,23 @@ calendar_event_service::list_calendar_events_by_calendar_code_as_of(
     const std::string& calendar_code,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing calendar events by calendar_code as of window: "
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing calendar events by calendar_code as of window: "
+                              << calendar_code;
     return repo_.read_by_calendar_code_as_of(ctx_, calendar_code, valid_from_bound, valid_to_bound);
 }
 
 std::vector<domain::calendar_event>
 calendar_event_service::list_calendar_events_by_diary_entry_type(
     const std::string& diary_entry_type, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing calendar events by diary_entry_type: "
-                               << diary_entry_type;
+    ORES_LOG_SEV(lg(), debug) << "Listing calendar events by diary_entry_type: "
+                              << diary_entry_type;
     return repo_.read_latest_by_diary_entry_type(ctx_, diary_entry_type, offset, limit);
 }
 
 std::uint32_t calendar_event_service::count_calendar_events_by_diary_entry_type(
     const std::string& diary_entry_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total calendar events count by diary_entry_type: "
-                               << diary_entry_type;
+    ORES_LOG_SEV(lg(), debug) << "Getting total calendar events count by diary_entry_type: "
+                              << diary_entry_type;
     return repo_.get_total_calendar_event_count_by_diary_entry_type(ctx_, diary_entry_type);
 }
 
@@ -606,8 +604,8 @@ calendar_event_service::list_calendar_events_by_diary_entry_type_as_of(
     const std::string& diary_entry_type,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing calendar events by diary_entry_type as of window: "
-                               << diary_entry_type;
+    ORES_LOG_SEV(lg(), debug) << "Listing calendar events by diary_entry_type as of window: "
+                              << diary_entry_type;
     return repo_.read_by_diary_entry_type_as_of(
         ctx_, diary_entry_type, valid_from_bound, valid_to_bound);
 }
@@ -615,14 +613,14 @@ calendar_event_service::list_calendar_events_by_diary_entry_type_as_of(
 std::optional<domain::calendar_event>
 calendar_event_service::get_calendar_event_at_version(const boost::uuids::uuid& id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calendar event at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting calendar event at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::calendar_event>
 calendar_event_service::get_calendar_event(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calendar event. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting calendar event. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -637,11 +635,11 @@ calendar_event_service::get_calendar_events(const std::vector<std::string>& ids)
 void calendar_event_service::save_calendar_event(const domain::calendar_event& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Calendar Event id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving calendar event. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving calendar event. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved calendar event. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved calendar event. " << "id: " << v.id;
 }
 
 void calendar_event_service::save_calendar_events(
@@ -650,7 +648,7 @@ void calendar_event_service::save_calendar_events(
         if (e.id.is_nil())
             throw std::invalid_argument("Calendar Event id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << calendar_events.size() << " calendar events";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << calendar_events.size() << " calendar events";
     auto ts = calendar_events;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -659,9 +657,9 @@ void calendar_event_service::save_calendar_events(
 }
 
 void calendar_event_service::delete_calendar_event(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar event. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing calendar event. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed calendar event. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed calendar event. " << "id: " << id;
 }
 
 void calendar_event_service::delete_calendar_events(const std::vector<std::string>& ids) {
@@ -670,7 +668,7 @@ void calendar_event_service::delete_calendar_events(const std::vector<std::strin
 
 std::vector<domain::calendar_event>
 calendar_event_service::get_calendar_event_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for calendar event. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for calendar event. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

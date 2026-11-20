@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/report_error_event.hpp"
 #include "ores.reporting.api/messaging/report_error_event_protocol.hpp"
 #include "ores.reporting.core/repository/report_error_event_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -41,7 +40,6 @@
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -241,12 +239,12 @@ report_error_event_service::get_many_report_error_events(
 
 std::vector<domain::report_error_event>
 report_error_event_service::list_errors(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all report error events";
+    ORES_LOG_SEV(lg(), debug) << "Listing all report error events";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t report_error_event_service::count_errors() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report error events count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total report error events count";
     return repo_.get_total_error_count(ctx_);
 }
 
@@ -255,22 +253,22 @@ std::vector<domain::report_error_event>
 report_error_event_service::list_errors_by_report_instance_id(const std::string& report_instance_id,
                                                               std::uint32_t offset,
                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing report error events by report_instance_id: "
-                               << report_instance_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing report error events by report_instance_id: "
+                              << report_instance_id;
     return repo_.read_latest_by_report_instance_id(ctx_, report_instance_id, offset, limit);
 }
 
 std::uint32_t report_error_event_service::count_errors_by_report_instance_id(
     const std::string& report_instance_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report error events count by report_instance_id: "
-                               << report_instance_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total report error events count by report_instance_id: "
+                              << report_instance_id;
     return repo_.get_total_error_count_by_report_instance_id(ctx_, report_instance_id);
 }
 
 
 std::optional<domain::report_error_event>
 report_error_event_service::get_error(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report error event. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting report error event. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -285,11 +283,11 @@ report_error_event_service::get_errors(const std::vector<std::string>& ids) {
 void report_error_event_service::save_error(const domain::report_error_event& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Report Error Event id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report error event. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving report error event. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved report error event. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved report error event. " << "id: " << v.id;
 }
 
 void report_error_event_service::save_errors(
@@ -298,7 +296,7 @@ void report_error_event_service::save_errors(
         if (e.id.is_nil())
             throw std::invalid_argument("Report Error Event id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << errors.size() << " report error events";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << errors.size() << " report error events";
     auto ts = errors;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -307,9 +305,9 @@ void report_error_event_service::save_errors(
 }
 
 void report_error_event_service::delete_error(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report error event. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing report error event. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed report error event. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed report error event. " << "id: " << id;
 }
 
 void report_error_event_service::delete_errors(const std::vector<std::string>& ids) {

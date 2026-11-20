@@ -20,7 +20,7 @@
 #include "ores.http/routes/workflow/story_events.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.http.api/net/record_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/text_form.hpp"
 #include <algorithm>
@@ -208,7 +208,7 @@ story_link_events(std::string_view entity_type,
                 closing.at = ores::utility::codec::text_form<
                     std::chrono::system_clock::time_point>::from_text(closed_at);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(story_events_lg(), ores::logging::warn)
+                ORES_LOG_SEV(story_events_lg(), ores::logging::warn)
                     << "A link of " << entity_type << " states a closing this view cannot place in "
                     << "time, so it is not shown: " << e.what();
                 continue;

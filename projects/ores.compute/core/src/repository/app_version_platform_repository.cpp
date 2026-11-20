@@ -30,9 +30,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -197,9 +195,9 @@ void app_version_platform_repository::write(
 void app_version_platform_repository::write(
     const domain::app_version_platform& app_version_platform,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing app version platform to database: "
-                               << app_version_platform.app_version_id << "/"
-                               << app_version_platform.platform_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing app version platform to database: "
+                              << app_version_platform.app_version_id << "/"
+                              << app_version_platform.platform_id;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(app_version_platform.app_version_id, app_version_platform.platform_id) :
@@ -214,8 +212,8 @@ void app_version_platform_repository::write(
 void app_version_platform_repository::write(
     const std::vector<domain::app_version_platform>& app_version_platforms,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing app version platforms to database. Count: "
-                               << app_version_platforms.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing app version platforms to database. Count: "
+                              << app_version_platforms.size();
     if (claims.size() != app_version_platforms.size())
         throw std::invalid_argument(
             "app_version_platform_repository::write: one claim is needed for each row");
@@ -258,8 +256,8 @@ std::vector<domain::app_version_platform> app_version_platform_repository::read_
 
 std::vector<domain::app_version_platform>
 app_version_platform_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest app version platforms with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest app version platforms with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -281,8 +279,8 @@ app_version_platform_repository::read_latest(std::uint32_t offset, std::uint32_t
 std::vector<domain::app_version_platform>
 app_version_platform_repository::read_latest(const boost::uuids::uuid& app_version_id,
                                              const boost::uuids::uuid& platform_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest app version platform. " << app_version_id << "/"
-                               << platform_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest app version platform. " << app_version_id << "/"
+                              << platform_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
@@ -305,7 +303,7 @@ app_version_platform_repository::read_latest(const boost::uuids::uuid& app_versi
 }
 
 std::uint32_t app_version_platform_repository::get_total_app_version_platform_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active app version platforms count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active app version platforms count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -316,15 +314,15 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
 
     const auto count = query_builder::execute_count_query<app_version_platform_entity>(
         ctx_, query, std::nullopt, lg(), "Counting app version platforms");
-    BOOST_LOG_SEV(lg(), debug) << "Total active app version platforms count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active app version platforms count: " << count;
     return count;
 }
 
 std::vector<domain::app_version_platform>
 app_version_platform_repository::read_latest_by_app_version(
     const boost::uuids::uuid& app_version_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest app version platforms. App Version: "
-                               << app_version_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest app version platforms. App Version: "
+                              << app_version_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
@@ -378,7 +376,7 @@ app_version_platform_repository::read_latest_by_app_version(
 
 std::vector<domain::app_version_platform>
 app_version_platform_repository::read_latest_by_platform(const boost::uuids::uuid& platform_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest app version platforms. Platform: " << platform_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest app version platforms. Platform: " << platform_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto platform_id_str = boost::uuids::to_string(platform_id);
@@ -405,8 +403,8 @@ std::vector<domain::app_version_platform>
 app_version_platform_repository::read_latest_by_app_version(
     const boost::uuids::uuid& app_version_id, std::uint32_t offset, std::uint32_t limit) {
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest app version platforms. App Version: "
-                               << app_version_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest app version platforms. App Version: "
+                              << app_version_id << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -461,7 +459,7 @@ app_version_platform_repository::read_latest_by_app_version(
 std::uint32_t app_version_platform_repository::get_total_app_version_platform_count_by_app_version(
     const boost::uuids::uuid& app_version_id) {
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active app version platforms count. App Version: " << app_version_id;
     static constexpr auto max = db_timestamp::max();
 
@@ -474,16 +472,16 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
 
     const auto count = query_builder::execute_count_query<app_version_platform_entity>(
         ctx_, query, std::nullopt, lg(), "Counting app version platforms");
-    BOOST_LOG_SEV(lg(), debug) << "Total active app version platforms count by app_version: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active app version platforms count by app_version: "
+                              << count;
     return count;
 }
 
 std::uint32_t app_version_platform_repository::get_total_app_version_platform_count_by_platform(
     const boost::uuids::uuid& platform_id) {
     const auto platform_id_str = boost::uuids::to_string(platform_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active app version platforms count. Platform: "
-                               << platform_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active app version platforms count. Platform: "
+                              << platform_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -495,7 +493,7 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
 
     const auto count = query_builder::execute_count_query<app_version_platform_entity>(
         ctx_, query, std::nullopt, lg(), "Counting app version platforms");
-    BOOST_LOG_SEV(lg(), debug) << "Total active app version platforms count by platform: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active app version platforms count by platform: " << count;
     return count;
 }
 
@@ -508,8 +506,8 @@ app_version_platform_repository::remove_status
 app_version_platform_repository::remove(const boost::uuids::uuid& app_version_id,
                                         const boost::uuids::uuid& platform_id,
                                         std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing app version platform from database: " << app_version_id
-                               << "/" << platform_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing app version platform from database: " << app_version_id
+                              << "/" << platform_id;
 
     const auto current = read_latest(app_version_id, platform_id);
     if (current.empty())
@@ -557,8 +555,8 @@ void app_version_platform_repository::remove(const std::vector<boost::uuids::uui
 
 void app_version_platform_repository::remove_by_app_version(
     const boost::uuids::uuid& app_version_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all app version platforms from database: "
-                               << app_version_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all app version platforms from database: "
+                              << app_version_id;
 
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
     const auto tid = ctx_.tenant_id().to_string();

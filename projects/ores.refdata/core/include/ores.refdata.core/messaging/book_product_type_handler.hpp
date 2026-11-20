@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_BOOK_PRODUCT_TYPE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/book_product_type_protocol.hpp"
@@ -74,7 +74,7 @@ public:
      * @brief Serves refdata.v1.book_product_types.list.
      */
     void list_book_product_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,7 +89,7 @@ public:
         }
         auto req = decode<list_book_product_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(book_product_type_handler_lg(), warn)
+            ORES_LOG_SEV(book_product_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -97,13 +97,13 @@ public:
         service::book_product_type_service svc(req_ctx);
         try {
             auto response = svc.list_book_product_types(*req);
-            BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(book_product_type_handler_lg(), error)
+            ORES_LOG_SEV(book_product_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_book_product_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -117,7 +117,7 @@ public:
      * @brief Serves refdata.v1.book_product_types.get.
      */
     void get_book_product_type(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -132,7 +132,7 @@ public:
         }
         auto req = decode<get_book_product_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(book_product_type_handler_lg(), warn)
+            ORES_LOG_SEV(book_product_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -140,13 +140,13 @@ public:
         service::book_product_type_service svc(req_ctx);
         try {
             auto response = svc.get_book_product_type(*req);
-            BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(book_product_type_handler_lg(), error)
+            ORES_LOG_SEV(book_product_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_book_product_type_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -160,7 +160,7 @@ public:
      * @brief Serves refdata.v1.book_product_types.get_many.
      */
     void get_many_book_product_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -175,7 +175,7 @@ public:
         }
         auto req = decode<get_many_book_product_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(book_product_type_handler_lg(), warn)
+            ORES_LOG_SEV(book_product_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -183,13 +183,13 @@ public:
         service::book_product_type_service svc(req_ctx);
         try {
             auto response = svc.get_many_book_product_types(*req);
-            BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(book_product_type_handler_lg(), error)
+            ORES_LOG_SEV(book_product_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_book_product_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -203,7 +203,7 @@ public:
      * @brief Serves refdata.v1.book_product_types.put.
      */
     void put_book_product_type(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -218,7 +218,7 @@ public:
         }
         auto req = decode<put_book_product_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(book_product_type_handler_lg(), warn)
+            ORES_LOG_SEV(book_product_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -226,13 +226,13 @@ public:
         service::book_product_type_service svc(req_ctx);
         try {
             auto response = svc.put_book_product_type(*req);
-            BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(book_product_type_handler_lg(), error)
+            ORES_LOG_SEV(book_product_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_book_product_type_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -246,7 +246,7 @@ public:
      * @brief Serves refdata.v1.book_product_types.put_many.
      */
     void put_many_book_product_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -261,7 +261,7 @@ public:
         }
         auto req = decode<put_many_book_product_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(book_product_type_handler_lg(), warn)
+            ORES_LOG_SEV(book_product_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -269,13 +269,13 @@ public:
         service::book_product_type_service svc(req_ctx);
         try {
             auto response = svc.put_many_book_product_types(*req);
-            BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(book_product_type_handler_lg(), error)
+            ORES_LOG_SEV(book_product_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_book_product_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -289,7 +289,7 @@ public:
      * @brief Serves refdata.v1.book_product_types.delete.
      */
     void delete_book_product_type(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -304,7 +304,7 @@ public:
         }
         auto req = decode<delete_book_product_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(book_product_type_handler_lg(), warn)
+            ORES_LOG_SEV(book_product_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -312,13 +312,13 @@ public:
         service::book_product_type_service svc(req_ctx);
         try {
             auto response = svc.delete_book_product_type(*req);
-            BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(book_product_type_handler_lg(), error)
+            ORES_LOG_SEV(book_product_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_book_product_type_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -332,7 +332,7 @@ public:
      * @brief Serves refdata.v1.book_product_types.delete_many.
      */
     void delete_many_book_product_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -347,7 +347,7 @@ public:
         }
         auto req = decode<delete_many_book_product_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(book_product_type_handler_lg(), warn)
+            ORES_LOG_SEV(book_product_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -355,13 +355,13 @@ public:
         service::book_product_type_service svc(req_ctx);
         try {
             auto response = svc.delete_many_book_product_types(*req);
-            BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(book_product_type_handler_lg(), error)
+            ORES_LOG_SEV(book_product_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_book_product_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -375,7 +375,7 @@ public:
      * @brief Serves refdata.v1.book_product_types.list_by_book_id.
      */
     void list_by_book_id_book_product_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -390,7 +390,7 @@ public:
         }
         auto req = decode<list_by_book_id_book_product_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(book_product_type_handler_lg(), warn)
+            ORES_LOG_SEV(book_product_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -398,13 +398,13 @@ public:
         service::book_product_type_service svc(req_ctx);
         try {
             auto response = svc.list_by_book_id_book_product_types(*req);
-            BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(book_product_type_handler_lg(), error)
+            ORES_LOG_SEV(book_product_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_book_id_book_product_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -418,7 +418,7 @@ public:
      * @brief Serves refdata.v1.book_product_types.list_by_product_type_code.
      */
     void list_by_product_type_code_book_product_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -433,7 +433,7 @@ public:
         }
         auto req = decode<list_by_product_type_code_book_product_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(book_product_type_handler_lg(), warn)
+            ORES_LOG_SEV(book_product_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -441,13 +441,13 @@ public:
         service::book_product_type_service svc(req_ctx);
         try {
             auto response = svc.list_by_product_type_code_book_product_types(*req);
-            BOOST_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(book_product_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(book_product_type_handler_lg(), error)
+            ORES_LOG_SEV(book_product_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_product_type_code_book_product_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

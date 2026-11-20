@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/stress_test_library.hpp"
 #include "ores.analytics.api/messaging/stress_test_library_protocol.hpp"
 #include "ores.analytics.core/repository/stress_test_library_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -460,12 +458,12 @@ stress_test_library_service::prepare_change(const messaging::stress_test_library
 
 std::vector<domain::stress_test_library>
 stress_test_library_service::list_stress_test_libraries(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all stress test libraries";
+    ORES_LOG_SEV(lg(), debug) << "Listing all stress test libraries";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t stress_test_library_service::count_stress_test_libraries() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total stress test libraries count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total stress test libraries count";
     return repo_.get_total_stress_test_library_count(ctx_);
 }
 
@@ -473,14 +471,14 @@ std::uint32_t stress_test_library_service::count_stress_test_libraries() {
 std::optional<domain::stress_test_library>
 stress_test_library_service::get_stress_test_library_at_version(const boost::uuids::uuid& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting stress test library at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting stress test library at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::stress_test_library>
 stress_test_library_service::get_stress_test_library(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting stress test library. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting stress test library. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -495,11 +493,11 @@ stress_test_library_service::get_stress_test_libraries(const std::vector<std::st
 void stress_test_library_service::save_stress_test_library(const domain::stress_test_library& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Stress Test Library id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving stress test library. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving stress test library. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved stress test library. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved stress test library. " << "id: " << v.id;
 }
 
 void stress_test_library_service::save_stress_test_libraries(
@@ -508,8 +506,8 @@ void stress_test_library_service::save_stress_test_libraries(
         if (e.id.is_nil())
             throw std::invalid_argument("Stress Test Library id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << stress_test_libraries.size()
-                               << " stress test libraries";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << stress_test_libraries.size()
+                              << " stress test libraries";
     auto ts = stress_test_libraries;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -518,9 +516,9 @@ void stress_test_library_service::save_stress_test_libraries(
 }
 
 void stress_test_library_service::delete_stress_test_library(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing stress test library. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing stress test library. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed stress test library. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed stress test library. " << "id: " << id;
 }
 
 void stress_test_library_service::delete_stress_test_libraries(
@@ -530,7 +528,7 @@ void stress_test_library_service::delete_stress_test_libraries(
 
 std::vector<domain::stress_test_library>
 stress_test_library_service::get_stress_test_library_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for stress test library. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for stress test library. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

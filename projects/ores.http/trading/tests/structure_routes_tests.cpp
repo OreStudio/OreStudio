@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/trading/structure_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -90,7 +90,7 @@ http_status structures_page_status(const std::string& query) {
 
 TEST_CASE("structures_read_a_type_code_as_a_desk_says_it", "[structure]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing how a type code reads";
+    ORES_LOG_SEV(lg, info) << "Testing how a type code reads";
 
     CHECK(structure_routes::humanised("Swap") == "Swap");
     CHECK(structure_routes::humanised("FxBarrierOption") == "FX Barrier Option");
@@ -102,7 +102,7 @@ TEST_CASE("structures_read_a_type_code_as_a_desk_says_it", "[structure]") {
 
 TEST_CASE("structures_name_the_asset_class_the_desk_uses", "[structure]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the asset class names";
+    ORES_LOG_SEV(lg, info) << "Testing the asset class names";
 
     CHECK(structure_routes::asset_class_named("interest_rates") == "Rates");
     CHECK(structure_routes::asset_class_named("fx") == "FX");
@@ -113,7 +113,7 @@ TEST_CASE("structures_name_the_asset_class_the_desk_uses", "[structure]") {
 
 TEST_CASE("structures_state_how_a_kind_confirms_and_prices", "[structure]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the kind verdicts";
+    ORES_LOG_SEV(lg, info) << "Testing the kind verdicts";
 
     const auto as_one = structure_routes::verdicts_of("Swap");
     CHECK(as_one.confirms == "Confirmed as one document");
@@ -126,7 +126,7 @@ TEST_CASE("structures_state_how_a_kind_confirms_and_prices", "[structure]") {
 
 TEST_CASE("structures_assemble_the_tree_a_structure_sits_in", "[structure]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the tree a page draws";
+    ORES_LOG_SEV(lg, info) << "Testing the tree a page draws";
 
     const std::vector<trading_domain::structure> structures{
         structure_of(structure_child, structure_root, "Swap"),
@@ -166,7 +166,7 @@ TEST_CASE("structures_assemble_the_tree_a_structure_sits_in", "[structure]") {
 
 TEST_CASE("structures_answer_nothing_for_a_structure_they_do_not_hold", "[structure]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a tree for a structure the reads lack";
+    ORES_LOG_SEV(lg, info) << "Testing a tree for a structure the reads lack";
 
     CHECK(structure_routes::tree_json(structure_uuid(structure_root), {}, {}, {}, {}, {}, {}, {}) ==
           "null");
@@ -174,7 +174,7 @@ TEST_CASE("structures_answer_nothing_for_a_structure_they_do_not_hold", "[struct
 
 TEST_CASE("structures_refuse_a_malformed_request", "[structure]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the structure routes' refusals";
+    ORES_LOG_SEV(lg, info) << "Testing the structure routes' refusals";
 
     CHECK(answer_at<structure_routes>(
               http_method::get, "/api/structure-kinds", http_request{}, "/api/structure-kinds")

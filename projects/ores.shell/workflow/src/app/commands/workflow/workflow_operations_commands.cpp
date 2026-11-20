@@ -118,7 +118,7 @@ void workflow_operations_commands::register_commands(cli::Menu& root_menu, nats_
 void workflow_operations_commands::process_step_result(std::ostream& out,
                                                        nats_client& session,
                                                        const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating step-result request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating step-result request.";
 
     using request_type = ores::workflow::messaging::get_step_result_request;
 
@@ -174,7 +174,7 @@ void workflow_operations_commands::process_step_result(std::ostream& out,
 void workflow_operations_commands::process_instances(std::ostream& out,
                                                      nats_client& session,
                                                      const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating instances request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating instances request.";
 
     using request_type = ores::workflow::messaging::list_workflow_instance_summaries_request;
 
@@ -257,7 +257,7 @@ void workflow_operations_commands::process_instances(std::ostream& out,
 void workflow_operations_commands::process_steps(std::ostream& out,
                                                  nats_client& session,
                                                  const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating steps request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating steps request.";
 
     using request_type = ores::workflow::messaging::get_workflow_steps_request;
 
@@ -312,7 +312,7 @@ void workflow_operations_commands::process_steps(std::ostream& out,
 void workflow_operations_commands::process_definitions(std::ostream& out,
                                                        nats_client& session,
                                                        const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating definitions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating definitions request.";
 
     using request_type = ores::workflow::messaging::list_workflow_definitions_request;
 
@@ -365,7 +365,7 @@ void workflow_operations_commands::process_definitions(std::ostream& out,
 void workflow_operations_commands::process_retry(std::ostream& out,
                                                  nats_client& session,
                                                  const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating retry request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating retry request.";
 
     using request_type = ores::workflow::messaging::retry_workflow_instance_request;
 

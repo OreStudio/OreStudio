@@ -22,7 +22,7 @@
 
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>

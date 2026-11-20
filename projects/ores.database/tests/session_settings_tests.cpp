@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>

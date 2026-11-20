@@ -27,8 +27,6 @@
 #include "ores.iam.api/domain/account_status.hpp"
 #include "ores.iam.api/domain/account_status_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/account_status_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::iam::repository {
@@ -37,7 +35,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::account_status account_status_mapper::map(const account_status_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::account_status r;
     r.version = v.version;
@@ -52,12 +50,12 @@ domain::account_status account_status_mapper::map(const account_status_entity& v
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 account_status_entity account_status_mapper::map(const domain::account_status& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     account_status_entity r;
     r.status = v.status;
@@ -71,7 +69,7 @@ account_status_entity account_status_mapper::map(const domain::account_status& v
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

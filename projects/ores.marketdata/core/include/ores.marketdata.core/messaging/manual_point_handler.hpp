@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_MANUAL_POINT_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/service/manual_point_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -83,7 +83,7 @@ public:
 private:
     template <typename Request, typename Response, typename Operation>
     void handle(ores::nats::message msg, Operation operation) {
-        BOOST_LOG_SEV(manual_point_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(manual_point_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -97,7 +97,7 @@ private:
 
         auto req = decode<Request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(manual_point_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(manual_point_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -108,19 +108,19 @@ private:
         } catch (const std::invalid_argument& e) {
             // The identity the caller stated is not one the codec can spell, so it
             // is the request that is wrong rather than the write.
-            BOOST_LOG_SEV(manual_point_handler_lg(), warn)
+            ORES_LOG_SEV(manual_point_handler_lg(), warn)
                 << msg.subject << " rejected: " << e.what();
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(manual_point_handler_lg(), error)
+            ORES_LOG_SEV(manual_point_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             // The exception can name tables or constraints, so it is logged and the
             // caller is told only that the write failed.
             resp.success = false;
             resp.message = "The write failed.";
         }
-        BOOST_LOG_SEV(manual_point_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(manual_point_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 

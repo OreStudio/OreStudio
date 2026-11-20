@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/trade_activity.hpp"
 #include "ores.trading.api/messaging/trade_activity_protocol.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -453,12 +451,12 @@ trade_activity_service::prepare_change(const messaging::trade_activity_change& c
 
 std::vector<domain::trade_activity> trade_activity_service::list_activities(std::uint32_t offset,
                                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade activities";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade activities";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_activity_service::count_activities() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade activities count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade activities count";
     return repo_.get_total_activity_count(ctx_);
 }
 
@@ -466,14 +464,14 @@ std::uint32_t trade_activity_service::count_activities() {
 std::optional<domain::trade_activity>
 trade_activity_service::get_activity_at_version(const boost::uuids::uuid& id,
                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade activity at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade activity at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::trade_activity>
 trade_activity_service::get_activity(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade activity. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade activity. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -488,11 +486,11 @@ trade_activity_service::get_activities(const std::vector<std::string>& ids) {
 void trade_activity_service::save_activity(const domain::trade_activity& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Trade Activity id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade activity. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade activity. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade activity. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved trade activity. " << "id: " << v.id;
 }
 
 void trade_activity_service::save_activities(
@@ -501,7 +499,7 @@ void trade_activity_service::save_activities(
         if (e.id.is_nil())
             throw std::invalid_argument("Trade Activity id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << activities.size() << " trade activities";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << activities.size() << " trade activities";
     auto ts = activities;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -510,9 +508,9 @@ void trade_activity_service::save_activities(
 }
 
 void trade_activity_service::delete_activity(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade activity. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing trade activity. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade activity. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed trade activity. " << "id: " << id;
 }
 
 void trade_activity_service::delete_activities(const std::vector<std::string>& ids) {
@@ -521,7 +519,7 @@ void trade_activity_service::delete_activities(const std::vector<std::string>& i
 
 std::vector<domain::trade_activity>
 trade_activity_service::get_activity_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade activity. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade activity. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

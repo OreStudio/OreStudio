@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_OBSERVATION_LINEAGE_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_OBSERVATION_LINEAGE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_entity.hpp"

@@ -19,7 +19,7 @@
  */
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.api/domain/app_version_platform_json_io.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -39,7 +39,7 @@ TEST_CASE("create_app_version_platform_with_valid_fields", "[domain]") {
     sut.package_uri =
         "/api/v1/storage/ores/compute/packages/ore-1.8.15.0/ore-1.8.15.0-x64-linux.tar.gz";
 
-    BOOST_LOG_SEV(lg, info) << "AppVersionPlatform: " << sut;
+    ORES_LOG_SEV(lg, info) << "AppVersionPlatform: " << sut;
 
     CHECK(sut.platform_code == "x64-linux");
     CHECK(sut.package_uri.find("x64-linux.tar.gz") != std::string::npos);
@@ -60,7 +60,7 @@ TEST_CASE("create_app_version_platform_with_specific_uuids", "[domain]") {
     sut.platform_code = "arm64-osx";
     sut.package_uri = "s3://example/ore-arm64-osx.tar.gz";
 
-    BOOST_LOG_SEV(lg, info) << "AppVersionPlatform: " << sut;
+    ORES_LOG_SEV(lg, info) << "AppVersionPlatform: " << sut;
 
     CHECK(sut.app_version_id == av_id);
     CHECK(sut.platform_id == pl_id);
@@ -80,7 +80,7 @@ TEST_CASE("app_version_platform_insertion_operator_emits_json", "[domain]") {
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "AppVersionPlatform JSON: " << json_output;
+    ORES_LOG_SEV(lg, info) << "AppVersionPlatform JSON: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("x64-windows") != std::string::npos);

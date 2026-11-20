@@ -29,10 +29,8 @@
 #include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.dq.api/messaging/code_domain_protocol.hpp"
 #include "ores.dq.core/repository/code_domain_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -441,25 +439,25 @@ code_domain_service::prepare_change(const messaging::code_domain_change& change,
 
 std::vector<domain::code_domain> code_domain_service::list_domains(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all code domains";
+    ORES_LOG_SEV(lg(), debug) << "Listing all code domains";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t code_domain_service::count_domains() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total code domains count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total code domains count";
     return repo_.get_total_domain_count(ctx_);
 }
 
 
 std::optional<domain::code_domain>
 code_domain_service::get_domain_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting code domain at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting code domain at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::code_domain> code_domain_service::get_domain(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting code domain. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting code domain. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -474,11 +472,11 @@ code_domain_service::get_domains(const std::vector<std::string>& codes) {
 void code_domain_service::save_domain(const domain::code_domain& v) {
     if (v.code.empty())
         throw std::invalid_argument("Code Domain code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving code domain. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving code domain. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved code domain. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved code domain. " << "code: " << v.code;
 }
 
 void code_domain_service::save_domains(const std::vector<domain::code_domain>& domains) {
@@ -486,7 +484,7 @@ void code_domain_service::save_domains(const std::vector<domain::code_domain>& d
         if (e.code.empty())
             throw std::invalid_argument("Code Domain code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << domains.size() << " code domains";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << domains.size() << " code domains";
     auto ts = domains;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -495,9 +493,9 @@ void code_domain_service::save_domains(const std::vector<domain::code_domain>& d
 }
 
 void code_domain_service::delete_domain(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing code domain. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing code domain. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed code domain. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed code domain. " << "code: " << code;
 }
 
 void code_domain_service::delete_domains(const std::vector<std::string>& codes) {
@@ -505,7 +503,7 @@ void code_domain_service::delete_domains(const std::vector<std::string>& codes) 
 }
 
 std::vector<domain::code_domain> code_domain_service::get_domain_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for code domain. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for code domain. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

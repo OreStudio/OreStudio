@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_COUNTERPARTY_IDENTIFIER_CHANGE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier_change.hpp"
 #include "ores.refdata.api/messaging/counterparty_identifier_change_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

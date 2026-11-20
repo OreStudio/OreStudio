@@ -19,7 +19,7 @@
  */
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/publish_helper.hpp"

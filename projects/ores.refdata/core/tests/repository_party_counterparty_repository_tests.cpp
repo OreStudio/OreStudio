@@ -18,8 +18,7 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party_counterparty.hpp"
 #include "ores.refdata.api/domain/party_counterparty_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
@@ -32,7 +31,6 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_helpers.hpp"
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
@@ -86,7 +84,7 @@ TEST_CASE("write_single_party_counterparty", "[repository][party_counterparty]")
     cp_repo.write(h.context(), cp);
 
     auto pc = make_party_counterparty(h, party_id, cp.id);
-    BOOST_LOG_SEV(lg, debug) << "Party counterparty: " << pc;
+    ORES_LOG_SEV(lg, debug) << "Party counterparty: " << pc;
     repo.write(pc);
 
     const auto read_pcs = repo.read_latest(pc.party_id, pc.counterparty_id);
@@ -115,7 +113,7 @@ TEST_CASE("write_multiple_party_counterparties", "[repository][party_counterpart
         pcs.push_back(make_party_counterparty(h, system_party_id, cp.id));
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Party counterparties: " << pcs;
+    ORES_LOG_SEV(lg, debug) << "Party counterparties: " << pcs;
     repo.write(pcs);
 
     const auto read_pcs = repo.read_latest();
@@ -148,7 +146,7 @@ TEST_CASE("read_latest_party_counterparties_by_party", "[repository][party_count
     repo.write(pc);
 
     auto read_pcs = repo.read_latest_by_party(system_party_id);
-    BOOST_LOG_SEV(lg, debug) << "Read party counterparties: " << read_pcs;
+    ORES_LOG_SEV(lg, debug) << "Read party counterparties: " << read_pcs;
 
     REQUIRE(!read_pcs.empty());
     bool found = false;
@@ -181,7 +179,7 @@ TEST_CASE("read_latest_party_counterparties_by_counterparty", "[repository][part
     repo.write(pc);
 
     auto read_pcs = repo.read_latest_by_counterparty(cp.id);
-    BOOST_LOG_SEV(lg, debug) << "Read party counterparties: " << read_pcs;
+    ORES_LOG_SEV(lg, debug) << "Read party counterparties: " << read_pcs;
 
     REQUIRE(read_pcs.size() >= 1);
     CHECK(read_pcs[0].party_id == system_party_id);

@@ -21,7 +21,7 @@
 #define ORES_HTTP_SERVER_APP_APPLICATION_HPP
 
 #include "ores.http.server/config/options.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 

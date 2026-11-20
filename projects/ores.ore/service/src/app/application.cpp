@@ -56,10 +56,10 @@ application::application() = default;
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.ore.service", 0, 1);
-    BOOST_LOG_SEV(lg(), info) << "Storage HTTP base URL: " << cfg.http_base_url;
-    BOOST_LOG_SEV(lg(), info) << "Work directory: " << cfg.work_dir;
+    ORES_LOG_SEV(lg(), info) << "Storage HTTP base URL: " << cfg.http_base_url;
+    ORES_LOG_SEV(lg(), info) << "Work directory: " << cfg.work_dir;
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();

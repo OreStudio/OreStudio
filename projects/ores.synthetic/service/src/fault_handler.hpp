@@ -22,7 +22,7 @@
 
 #include "feed_kind_registry.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -68,13 +68,13 @@ public:
 
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
-            BOOST_LOG_SEV(fault_handler_lg(), warn)
+            ORES_LOG_SEV(fault_handler_lg(), warn)
                 << "Rejecting set_faults request: auth failed: " << static_cast<int>(ctx.error());
             error_reply(nats_, msg, ctx.error());
             return;
         }
         if (!feed_kind_registry::permits_run(*ctx) || !feed_kind_registry::is_system_caller(*ctx)) {
-            BOOST_LOG_SEV(fault_handler_lg(), warn)
+            ORES_LOG_SEV(fault_handler_lg(), warn)
                 << "Rejecting set_faults request: the caller is not the system tenant or may not "
                    "run feeds.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -92,7 +92,7 @@ public:
         }
 
         faults_->set(plan_of(*request));
-        BOOST_LOG_SEV(fault_handler_lg(), info) << "Fault plan set: " << describe(*request);
+        ORES_LOG_SEV(fault_handler_lg(), info) << "Fault plan set: " << describe(*request);
         reply(nats_,
               msg,
               ores::synthetic::messaging::set_faults_response{.success = true,

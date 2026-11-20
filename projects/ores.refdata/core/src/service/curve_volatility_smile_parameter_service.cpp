@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_volatility_smile_parameter.hpp"
 #include "ores.refdata.api/messaging/curve_volatility_smile_parameter_protocol.hpp"
 #include "ores.refdata.core/repository/curve_volatility_smile_parameter_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -481,12 +479,12 @@ ores::utility::domain::result curve_volatility_smile_parameter_service::prepare_
 std::vector<domain::curve_volatility_smile_parameter>
 curve_volatility_smile_parameter_service::list_curve_volatility_smile_parameters(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve volatility smile parameters";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve volatility smile parameters";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_volatility_smile_parameter_service::count_curve_volatility_smile_parameters() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve volatility smile parameters count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve volatility smile parameters count";
     return repo_.get_total_curve_volatility_smile_parameter_count(ctx_);
 }
 
@@ -494,15 +492,15 @@ std::uint32_t curve_volatility_smile_parameter_service::count_curve_volatility_s
 std::optional<domain::curve_volatility_smile_parameter>
 curve_volatility_smile_parameter_service::get_curve_volatility_smile_parameter_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve volatility smile parameter at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve volatility smile parameter at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_volatility_smile_parameter>
 curve_volatility_smile_parameter_service::get_curve_volatility_smile_parameter(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve volatility smile parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve volatility smile parameter. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -519,11 +517,11 @@ void curve_volatility_smile_parameter_service::save_curve_volatility_smile_param
     const domain::curve_volatility_smile_parameter& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Volatility Smile Parameter id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve volatility smile parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve volatility smile parameter. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve volatility smile parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve volatility smile parameter. " << "id: " << v.id;
 }
 
 void curve_volatility_smile_parameter_service::save_curve_volatility_smile_parameters(
@@ -533,8 +531,8 @@ void curve_volatility_smile_parameter_service::save_curve_volatility_smile_param
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Volatility Smile Parameter id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << curve_volatility_smile_parameters.size()
-                               << " curve volatility smile parameters";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << curve_volatility_smile_parameters.size()
+                              << " curve volatility smile parameters";
     auto ts = curve_volatility_smile_parameters;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -544,9 +542,9 @@ void curve_volatility_smile_parameter_service::save_curve_volatility_smile_param
 
 void curve_volatility_smile_parameter_service::delete_curve_volatility_smile_parameter(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve volatility smile parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve volatility smile parameter. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve volatility smile parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve volatility smile parameter. " << "id: " << id;
 }
 
 void curve_volatility_smile_parameter_service::delete_curve_volatility_smile_parameters(
@@ -557,8 +555,8 @@ void curve_volatility_smile_parameter_service::delete_curve_volatility_smile_par
 std::vector<domain::curve_volatility_smile_parameter>
 curve_volatility_smile_parameter_service::get_curve_volatility_smile_parameter_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve volatility smile parameter. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve volatility smile parameter. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

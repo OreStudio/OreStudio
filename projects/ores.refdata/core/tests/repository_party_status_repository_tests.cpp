@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party_status.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_status_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/party_status_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -46,7 +44,7 @@ TEST_CASE("write_single_party_status", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto ps = generate_synthetic_party_status(ctx);
     ps.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Party status: " << ps;
+    ORES_LOG_SEV(lg, debug) << "Party status: " << ps;
 
     party_status_repository repo;
     repo.write(h.context(), ps);
@@ -65,7 +63,7 @@ TEST_CASE("write_multiple_party_statuses", "[repository]") {
     for (auto& ps : party_statuses) {
         ps.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Party statuses: " << party_statuses;
+    ORES_LOG_SEV(lg, debug) << "Party statuses: " << party_statuses;
 
     party_status_repository repo;
     repo.write(h.context(), party_statuses);
@@ -88,13 +86,13 @@ TEST_CASE("read_latest_party_statuses", "[repository]") {
     for (auto& ps : written_party_statuses) {
         ps.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written party statuses: " << written_party_statuses;
+    ORES_LOG_SEV(lg, debug) << "Written party statuses: " << written_party_statuses;
 
     party_status_repository repo;
     repo.write(h.context(), written_party_statuses);
 
     auto read_party_statuses = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
+    ORES_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
 
     for (const auto& written : written_party_statuses) {
         const auto it = std::ranges::find_if(
@@ -112,7 +110,7 @@ TEST_CASE("read_latest_party_status_by_code", "[repository]") {
     auto ps = generate_synthetic_party_status(ctx);
     ps.change_reason_code = "system.test";
     const auto original_name = ps.name;
-    BOOST_LOG_SEV(lg, debug) << "Party status: " << ps;
+    ORES_LOG_SEV(lg, debug) << "Party status: " << ps;
 
     party_status_repository repo;
     repo.write(h.context(), ps);
@@ -121,7 +119,7 @@ TEST_CASE("read_latest_party_status_by_code", "[repository]") {
     repo.write(h.context(), ps);
 
     auto read_party_statuses = repo.read_latest(h.context(), ps.code);
-    BOOST_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
+    ORES_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
 
     REQUIRE(read_party_statuses.size() == 1);
     CHECK(read_party_statuses[0].code == ps.code);
@@ -142,10 +140,10 @@ TEST_CASE("read_nonexistent_party_status_code", "[repository]") {
     repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_party_statuses = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
+    ORES_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
 
     const auto answered_with_another_key = std::ranges::any_of(
         read_party_statuses, [&](const party_status& ps) { return ps.code == nonexistent_code; });

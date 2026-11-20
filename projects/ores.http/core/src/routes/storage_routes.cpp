@@ -220,14 +220,14 @@ storage_routes::storage_routes(std::string storage_dir,
     : store_(std::move(storage_dir))
     , auth_service_(std::move(auth_service))
     , max_upload_bytes_(max_upload_bytes) {
-    BOOST_LOG_SEV(lg(), debug) << "Storage routes dir: " << store_.root().string();
+    ORES_LOG_SEV(lg(), debug) << "Storage routes dir: " << store_.root().string();
 }
 
 void storage_routes::register_routes(
     std::shared_ptr<http::net::router> router,
     std::shared_ptr<http::openapi::endpoint_registry> /*registry*/) {
 
-    BOOST_LOG_SEV(lg(), info) << "Registering storage routes";
+    ORES_LOG_SEV(lg(), info) << "Registering storage routes";
 
     // The prefix is the contract's, not this file's, so the routes and the
     // callers that build URLs from it cannot drift apart.
@@ -303,7 +303,7 @@ void storage_routes::register_routes(
             .handler([this](const http_request& req) { return handle_list(req); })
             .build());
 
-    BOOST_LOG_SEV(lg(), info) << "Storage routes registered: 5 endpoints";
+    ORES_LOG_SEV(lg(), info) << "Storage routes registered: 5 endpoints";
 }
 
 std::expected<storage_routes::auth_result, http_response>
@@ -315,7 +315,7 @@ storage_routes::check_auth(const http_request& req,
                            std::string_view key) {
 
     if (!req.authenticated_user) {
-        BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: not authenticated";
+        ORES_LOG_SEV(lg(), warn) << operation_name << " denied: not authenticated";
         return std::unexpected(http_response::unauthorized("Not authenticated"));
     }
 
@@ -325,8 +325,8 @@ storage_routes::check_auth(const http_request& req,
     if (!req.authenticated_user->storage_grants.empty()) {
         if (capability_allows(*req.authenticated_user, grant_op, bucket, key))
             return auth_result{};
-        BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: the capability does not name "
-                                  << grant_op << " on " << bucket << "/" << key;
+        ORES_LOG_SEV(lg(), warn) << operation_name << " denied: the capability does not name "
+                                 << grant_op << " on " << bucket << "/" << key;
         return std::unexpected(http_response::forbidden("Outside the capability's scope"));
     }
 
@@ -334,16 +334,16 @@ storage_routes::check_auth(const http_request& req,
     try {
         account_id = boost::uuids::string_generator()(req.authenticated_user->subject);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << operation_name << " failed: invalid account id in the token: " << e.what();
+        ORES_LOG_SEV(lg(), error) << operation_name
+                                  << " failed: invalid account id in the token: " << e.what();
         return std::unexpected(http_response::unauthorized("Invalid token"));
     }
 
     if (auth_service_ &&
         !auth_service_->has_permission(account_id, std::string(required_permission))) {
-        BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: account "
-                                  << boost::uuids::to_string(account_id) << " lacks "
-                                  << required_permission;
+        ORES_LOG_SEV(lg(), warn) << operation_name << " denied: account "
+                                 << boost::uuids::to_string(account_id) << " lacks "
+                                 << required_permission;
         return std::unexpected(http_response::forbidden("Insufficient permissions"));
     }
 
@@ -360,7 +360,7 @@ asio::awaitable<http_response> storage_routes::handle_put(const http_request& re
     if (!store_.is_valid_key(bucket, key))
         co_return http_response::bad_request("Invalid bucket or key: " + bucket);
 
-    BOOST_LOG_SEV(lg(), debug) << "PUT " << bucket << "/" << key;
+    ORES_LOG_SEV(lg(), debug) << "PUT " << bucket << "/" << key;
 
     /*
      * The bytes are already on disk: the session streamed them into the sink
@@ -369,13 +369,13 @@ asio::awaitable<http_response> storage_routes::handle_put(const http_request& re
      */
     auto* sink = dynamic_cast<storage_upload_sink*>(req.sink);
     if (sink == nullptr) {
-        BOOST_LOG_SEV(lg(), error)
-            << "PUT " << bucket << "/" << key << " arrived without a streamed body";
+        ORES_LOG_SEV(lg(), error) << "PUT " << bucket << "/" << key
+                                  << " arrived without a streamed body";
         co_return http_response::internal_error("The upload was not streamed.");
     }
 
     if (!sink->publish()) {
-        BOOST_LOG_SEV(lg(), error) << "PUT " << bucket << "/" << key << " could not be published";
+        ORES_LOG_SEV(lg(), error) << "PUT " << bucket << "/" << key << " could not be published";
         co_return http_response::internal_error("The object could not be stored.");
     }
 
@@ -399,7 +399,7 @@ asio::awaitable<http_response> storage_routes::handle_get(const http_request& re
     if (!store_.is_valid_key(bucket, key))
         co_return http_response::bad_request("Invalid bucket or key: " + bucket);
 
-    BOOST_LOG_SEV(lg(), debug) << "GET " << bucket << "/" << key;
+    ORES_LOG_SEV(lg(), debug) << "GET " << bucket << "/" << key;
 
     const auto path = store_.resolve(bucket, key);
     if (!path || !store_.exists(bucket, key))
@@ -462,7 +462,7 @@ asio::awaitable<http_response> storage_routes::handle_get(const http_request& re
                                         std::to_string(last) + "/" + std::to_string(total);
         co_return resp;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "GET error: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "GET error: " << e.what();
         co_return http_response::internal_error(e.what());
     }
 }
@@ -477,7 +477,7 @@ asio::awaitable<http_response> storage_routes::handle_head(const http_request& r
     if (!store_.is_valid_key(bucket, key))
         co_return http_response::bad_request("Invalid bucket or key: " + bucket);
 
-    BOOST_LOG_SEV(lg(), debug) << "HEAD " << bucket << "/" << key;
+    ORES_LOG_SEV(lg(), debug) << "HEAD " << bucket << "/" << key;
 
     const auto bytes = store_.size(bucket, key);
     if (!bytes)
@@ -501,14 +501,14 @@ asio::awaitable<http_response> storage_routes::handle_delete(const http_request&
     if (!store_.is_valid_key(bucket, key))
         co_return http_response::bad_request("Invalid bucket or key: " + bucket);
 
-    BOOST_LOG_SEV(lg(), debug) << "DELETE " << bucket << "/" << key;
+    ORES_LOG_SEV(lg(), debug) << "DELETE " << bucket << "/" << key;
 
     try {
         const bool removed = store_.remove(bucket, key);
         co_return http_response::json(std::string(R"({"success":true,"message":"","removed":)") +
                                       (removed ? "true" : "false") + "}");
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "DELETE error: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "DELETE error: " << e.what();
         co_return http_response::internal_error(e.what());
     }
 }
@@ -529,7 +529,7 @@ asio::awaitable<http_response> storage_routes::handle_list(const http_request& r
     const auto requested = parse_u32(req.get_query_param("limit"), 100);
     const auto limit = std::min(requested, k_max_list_limit);
 
-    BOOST_LOG_SEV(lg(), debug) << "LIST " << bucket << " prefix=" << prefix;
+    ORES_LOG_SEV(lg(), debug) << "LIST " << bucket << " prefix=" << prefix;
 
     const auto entries = store_.list(bucket, prefix);
     const auto total = entries.size();

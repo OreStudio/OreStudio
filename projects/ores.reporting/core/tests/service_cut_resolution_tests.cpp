@@ -18,8 +18,7 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/generators/business_centre_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -44,7 +43,6 @@
 #include "ores.testing/uuid_of.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -663,7 +661,7 @@ TEST_CASE("a minted cut records the kind's retention, indicativeness and basis",
     CHECK(resolution.output_is_indicative);
 
     const auto cut = read_back(h.context(), resolution.cut->id);
-    BOOST_LOG_SEV(lg, info) << "Minted take " << cut.take_ordinal << " of kind " << cut.kind_code;
+    ORES_LOG_SEV(lg, info) << "Minted take " << cut.take_ordinal << " of kind " << cut.kind_code;
 
     CHECK(cut.retention_months == 3);
     CHECK(cut.retention_destination_code == "cold");

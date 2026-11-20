@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_configuration.hpp"
 #include "ores.reporting.api/domain/report_configuration_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/report_configuration_protocol.hpp"
 #include "ores.reporting.core/repository/report_configuration_entity.hpp"
 #include "ores.reporting.core/repository/report_configuration_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -247,7 +245,7 @@ void report_configuration_repository::write(const context& ctx,
 void report_configuration_repository::write(const context& ctx,
                                             const domain::report_configuration& v,
                                             const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report configuration. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing report configuration. " << "id: " << v.id;
     const auto t =
         report_configuration_apply_claim(v,
                                          claim,
@@ -264,7 +262,7 @@ void report_configuration_repository::write(
     const context& ctx,
     const std::vector<domain::report_configuration>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report configurations. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing report configurations. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "report_configuration_repository::write: one claim is needed for each row");
@@ -304,7 +302,7 @@ report_configuration_repository::read_latest(const context& ctx) {
 
 std::vector<domain::report_configuration>
 report_configuration_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report configuration. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -323,8 +321,8 @@ report_configuration_repository::read_latest(const context& ctx, const std::stri
 std::vector<domain::report_configuration>
 report_configuration_repository::read_latest_by_configuration_type_code(
     const context& ctx, const std::string& configuration_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report configuration by configuration_type_code: "
-                               << configuration_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report configuration by configuration_type_code: "
+                              << configuration_type_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -370,7 +368,7 @@ report_configuration_repository::read_latest_by_configuration_type_code(
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading latest report configurations by configuration_type_code. Count: "
         << configuration_type_codes.size();
     static constexpr auto max = db_timestamp::max();
@@ -396,8 +394,8 @@ report_configuration_repository::read_latest_by_configuration_type_code(
 std::vector<domain::report_configuration>
 report_configuration_repository::read_any_by_configuration_type_code(
     const context& ctx, const std::string& configuration_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any report configuration by configuration_type_code: "
-                               << configuration_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading any report configuration by configuration_type_code: "
+                              << configuration_type_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_configuration_entity>> |
                        query_builder::where("tenant_id"_c == tid && "configuration_type_code"_c ==
@@ -426,7 +424,7 @@ report_configuration_repository::read_any_by_configuration_type_code(
 
 std::vector<domain::report_configuration>
 report_configuration_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all report configuration versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all report configuration versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_configuration_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -443,8 +441,8 @@ report_configuration_repository::read_all(const context& ctx, const std::string&
 
 std::optional<domain::report_configuration> report_configuration_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading report configuration at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading report configuration at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<report_configuration_entity>> |
@@ -472,9 +470,9 @@ report_configuration_repository::read_latest_by_report_definition_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::report_configurations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report configurations. report_definition_id: "
-                               << report_definition_id << " offset: " << offset
-                               << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report configurations. report_definition_id: "
+                              << report_definition_id << " offset: " << offset
+                              << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_configuration_entity>> |
@@ -499,7 +497,7 @@ report_configuration_repository::get_total_report_configuration_count_by_report_
     const context& ctx,
     const std::string& report_definition_id,
     const std::optional<messaging::report_configurations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active report configurations count. report_definition_id: "
         << report_definition_id;
     static constexpr auto max = db_timestamp::max();
@@ -527,9 +525,9 @@ report_configuration_repository::read_latest_by_configuration_type_code(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::report_configurations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report configurations. configuration_type_code: "
-                               << configuration_type_code << " offset: " << offset
-                               << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report configurations. configuration_type_code: "
+                              << configuration_type_code << " offset: " << offset
+                              << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -555,7 +553,7 @@ report_configuration_repository::get_total_report_configuration_count_by_configu
     const context& ctx,
     const std::string& configuration_type_code,
     const std::optional<messaging::report_configurations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active report configurations count. configuration_type_code: "
         << configuration_type_code;
     static constexpr auto max = db_timestamp::max();
@@ -584,8 +582,8 @@ report_configuration_repository::read_latest_by_configuration_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::report_configurations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report configurations. configuration_id: "
-                               << configuration_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report configurations. configuration_id: "
+                              << configuration_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -610,7 +608,7 @@ report_configuration_repository::get_total_report_configuration_count_by_configu
     const context& ctx,
     const std::string& configuration_id,
     const std::optional<messaging::report_configurations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active report configurations count. configuration_id: "
         << configuration_id;
     static constexpr auto max = db_timestamp::max();
@@ -632,7 +630,7 @@ report_configuration_repository::get_total_report_configuration_count_by_configu
 
 report_configuration_repository::remove_status report_configuration_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing report configuration. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -671,8 +669,8 @@ std::vector<domain::report_configuration> report_configuration_repository::read_
     const ores::utility::domain::order& order,
     const std::optional<messaging::report_configurations_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report configurations with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report configurations with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_configuration_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -694,7 +692,7 @@ std::uint32_t report_configuration_repository::get_total_report_configuration_co
     const context& ctx,
     const std::optional<messaging::report_configurations_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report configuration count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active report configuration count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_configuration_entity>> |

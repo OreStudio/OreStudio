@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/cms_spread_option_convention.hpp"
 #include "ores.refdata.api/messaging/cms_spread_option_convention_protocol.hpp"
 #include "ores.refdata.core/repository/cms_spread_option_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -475,12 +473,12 @@ ores::utility::domain::result cms_spread_option_convention_service::prepare_chan
 std::vector<domain::cms_spread_option_convention>
 cms_spread_option_convention_service::list_cms_spread_option_conventions(std::uint32_t offset,
                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all CMS spread option conventions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all CMS spread option conventions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cms_spread_option_convention_service::count_cms_spread_option_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CMS spread option conventions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total CMS spread option conventions count";
     return repo_.get_total_cms_spread_option_convention_count(ctx_);
 }
 
@@ -488,14 +486,14 @@ std::uint32_t cms_spread_option_convention_service::count_cms_spread_option_conv
 std::optional<domain::cms_spread_option_convention>
 cms_spread_option_convention_service::get_cms_spread_option_convention_at_version(
     const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CMS spread option convention at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting CMS spread option convention at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::cms_spread_option_convention>
 cms_spread_option_convention_service::get_cms_spread_option_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CMS spread option convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting CMS spread option convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -512,11 +510,11 @@ void cms_spread_option_convention_service::save_cms_spread_option_convention(
     const domain::cms_spread_option_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("CMS Spread Option Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CMS spread option convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving CMS spread option convention. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CMS spread option convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved CMS spread option convention. " << "id: " << v.id;
 }
 
 void cms_spread_option_convention_service::save_cms_spread_option_conventions(
@@ -525,8 +523,8 @@ void cms_spread_option_convention_service::save_cms_spread_option_conventions(
         if (e.id.empty())
             throw std::invalid_argument("CMS Spread Option Convention id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << cms_spread_option_conventions.size()
-                               << " CMS spread option conventions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << cms_spread_option_conventions.size()
+                              << " CMS spread option conventions";
     auto ts = cms_spread_option_conventions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -536,9 +534,9 @@ void cms_spread_option_convention_service::save_cms_spread_option_conventions(
 
 void cms_spread_option_convention_service::delete_cms_spread_option_convention(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CMS spread option convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CMS spread option convention. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed CMS spread option convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed CMS spread option convention. " << "id: " << id;
 }
 
 void cms_spread_option_convention_service::delete_cms_spread_option_conventions(
@@ -549,8 +547,8 @@ void cms_spread_option_convention_service::delete_cms_spread_option_conventions(
 std::vector<domain::cms_spread_option_convention>
 cms_spread_option_convention_service::get_cms_spread_option_convention_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CMS spread option convention. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for CMS spread option convention. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

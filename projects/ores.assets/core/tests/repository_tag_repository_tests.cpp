@@ -21,7 +21,7 @@
 #include "ores.assets.api/domain/tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets.api/generators/tag_generator.hpp"
 #include "ores.assets.core/repository/tag_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -43,7 +43,7 @@ TEST_CASE("write_single_tag", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto t = generate_synthetic_tag(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Tag: " << t;
+    ORES_LOG_SEV(lg, debug) << "Tag: " << t;
 
     tag_repository repo;
     CHECK_NOTHROW(repo.write(h.context(), t));
@@ -55,7 +55,7 @@ TEST_CASE("write_multiple_tags", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto tag_list = generate_synthetic_tags(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Tags: " << tag_list;
+    ORES_LOG_SEV(lg, debug) << "Tags: " << tag_list;
 
     tag_repository repo;
     CHECK_NOTHROW(repo.write(h.context(), tag_list));
@@ -67,13 +67,13 @@ TEST_CASE("read_latest_tags", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto written_tags = generate_synthetic_tags(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Written tags: " << written_tags;
+    ORES_LOG_SEV(lg, debug) << "Written tags: " << written_tags;
 
     tag_repository repo;
     repo.write(h.context(), written_tags);
 
     auto read_tags = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
+    ORES_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
 
     // Every written tag is found by the primary key it was written under.
     CHECK(read_tags.size() >= written_tags.size());
@@ -91,7 +91,7 @@ TEST_CASE("read_latest_tag_by_id", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto t = generate_synthetic_tag(ctx);
     const auto original_description = t.description;
-    BOOST_LOG_SEV(lg, debug) << "Tag: " << t;
+    ORES_LOG_SEV(lg, debug) << "Tag: " << t;
 
     tag_repository repo;
     repo.write(h.context(), t);
@@ -100,7 +100,7 @@ TEST_CASE("read_latest_tag_by_id", "[repository]") {
     repo.write(h.context(), t);
 
     auto read_tags = repo.read_latest(h.context(), boost::uuids::to_string(t.id));
-    BOOST_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
+    ORES_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
 
     REQUIRE(read_tags.size() == 1);
     CHECK(read_tags[0].id == t.id);
@@ -113,13 +113,13 @@ TEST_CASE("read_latest_tag_by_name", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto t = generate_synthetic_tag(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Tag: " << t;
+    ORES_LOG_SEV(lg, debug) << "Tag: " << t;
 
     tag_repository repo;
     repo.write(h.context(), t);
 
     auto read_tags = repo.read_latest_by_name(h.context(), t.name);
-    BOOST_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
+    ORES_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
 
     REQUIRE(read_tags.size() == 1);
     CHECK(read_tags[0].name == t.name);
@@ -133,7 +133,7 @@ TEST_CASE("read_all_tag_versions", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto t = generate_synthetic_tag(ctx);
     const auto original_description = t.description;
-    BOOST_LOG_SEV(lg, debug) << "Tag: " << t;
+    ORES_LOG_SEV(lg, debug) << "Tag: " << t;
 
     tag_repository repo;
     repo.write(h.context(), t);
@@ -144,7 +144,7 @@ TEST_CASE("read_all_tag_versions", "[repository]") {
     // read_all addresses one row by its primary key and returns every version,
     // newest first, including the version the second write closed.
     auto read_tags = repo.read_all(h.context(), boost::uuids::to_string(t.id));
-    BOOST_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
+    ORES_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
 
     REQUIRE(read_tags.size() == 2);
     CHECK(read_tags[0].version == 2);
@@ -160,10 +160,10 @@ TEST_CASE("read_nonexistent_tag_id", "[repository]") {
     tag_repository repo;
 
     const std::string nonexistent_id = "00000000-0000-0000-0000-000000000000";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_tags = repo.read_latest(h.context(), nonexistent_id);
-    BOOST_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
+    ORES_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
 
     CHECK(read_tags.size() == 0);
 }

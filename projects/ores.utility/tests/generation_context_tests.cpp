@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/generation/generation_engine.hpp"
 #include "ores.utility/generation/generation_environment.hpp"
@@ -43,7 +43,7 @@ TEST_CASE("engine_repeats_itself_for_the_same_seed", "[generation]") {
     generation_engine first(7);
     generation_engine second(7);
 
-    BOOST_LOG_SEV(lg, info) << "Seed: " << first.seed();
+    ORES_LOG_SEV(lg, info) << "Seed: " << first.seed();
 
     CHECK(first.seed() == 7);
     for (int i = 0; i < 20; ++i)
@@ -95,7 +95,7 @@ TEST_CASE("alphanumeric_returns_the_requested_alphanumeric_length", "[generation
     generation_engine engine(3);
     const auto value = engine.alphanumeric(64);
 
-    BOOST_LOG_SEV(lg, info) << "Value: " << value;
+    ORES_LOG_SEV(lg, info) << "Value: " << value;
 
     CHECK(value.size() == 64);
     CHECK(std::all_of(

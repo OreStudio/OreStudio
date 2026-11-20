@@ -30,7 +30,7 @@
 #include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/sensitivity_asset_class_repository.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>

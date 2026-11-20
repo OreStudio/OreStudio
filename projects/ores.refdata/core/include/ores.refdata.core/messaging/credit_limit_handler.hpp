@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_CREDIT_LIMIT_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/credit_limit_protocol.hpp"
@@ -74,7 +74,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_credit_limits(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,20 +89,20 @@ public:
         }
         auto req = decode<list_credit_limits_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::credit_limit_service svc(req_ctx);
         try {
             auto response = svc.list_credit_limits(*req);
-            BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_limit_handler_lg(), error)
+            ORES_LOG_SEV(credit_limit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_credit_limits_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -122,7 +122,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_credit_limit(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -137,20 +137,20 @@ public:
         }
         auto req = decode<get_credit_limit_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::credit_limit_service svc(req_ctx);
         try {
             auto response = svc.get_credit_limit(*req);
-            BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_limit_handler_lg(), error)
+            ORES_LOG_SEV(credit_limit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_credit_limit_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -170,7 +170,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_credit_limits(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -185,20 +185,20 @@ public:
         }
         auto req = decode<get_many_credit_limits_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::credit_limit_service svc(req_ctx);
         try {
             auto response = svc.get_many_credit_limits(*req);
-            BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_limit_handler_lg(), error)
+            ORES_LOG_SEV(credit_limit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_credit_limits_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -218,7 +218,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_credit_limit(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -233,20 +233,20 @@ public:
         }
         auto req = decode<put_credit_limit_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::credit_limit_service svc(req_ctx);
         try {
             auto response = svc.put_credit_limit(*req);
-            BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_limit_handler_lg(), error)
+            ORES_LOG_SEV(credit_limit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_credit_limit_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -266,7 +266,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_credit_limits(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -281,20 +281,20 @@ public:
         }
         auto req = decode<put_many_credit_limits_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::credit_limit_service svc(req_ctx);
         try {
             auto response = svc.put_many_credit_limits(*req);
-            BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_limit_handler_lg(), error)
+            ORES_LOG_SEV(credit_limit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_credit_limits_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -314,7 +314,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_credit_limit(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -329,20 +329,20 @@ public:
         }
         auto req = decode<delete_credit_limit_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::credit_limit_service svc(req_ctx);
         try {
             auto response = svc.delete_credit_limit(*req);
-            BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_limit_handler_lg(), error)
+            ORES_LOG_SEV(credit_limit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_credit_limit_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -362,7 +362,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_credit_limits(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -377,20 +377,20 @@ public:
         }
         auto req = decode<delete_many_credit_limits_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::credit_limit_service svc(req_ctx);
         try {
             auto response = svc.delete_many_credit_limits(*req);
-            BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_limit_handler_lg(), error)
+            ORES_LOG_SEV(credit_limit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_credit_limits_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -410,7 +410,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_by_counterparty_id_credit_limits(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -425,20 +425,20 @@ public:
         }
         auto req = decode<list_by_counterparty_id_credit_limits_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::credit_limit_service svc(req_ctx);
         try {
             auto response = svc.list_by_counterparty_id_credit_limits(*req);
-            BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_limit_handler_lg(), error)
+            ORES_LOG_SEV(credit_limit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_counterparty_id_credit_limits_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -458,7 +458,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_credit_limit_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -473,20 +473,20 @@ public:
         }
         auto req = decode<list_credit_limit_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::credit_limit_service svc(req_ctx);
         try {
             auto response = svc.list_credit_limit_versions(*req);
-            BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_limit_handler_lg(), error)
+            ORES_LOG_SEV(credit_limit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_credit_limit_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -506,7 +506,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_credit_limit_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -521,20 +521,20 @@ public:
         }
         auto req = decode<get_credit_limit_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::credit_limit_service svc(req_ctx);
         try {
             auto response = svc.get_credit_limit_version(*req);
-            BOOST_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(credit_limit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_limit_handler_lg(), error)
+            ORES_LOG_SEV(credit_limit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_credit_limit_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

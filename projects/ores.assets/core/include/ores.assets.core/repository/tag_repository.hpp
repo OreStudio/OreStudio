@@ -29,7 +29,7 @@
 #include "ores.assets.api/messaging/tag_protocol.hpp"
 #include "ores.assets.core/export.hpp"
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>

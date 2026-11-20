@@ -20,7 +20,7 @@
 #ifndef ORES_SHELL_APP_COMMANDS_SYNTHETIC_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_SYNTHETIC_COMMANDS_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"

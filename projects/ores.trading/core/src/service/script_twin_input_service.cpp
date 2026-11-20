@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/script_twin_input.hpp"
 #include "ores.trading.api/messaging/script_twin_input_protocol.hpp"
 #include "ores.trading.core/repository/script_twin_input_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -463,31 +461,30 @@ script_twin_input_service::prepare_change(const messaging::script_twin_input_cha
 
 std::vector<domain::script_twin_input> script_twin_input_service::list_inputs(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all script twin inputs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all script twin inputs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t script_twin_input_service::count_inputs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total script twin inputs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total script twin inputs count";
     return repo_.get_total_input_count(ctx_);
 }
 
 
 std::optional<domain::script_twin_input> script_twin_input_service::get_input_at_version(
     const std::string& trade_type_code, const std::string& sequence_number, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script twin input at version. "
-                               << "trade_type_code: " << trade_type_code
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting script twin input at version. "
+                              << "trade_type_code: " << trade_type_code
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, trade_type_code, sequence_number, version);
 }
 
 std::optional<domain::script_twin_input>
 script_twin_input_service::get_input(const std::string& trade_type_code,
                                      const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script twin input. "
-                               << "trade_type_code: " << trade_type_code
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting script twin input. "
+                              << "trade_type_code: " << trade_type_code
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_type_code, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -503,15 +500,15 @@ script_twin_input_service::get_inputs(const std::vector<std::string>& trade_type
 void script_twin_input_service::save_input(const domain::script_twin_input& v) {
     if (v.trade_type_code.empty())
         throw std::invalid_argument("Script Twin Input trade_type_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving script twin input. "
-                               << "trade_type_code: " << v.trade_type_code
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving script twin input. "
+                              << "trade_type_code: " << v.trade_type_code
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved script twin input. "
-                              << "trade_type_code: " << v.trade_type_code
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved script twin input. "
+                             << "trade_type_code: " << v.trade_type_code
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void script_twin_input_service::save_inputs(const std::vector<domain::script_twin_input>& inputs) {
@@ -519,7 +516,7 @@ void script_twin_input_service::save_inputs(const std::vector<domain::script_twi
         if (e.trade_type_code.empty())
             throw std::invalid_argument("Script Twin Input trade_type_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << inputs.size() << " script twin inputs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << inputs.size() << " script twin inputs";
     auto ts = inputs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -529,13 +526,13 @@ void script_twin_input_service::save_inputs(const std::vector<domain::script_twi
 
 void script_twin_input_service::delete_input(const std::string& trade_type_code,
                                              const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing script twin input. "
-                               << "trade_type_code: " << trade_type_code
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_type_code, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed script twin input. "
+    ORES_LOG_SEV(lg(), debug) << "Removing script twin input. "
                               << "trade_type_code: " << trade_type_code
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_type_code, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed script twin input. "
+                             << "trade_type_code: " << trade_type_code
+                             << " sequence_number: " << sequence_number;
 }
 
 void script_twin_input_service::delete_inputs(const std::vector<std::string>& trade_type_codes,
@@ -546,9 +543,9 @@ void script_twin_input_service::delete_inputs(const std::vector<std::string>& tr
 std::vector<domain::script_twin_input>
 script_twin_input_service::get_input_history(const std::string& trade_type_code,
                                              const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for script twin input. "
-                               << "trade_type_code: " << trade_type_code
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for script twin input. "
+                              << "trade_type_code: " << trade_type_code
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_type_code, sequence_number);
 }
 

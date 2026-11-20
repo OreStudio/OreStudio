@@ -19,7 +19,7 @@
  */
 #include "ores.marketdata.service/app/published_curve_reader.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.api/datum/value.hpp"
@@ -328,7 +328,7 @@ list_published_curves(const ores::database::context& ctx,
     response.total = counted.empty() ? 0U : count_at(counted.front(), 0);
 
     response.success = true;
-    BOOST_LOG_SEV(published_curve_reader_lg(), debug)
+    ORES_LOG_SEV(published_curve_reader_lg(), debug)
         << "Read " << response.sets.size() << " published curve(s) of " << response.total;
     return response;
 }
@@ -452,7 +452,7 @@ get_published_curve_sets(const ores::database::context& ctx,
     name_parties(ctx, sets);
     response.sets = std::move(sets);
     response.success = true;
-    BOOST_LOG_SEV(published_curve_reader_lg(), debug)
+    ORES_LOG_SEV(published_curve_reader_lg(), debug)
         << "Read " << response.sets.size() << " set(s) of series " << request.series_id
         << " out of " << response.published_count << " published";
     return response;

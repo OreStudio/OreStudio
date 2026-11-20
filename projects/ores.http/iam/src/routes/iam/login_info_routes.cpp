@@ -208,7 +208,7 @@ void login_info_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering login_info routes";
+    ORES_LOG_SEV(lg(), info) << "Registering login_info routes";
 
     auto list_route =
         router->get("/api/v1/auth/login_info")
@@ -256,7 +256,7 @@ void login_info_routes::register_routes(
     router->add_route(get_many_built);
     registry->register_route(get_many_built);
 
-    BOOST_LOG_SEV(lg(), info) << "login_info routes registered: " << 3 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "login_info routes registered: " << 3 << " endpoint(s)";
 }
 
 }

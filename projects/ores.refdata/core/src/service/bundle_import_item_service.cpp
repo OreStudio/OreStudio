@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/bundle_import_item.hpp"
 #include "ores.refdata.api/messaging/bundle_import_item_protocol.hpp"
 #include "ores.refdata.core/repository/bundle_import_item_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -502,12 +500,12 @@ bundle_import_item_service::prepare_change(const messaging::bundle_import_item_c
 
 std::vector<domain::bundle_import_item>
 bundle_import_item_service::list_bundle_import_items(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bundle import items";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bundle import items";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bundle_import_item_service::count_bundle_import_items() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bundle import items count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bundle import items count";
     return repo_.get_total_bundle_import_item_count(ctx_);
 }
 
@@ -516,28 +514,28 @@ std::vector<domain::bundle_import_item>
 bundle_import_item_service::list_bundle_import_items_by_import_id(const std::string& import_id,
                                                                   std::uint32_t offset,
                                                                   std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing bundle import items by import_id: " << import_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing bundle import items by import_id: " << import_id;
     return repo_.read_latest_by_import_id(ctx_, import_id, offset, limit);
 }
 
 std::uint32_t
 bundle_import_item_service::count_bundle_import_items_by_import_id(const std::string& import_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bundle import items count by import_id: "
-                               << import_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total bundle import items count by import_id: "
+                              << import_id;
     return repo_.get_total_bundle_import_item_count_by_import_id(ctx_, import_id);
 }
 
 std::vector<domain::bundle_import_item>
 bundle_import_item_service::list_bundle_import_items_by_import_id(
     const boost::uuids::uuid& import_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing bundle import items by import_id: " << import_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing bundle import items by import_id: " << import_id;
     return repo_.read_latest_by_import_id(ctx_, boost::uuids::to_string(import_id), offset, limit);
 }
 
 std::uint32_t bundle_import_item_service::count_bundle_import_items_by_import_id(
     const boost::uuids::uuid& import_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bundle import items count by import_id: "
-                               << import_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total bundle import items count by import_id: "
+                              << import_id;
     return repo_.get_total_bundle_import_item_count_by_import_id(
         ctx_, boost::uuids::to_string(import_id));
 }
@@ -546,14 +544,14 @@ std::uint32_t bundle_import_item_service::count_bundle_import_items_by_import_id
 std::optional<domain::bundle_import_item>
 bundle_import_item_service::get_bundle_import_item_at_version(const boost::uuids::uuid& id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bundle import item at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bundle import item at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::bundle_import_item>
 bundle_import_item_service::get_bundle_import_item(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bundle import item. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting bundle import item. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -568,11 +566,11 @@ bundle_import_item_service::get_bundle_import_items(const std::vector<std::strin
 void bundle_import_item_service::save_bundle_import_item(const domain::bundle_import_item& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Bundle Import Item id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bundle import item. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving bundle import item. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bundle import item. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved bundle import item. " << "id: " << v.id;
 }
 
 void bundle_import_item_service::save_bundle_import_items(
@@ -581,7 +579,7 @@ void bundle_import_item_service::save_bundle_import_items(
         if (e.id.is_nil())
             throw std::invalid_argument("Bundle Import Item id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << bundle_import_items.size() << " bundle import items";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << bundle_import_items.size() << " bundle import items";
     auto ts = bundle_import_items;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -590,9 +588,9 @@ void bundle_import_item_service::save_bundle_import_items(
 }
 
 void bundle_import_item_service::delete_bundle_import_item(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bundle import item. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing bundle import item. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed bundle import item. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed bundle import item. " << "id: " << id;
 }
 
 void bundle_import_item_service::delete_bundle_import_items(const std::vector<std::string>& ids) {
@@ -601,7 +599,7 @@ void bundle_import_item_service::delete_bundle_import_items(const std::vector<st
 
 std::vector<domain::bundle_import_item>
 bundle_import_item_service::get_bundle_import_item_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bundle import item. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bundle import item. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

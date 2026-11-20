@@ -25,7 +25,7 @@
 #include "ores.iam.core/repository/permission_repository.hpp"
 #include "ores.iam.core/repository/role_permission_repository.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -84,8 +84,8 @@ TEST_CASE("write_single_role_permission", "[repository]") {
     rp.permission_id = p.id;
     state_the_tail(h, rp);
 
-    BOOST_LOG_SEV(lg, debug) << "Role permission - role_id: " << rp.role_id
-                             << " permission_id: " << rp.permission_id;
+    ORES_LOG_SEV(lg, debug) << "Role permission - role_id: " << rp.role_id
+                            << " permission_id: " << rp.permission_id;
     CHECK_NOTHROW(repo.write(rp));
 }
 
@@ -112,7 +112,7 @@ TEST_CASE("read_latest_role_permissions", "[repository]") {
     repo.write(rp);
 
     auto read_rps = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read role permissions count: " << read_rps.size();
+    ORES_LOG_SEV(lg, debug) << "Read role permissions count: " << read_rps.size();
 
     CHECK(!read_rps.empty());
 }
@@ -150,8 +150,8 @@ TEST_CASE("read_latest_role_permissions_by_role", "[repository]") {
     repo.write(rp2);
 
     auto read_rps = repo.read_latest_by_role(r.id);
-    BOOST_LOG_SEV(lg, debug) << "Read role permissions for role " << r.id
-                             << " count: " << read_rps.size();
+    ORES_LOG_SEV(lg, debug) << "Read role permissions for role " << r.id
+                            << " count: " << read_rps.size();
 
     CHECK(read_rps.size() >= 2);
     for (const auto& rp : read_rps) {

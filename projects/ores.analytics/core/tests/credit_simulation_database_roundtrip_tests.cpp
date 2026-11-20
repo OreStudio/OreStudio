@@ -23,7 +23,7 @@
 #include "ores.analytics.core/repository/credit_simulation_matrix_row_config_repository.hpp"
 #include "ores.analytics.core/repository/credit_simulation_netting_set_config_repository.hpp"
 #include "ores.database/domain/party_scope.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
@@ -141,7 +141,7 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database",
 TEST_CASE("a party sees only its own credit simulation configuration",
           "[creditsimulation][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "a party sees only its own credit simulation configuration";
+    ORES_LOG_SEV(lg, info) << "a party sees only its own credit simulation configuration";
     scoped_database_helper h;
     auto parties = ores::testing::make_two_parties(h);
     const auto original =

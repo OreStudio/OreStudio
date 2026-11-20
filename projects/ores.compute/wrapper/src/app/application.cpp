@@ -232,12 +232,12 @@ private:
         try {
             nats_.publish(compute::messaging::node_sample_message::nats_subject,
                           ores::nats::default_wire_codec().encode(msg));
-            BOOST_LOG_SEV(lg(), debug)
+            ORES_LOG_SEV(lg(), debug)
                 << "Published node telemetry sample: tasks_since_last=" << tasks_since_last
                 << " avg_ms=" << avg_ms << " input_bytes=" << input_bytes
                 << " output_bytes=" << output_bytes;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Node telemetry publish failed: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Node telemetry publish failed: " << e.what();
         }
     }
 
@@ -336,7 +336,7 @@ private:
             if (reporter_)
                 reporter_->notify_heartbeat();
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Heartbeat publish failed: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Heartbeat publish failed: " << e.what();
         }
     }
 
@@ -386,9 +386,9 @@ void submit_result(ores::nats::service::client& nats,
     const auto resp = codec.decode<compute::messaging::submit_result_response>(reply.data);
     if (!resp || !resp->success) {
         const std::string msg = resp ? resp->message : "failed to deserialize response";
-        BOOST_LOG_SEV(lg, error) << "results.submit failed: " << msg;
+        ORES_LOG_SEV(lg, error) << "results.submit failed: " << msg;
     } else {
-        BOOST_LOG_SEV(lg, info) << "Result submitted: " << result_id;
+        ORES_LOG_SEV(lg, info) << "Result submitted: " << result_id;
     }
 }
 
@@ -542,8 +542,8 @@ void upload_canonical_log(auto& lg,
         std::ofstream out(log_file, std::ios::binary);
         out.write(compressed.data(), static_cast<std::streamsize>(compressed.size()));
     }
-    BOOST_LOG_SEV(lg, info) << "Uploading " << events.size() << " log rows for " << evt.result_id
-                            << " (" << compressed.size() << " bytes)";
+    ORES_LOG_SEV(lg, info) << "Uploading " << events.size() << " log rows for " << evt.result_id
+                           << " (" << compressed.size() << " bytes)";
     ores::storage::net::http_client::put(
         make_url(cfg.http_base_url, evt.logs_uri), log_file, evt.storage_token);
 }
@@ -573,7 +573,7 @@ void upload_output_files(auto& lg,
         if (entry.is_regular_file())
             paths.push_back(entry.path());
         else
-            BOOST_LOG_SEV(lg, warn)
+            ORES_LOG_SEV(lg, warn)
                 << "Output entry '" << entry.path().filename().string() << "' of " << evt.result_id
                 << " is not a file, so it is not uploaded; the archive holds it.";
     }
@@ -587,8 +587,8 @@ void upload_output_files(auto& lg,
         const auto name = path.filename().string();
         const auto object_name = name + ".gz";
         if (!ores::storage::api::object_keys::is_valid_segment(object_name)) {
-            BOOST_LOG_SEV(lg, warn) << "Output file '" << name << "' of " << evt.result_id
-                                    << " has a name no key can hold, so it is not uploaded.";
+            ORES_LOG_SEV(lg, warn) << "Output file '" << name << "' of " << evt.result_id
+                                   << " has a name no key can hold, so it is not uploaded.";
             continue;
         }
 
@@ -611,8 +611,8 @@ void upload_output_files(auto& lg,
 
         auto family = ores::ore::results::family_code_of(name);
         if (family.empty())
-            BOOST_LOG_SEV(lg, info) << "Output file '" << name << "' of " << evt.result_id
-                                    << " belongs to no family; it is named in the manifest.";
+            ORES_LOG_SEV(lg, info) << "Output file '" << name << "' of " << evt.result_id
+                                   << " belongs to no family; it is named in the manifest.";
         manifest.files.push_back(ores::ore::results::output_manifest_file{
             .name = name,
             .family = std::move(family),
@@ -639,8 +639,8 @@ void upload_output_files(auto& lg,
         manifest_file,
         evt.storage_token);
     fs::remove(manifest_file);
-    BOOST_LOG_SEV(lg, info) << "Uploaded " << manifest.files.size() << " output file(s) of "
-                            << evt.result_id << " and their manifest";
+    ORES_LOG_SEV(lg, info) << "Uploaded " << manifest.files.size() << " output file(s) of "
+                           << evt.result_id << " and their manifest";
 }
 
 /**
@@ -660,7 +660,9 @@ void ensure_package(const fs::path& pkg_cache_dir,
 
     fs::create_directories(pkg_cache_dir.parent_path());
     const fs::path lock_path = pkg_cache_dir.parent_path() / (evt.app_version_id + ".lock");
-    { std::ofstream create_lock(lock_path, std::ios::app); }
+    {
+        std::ofstream create_lock(lock_path, std::ios::app);
+    }
     boost::interprocess::file_lock file_lock(lock_path.string().c_str());
     boost::interprocess::scoped_lock<boost::interprocess::file_lock> guard(file_lock);
 
@@ -671,8 +673,8 @@ void ensure_package(const fs::path& pkg_cache_dir,
     constexpr int max_attempts = 4;
     const fs::path pkg_archive = pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
     for (int attempt = 1;; ++attempt) {
-        BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id << " (attempt "
-                                 << attempt << " of " << max_attempts << ")";
+        ORES_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id << " (attempt "
+                                << attempt << " of " << max_attempts << ")";
         try {
             ores::storage::net::http_client::get(
                 make_url(http_base_url, evt.package_uri), pkg_archive, evt.storage_token);
@@ -682,7 +684,7 @@ void ensure_package(const fs::path& pkg_cache_dir,
             fs::remove(pkg_archive, ignored);
             if (attempt == max_attempts)
                 throw;
-            BOOST_LOG_SEV(lg, warn) << "Package download failed, retrying: " << e.what();
+            ORES_LOG_SEV(lg, warn) << "Package download failed, retrying: " << e.what();
             std::this_thread::sleep_for(std::chrono::seconds(5 * attempt));
         }
     }
@@ -723,9 +725,9 @@ void process_assignment(ores::nats::service::client& nats,
                         node_stats_reporter* reporter,
                         auto& lg) {
 
-    BOOST_LOG_SEV(lg, debug) << "Processing assignment: result=" << evt.result_id
-                             << " workunit=" << evt.workunit_id
-                             << " app_version=" << evt.app_version_id;
+    ORES_LOG_SEV(lg, debug) << "Processing assignment: result=" << evt.result_id
+                            << " workunit=" << evt.workunit_id
+                            << " app_version=" << evt.app_version_id;
 
     // An assignment can wait in the queue for any time, and its storage token lives
     // for a fixed time from when it was minted. Starting a job whose token has run
@@ -733,8 +735,8 @@ void process_assignment(ores::nats::service::client& nats,
     // and take the next assignment.
     if (compute::messaging::assignment_expired(evt.storage_token,
                                                std::chrono::system_clock::now())) {
-        BOOST_LOG_SEV(lg, warn) << "Assignment expired before this node took it, not starting: "
-                                << "result=" << evt.result_id;
+        ORES_LOG_SEV(lg, warn) << "Assignment expired before this node took it, not starting: "
+                               << "result=" << evt.result_id;
         if (reporter)
             reporter->record_task_failed();
         submit_result(nats,
@@ -780,12 +782,12 @@ void process_assignment(ores::nats::service::client& nats,
 
         // Download input archive and unpack into job_dir.
         const fs::path input_archive = job_dir / "input.tar.gz";
-        BOOST_LOG_SEV(lg, debug) << "Downloading input";
+        ORES_LOG_SEV(lg, debug) << "Downloading input";
         ores::storage::net::http_client::get(
             make_url(cfg.http_base_url, evt.input_uri), input_archive, evt.storage_token);
         input_bytes = static_cast<std::int64_t>(fs::file_size(input_archive));
-        BOOST_LOG_SEV(lg, debug) << "Extracting input (" << input_bytes << " bytes)"
-                                 << " to: " << job_dir.string();
+        ORES_LOG_SEV(lg, debug) << "Extracting input (" << input_bytes << " bytes)"
+                                << " to: " << job_dir.string();
         ores::storage::filesystem::archiver::extract(input_archive, job_dir);
 
         // 3. Spawn engine using Boost.Process to avoid shell injection.
@@ -800,10 +802,10 @@ void process_assignment(ores::nats::service::client& nats,
 
         // Log exact command line so it can be reproduced manually.
         const fs::path engine_log_path = job_dir / "engine.log";
-        BOOST_LOG_SEV(lg, debug) << "Engine command: " << format_cmdline(exe.string(), args);
-        BOOST_LOG_SEV(lg, debug) << "Engine log:     " << engine_log_path.string();
-        BOOST_LOG_SEV(lg, debug) << "Input dir:      " << job_dir.string();
-        BOOST_LOG_SEV(lg, debug) << "ORE log:        " << (job_dir / "Output" / "log.txt").string();
+        ORES_LOG_SEV(lg, debug) << "Engine command: " << format_cmdline(exe.string(), args);
+        ORES_LOG_SEV(lg, debug) << "Engine log:     " << engine_log_path.string();
+        ORES_LOG_SEV(lg, debug) << "Input dir:      " << job_dir.string();
+        ORES_LOG_SEV(lg, debug) << "ORE log:        " << (job_dir / "Output" / "log.txt").string();
 
         namespace bp2 = boost::process::v2;
         boost::asio::io_context proc_ioc;
@@ -862,7 +864,7 @@ void process_assignment(ores::nats::service::client& nats,
                 if (!err_buf.empty())
                     engine_log << err_buf;
             } else {
-                BOOST_LOG_SEV(lg, warn) << "Cannot open engine log: " << engine_log_path.string();
+                ORES_LOG_SEV(lg, warn) << "Cannot open engine log: " << engine_log_path.string();
             }
         }
 
@@ -891,11 +893,11 @@ void process_assignment(ores::nats::service::client& nats,
                     ores::ore::log::parse_engine_log_text(engine_output, "engine.log"));
             error_message = "Engine exited with code " + std::to_string(exit_code) +
                             (reason.empty() ? std::string{} : ": " + reason);
-            BOOST_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;
+            ORES_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;
             if (!ore_log.empty())
-                BOOST_LOG_SEV(lg, error) << "Engine log:\n" << ore_log;
+                ORES_LOG_SEV(lg, error) << "Engine log:\n" << ore_log;
             if (!engine_output.empty())
-                BOOST_LOG_SEV(lg, error) << "Engine output:\n" << engine_output;
+                ORES_LOG_SEV(lg, error) << "Engine output:\n" << engine_output;
             // ClientError.
             outcome = 3;
         } else {
@@ -916,7 +918,7 @@ void process_assignment(ores::nats::service::client& nats,
 
             if (!verdict.succeeded) {
                 error_message = verdict.failure;
-                BOOST_LOG_SEV(lg, error)
+                ORES_LOG_SEV(lg, error)
                     << "Engine run failed for " << evt.result_id << ": " << verdict.failure;
                 // The engine's own log is the account of what went wrong, and
                 // the run's owner can only read it from the output. A failed
@@ -936,8 +938,8 @@ void process_assignment(ores::nats::service::client& nats,
                 } catch (const std::exception& upload) {
                     // The engine's verdict is the reason the run failed, and a
                     // failed upload of the log must not replace it.
-                    BOOST_LOG_SEV(lg, warn) << "The log of failed job " << evt.result_id
-                                            << " was not uploaded: " << upload.what();
+                    ORES_LOG_SEV(lg, warn) << "The log of failed job " << evt.result_id
+                                           << " was not uploaded: " << upload.what();
                 }
                 // ClientError.
                 outcome = 3;
@@ -949,14 +951,14 @@ void process_assignment(ores::nats::service::client& nats,
                 ores::storage::filesystem::archiver::pack(output_dir, output_archive);
 
                 output_bytes = static_cast<std::int64_t>(fs::file_size(output_archive));
-                BOOST_LOG_SEV(lg, debug) << "Uploading output archive: " << output_archive.string()
-                                         << " (" << output_bytes << " bytes)";
+                ORES_LOG_SEV(lg, debug) << "Uploading output archive: " << output_archive.string()
+                                        << " (" << output_bytes << " bytes)";
                 ores::storage::net::http_client::put(
                     make_url(cfg.http_base_url, evt.output_uri), output_archive, evt.storage_token);
 
                 upload_output_files(lg, cfg, evt, output_dir);
 
-                BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
+                ORES_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
                 // Success.
                 outcome = 1;
             }
@@ -969,7 +971,7 @@ void process_assignment(ores::nats::service::client& nats,
         upload_canonical_log(lg, cfg, evt, job_dir, exit_code != 0);
     } catch (const std::exception& e) {
         error_message = e.what();
-        BOOST_LOG_SEV(lg, error) << "Job failed: " << e.what();
+        ORES_LOG_SEV(lg, error) << "Job failed: " << e.what();
         // ClientError.
         outcome = 3;
     }
@@ -1006,18 +1008,18 @@ void process_assignment(ores::nats::service::client& nats,
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.compute.wrapper", 0, 1);
-    BOOST_LOG_SEV(lg(), info) << "Host ID   : " << cfg.host_id;
-    BOOST_LOG_SEV(lg(), info) << "Tenant ID : " << cfg.tenant_id;
-    BOOST_LOG_SEV(lg(), info) << "Work dir  : " << cfg.work_dir;
-    BOOST_LOG_SEV(lg(), info) << "Heartbeat : " << cfg.heartbeat_interval_seconds << "s";
-    BOOST_LOG_SEV(lg(), info) << "Telemetry : "
-                              << (cfg.telemetry_interval_seconds > 0 ?
-                                      std::to_string(cfg.telemetry_interval_seconds) + "s" :
-                                      "disabled");
-    BOOST_LOG_SEV(lg(), info) << "HTTP Base : "
-                              << (cfg.http_base_url.empty() ? "(none)" : cfg.http_base_url);
+    ORES_LOG_SEV(lg(), info) << "Host ID   : " << cfg.host_id;
+    ORES_LOG_SEV(lg(), info) << "Tenant ID : " << cfg.tenant_id;
+    ORES_LOG_SEV(lg(), info) << "Work dir  : " << cfg.work_dir;
+    ORES_LOG_SEV(lg(), info) << "Heartbeat : " << cfg.heartbeat_interval_seconds << "s";
+    ORES_LOG_SEV(lg(), info) << "Telemetry : "
+                             << (cfg.telemetry_interval_seconds > 0 ?
+                                     std::to_string(cfg.telemetry_interval_seconds) + "s" :
+                                     "disabled");
+    ORES_LOG_SEV(lg(), info) << "HTTP Base : "
+                             << (cfg.http_base_url.empty() ? "(none)" : cfg.http_base_url);
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
@@ -1072,13 +1074,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
             // Compute-domain idle heartbeat and node telemetry reporter.
             idle_hb.start();
-            BOOST_LOG_SEV(lg(), info) << "Idle heartbeat sender started ("
-                                      << cfg.heartbeat_interval_seconds << "s interval).";
+            ORES_LOG_SEV(lg(), info) << "Idle heartbeat sender started ("
+                                     << cfg.heartbeat_interval_seconds << "s interval).";
             claims.start();
             if (reporter) {
                 reporter->start();
-                BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter started ("
-                                          << cfg.telemetry_interval_seconds << "s interval).";
+                ORES_LOG_SEV(lg(), info) << "Node telemetry reporter started ("
+                                         << cfg.telemetry_interval_seconds << "s interval).";
             }
         },
         [&]() {
@@ -1086,7 +1088,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             idle_hb.stop();
             if (reporter) {
                 reporter->stop();
-                BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter stopped.";
+                ORES_LOG_SEV(lg(), info) << "Node telemetry reporter stopped.";
             }
         });
     co_await std::move(service_run);

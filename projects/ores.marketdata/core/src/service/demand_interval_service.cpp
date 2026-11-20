@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/demand_interval.hpp"
 #include "ores.marketdata.api/messaging/demand_interval_protocol.hpp"
 #include "ores.marketdata.core/repository/demand_interval_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -508,12 +506,12 @@ demand_interval_service::prepare_change(const messaging::demand_interval_change&
 
 std::vector<domain::demand_interval>
 demand_interval_service::list_demand_intervals(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all demand intervals";
+    ORES_LOG_SEV(lg(), debug) << "Listing all demand intervals";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t demand_interval_service::count_demand_intervals() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total demand intervals count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total demand intervals count";
     return repo_.get_total_demand_interval_count(ctx_);
 }
 
@@ -521,14 +519,14 @@ std::uint32_t demand_interval_service::count_demand_intervals() {
 std::optional<domain::demand_interval>
 demand_interval_service::get_demand_interval_at_version(const boost::uuids::uuid& id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting demand interval at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting demand interval at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::demand_interval>
 demand_interval_service::get_demand_interval(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting demand interval. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting demand interval. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -537,7 +535,7 @@ demand_interval_service::get_demand_interval(const boost::uuids::uuid& id) {
 
 std::optional<domain::demand_interval>
 demand_interval_service::get_demand_interval_by_oresmd_uri(const std::string& oresmd_uri) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting demand interval by oresmd_uri: " << oresmd_uri;
+    ORES_LOG_SEV(lg(), debug) << "Getting demand interval by oresmd_uri: " << oresmd_uri;
     messaging::demand_interval_key k;
     k.oresmd_uri = oresmd_uri;
     auto found = demand_interval_read_one(repo_, ctx_, k);
@@ -554,11 +552,11 @@ demand_interval_service::get_demand_intervals(const std::vector<std::string>& id
 void demand_interval_service::save_demand_interval(const domain::demand_interval& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Demand Interval id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving demand interval. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving demand interval. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved demand interval. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved demand interval. " << "id: " << v.id;
 }
 
 void demand_interval_service::save_demand_intervals(
@@ -567,7 +565,7 @@ void demand_interval_service::save_demand_intervals(
         if (e.id.is_nil())
             throw std::invalid_argument("Demand Interval id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << demand_intervals.size() << " demand intervals";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << demand_intervals.size() << " demand intervals";
     auto ts = demand_intervals;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -576,9 +574,9 @@ void demand_interval_service::save_demand_intervals(
 }
 
 void demand_interval_service::delete_demand_interval(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing demand interval. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing demand interval. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed demand interval. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed demand interval. " << "id: " << id;
 }
 
 void demand_interval_service::delete_demand_intervals(const std::vector<std::string>& ids) {
@@ -587,7 +585,7 @@ void demand_interval_service::delete_demand_intervals(const std::vector<std::str
 
 std::vector<domain::demand_interval>
 demand_interval_service::get_demand_interval_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for demand interval. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for demand interval. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

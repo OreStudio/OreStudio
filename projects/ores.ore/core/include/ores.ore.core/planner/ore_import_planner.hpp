@@ -20,7 +20,7 @@
 #ifndef ORES_ORE_CORE_PLANNER_ORE_IMPORT_PLANNER_HPP
 #define ORES_ORE_CORE_PLANNER_ORE_IMPORT_PLANNER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/planner/import_choices.hpp"
 #include "ores.ore.core/planner/ore_import_plan.hpp"

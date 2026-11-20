@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier_json_io.hpp" // IWYU pragma: keep.
@@ -34,7 +33,6 @@
 #include "ores.refdata.core/repository/counterparty_identifier_entity.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -230,7 +228,7 @@ void counterparty_identifier_repository::write(
 void counterparty_identifier_repository::write(const context& ctx,
                                                const domain::counterparty_identifier& v,
                                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty identifier. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing counterparty identifier. " << "id: " << v.id;
     const auto t =
         counterparty_identifier_apply_claim(v,
                                             claim,
@@ -247,7 +245,7 @@ void counterparty_identifier_repository::write(
     const context& ctx,
     const std::vector<domain::counterparty_identifier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty identifiers. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing counterparty identifiers. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "counterparty_identifier_repository::write: one claim is needed for each row");
@@ -287,7 +285,7 @@ counterparty_identifier_repository::read_latest(const context& ctx) {
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty identifier. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -307,7 +305,7 @@ std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_latest_by_code(const context& ctx,
                                                         const std::string& counterparty_id,
                                                         const std::string& id_scheme) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading latest counterparty identifier by counterparty_id/id_scheme: "
         << counterparty_id << "/" << id_scheme;
     static constexpr auto max = db_timestamp::max();
@@ -328,8 +326,7 @@ counterparty_identifier_repository::read_latest_by_code(const context& ctx,
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_latest_by_id_value(const context& ctx,
                                                             const std::string& id_value) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifier by id_value: "
-                               << id_value;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty identifier by id_value: " << id_value;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_identifier_entity>> |
@@ -365,8 +362,8 @@ counterparty_identifier_repository::read_latest_by_id_value(
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers by id_value. Count: "
-                               << id_values.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers by id_value. Count: "
+                              << id_values.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_identifier_entity>> |
@@ -385,7 +382,7 @@ counterparty_identifier_repository::read_latest_by_id_value(
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_any_by_id_value(const context& ctx,
                                                          const std::string& id_value) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any counterparty identifier by id_value: " << id_value;
+    ORES_LOG_SEV(lg(), debug) << "Reading any counterparty identifier by id_value: " << id_value;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id_value"_c == id_value) |
@@ -403,7 +400,7 @@ counterparty_identifier_repository::read_any_by_id_value(const context& ctx,
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty identifier versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all counterparty identifier versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -420,8 +417,8 @@ counterparty_identifier_repository::read_all(const context& ctx, const std::stri
 
 std::optional<domain::counterparty_identifier> counterparty_identifier_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty identifier at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading counterparty identifier at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_identifier_entity>> |
@@ -449,8 +446,8 @@ counterparty_identifier_repository::read_latest_by_counterparty_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::counterparty_identifiers_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers. counterparty_id: "
-                               << counterparty_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers. counterparty_id: "
+                              << counterparty_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -475,7 +472,7 @@ counterparty_identifier_repository::get_total_counterparty_identifier_count_by_c
     const context& ctx,
     const std::string& counterparty_id,
     const std::optional<messaging::counterparty_identifiers_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active counterparty identifiers count. counterparty_id: "
         << counterparty_id;
     static constexpr auto max = db_timestamp::max();
@@ -501,8 +498,8 @@ counterparty_identifier_repository::read_by_counterparty_id_as_of(
     const std::string& counterparty_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty identifiers as of window. counterparty_id: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading counterparty identifiers as of window. counterparty_id: "
+                              << counterparty_id;
 
     const auto vf(valid_from_bound);
     const auto vt(valid_to_bound);
@@ -524,7 +521,7 @@ counterparty_identifier_repository::read_by_counterparty_id_as_of(
 
 counterparty_identifier_repository::remove_status counterparty_identifier_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing counterparty identifier. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -563,8 +560,8 @@ std::vector<domain::counterparty_identifier> counterparty_identifier_repository:
     const ores::utility::domain::order& order,
     const std::optional<messaging::counterparty_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -586,7 +583,7 @@ std::uint32_t counterparty_identifier_repository::get_total_counterparty_identif
     const context& ctx,
     const std::optional<messaging::counterparty_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty identifier count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active counterparty identifier count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_identifier_entity>> |

@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/trade_link.hpp"
 #include "ores.trading.api/messaging/trade_link_protocol.hpp"
 #include "ores.trading.core/repository/trade_link_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -485,12 +483,12 @@ trade_link_service::prepare_change(const messaging::trade_link_change& change,
 
 std::vector<domain::trade_link> trade_link_service::list_links(std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade links";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade links";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_link_service::count_links() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade links count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade links count";
     return repo_.get_total_link_count(ctx_);
 }
 
@@ -500,18 +498,18 @@ trade_link_service::get_link_at_version(const std::string& from_trade_id,
                                         const std::string& to_trade_id,
                                         const std::string& link_type,
                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade link at version. "
-                               << "from_trade_id: " << from_trade_id
-                               << " to_trade_id: " << to_trade_id << " link_type: " << link_type
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade link at version. "
+                              << "from_trade_id: " << from_trade_id
+                              << " to_trade_id: " << to_trade_id << " link_type: " << link_type
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, from_trade_id, to_trade_id, link_type, version);
 }
 
 std::optional<domain::trade_link> trade_link_service::get_link(const std::string& from_trade_id,
                                                                const std::string& to_trade_id,
                                                                const std::string& link_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade link. " << "from_trade_id: " << from_trade_id
-                               << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade link. " << "from_trade_id: " << from_trade_id
+                              << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
     auto results = repo_.read_latest(ctx_, from_trade_id, to_trade_id, link_type);
     if (results.empty())
         return std::nullopt;
@@ -532,14 +530,13 @@ void trade_link_service::save_link(const domain::trade_link& v) {
         throw std::invalid_argument("Trade Link to_trade_id cannot be empty.");
     if (v.link_type.empty())
         throw std::invalid_argument("Trade Link link_type cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade link. " << "from_trade_id: " << v.from_trade_id
-                               << " to_trade_id: " << v.to_trade_id
-                               << " link_type: " << v.link_type;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade link. " << "from_trade_id: " << v.from_trade_id
+                              << " to_trade_id: " << v.to_trade_id << " link_type: " << v.link_type;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade link. " << "from_trade_id: " << v.from_trade_id
-                              << " to_trade_id: " << v.to_trade_id << " link_type: " << v.link_type;
+    ORES_LOG_SEV(lg(), info) << "Saved trade link. " << "from_trade_id: " << v.from_trade_id
+                             << " to_trade_id: " << v.to_trade_id << " link_type: " << v.link_type;
 }
 
 void trade_link_service::save_links(const std::vector<domain::trade_link>& links) {
@@ -551,7 +548,7 @@ void trade_link_service::save_links(const std::vector<domain::trade_link>& links
         if (e.link_type.empty())
             throw std::invalid_argument("Trade Link link_type cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << links.size() << " trade links";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << links.size() << " trade links";
     auto ts = links;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -562,11 +559,11 @@ void trade_link_service::save_links(const std::vector<domain::trade_link>& links
 void trade_link_service::delete_link(const std::string& from_trade_id,
                                      const std::string& to_trade_id,
                                      const std::string& link_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade link. " << "from_trade_id: " << from_trade_id
-                               << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
-    repo_.remove(ctx_, from_trade_id, to_trade_id, link_type);
-    BOOST_LOG_SEV(lg(), info) << "Removed trade link. " << "from_trade_id: " << from_trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing trade link. " << "from_trade_id: " << from_trade_id
                               << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
+    repo_.remove(ctx_, from_trade_id, to_trade_id, link_type);
+    ORES_LOG_SEV(lg(), info) << "Removed trade link. " << "from_trade_id: " << from_trade_id
+                             << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
 }
 
 void trade_link_service::delete_links(const std::vector<std::string>& from_trade_ids,
@@ -579,9 +576,9 @@ std::vector<domain::trade_link>
 trade_link_service::get_link_history(const std::string& from_trade_id,
                                      const std::string& to_trade_id,
                                      const std::string& link_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade link. "
-                               << "from_trade_id: " << from_trade_id
-                               << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade link. "
+                              << "from_trade_id: " << from_trade_id
+                              << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
     return repo_.read_all(ctx_, from_trade_id, to_trade_id, link_type);
 }
 

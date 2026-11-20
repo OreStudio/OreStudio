@@ -19,8 +19,7 @@
  */
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/messaging/run_grant_operations_protocol.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"

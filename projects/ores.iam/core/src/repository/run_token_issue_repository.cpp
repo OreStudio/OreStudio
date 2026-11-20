@@ -30,10 +30,8 @@
 #include "ores.iam.api/domain/run_token_issue_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/run_token_issue_entity.hpp"
 #include "ores.iam.core/repository/run_token_issue_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -196,8 +194,8 @@ void run_token_issue_repository::write(const context& ctx,
 void run_token_issue_repository::write(const context& ctx,
                                        const domain::run_token_issue& v,
                                        const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing issue. " << "id: " << v.id
-                               << " issued_at: " << v.issued_at;
+    ORES_LOG_SEV(lg(), debug) << "Writing issue. " << "id: " << v.id
+                              << " issued_at: " << v.issued_at;
     const auto t = run_token_issue_apply_claim(
         v,
         claim,
@@ -215,7 +213,7 @@ void run_token_issue_repository::write(
     const context& ctx,
     const std::vector<domain::run_token_issue>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing run token issues. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing run token issues. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "run_token_issue_repository::write: one claim is needed for each row");
@@ -251,8 +249,8 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(con
 
 std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
     const context& ctx, const std::string& id, const std::string& issued_at) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest issue. " << "id: " << id
-                               << " issued_at: " << issued_at;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest issue. " << "id: " << id
+                              << " issued_at: " << issued_at;
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
                        query_builder::where("id"_c == id && "issued_at"_c == issued_at);
 
@@ -267,8 +265,8 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
 
 std::vector<domain::run_token_issue> run_token_issue_repository::read_all(
     const context& ctx, const std::string& id, const std::string& issued_at) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all issue versions. " << "id: " << id
-                               << " issued_at: " << issued_at;
+    ORES_LOG_SEV(lg(), debug) << "Reading all issue versions. " << "id: " << id
+                              << " issued_at: " << issued_at;
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
                        query_builder::where("id"_c == id && "issued_at"_c == issued_at) |
                        query_builder::order_by("id"_c, "issued_at"_c);
@@ -287,7 +285,7 @@ run_token_issue_repository::remove(const context& ctx,
                                    const std::string& id,
                                    const std::string& issued_at,
                                    std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing issue. " << "id: " << id << " issued_at: " << issued_at;
+    ORES_LOG_SEV(lg(), debug) << "Removing issue. " << "id: " << id << " issued_at: " << issued_at;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -313,8 +311,8 @@ run_token_issue_repository::read_latest(const context& ctx,
                                         std::uint32_t offset,
                                         std::uint32_t limit,
                                         const ores::utility::domain::order& order) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest run token issues with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest run token issues with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -330,7 +328,7 @@ run_token_issue_repository::read_latest(const context& ctx,
 }
 
 std::uint32_t run_token_issue_repository::get_total__count(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active issue count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active issue count";
 
     const auto query = query_builder::read<std::vector<run_token_issue_entity>>;
 

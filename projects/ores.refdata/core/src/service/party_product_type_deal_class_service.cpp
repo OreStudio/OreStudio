@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/party_product_type_deal_class.hpp"
 #include "ores.refdata.api/messaging/party_product_type_deal_class_protocol.hpp"
 #include "ores.refdata.core/repository/party_product_type_deal_class_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -520,12 +518,12 @@ ores::utility::domain::result party_product_type_deal_class_service::prepare_cha
 std::vector<domain::party_product_type_deal_class>
 party_product_type_deal_class_service::list_party_product_type_deal_classes(std::uint32_t offset,
                                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all party product type deal classes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all party product type deal classes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t party_product_type_deal_class_service::count_party_product_type_deal_classes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total party product type deal classes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total party product type deal classes count";
     return repo_.get_total_party_product_type_deal_class_count(ctx_);
 }
 
@@ -533,32 +531,32 @@ std::uint32_t party_product_type_deal_class_service::count_party_product_type_de
 std::vector<domain::party_product_type_deal_class>
 party_product_type_deal_class_service::list_party_product_type_deal_classes_by_party_id(
     const std::string& party_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing party product type deal classes by party_id: "
-                               << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing party product type deal classes by party_id: "
+                              << party_id;
     return repo_.read_latest_by_party_id(ctx_, party_id, offset, limit);
 }
 
 std::uint32_t
 party_product_type_deal_class_service::count_party_product_type_deal_classes_by_party_id(
     const std::string& party_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting total party product type deal classes count by party_id: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total party product type deal classes count by party_id: "
+                              << party_id;
     return repo_.get_total_party_product_type_deal_class_count_by_party_id(ctx_, party_id);
 }
 
 std::vector<domain::party_product_type_deal_class>
 party_product_type_deal_class_service::list_party_product_type_deal_classes_by_party_id(
     const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing party product type deal classes by party_id: "
-                               << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing party product type deal classes by party_id: "
+                              << party_id;
     return repo_.read_latest_by_party_id(ctx_, boost::uuids::to_string(party_id), offset, limit);
 }
 
 std::uint32_t
 party_product_type_deal_class_service::count_party_product_type_deal_classes_by_party_id(
     const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting total party product type deal classes count by party_id: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total party product type deal classes count by party_id: "
+                              << party_id;
     return repo_.get_total_party_product_type_deal_class_count_by_party_id(
         ctx_, boost::uuids::to_string(party_id));
 }
@@ -567,15 +565,15 @@ party_product_type_deal_class_service::count_party_product_type_deal_classes_by_
 std::optional<domain::party_product_type_deal_class>
 party_product_type_deal_class_service::get_party_product_type_deal_class_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party product type deal class at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting party product type deal class at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::party_product_type_deal_class>
 party_product_type_deal_class_service::get_party_product_type_deal_class(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party product type deal class. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting party product type deal class. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -592,11 +590,11 @@ void party_product_type_deal_class_service::save_party_product_type_deal_class(
     const domain::party_product_type_deal_class& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Party Product Type Deal Class id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving party product type deal class. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving party product type deal class. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved party product type deal class. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved party product type deal class. " << "id: " << v.id;
 }
 
 void party_product_type_deal_class_service::save_party_product_type_deal_classes(
@@ -605,8 +603,8 @@ void party_product_type_deal_class_service::save_party_product_type_deal_classes
         if (e.id.is_nil())
             throw std::invalid_argument("Party Product Type Deal Class id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << party_product_type_deal_classes.size()
-                               << " party product type deal classes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << party_product_type_deal_classes.size()
+                              << " party product type deal classes";
     auto ts = party_product_type_deal_classes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -616,9 +614,9 @@ void party_product_type_deal_class_service::save_party_product_type_deal_classes
 
 void party_product_type_deal_class_service::delete_party_product_type_deal_class(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party product type deal class. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing party product type deal class. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed party product type deal class. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed party product type deal class. " << "id: " << id;
 }
 
 void party_product_type_deal_class_service::delete_party_product_type_deal_classes(
@@ -629,8 +627,8 @@ void party_product_type_deal_class_service::delete_party_product_type_deal_class
 std::vector<domain::party_product_type_deal_class>
 party_product_type_deal_class_service::get_party_product_type_deal_class_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party product type deal class. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for party product type deal class. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

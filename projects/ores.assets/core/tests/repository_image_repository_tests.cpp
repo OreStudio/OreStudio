@@ -21,7 +21,7 @@
 #include "ores.assets.api/domain/image_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets.api/generators/image_generator.hpp"
 #include "ores.assets.core/repository/image_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -43,7 +43,7 @@ TEST_CASE("write_single_image", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto img = generate_synthetic_image(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Image: " << img;
+    ORES_LOG_SEV(lg, debug) << "Image: " << img;
 
     image_repository repo;
     CHECK_NOTHROW(repo.write(h.context(), img));
@@ -55,7 +55,7 @@ TEST_CASE("write_multiple_images", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto images = generate_synthetic_images(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Images: " << images;
+    ORES_LOG_SEV(lg, debug) << "Images: " << images;
 
     image_repository repo;
     CHECK_NOTHROW(repo.write(h.context(), images));
@@ -67,13 +67,13 @@ TEST_CASE("read_latest_images", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto written_images = generate_synthetic_images(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Written images: " << written_images;
+    ORES_LOG_SEV(lg, debug) << "Written images: " << written_images;
 
     image_repository repo;
     repo.write(h.context(), written_images);
 
     auto read_images = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read images: " << read_images;
+    ORES_LOG_SEV(lg, debug) << "Read images: " << read_images;
 
     // Every written image is found by the primary key it was written under.
     CHECK(read_images.size() >= written_images.size());
@@ -91,7 +91,7 @@ TEST_CASE("read_latest_image_by_id", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto img = generate_synthetic_image(ctx);
     const auto original_description = img.description;
-    BOOST_LOG_SEV(lg, debug) << "Image: " << img;
+    ORES_LOG_SEV(lg, debug) << "Image: " << img;
 
     image_repository repo;
     repo.write(h.context(), img);
@@ -100,7 +100,7 @@ TEST_CASE("read_latest_image_by_id", "[repository]") {
     repo.write(h.context(), img);
 
     auto read_images = repo.read_latest(h.context(), boost::uuids::to_string(img.id));
-    BOOST_LOG_SEV(lg, debug) << "Read images: " << read_images;
+    ORES_LOG_SEV(lg, debug) << "Read images: " << read_images;
 
     REQUIRE(read_images.size() == 1);
     CHECK(read_images[0].id == img.id);
@@ -120,13 +120,13 @@ TEST_CASE("write_and_read_image_preserves_every_byte", "[repository]") {
     // corrupts one of them, and the read below catches it: the bytes that come
     // back are equal to the bytes that went in.
     img.data = std::vector<std::uint8_t>{0x00, 0xFF, 0x10, 0x80, 0x01, 0xFE, 0x7F};
-    BOOST_LOG_SEV(lg, debug) << "Image: " << img;
+    ORES_LOG_SEV(lg, debug) << "Image: " << img;
 
     image_repository repo;
     repo.write(h.context(), img);
 
     auto read_images = repo.read_latest(h.context(), boost::uuids::to_string(img.id));
-    BOOST_LOG_SEV(lg, debug) << "Read images: " << read_images;
+    ORES_LOG_SEV(lg, debug) << "Read images: " << read_images;
 
     REQUIRE(read_images.size() == 1);
     CHECK(read_images[0].data == img.data);
@@ -138,13 +138,13 @@ TEST_CASE("read_latest_image_by_code", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto img = generate_synthetic_image(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Image: " << img;
+    ORES_LOG_SEV(lg, debug) << "Image: " << img;
 
     image_repository repo;
     repo.write(h.context(), img);
 
     auto read_images = repo.read_latest_by_code(h.context(), img.code);
-    BOOST_LOG_SEV(lg, debug) << "Read images: " << read_images;
+    ORES_LOG_SEV(lg, debug) << "Read images: " << read_images;
 
     REQUIRE(read_images.size() == 1);
     CHECK(read_images[0].code == img.code);
@@ -158,7 +158,7 @@ TEST_CASE("read_all_image_versions", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto img = generate_synthetic_image(ctx);
     const auto original_description = img.description;
-    BOOST_LOG_SEV(lg, debug) << "Image: " << img;
+    ORES_LOG_SEV(lg, debug) << "Image: " << img;
 
     image_repository repo;
     repo.write(h.context(), img);
@@ -169,7 +169,7 @@ TEST_CASE("read_all_image_versions", "[repository]") {
     // read_all addresses one row by its primary key and returns every version,
     // newest first, including the version the second write closed.
     auto read_images = repo.read_all(h.context(), boost::uuids::to_string(img.id));
-    BOOST_LOG_SEV(lg, debug) << "Read images: " << read_images;
+    ORES_LOG_SEV(lg, debug) << "Read images: " << read_images;
 
     REQUIRE(read_images.size() == 2);
     CHECK(read_images[0].version == 2);
@@ -185,10 +185,10 @@ TEST_CASE("read_nonexistent_image_id", "[repository]") {
     image_repository repo;
 
     const std::string nonexistent_id = "00000000-0000-0000-0000-000000000000";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_images = repo.read_latest(h.context(), nonexistent_id);
-    BOOST_LOG_SEV(lg, debug) << "Read images: " << read_images;
+    ORES_LOG_SEV(lg, debug) << "Read images: " << read_images;
 
     CHECK(read_images.size() == 0);
 }

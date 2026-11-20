@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -152,7 +152,7 @@ public:
                                               .notification_id = raised.notification_id,
                                               .recipient_count = raised.recipient_count});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(notification_operations_handler_lg(), error)
+            ORES_LOG_SEV(notification_operations_handler_lg(), error)
                 << "Error raising a notification: " << e.what();
             reply(nats_,
                   msg,
@@ -194,7 +194,7 @@ public:
                                                  .notifications = std::move(page.notifications),
                                                  .total = page.total});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(notification_operations_handler_lg(), error)
+            ORES_LOG_SEV(notification_operations_handler_lg(), error)
                 << "Error reading one's notifications: " << e.what();
             reply(nats_,
                   msg,
@@ -226,7 +226,7 @@ public:
                                                           notification_result(outcome::ok, "", ""),
                                                       .unread = center.unread(*me)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(notification_operations_handler_lg(), error)
+            ORES_LOG_SEV(notification_operations_handler_lg(), error)
                 << "Error counting unread notifications: " << e.what();
             reply(nats_,
                   msg,
@@ -267,7 +267,7 @@ public:
                       .result = notification_result(outcome::ok, "", ""),
                       .marked = center.mark_read(*me, req->notification_ids)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(notification_operations_handler_lg(), error)
+            ORES_LOG_SEV(notification_operations_handler_lg(), error)
                 << "Error marking notifications read: " << e.what();
             reply(nats_,
                   msg,
@@ -308,7 +308,7 @@ public:
                 clear_notifications_response{.result = notification_result(outcome::ok, "", ""),
                                              .cleared = center.clear(*me, req->notification_ids)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(notification_operations_handler_lg(), error)
+            ORES_LOG_SEV(notification_operations_handler_lg(), error)
                 << "Error clearing notifications: " << e.what();
             reply(nats_,
                   msg,
@@ -319,7 +319,7 @@ public:
 
 private:
     std::optional<ores::database::context> context_for(const ores::nats::message& msg) {
-        BOOST_LOG_SEV(notification_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(notification_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
             error_reply(nats_, msg, ctx.error());

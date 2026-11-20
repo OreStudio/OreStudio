@@ -28,7 +28,7 @@
 #include "ores.inbox.api/domain/notification_preference.hpp"
 #include "ores.inbox.core/export.hpp"
 #include "ores.inbox.core/repository/notification_preference_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::inbox::repository {
 

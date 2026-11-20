@@ -24,12 +24,10 @@
  */
 #include "ores.refdata.core/repository/default_curve_transition_matrix_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/default_curve_transition_matrix.hpp"
 #include "ores.refdata.api/domain/default_curve_transition_matrix_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/default_curve_transition_matrix_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -41,7 +39,7 @@ using namespace ores::database::repository;
 
 domain::default_curve_transition_matrix
 default_curve_transition_matrix_mapper::map(const default_curve_transition_matrix_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::default_curve_transition_matrix r;
     r.version = v.version;
@@ -57,13 +55,13 @@ default_curve_transition_matrix_mapper::map(const default_curve_transition_matri
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 default_curve_transition_matrix_entity
 default_curve_transition_matrix_mapper::map(const domain::default_curve_transition_matrix& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     default_curve_transition_matrix_entity r;
     r.id = v.id;
@@ -78,7 +76,7 @@ default_curve_transition_matrix_mapper::map(const domain::default_curve_transiti
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

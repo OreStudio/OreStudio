@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/domain/job_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.scheduler.core/repository/job_definition_entity.hpp"
 #include "ores.scheduler.core/repository/job_definition_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -214,7 +212,7 @@ void job_definition_repository::write(const context& ctx,
 void job_definition_repository::write(const context& ctx,
                                       const domain::job_definition& v,
                                       const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing job definition. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing job definition. " << "id: " << v.id;
     const auto t = job_definition_apply_claim(v,
                                               claim,
                                               job_definition_claim_reads_current(claim) ?
@@ -228,7 +226,7 @@ void job_definition_repository::write(
     const context& ctx,
     const std::vector<domain::job_definition>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing job definitions. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing job definitions. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "job_definition_repository::write: one claim is needed for each row");
@@ -264,7 +262,7 @@ std::vector<domain::job_definition> job_definition_repository::read_latest(const
 
 std::vector<domain::job_definition> job_definition_repository::read_latest(const context& ctx,
                                                                            const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest job definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest job definition. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -282,7 +280,7 @@ std::vector<domain::job_definition> job_definition_repository::read_latest(const
 
 std::vector<domain::job_definition> job_definition_repository::read_all(const context& ctx,
                                                                         const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all job definition versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all job definition versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<job_definition_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -298,8 +296,8 @@ std::vector<domain::job_definition> job_definition_repository::read_all(const co
 
 std::optional<domain::job_definition> job_definition_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading job definition at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading job definition at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<job_definition_entity>> |
@@ -321,7 +319,7 @@ std::optional<domain::job_definition> job_definition_repository::read_at_version
 
 job_definition_repository::remove_status job_definition_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing job definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing job definition. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -359,8 +357,8 @@ std::vector<domain::job_definition> job_definition_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::job_definitions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest job definitions with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest job definitions with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<job_definition_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -381,7 +379,7 @@ std::uint32_t job_definition_repository::get_total_definition_count(
     const context& ctx,
     const std::optional<messaging::job_definitions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active job definition count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active job definition count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<job_definition_entity>> |
@@ -448,7 +446,7 @@ void job_definition_repository::remove(const context& ctx, const std::vector<std
 
 
 std::vector<domain::job_definition> job_definition_repository::read_all_active(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all active job definitions.";
+    ORES_LOG_SEV(lg(), debug) << "Reading all active job definitions.";
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<job_definition_entity>> |
                        query_builder::where("is_active"_c == true && "valid_to"_c == max);

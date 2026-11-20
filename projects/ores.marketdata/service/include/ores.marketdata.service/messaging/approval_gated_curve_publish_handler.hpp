@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_MESSAGING_APPROVAL_GATED_CURVE_PUBLISH_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
@@ -99,7 +99,7 @@ public:
         } catch (const std::exception& e) {
             // A kind that cannot be read names no maker, so the gate fails closed
             // rather than letting a publish through an unstated rule.
-            BOOST_LOG_SEV(curve_publish_handler_lg(), error)
+            ORES_LOG_SEV(curve_publish_handler_lg(), error)
                 << msg.subject << " refused: " << e.what();
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -111,7 +111,7 @@ public:
 
         auto req = decode<publish_curve_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(curve_publish_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(curve_publish_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -120,13 +120,13 @@ public:
         try {
             answer(req_ctx, *req, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(curve_publish_handler_lg(), error)
+            ORES_LOG_SEV(curve_publish_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.status = service::app::publish_status_failed;
             resp.message = e.what();
         }
-        BOOST_LOG_SEV(curve_publish_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(curve_publish_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
@@ -162,12 +162,12 @@ public:
                 resp.success = false;
                 resp.status = service::app::publish_status_raised;
                 resp.message = "Raised. The publish waits on the decision.";
-                BOOST_LOG_SEV(curve_publish_handler_lg(), info)
+                ORES_LOG_SEV(curve_publish_handler_lg(), info)
                     << "Raised publish request " << id << " for curve " << req.bootstrap_config_id
                     << " as of " << req.as_of;
                 return;
             }
-            BOOST_LOG_SEV(curve_publish_handler_lg(), info)
+            ORES_LOG_SEV(curve_publish_handler_lg(), info)
                 << "Request " << id << " needs no approval, so the raise is the publish";
             apply(req_ctx, id, subject, resp);
             return;
@@ -206,7 +206,7 @@ private:
         if (!built) {
             resp.status = service::app::publish_status_deferred;
             resp.message = "Deferred. " + built.error().reason;
-            BOOST_LOG_SEV(curve_publish_handler_lg(), info)
+            ORES_LOG_SEV(curve_publish_handler_lg(), info)
                 << "Deferred curve " << attempted.bootstrap_config_id << ": "
                 << built.error().reason;
             return;

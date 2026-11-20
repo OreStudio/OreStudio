@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.api/domain/http_response.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -27,7 +27,7 @@ using namespace ores::logging;
 
 TEST_CASE("http_response_json_creates_json_response", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing json() creates proper JSON response";
+    ORES_LOG_SEV(lg, info) << "Testing json() creates proper JSON response";
 
     auto sut = http_response::json(R"({"status":"ok"})");
 
@@ -38,7 +38,7 @@ TEST_CASE("http_response_json_creates_json_response", "[http_response]") {
 
 TEST_CASE("http_response_json_with_custom_status", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing json() with custom status code";
+    ORES_LOG_SEV(lg, info) << "Testing json() with custom status code";
 
     auto sut = http_response::json(R"({"id":123})", http_status::created);
 
@@ -49,7 +49,7 @@ TEST_CASE("http_response_json_with_custom_status", "[http_response]") {
 
 TEST_CASE("http_response_error_creates_error_response", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing error() creates error response with JSON body";
+    ORES_LOG_SEV(lg, info) << "Testing error() creates error response with JSON body";
 
     auto sut = http_response::error(http_status::bad_request, "Invalid input");
 
@@ -60,7 +60,7 @@ TEST_CASE("http_response_error_creates_error_response", "[http_response]") {
 
 TEST_CASE("http_response_not_found_creates_404", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing not_found() creates 404 response";
+    ORES_LOG_SEV(lg, info) << "Testing not_found() creates 404 response";
 
     auto sut = http_response::not_found("Resource not found");
 
@@ -71,7 +71,7 @@ TEST_CASE("http_response_not_found_creates_404", "[http_response]") {
 
 TEST_CASE("http_response_not_found_with_default_message", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing not_found() with default message";
+    ORES_LOG_SEV(lg, info) << "Testing not_found() with default message";
 
     auto sut = http_response::not_found();
 
@@ -81,7 +81,7 @@ TEST_CASE("http_response_not_found_with_default_message", "[http_response]") {
 
 TEST_CASE("http_response_unauthorized_creates_401", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing unauthorized() creates 401 response";
+    ORES_LOG_SEV(lg, info) << "Testing unauthorized() creates 401 response";
 
     auto sut = http_response::unauthorized("Token expired");
 
@@ -92,7 +92,7 @@ TEST_CASE("http_response_unauthorized_creates_401", "[http_response]") {
 
 TEST_CASE("http_response_unauthorized_with_default_message", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing unauthorized() with default message";
+    ORES_LOG_SEV(lg, info) << "Testing unauthorized() with default message";
 
     auto sut = http_response::unauthorized();
 
@@ -102,7 +102,7 @@ TEST_CASE("http_response_unauthorized_with_default_message", "[http_response]") 
 
 TEST_CASE("http_response_forbidden_creates_403", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing forbidden() creates 403 response";
+    ORES_LOG_SEV(lg, info) << "Testing forbidden() creates 403 response";
 
     auto sut = http_response::forbidden("Access denied");
 
@@ -113,7 +113,7 @@ TEST_CASE("http_response_forbidden_creates_403", "[http_response]") {
 
 TEST_CASE("http_response_forbidden_with_default_message", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing forbidden() with default message";
+    ORES_LOG_SEV(lg, info) << "Testing forbidden() with default message";
 
     auto sut = http_response::forbidden();
 
@@ -123,7 +123,7 @@ TEST_CASE("http_response_forbidden_with_default_message", "[http_response]") {
 
 TEST_CASE("http_response_bad_request_creates_400", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing bad_request() creates 400 response";
+    ORES_LOG_SEV(lg, info) << "Testing bad_request() creates 400 response";
 
     auto sut = http_response::bad_request("Missing required field");
 
@@ -134,7 +134,7 @@ TEST_CASE("http_response_bad_request_creates_400", "[http_response]") {
 
 TEST_CASE("http_response_internal_error_creates_500", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing internal_error() creates 500 response";
+    ORES_LOG_SEV(lg, info) << "Testing internal_error() creates 500 response";
 
     auto sut = http_response::internal_error("Database connection failed");
 
@@ -145,7 +145,7 @@ TEST_CASE("http_response_internal_error_creates_500", "[http_response]") {
 
 TEST_CASE("http_response_set_header_adds_header", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing set_header() adds header";
+    ORES_LOG_SEV(lg, info) << "Testing set_header() adds header";
 
     http_response sut;
     sut.set_header("X-Custom-Header", "custom-value");
@@ -156,7 +156,7 @@ TEST_CASE("http_response_set_header_adds_header", "[http_response]") {
 
 TEST_CASE("http_response_set_header_returns_self_for_chaining", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing set_header() returns self for method chaining";
+    ORES_LOG_SEV(lg, info) << "Testing set_header() returns self for method chaining";
 
     http_response sut;
     sut.set_header("Header1", "value1")
@@ -171,7 +171,7 @@ TEST_CASE("http_response_set_header_returns_self_for_chaining", "[http_response]
 
 TEST_CASE("http_response_default_construction", "[http_response]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing http_response default construction";
+    ORES_LOG_SEV(lg, info) << "Testing http_response default construction";
 
     http_response sut;
 

@@ -26,7 +26,7 @@
 #define ORES_REPORTING_CORE_REPOSITORY_ENGINE_SETTINGS_GROUP_SETTING_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/engine_settings_group_setting.hpp"
 #include "ores.reporting.api/messaging/engine_settings_group_setting_protocol.hpp"
 #include "ores.reporting.core/export.hpp"

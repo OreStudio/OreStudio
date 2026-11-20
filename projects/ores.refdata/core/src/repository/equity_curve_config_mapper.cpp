@@ -24,12 +24,10 @@
  */
 #include "ores.refdata.core/repository/equity_curve_config_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/domain/equity_curve_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/equity_curve_config_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -40,7 +38,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::equity_curve_config equity_curve_config_mapper::map(const equity_curve_config_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::equity_curve_config r;
     r.version = v.version;
@@ -67,12 +65,12 @@ domain::equity_curve_config equity_curve_config_mapper::map(const equity_curve_c
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 equity_curve_config_entity equity_curve_config_mapper::map(const domain::equity_curve_config& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     equity_curve_config_entity r;
     r.id = v.id;
@@ -98,7 +96,7 @@ equity_curve_config_entity equity_curve_config_mapper::map(const domain::equity_
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

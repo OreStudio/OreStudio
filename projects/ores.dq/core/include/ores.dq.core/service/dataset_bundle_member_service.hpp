@@ -30,7 +30,7 @@
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/dataset_bundle_member_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>

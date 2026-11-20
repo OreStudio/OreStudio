@@ -20,7 +20,7 @@
 #include "ores.assets.api/domain/image.hpp"         // IWYU pragma: keep.
 #include "ores.assets.api/domain/image_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets.api/generators/image_generator.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
@@ -36,7 +36,7 @@ TEST_CASE("generate_single_image", "[generators]") {
 
     generation_context ctx;
     auto image = generate_synthetic_image(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated image: " << image;
+    ORES_LOG_SEV(lg, debug) << "Generated image: " << image;
 
     CHECK(!image.id.is_nil());
     CHECK(!image.code.empty());
@@ -52,7 +52,7 @@ TEST_CASE("generate_multiple_images", "[generators]") {
 
     generation_context ctx;
     auto images = generate_synthetic_images(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated images: " << images;
+    ORES_LOG_SEV(lg, debug) << "Generated images: " << images;
 
     CHECK(images.size() == 3);
 }
@@ -62,7 +62,7 @@ TEST_CASE("generate_images_with_distinct_codes", "[generators]") {
 
     generation_context ctx;
     auto images = generate_synthetic_images(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated images: " << images;
+    ORES_LOG_SEV(lg, debug) << "Generated images: " << images;
 
     CHECK(images.size() == 3);
 

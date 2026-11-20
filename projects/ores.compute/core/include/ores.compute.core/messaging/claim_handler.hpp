@@ -33,7 +33,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/domain/change_reason_codes.hpp"
 #include "ores.iam.client/client/storage_capability_minter.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -83,13 +83,13 @@ public:
         , minter_(ores::iam::client::make_storage_capability_minter(service_nats_)) {}
 
     void claim(ores::nats::message msg) {
-        BOOST_LOG_SEV(claim_handler_lg(), ores::logging::debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(claim_handler_lg(), ores::logging::debug) << "Handling " << msg.subject;
         claim_work_response resp;
         if (auto req = ores::service::messaging::decode<claim_work_request>(msg)) {
             try {
                 resp = serve(*req);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(claim_handler_lg(), ores::logging::warn)
+                ORES_LOG_SEV(claim_handler_lg(), ores::logging::warn)
                     << "claim_work failed: " << e.what();
                 resp = claim_work_response{};
                 resp.message = e.what();
@@ -117,7 +117,7 @@ private:
         // claim was lost, and nobody is working on it. Return it to the queue now: its
         // heartbeats would otherwise keep it leased for as long as the host lives.
         if (const auto abandoned = ledger.requeue_held(ctx_, host); abandoned > 0) {
-            BOOST_LOG_SEV(claim_handler_lg(), ores::logging::warn)
+            ORES_LOG_SEV(claim_handler_lg(), ores::logging::warn)
                 << abandoned << " job(s) held by host " << req.host_id
                 << " were never reported and went back to the queue";
         }
@@ -138,7 +138,7 @@ private:
                 try {
                     ledger.release(ctx_, entry->result_id);
                 } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(claim_handler_lg(), ores::logging::error)
+                    ORES_LOG_SEV(claim_handler_lg(), ores::logging::error)
                         << "Could not release result " << boost::uuids::to_string(entry->result_id)
                         << " after a failed claim: " << e.what();
                 }
@@ -173,7 +173,7 @@ private:
         // returns the entry to the queue and leaves the result as that node marked it.
         if (!result || !claimable(result->server_state, entry.attempts)) {
             // Retired, done or gone while it waited. Nothing can run it.
-            BOOST_LOG_SEV(claim_handler_lg(), ores::logging::info)
+            ORES_LOG_SEV(claim_handler_lg(), ores::logging::info)
                 << "Dropping ledger entry for result " << boost::uuids::to_string(entry.result_id)
                 << ": it is no longer unsent";
             ledger.remove(ctx_, entry.result_id);
@@ -183,7 +183,7 @@ private:
         service::workunit_service wu_svc(tenant_ctx);
         const auto workunit = wu_svc.get_workunit(entry.workunit_id);
         if (!workunit) {
-            BOOST_LOG_SEV(claim_handler_lg(), ores::logging::warn)
+            ORES_LOG_SEV(claim_handler_lg(), ores::logging::warn)
                 << "Dropping ledger entry for result " << boost::uuids::to_string(entry.result_id)
                 << ": its workunit is gone";
             ledger.remove(ctx_, entry.result_id);
@@ -212,7 +212,7 @@ private:
         if (!grants) {
             // No node of this platform can ever run it. End it as a failure that a person
             // sees, and take it out of the queue, so it cannot hold the head of the line.
-            BOOST_LOG_SEV(claim_handler_lg(), ores::logging::error)
+            ORES_LOG_SEV(claim_handler_lg(), ores::logging::error)
                 << "Result " << result_id << " cannot be run on platform " << platform
                 << ": no package or no storage path";
             auto ended = *result;
@@ -255,7 +255,7 @@ private:
             // stops. If the result was retired, the next claim finds it no longer unsent and
             // drops the entry. If the database failed, the next claim tries again. Deleting the
             // entry here would lose a job that the database failure left unsent.
-            BOOST_LOG_SEV(claim_handler_lg(), ores::logging::warn)
+            ORES_LOG_SEV(claim_handler_lg(), ores::logging::warn)
                 << "Giving back ledger entry for result " << result_id
                 << ": the result could not be marked in progress (" << e.what() << ")";
             ledger.release(ctx_, entry.result_id);
@@ -278,7 +278,7 @@ private:
         assignment.logs_uri = logs_path;
         assignment.storage_token = *token;
         assignment.attempt = entry.attempts;
-        BOOST_LOG_SEV(claim_handler_lg(), ores::logging::info)
+        ORES_LOG_SEV(claim_handler_lg(), ores::logging::info)
             << "Claimed result " << result_id << " for host " << boost::uuids::to_string(host)
             << " (attempt " << entry.attempts << ")";
         return assignment;

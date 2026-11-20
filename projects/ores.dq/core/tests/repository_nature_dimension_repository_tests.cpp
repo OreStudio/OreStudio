@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/nature_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/nature_dimension_generator.hpp"
 #include "ores.dq.core/repository/nature_dimension_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -49,11 +49,11 @@ TEST_CASE("write_single_nature_dimension", "[repository]") {
     nature_dimension.code =
         nature_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Nature dimension: " << nature_dimension;
+    ORES_LOG_SEV(lg, debug) << "Nature dimension: " << nature_dimension;
     repo.write(h.context(), nature_dimension);
 
     auto read_nature_dimensions = repo.read_latest(h.context(), nature_dimension.code);
-    BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
 
     REQUIRE(read_nature_dimensions.size() == 1);
     CHECK(read_nature_dimensions[0].code == nature_dimension.code);
@@ -72,11 +72,11 @@ TEST_CASE("write_multiple_nature_dimensions", "[repository]") {
         n.tenant_id = h.tenant_id();
         n.code = n.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Nature dimensions: " << nature_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Nature dimensions: " << nature_dimensions;
     repo.write(h.context(), nature_dimensions);
 
     auto read_nature_dimensions = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
 
     for (const auto& written : nature_dimensions) {
         bool found = false;
@@ -102,12 +102,12 @@ TEST_CASE("read_latest_nature_dimensions", "[repository]") {
         n.tenant_id = h.tenant_id();
         n.code = n.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Written nature dimensions: " << written_nature_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Written nature dimensions: " << written_nature_dimensions;
 
     repo.write(h.context(), written_nature_dimensions);
 
     auto read_nature_dimensions = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
 
     for (const auto& written : written_nature_dimensions) {
         bool found = false;
@@ -135,13 +135,13 @@ TEST_CASE("read_latest_nature_dimension_by_code", "[repository]") {
     }
 
     const auto target = nature_dimensions.front();
-    BOOST_LOG_SEV(lg, debug) << "Write nature dimensions: " << nature_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Write nature dimensions: " << nature_dimensions;
     repo.write(h.context(), nature_dimensions);
 
-    BOOST_LOG_SEV(lg, debug) << "Target nature dimension: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target nature dimension: " << target;
 
     auto read_nature_dimensions = repo.read_latest(h.context(), target.code);
-    BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
 
     REQUIRE(read_nature_dimensions.size() == 1);
     CHECK(read_nature_dimensions[0].code == target.code);
@@ -160,23 +160,23 @@ TEST_CASE("read_nonexistent_nature_dimension", "[repository]") {
     nature_dimension.tenant_id = h.tenant_id();
     nature_dimension.code =
         nature_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
-    BOOST_LOG_SEV(lg, debug) << "Nature dimension: " << nature_dimension;
+    ORES_LOG_SEV(lg, debug) << "Nature dimension: " << nature_dimension;
 
     // Seed a real row, so a miss below proves the key was respected.
     repo.write(h.context(), nature_dimension);
 
     auto read_nature_dimensions = repo.read_latest(h.context(), nature_dimension.code);
-    BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
 
     REQUIRE(read_nature_dimensions.size() == 1);
     CHECK(read_nature_dimensions[0].code == nature_dimension.code);
     CHECK(read_nature_dimensions[0].name == nature_dimension.name);
 
     const std::string nonexistent_code = "nonexistent.nature_dimension.12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_missing = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read by non-existent code: " << read_missing;
+    ORES_LOG_SEV(lg, debug) << "Read by non-existent code: " << read_missing;
 
     CHECK(read_missing.size() == 0);
 }

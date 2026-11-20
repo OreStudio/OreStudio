@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_YIELD_VOLATILITY_CONFIG_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_YIELD_VOLATILITY_CONFIG_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/yield_volatility_config_entity.hpp"

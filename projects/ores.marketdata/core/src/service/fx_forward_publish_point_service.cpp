@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/fx_forward_publish_point.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_publish_point_protocol.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_point_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -251,12 +249,12 @@ fx_forward_publish_point_service::get_fx_forward_publish_point_version(
 
 std::vector<domain::fx_forward_publish_point>
 fx_forward_publish_point_service::list_points(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all FX forward publish points";
+    ORES_LOG_SEV(lg(), debug) << "Listing all FX forward publish points";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t fx_forward_publish_point_service::count_points() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total FX forward publish points count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total FX forward publish points count";
     return repo_.get_total_point_count(ctx_);
 }
 
@@ -264,14 +262,14 @@ std::uint32_t fx_forward_publish_point_service::count_points() {
 std::optional<domain::fx_forward_publish_point>
 fx_forward_publish_point_service::get_point_at_version(const boost::uuids::uuid& id,
                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX forward publish point at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX forward publish point at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::fx_forward_publish_point>
 fx_forward_publish_point_service::get_point(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX forward publish point. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX forward publish point. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -286,11 +284,11 @@ fx_forward_publish_point_service::get_points(const std::vector<std::string>& ids
 void fx_forward_publish_point_service::save_point(const domain::fx_forward_publish_point& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Fx Forward Publish Point id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving FX forward publish point. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving FX forward publish point. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved FX forward publish point. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved FX forward publish point. " << "id: " << v.id;
 }
 
 void fx_forward_publish_point_service::save_points(
@@ -299,7 +297,7 @@ void fx_forward_publish_point_service::save_points(
         if (e.id.is_nil())
             throw std::invalid_argument("Fx Forward Publish Point id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << points.size() << " FX forward publish points";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << points.size() << " FX forward publish points";
     auto ts = points;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -308,9 +306,9 @@ void fx_forward_publish_point_service::save_points(
 }
 
 void fx_forward_publish_point_service::delete_point(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX forward publish point. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing FX forward publish point. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed FX forward publish point. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed FX forward publish point. " << "id: " << id;
 }
 
 void fx_forward_publish_point_service::delete_points(const std::vector<std::string>& ids) {
@@ -319,7 +317,7 @@ void fx_forward_publish_point_service::delete_points(const std::vector<std::stri
 
 std::vector<domain::fx_forward_publish_point>
 fx_forward_publish_point_service::get_point_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for FX forward publish point. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for FX forward publish point. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

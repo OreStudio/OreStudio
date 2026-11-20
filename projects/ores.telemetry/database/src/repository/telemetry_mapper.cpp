@@ -19,7 +19,7 @@
  */
 #include "ores.telemetry.database/repository/telemetry_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
 #include <boost/lexical_cast.hpp>

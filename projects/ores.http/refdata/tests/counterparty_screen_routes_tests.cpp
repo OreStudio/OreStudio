@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/refdata/counterparty_screen_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -54,7 +54,7 @@ const std::string intent = R"("intent":{"reason_code":"system.new_record"})";
 
 TEST_CASE("counterparty_centre_changes_link_before_they_close", "[counterparty_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the business centre writes and their order";
+    ORES_LOG_SEV(lg, info) << "Testing the business centre writes and their order";
 
     const auto changes = counterparty_screen_routes::changes_of({"GBLO", "USNY", "GBLO"},
                                                                 {"DEFR", "GBLO", "DEFR", "JPTO"});
@@ -68,7 +68,7 @@ TEST_CASE("counterparty_centre_changes_link_before_they_close", "[counterparty_s
 
 TEST_CASE("counterparty_children_read_names_1_to_200_identifiers", "[counterparty_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifiers a children read accepts";
+    ORES_LOG_SEV(lg, info) << "Testing the identifiers a children read accepts";
 
     const auto ids = counterparty_screen_routes::read_ids(first + ",," + second + ",");
     REQUIRE(ids);
@@ -96,7 +96,7 @@ TEST_CASE("counterparty_children_read_names_1_to_200_identifiers", "[counterpart
 
 TEST_CASE("counterparty_children_are_grouped_in_the_order_named", "[counterparty_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the children read's shape";
+    ORES_LOG_SEV(lg, info) << "Testing the children read's shape";
 
     boost::uuids::string_generator uuid;
     ores::refdata::domain::counterparty_business_centre centre;
@@ -114,7 +114,7 @@ TEST_CASE("counterparty_children_are_grouped_in_the_order_named", "[counterparty
 TEST_CASE("counterparty_routes_refuse_a_malformed_request_before_forwarding",
           "[counterparty_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing each route's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing each route's refusals";
 
     const auto refused = [](const http_response& answer, const std::string& words) {
         CHECK(answer.status == http_status::bad_request);
@@ -171,7 +171,7 @@ TEST_CASE("counterparty_routes_refuse_a_malformed_request_before_forwarding",
 
 TEST_CASE("counterparty_routes_forward_a_well_formed_request", "[counterparty_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an accepted request reaches the service";
+    ORES_LOG_SEV(lg, info) << "Testing that an accepted request reaches the service";
 
     // The client is not connected, so an accepted request fails at the forward step.
     const auto unanswered = [](const http_response& answer) {

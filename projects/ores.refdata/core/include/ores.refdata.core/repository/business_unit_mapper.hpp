@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/business_unit_entity.hpp"

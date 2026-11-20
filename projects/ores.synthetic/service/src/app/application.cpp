@@ -179,7 +179,7 @@ private:
                     built[i].adapter->stop();
                     built[i].runner->stop_all();
                 } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), warn) << "An adapter did not stop cleanly: " << e.what();
+                    ORES_LOG_SEV(lg(), warn) << "An adapter did not stop cleanly: " << e.what();
                 }
             }
             throw;
@@ -198,10 +198,10 @@ private:
             derived_.push_back(std::move(one));
         }
         if (adapters_.empty())
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The catalogue holds no simulated source, so the simulator serves no adapter.";
         else
-            BOOST_LOG_SEV(lg(), info)
+            ORES_LOG_SEV(lg(), info)
                 << adapters_.size() << " simulated source(s) served as adapters";
     }
 
@@ -224,8 +224,8 @@ private:
             } catch (const std::exception& e) {
                 failure = e.what();
             }
-            BOOST_LOG_SEV(lg(), warn) << "The simulator serves no adapter yet: " << failure
-                                      << ". Trying again in " << wait.count() << " s.";
+            ORES_LOG_SEV(lg(), warn) << "The simulator serves no adapter yet: " << failure
+                                     << ". Trying again in " << wait.count() << " s.";
             ores::platform::concurrency::wait_for(
                 stop, std::chrono::duration_cast<std::chrono::milliseconds>(wait));
             wait = std::min(wait * 2, std::chrono::seconds(30));
@@ -270,7 +270,7 @@ application::application() = default;
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.synthetic.service", 0, 1);
 
     ores::nats::service::client nats(cfg.nats);
@@ -296,7 +296,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto generated_event_subs =
         messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
     event_source.start();
-    BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+    ORES_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
     try {
         auto admin = nats.make_admin();
@@ -309,9 +309,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         // synthetic_steps is not ensured here. The service's own registrar
         // declares it, from the same table it subscribes, so the stream's
         // coverage and the consumer's filters cannot disagree.
-        BOOST_LOG_SEV(lg(), info) << "JetStream streams ready: the tick streams are retired";
+        ORES_LOG_SEV(lg(), info) << "JetStream streams ready: the tick streams are retired";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream stream: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Failed to ensure JetStream stream: " << e.what();
         throw;
     }
 
@@ -332,8 +332,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                     return feed::feed_adapter{.id = source.name,
                                               .provider_code = std::string(provider_code)};
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "The adapter of provider '" << provider_code
-                                      << "' could not be read: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "The adapter of provider '" << provider_code
+                                     << "' could not be read: " << e.what();
         }
         return std::nullopt;
     };
@@ -355,8 +355,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                .jump = 0.5,
                                                                .decay = 20.0,
                                                                .speed = cfg.market_speed};
-    BOOST_LOG_SEV(lg(), info) << "SYNTHETIC RUN SEED: " << cfg.run_seed
-                              << ", MARKET SPEED: " << cfg.market_speed;
+    ORES_LOG_SEV(lg(), info) << "SYNTHETIC RUN SEED: " << cfg.run_seed
+                             << ", MARKET SPEED: " << cfg.market_speed;
     // The run's one market: its loop decides when every feed ticks, its noise is the
     // correlation between them, and its values are what they publish for each other. The
     // aggregate owns all three, so the driver hook it installs points at what it outlives.
@@ -365,7 +365,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto& scheduler = run_market_of_the_run.loop();
     scheduler.set_hooks([](std::uint64_t, const std::string&) {},
                         [](const std::exception& ex) {
-                            BOOST_LOG_SEV(lg(), error) << "SYNTHETIC TICK FAILED: " << ex.what();
+                            ORES_LOG_SEV(lg(), error) << "SYNTHETIC TICK FAILED: " << ex.what();
                         });
     /*
      * The market is built here, before the loop starts, for two reasons. A block's loadings
@@ -391,7 +391,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 continue;
             const auto anchor = spot_series.find(*row.candidate.fx_pair);
             if (anchor == spot_series.end()) {
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "Synthetic surface '" << row.candidate.source_name << "' has no spot feed "
                     << "for " << row.candidate.fx_pair->first << "/"
                     << row.candidate.fx_pair->second << ", so it is not in the run's market";
@@ -405,17 +405,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                 row.candidate.block->spot_skew,
                                                 row.candidate.block->neighbour);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "Synthetic surface '" << row.candidate.source_name
-                                          << "' has no block: " << e.what();
+                ORES_LOG_SEV(lg(), warn) << "Synthetic surface '" << row.candidate.source_name
+                                         << "' has no block: " << e.what();
             }
         }
         // A second is the finest gap this run can produce until the arrival laws are read
         // here. Every configured rate is far slower, so no tick is interpolated.
         run_market_of_the_run.build(3600.0, 0.0, 1.0);
-        BOOST_LOG_SEV(lg(), info) << "SYNTHETIC MARKET: "
-                                  << run_market_of_the_run.noise().factors.size()
-                                  << " factor(s) over "
-                                  << run_market_of_the_run.noise().series_id.size() << " series";
+        ORES_LOG_SEV(lg(), info) << "SYNTHETIC MARKET: "
+                                 << run_market_of_the_run.noise().factors.size()
+                                 << " factor(s) over "
+                                 << run_market_of_the_run.noise().series_id.size() << " series";
     }
 
     ores::platform::concurrency::jthread scheduler_thread([&scheduler] { scheduler.run(); });

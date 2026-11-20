@@ -26,7 +26,7 @@
 #define ORES_REPORTING_CORE_SERVICE_REPORT_TEXT_VALUE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/report_text_value.hpp"
 #include "ores.reporting.api/messaging/report_text_value_protocol.hpp"
 #include "ores.reporting.core/export.hpp"

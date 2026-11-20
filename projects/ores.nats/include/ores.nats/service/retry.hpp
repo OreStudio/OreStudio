@@ -20,7 +20,7 @@
 #ifndef ORES_NATS_SERVICE_RETRY_HPP
 #define ORES_NATS_SERVICE_RETRY_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
@@ -77,7 +77,7 @@ retry_with_backoff(Fn&& fn,
                 throw;
             if (max_retries >= 0 && attempt >= max_retries)
                 throw;
-            BOOST_LOG_SEV(lg, warn)
+            ORES_LOG_SEV(lg, warn)
                 << operation_name << " failed (attempt " << (attempt + 1) << "): " << e.what()
                 << ". Retrying in " << delay.count() << " ms.";
             failed = true;
@@ -85,7 +85,7 @@ retry_with_backoff(Fn&& fn,
             if (max_retries >= 0 && attempt >= max_retries)
                 throw;
 
-            BOOST_LOG_SEV(lg, warn)
+            ORES_LOG_SEV(lg, warn)
                 << operation_name << " failed (attempt " << (attempt + 1) << "): " << e.what()
                 << ". Retrying in " << delay.count() << " ms.";
             failed = true;

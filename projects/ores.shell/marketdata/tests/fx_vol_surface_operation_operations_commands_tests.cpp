@@ -22,7 +22,7 @@
  * Template: cpp_shell_operation_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/marketdata/fx_vol_surface_operation_operations_commands.hpp"
@@ -66,7 +66,7 @@ TEST_CASE("fx_vol_surface_operation_operations_registers_every_declared_command"
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 4 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 4 command(s).";
 }
 
 TEST_CASE("fx_vol_surface_operation_operations_process_calibrate_fx_vol_surface_requires_a_session",
@@ -85,7 +85,7 @@ TEST_CASE("fx_vol_surface_operation_operations_process_calibrate_fx_vol_surface_
             "2026-01-01T00:00:00Z",
         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -106,7 +106,7 @@ TEST_CASE("fx_vol_surface_operation_operations_process_calibrate_fx_vol_surface_
     fx_vol_surface_operation_operations_commands::process_calibrate_fx_vol_surface(
         out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -132,7 +132,7 @@ TEST_CASE(
             "2026-01-01T00:00:00Z",
         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -155,7 +155,7 @@ TEST_CASE("fx_vol_surface_operation_operations_process_publish_fx_vol_surface_re
             "2026-01-01T00:00:00Z",
         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -175,7 +175,7 @@ TEST_CASE(
     command_feedback::reset();
     fx_vol_surface_operation_operations_commands::process_publish_fx_vol_surface(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -201,7 +201,7 @@ TEST_CASE(
             "2026-01-01T00:00:00Z",
         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -224,7 +224,7 @@ TEST_CASE("fx_vol_surface_operation_operations_process_get_fx_vol_surface_publis
             "sample",
         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -245,7 +245,7 @@ TEST_CASE("fx_vol_surface_operation_operations_process_get_fx_vol_surface_publis
     fx_vol_surface_operation_operations_commands::process_get_fx_vol_surface_publish_subject(
         out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 1 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -270,7 +270,7 @@ TEST_CASE("fx_vol_surface_operation_operations_process_get_fx_vol_surface_publis
             "sample",
         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -294,7 +294,7 @@ TEST_CASE(
             "2026-01-01T00:00:00Z",
         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -315,7 +315,7 @@ TEST_CASE("fx_vol_surface_operation_operations_process_get_published_fx_vol_surf
     fx_vol_surface_operation_operations_commands::process_get_published_fx_vol_surface(
         out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -341,7 +341,7 @@ TEST_CASE("fx_vol_surface_operation_operations_process_get_published_fx_vol_surf
             "2026-01-01T00:00:00Z",
         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);

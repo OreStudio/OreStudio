@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/structure.hpp"
 #include "ores.trading.api/messaging/structure_protocol.hpp"
 #include "ores.trading.core/repository/structure_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/structure_identifier.hpp"
 #include "ores.trading.core/repository/structure_identifier_repository.hpp"
@@ -507,25 +505,25 @@ structure_service::prepare_change(const messaging::structure_change& change,
 
 std::vector<domain::structure> structure_service::list_structures(std::uint32_t offset,
                                                                   std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all structures";
+    ORES_LOG_SEV(lg(), debug) << "Listing all structures";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t structure_service::count_structures() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total structures count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total structures count";
     return repo_.get_total_structure_count(ctx_);
 }
 
 
 std::optional<domain::structure>
 structure_service::get_structure_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting structure at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting structure at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::structure> structure_service::get_structure(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting structure. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting structure. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -540,11 +538,11 @@ structure_service::get_structures(const std::vector<std::string>& ids) {
 void structure_service::save_structure(const domain::structure& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Structure id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving structure. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving structure. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved structure. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved structure. " << "id: " << v.id;
 }
 
 void structure_service::save_structures(const std::vector<domain::structure>& structures) {
@@ -552,7 +550,7 @@ void structure_service::save_structures(const std::vector<domain::structure>& st
         if (e.id.is_nil())
             throw std::invalid_argument("Structure id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << structures.size() << " structures";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << structures.size() << " structures";
     auto ts = structures;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -561,9 +559,9 @@ void structure_service::save_structures(const std::vector<domain::structure>& st
 }
 
 void structure_service::delete_structure(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing structure. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing structure. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed structure. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed structure. " << "id: " << id;
 }
 
 void structure_service::delete_structures(const std::vector<std::string>& ids) {
@@ -571,7 +569,7 @@ void structure_service::delete_structures(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::structure> structure_service::get_structure_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for structure. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for structure. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

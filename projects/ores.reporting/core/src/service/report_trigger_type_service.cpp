@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_trigger_type.hpp"
 #include "ores.reporting.api/messaging/report_trigger_type_protocol.hpp"
 #include "ores.reporting.core/repository/report_trigger_type_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -455,26 +453,26 @@ report_trigger_type_service::prepare_change(const messaging::report_trigger_type
 
 std::vector<domain::report_trigger_type>
 report_trigger_type_service::list_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all report trigger types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all report trigger types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t report_trigger_type_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report trigger types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total report trigger types count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::report_trigger_type>
 report_trigger_type_service::get_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report trigger type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting report trigger type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::report_trigger_type>
 report_trigger_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report trigger type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting report trigger type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -489,11 +487,11 @@ report_trigger_type_service::get_types(const std::vector<std::string>& codes) {
 void report_trigger_type_service::save_type(const domain::report_trigger_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Report Trigger Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report trigger type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving report trigger type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved report trigger type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved report trigger type. " << "code: " << v.code;
 }
 
 void report_trigger_type_service::save_types(
@@ -502,7 +500,7 @@ void report_trigger_type_service::save_types(
         if (e.code.empty())
             throw std::invalid_argument("Report Trigger Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " report trigger types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " report trigger types";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -511,9 +509,9 @@ void report_trigger_type_service::save_types(
 }
 
 void report_trigger_type_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report trigger type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing report trigger type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed report trigger type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed report trigger type. " << "code: " << code;
 }
 
 void report_trigger_type_service::delete_types(const std::vector<std::string>& codes) {
@@ -522,7 +520,7 @@ void report_trigger_type_service::delete_types(const std::vector<std::string>& c
 
 std::vector<domain::report_trigger_type>
 report_trigger_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for report trigger type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for report trigger type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

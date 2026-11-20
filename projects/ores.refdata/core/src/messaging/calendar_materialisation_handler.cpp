@@ -19,8 +19,7 @@
  */
 #include "ores.refdata.core/messaging/calendar_materialisation_handler.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"
@@ -29,7 +28,6 @@
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <chrono>
 #include <cstdint>
 #include <exception>
@@ -60,7 +58,7 @@ calendar_materialisation_handler::calendar_materialisation_handler(
     , verifier_(verifier) {}
 
 void calendar_materialisation_handler::regenerate(ores::nats::message msg) {
-    BOOST_LOG_SEV(calendar_materialisation_handler_lg(), debug) << "Handling " << msg.subject;
+    ORES_LOG_SEV(calendar_materialisation_handler_lg(), debug) << "Handling " << msg.subject;
     auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
     if (!req_ctx_expected) {
         error_reply(nats_, msg, req_ctx_expected.error());
@@ -81,21 +79,21 @@ void calendar_materialisation_handler::regenerate(ores::nats::message msg) {
             const auto rows = req->calendar_code ? svc.regenerate(*req->calendar_code, end_year) :
                               req->in_use_only   ? svc.regenerate_in_use(end_year) :
                                                    svc.regenerate_all(end_year);
-            BOOST_LOG_SEV(calendar_materialisation_handler_lg(), debug)
+            ORES_LOG_SEV(calendar_materialisation_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   regenerate_calendar_dates_response{
                       .success = true, .rows_written = static_cast<std::uint64_t>(rows)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(calendar_materialisation_handler_lg(), error)
+            ORES_LOG_SEV(calendar_materialisation_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   regenerate_calendar_dates_response{.success = false, .message = e.what()});
         }
     } else {
-        BOOST_LOG_SEV(calendar_materialisation_handler_lg(), warn)
+        ORES_LOG_SEV(calendar_materialisation_handler_lg(), warn)
             << "Failed to decode: " << msg.subject;
         error_reply(nats_, msg, ores::service::error_code::bad_request);
     }

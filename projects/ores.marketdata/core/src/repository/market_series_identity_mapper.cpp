@@ -24,12 +24,10 @@
  */
 #include "ores.marketdata.core/repository/market_series_identity_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_series_identity.hpp"
 #include "ores.marketdata.api/domain/market_series_identity_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.core/repository/market_series_identity_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
@@ -42,7 +40,7 @@ using namespace ores::database::repository;
 
 domain::market_series_identity
 market_series_identity_mapper::map(const market_series_identity_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::market_series_identity r;
     r.tenant_id = v.tenant_id;
@@ -105,13 +103,13 @@ market_series_identity_mapper::map(const market_series_identity_entity& v) {
     r.underlying_name = v.underlying_name.value_or("");
     r.unit_ccy = v.unit_ccy.value_or("");
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 market_series_identity_entity
 market_series_identity_mapper::map(const domain::market_series_identity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     market_series_identity_entity r;
     r.series_id = v.series_id;
@@ -175,7 +173,7 @@ market_series_identity_mapper::map(const domain::market_series_identity& v) {
     r.underlying_name = v.underlying_name.empty() ? std::nullopt : std::optional(v.underlying_name);
     r.unit_ccy = v.unit_ccy.empty() ? std::nullopt : std::optional(v.unit_ccy);
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

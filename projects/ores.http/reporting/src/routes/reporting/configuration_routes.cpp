@@ -23,7 +23,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/messaging/analytic_type_protocol.hpp"
 #include "ores.reporting.api/messaging/configuration_analytic_protocol.hpp"
 #include "ores.reporting.api/messaging/configuration_protocol.hpp"
@@ -113,7 +113,7 @@ std::string detail_of(const http_request& req, nats_client& session, const boost
     } catch (const rr::refusal& refused) {
         if (refused.status != http_status::forbidden)
             throw;
-        BOOST_LOG_SEV(configuration_lg(), ores::logging::debug)
+        ORES_LOG_SEV(configuration_lg(), ores::logging::debug)
             << "The analytic types are not readable by this account, so the analytics are "
                "named by their codes.";
     }

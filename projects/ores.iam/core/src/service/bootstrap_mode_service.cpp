@@ -34,20 +34,20 @@ bootstrap_mode_service::bootstrap_mode_service(const database::context& ctx,
     : system_settings_service_(ctx, std::move(tenant_id))
     , auth_service_(auth_service)
     , ctx_(ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
+    ORES_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
     system_settings_service_.refresh();
 }
 
 bool bootstrap_mode_service::is_in_bootstrap_mode() {
-    BOOST_LOG_SEV(lg(), debug) << "Checking bootstrap mode status";
+    ORES_LOG_SEV(lg(), debug) << "Checking bootstrap mode status";
 
     const bool in_bootstrap = system_settings_service_.is_bootstrap_mode_enabled();
-    BOOST_LOG_SEV(lg(), debug) << "Bootstrap mode: " << (in_bootstrap ? "true" : "false");
+    ORES_LOG_SEV(lg(), debug) << "Bootstrap mode: " << (in_bootstrap ? "true" : "false");
     return in_bootstrap;
 }
 
 void bootstrap_mode_service::initialize_bootstrap_state() {
-    BOOST_LOG_SEV(lg(), info) << "Initializing bootstrap mode state";
+    ORES_LOG_SEV(lg(), info) << "Initializing bootstrap mode state";
 
     // Check if any account has the SuperAdmin role via RBAC
     auto accounts = account_repo_.read_latest(ctx_);
@@ -64,19 +64,19 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
             });
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Total accounts: " << accounts.size();
-    BOOST_LOG_SEV(lg(), debug) << "SuperAdmin exists: " << (super_admin_exists ? "true" : "false");
+    ORES_LOG_SEV(lg(), debug) << "Total accounts: " << accounts.size();
+    ORES_LOG_SEV(lg(), debug) << "SuperAdmin exists: " << (super_admin_exists ? "true" : "false");
 
     const bool flag_enabled = system_settings_service_.is_bootstrap_mode_enabled();
-    BOOST_LOG_SEV(lg(), debug) << "Bootstrap flag enabled: " << (flag_enabled ? "true" : "false");
+    ORES_LOG_SEV(lg(), debug) << "Bootstrap flag enabled: " << (flag_enabled ? "true" : "false");
 
     if (flag_enabled && super_admin_exists) {
-        BOOST_LOG_SEV(lg(), warn) << "Bootstrap flag is enabled but SuperAdmin accounts exist, "
-                                  << "correcting state";
+        ORES_LOG_SEV(lg(), warn) << "Bootstrap flag is enabled but SuperAdmin accounts exist, "
+                                 << "correcting state";
         exit_bootstrap_mode();
     } else if (!flag_enabled && !super_admin_exists) {
-        BOOST_LOG_SEV(lg(), warn) << "Bootstrap flag is disabled but no SuperAdmin accounts exist, "
-                                  << "this is inconsistent. Enabling bootstrap mode";
+        ORES_LOG_SEV(lg(), warn) << "Bootstrap flag is disabled but no SuperAdmin accounts exist, "
+                                 << "this is inconsistent. Enabling bootstrap mode";
         system_settings_service_.set_bootstrap_mode(
             true,
             ctx_.service_account(),
@@ -86,10 +86,10 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
 }
 
 void bootstrap_mode_service::exit_bootstrap_mode() {
-    BOOST_LOG_SEV(lg(), info) << "Exiting bootstrap mode";
+    ORES_LOG_SEV(lg(), info) << "Exiting bootstrap mode";
 
     if (!system_settings_service_.is_bootstrap_mode_enabled()) {
-        BOOST_LOG_SEV(lg(), debug) << "Already in secure mode, nothing to do";
+        ORES_LOG_SEV(lg(), debug) << "Already in secure mode, nothing to do";
         return;
     }
 
@@ -98,7 +98,7 @@ void bootstrap_mode_service::exit_bootstrap_mode() {
         ctx_.service_account(),
         std::string{reason::codes::new_record},
         "Bootstrap mode disabled - system now in secure mode");
-    BOOST_LOG_SEV(lg(), info) << "Successfully exited bootstrap mode";
+    ORES_LOG_SEV(lg(), info) << "Successfully exited bootstrap mode";
 }
 
 }

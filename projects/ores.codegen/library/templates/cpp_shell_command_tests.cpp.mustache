@@ -1,7 +1,7 @@
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.shell-command.command_tests.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/{{component}}/{{entity_singular}}_commands.hpp"
@@ -58,7 +58,7 @@ TEST_CASE("{{entity_singular}}_commands_registers_every_derived_verb", "[command
         CHECK(std::find(completions.begin(), completions.end(), verb) !=
               completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered {{shell.command_count}} command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered {{shell.command_count}} command(s).";
 }
 {{#shell.commands}}
 
@@ -72,7 +72,7 @@ TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_requires_a_sessio
     {{entity_singular}}_commands::process_{{identifier}}(out, session,
                                                         {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_tokens({{positional_count}}));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -90,7 +90,7 @@ TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_reports_the_expec
     command_feedback::reset();
     {{entity_singular}}_commands::process_{{identifier}}(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received

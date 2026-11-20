@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/structure_kind.hpp"
 #include "ores.trading.api/messaging/structure_kind_protocol.hpp"
 #include "ores.trading.core/repository/structure_kind_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -443,12 +441,12 @@ structure_kind_service::prepare_change(const messaging::structure_kind_change& c
 
 std::vector<domain::structure_kind>
 structure_kind_service::list_structure_kinds(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all structure kinds";
+    ORES_LOG_SEV(lg(), debug) << "Listing all structure kinds";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t structure_kind_service::count_structure_kinds() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total structure kinds count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total structure kinds count";
     return repo_.get_total_structure_kind_count(ctx_);
 }
 
@@ -456,14 +454,14 @@ std::uint32_t structure_kind_service::count_structure_kinds() {
 std::optional<domain::structure_kind>
 structure_kind_service::get_structure_kind_at_version(const std::string& code,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting structure kind at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting structure kind at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::structure_kind>
 structure_kind_service::get_structure_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting structure kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting structure kind. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -478,11 +476,11 @@ structure_kind_service::get_structure_kinds(const std::vector<std::string>& code
 void structure_kind_service::save_structure_kind(const domain::structure_kind& v) {
     if (v.code.empty())
         throw std::invalid_argument("Structure Kind code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving structure kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving structure kind. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved structure kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved structure kind. " << "code: " << v.code;
 }
 
 void structure_kind_service::save_structure_kinds(
@@ -491,7 +489,7 @@ void structure_kind_service::save_structure_kinds(
         if (e.code.empty())
             throw std::invalid_argument("Structure Kind code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << structure_kinds.size() << " structure kinds";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << structure_kinds.size() << " structure kinds";
     auto ts = structure_kinds;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -500,9 +498,9 @@ void structure_kind_service::save_structure_kinds(
 }
 
 void structure_kind_service::delete_structure_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing structure kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing structure kind. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed structure kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed structure kind. " << "code: " << code;
 }
 
 void structure_kind_service::delete_structure_kinds(const std::vector<std::string>& codes) {
@@ -511,7 +509,7 @@ void structure_kind_service::delete_structure_kinds(const std::vector<std::strin
 
 std::vector<domain::structure_kind>
 structure_kind_service::get_structure_kind_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for structure kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for structure kind. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

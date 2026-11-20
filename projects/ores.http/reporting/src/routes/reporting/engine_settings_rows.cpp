@@ -22,7 +22,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/messaging/engine_settings_building_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_execution_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_fixings_protocol.hpp"
@@ -226,7 +226,7 @@ std::map<std::string, engine_party_name> read_party_names(const http_request& re
     } catch (const std::exception&) {
         // A read that fails leaves the names empty: the page still states the
         // configuration it could read.
-        BOOST_LOG_SEV(engine_settings_rows_lg(), ores::logging::debug)
+        ORES_LOG_SEV(engine_settings_rows_lg(), ores::logging::debug)
             << "The parties the caller works in could not be read, so their names are empty.";
     }
     return names;

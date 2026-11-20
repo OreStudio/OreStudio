@@ -26,7 +26,6 @@
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.api/messaging/approval_request_protocol.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -540,25 +538,25 @@ approval_request_service::prepare_change(const messaging::approval_request_chang
 
 std::vector<domain::approval_request> approval_request_service::list_requests(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all approval requests";
+    ORES_LOG_SEV(lg(), debug) << "Listing all approval requests";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t approval_request_service::count_requests() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total approval requests count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total approval requests count";
     return repo_.get_total_request_count(ctx_);
 }
 
 
 std::vector<domain::approval_request> approval_request_service::list_requests_by_kind_code(
     const std::string& kind_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing approval requests by kind_code: " << kind_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing approval requests by kind_code: " << kind_code;
     return repo_.read_latest_by_kind_code(ctx_, kind_code, offset, limit);
 }
 
 std::uint32_t approval_request_service::count_requests_by_kind_code(const std::string& kind_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total approval requests count by kind_code: "
-                               << kind_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting total approval requests count by kind_code: "
+                              << kind_code;
     return repo_.get_total_request_count_by_kind_code(ctx_, kind_code);
 }
 
@@ -566,14 +564,14 @@ std::uint32_t approval_request_service::count_requests_by_kind_code(const std::s
 std::optional<domain::approval_request>
 approval_request_service::get_request_at_version(const boost::uuids::uuid& id,
                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting approval request at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting approval request at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::approval_request>
 approval_request_service::get_request(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting approval request. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting approval request. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -588,11 +586,11 @@ approval_request_service::get_requests(const std::vector<std::string>& ids) {
 void approval_request_service::save_request(const domain::approval_request& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Approval Request id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving approval request. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving approval request. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved approval request. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved approval request. " << "id: " << v.id;
 }
 
 void approval_request_service::save_requests(
@@ -601,7 +599,7 @@ void approval_request_service::save_requests(
         if (e.id.is_nil())
             throw std::invalid_argument("Approval Request id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << requests.size() << " approval requests";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << requests.size() << " approval requests";
     auto ts = requests;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -610,9 +608,9 @@ void approval_request_service::save_requests(
 }
 
 void approval_request_service::delete_request(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing approval request. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing approval request. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed approval request. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed approval request. " << "id: " << id;
 }
 
 void approval_request_service::delete_requests(const std::vector<std::string>& ids) {
@@ -621,7 +619,7 @@ void approval_request_service::delete_requests(const std::vector<std::string>& i
 
 std::vector<domain::approval_request>
 approval_request_service::get_request_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for approval request. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for approval request. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

@@ -27,7 +27,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/refdata/tenor_web_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -100,7 +100,7 @@ TEST_CASE("tenor_web_routes_registers_the_screen_addresses", "[routes][web]") {
     CHECK(has(http_method::put, "/api/synthetic/tenors"));
     CHECK(has(http_method::delete_, "/api/synthetic/tenors"));
     CHECK(has(http_method::get, "/api/synthetic/tenors/key/{key}"));
-    BOOST_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
 }
 
 TEST_CASE("tenor_web_routes_names_the_resource_in_its_catalogue_entry", "[routes][web]") {

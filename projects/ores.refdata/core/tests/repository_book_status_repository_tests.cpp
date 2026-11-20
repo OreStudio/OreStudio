@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/book_status_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/book_status_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -46,7 +44,7 @@ TEST_CASE("write_single_book_status", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto bs = generate_synthetic_book_status(ctx);
     bs.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Book status: " << bs;
+    ORES_LOG_SEV(lg, debug) << "Book status: " << bs;
 
     book_status_repository repo;
     repo.write(h.context(), bs);
@@ -65,7 +63,7 @@ TEST_CASE("write_multiple_book_statuses", "[repository]") {
     for (auto& bs : book_statuses) {
         bs.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Book statuses: " << book_statuses;
+    ORES_LOG_SEV(lg, debug) << "Book statuses: " << book_statuses;
 
     book_status_repository repo;
     repo.write(h.context(), book_statuses);
@@ -88,13 +86,13 @@ TEST_CASE("read_latest_book_statuses", "[repository]") {
     for (auto& bs : written_book_statuses) {
         bs.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written book statuses: " << written_book_statuses;
+    ORES_LOG_SEV(lg, debug) << "Written book statuses: " << written_book_statuses;
 
     book_status_repository repo;
     repo.write(h.context(), written_book_statuses);
 
     auto read_book_statuses = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read book statuses: " << read_book_statuses;
+    ORES_LOG_SEV(lg, debug) << "Read book statuses: " << read_book_statuses;
 
     for (const auto& written : written_book_statuses) {
         const auto found = std::ranges::any_of(
@@ -111,7 +109,7 @@ TEST_CASE("read_latest_book_status_by_code", "[repository]") {
     auto bs = generate_synthetic_book_status(ctx);
     bs.change_reason_code = "system.test";
     const auto original_name = bs.name;
-    BOOST_LOG_SEV(lg, debug) << "Book status: " << bs;
+    ORES_LOG_SEV(lg, debug) << "Book status: " << bs;
 
     book_status_repository repo;
     repo.write(h.context(), bs);
@@ -120,7 +118,7 @@ TEST_CASE("read_latest_book_status_by_code", "[repository]") {
     repo.write(h.context(), bs);
 
     auto read_book_statuses = repo.read_latest(h.context(), bs.code);
-    BOOST_LOG_SEV(lg, debug) << "Read book statuses: " << read_book_statuses;
+    ORES_LOG_SEV(lg, debug) << "Read book statuses: " << read_book_statuses;
 
     REQUIRE(read_book_statuses.size() == 1);
     CHECK(read_book_statuses[0].code == bs.code);
@@ -140,10 +138,10 @@ TEST_CASE("read_nonexistent_book_status_code", "[repository]") {
     repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_book_statuses = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read book statuses: " << read_book_statuses;
+    ORES_LOG_SEV(lg, debug) << "Read book statuses: " << read_book_statuses;
 
     const auto found = std::ranges::any_of(
         read_book_statuses, [&](const auto& v) { return v.code == nonexistent_code; });
@@ -182,13 +180,13 @@ TEST_CASE("read_book_status_versions_resolve_each_version", "[repository]") {
     auto bs = generate_synthetic_book_status(ctx);
     bs.change_reason_code = "system.test";
     const auto original_name = bs.name;
-    BOOST_LOG_SEV(lg, debug) << "Book status v1: " << bs;
+    ORES_LOG_SEV(lg, debug) << "Book status v1: " << bs;
 
     book_status_repository repo;
     repo.write(h.context(), bs);
 
     bs.name = original_name + " v2";
-    BOOST_LOG_SEV(lg, debug) << "Book status v2: " << bs;
+    ORES_LOG_SEV(lg, debug) << "Book status v2: " << bs;
     repo.write(h.context(), bs);
 
     // The version axis is a read of its own: every version is addressable,

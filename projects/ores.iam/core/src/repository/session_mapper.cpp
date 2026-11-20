@@ -27,11 +27,9 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/session_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -45,7 +43,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::session session_mapper::map(const session_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::session r;
     r.tenant_id = v.tenant_id;
@@ -64,12 +62,12 @@ domain::session session_mapper::map(const session_entity& v) {
     r.country_code = v.country_code;
     r.protocol = v.protocol;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 session_entity session_mapper::map(const domain::session& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     session_entity r;
     r.id = v.id;
@@ -86,7 +84,7 @@ session_entity session_mapper::map(const domain::session& v) {
     r.country_code = v.country_code;
     r.protocol = v.protocol;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

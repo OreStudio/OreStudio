@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_CREDIT_BASKET_CONSTITUENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/credit_basket_constituent.hpp"
 #include "ores.trading.api/messaging/credit_basket_constituent_protocol.hpp"
 #include "ores.trading.core/export.hpp"

@@ -24,7 +24,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/messaging/auth_event_operations_protocol.hpp"
 #include "ores.iam.core/repository/auth_event_log.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -84,7 +84,7 @@ public:
 
         auto request = ores::service::messaging::decode<list_auth_events_request>(msg);
         if (!request) {
-            BOOST_LOG_SEV(auth_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(auth_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -113,13 +113,13 @@ public:
                                             .error_detail = row.error_detail});
             }
 
-            BOOST_LOG_SEV(auth_event_handler_lg(), debug)
+            ORES_LOG_SEV(auth_event_handler_lg(), debug)
                 << "Completed " << msg.subject << " with " << events.size() << " event(s)";
             reply(nats_,
                   msg,
                   list_auth_events_response{.events = std::move(events), .success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_event_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(auth_event_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, list_auth_events_response{.success = false, .message = e.what()});
         }
     }

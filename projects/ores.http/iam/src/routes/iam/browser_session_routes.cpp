@@ -131,7 +131,7 @@ http_response browser_session_routes::sign_in(const http_request& req) {
         }
         auto claims = claims_of(login.token);
         if (!claims) {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Signing in failed: the token IAM minted does not verify";
             return http_response::internal_error("The token could not be read");
         }
@@ -154,7 +154,7 @@ http_response browser_session_routes::read(const http_request& req) {
     const auto record = id ? sessions_->find(*id) : std::nullopt;
     auto view = record ? view_of(*record) : std::nullopt;
     if (record && !view)
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
+        ORES_LOG_SEV(lg(), ores::logging::warn)
             << "A live session holds a view that cannot be read; the browser is sent to sign in";
     // A login that still waits on a party has no session to show yet.
     if (!view || !view->party)
@@ -184,7 +184,7 @@ http_response browser_session_routes::read(const http_request& req) {
             }
         } catch (const rr::refusal&) {
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::debug) << "The setup run was not read: " << e.what();
+            ORES_LOG_SEV(lg(), ores::logging::debug) << "The setup run was not read: " << e.what();
         }
     }
     return http_response::json(json::write(*view));
@@ -201,7 +201,7 @@ http_response browser_session_routes::sign_out(const http_request& req) {
                     as_session, session_, messaging::logout_request{});
             } catch (const rr::refusal&) {
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), ores::logging::debug)
+                ORES_LOG_SEV(lg(), ores::logging::debug)
                     << "The IAM session was not ended: " << e.what();
             }
         }

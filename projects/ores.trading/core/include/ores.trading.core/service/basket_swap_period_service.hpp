@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_BASKET_SWAP_PERIOD_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/basket_swap_period.hpp"
 #include "ores.trading.api/messaging/basket_swap_period_protocol.hpp"
 #include "ores.trading.core/export.hpp"

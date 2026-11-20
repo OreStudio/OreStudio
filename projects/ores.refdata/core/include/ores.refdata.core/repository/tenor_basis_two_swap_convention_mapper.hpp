@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_TENOR_BASIS_TWO_SWAP_CONVENTION_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_TENOR_BASIS_TWO_SWAP_CONVENTION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/tenor_basis_two_swap_convention_entity.hpp"

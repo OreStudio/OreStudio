@@ -62,7 +62,7 @@ void report_definition_template_operations_commands::register_commands(cli::Menu
 
 void report_definition_template_operations_commands::process_list_dq_report_definition_templates(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-dq-report-definition-templates request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-dq-report-definition-templates request.";
 
     using request_type = ores::dq::messaging::list_dq_report_definition_templates_request;
 

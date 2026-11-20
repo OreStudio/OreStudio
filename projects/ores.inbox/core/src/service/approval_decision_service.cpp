@@ -26,7 +26,6 @@
 #include "ores.inbox.api/domain/approval_decision.hpp"
 #include "ores.inbox.api/messaging/approval_decision_protocol.hpp"
 #include "ores.inbox.core/repository/approval_decision_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -500,26 +498,26 @@ approval_decision_service::prepare_change(const messaging::approval_decision_cha
 
 std::vector<domain::approval_decision>
 approval_decision_service::list_decisions(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all approval decisions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all approval decisions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t approval_decision_service::count_decisions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total approval decisions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total approval decisions count";
     return repo_.get_total_decision_count(ctx_);
 }
 
 
 std::vector<domain::approval_decision> approval_decision_service::list_decisions_by_request_id(
     const std::string& request_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing approval decisions by request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing approval decisions by request_id: " << request_id;
     return repo_.read_latest_by_request_id(ctx_, request_id, offset, limit);
 }
 
 std::uint32_t
 approval_decision_service::count_decisions_by_request_id(const std::string& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total approval decisions count by request_id: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total approval decisions count by request_id: "
+                              << request_id;
     return repo_.get_total_decision_count_by_request_id(ctx_, request_id);
 }
 
@@ -527,14 +525,14 @@ approval_decision_service::count_decisions_by_request_id(const std::string& requ
 std::optional<domain::approval_decision>
 approval_decision_service::get_decision_at_version(const boost::uuids::uuid& id,
                                                    std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting approval decision at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting approval decision at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::approval_decision>
 approval_decision_service::get_decision(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting approval decision. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting approval decision. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -549,11 +547,11 @@ approval_decision_service::get_decisions(const std::vector<std::string>& ids) {
 void approval_decision_service::save_decision(const domain::approval_decision& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Approval Decision id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving approval decision. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving approval decision. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved approval decision. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved approval decision. " << "id: " << v.id;
 }
 
 void approval_decision_service::save_decisions(
@@ -562,7 +560,7 @@ void approval_decision_service::save_decisions(
         if (e.id.is_nil())
             throw std::invalid_argument("Approval Decision id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << decisions.size() << " approval decisions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << decisions.size() << " approval decisions";
     auto ts = decisions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -571,9 +569,9 @@ void approval_decision_service::save_decisions(
 }
 
 void approval_decision_service::delete_decision(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing approval decision. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing approval decision. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed approval decision. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed approval decision. " << "id: " << id;
 }
 
 void approval_decision_service::delete_decisions(const std::vector<std::string>& ids) {
@@ -582,7 +580,7 @@ void approval_decision_service::delete_decisions(const std::vector<std::string>&
 
 std::vector<domain::approval_decision>
 approval_decision_service::get_decision_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for approval decision. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for approval decision. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

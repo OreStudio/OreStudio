@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_SCRIPTED_PARAMETER_VALUE_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_SCRIPTED_PARAMETER_VALUE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/scripted_parameter_value.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/scripted_parameter_value_entity.hpp"

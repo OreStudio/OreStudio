@@ -24,12 +24,10 @@
  */
 #include "ores.refdata.core/repository/book_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/book_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/book_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
@@ -41,7 +39,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::book book_mapper::map(const book_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::book r;
     r.version = v.version;
@@ -69,12 +67,12 @@ domain::book book_mapper::map(const book_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 book_entity book_mapper::map(const domain::book& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     book_entity r;
     r.id = v.id;
@@ -101,7 +99,7 @@ book_entity book_mapper::map(const domain::book& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

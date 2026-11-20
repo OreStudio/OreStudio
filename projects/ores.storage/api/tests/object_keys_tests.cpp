@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -37,7 +37,7 @@ const std::string run_id("0b6f1b2c-3d4e-5f60-7182-93a4b5c6d7e8");
 TEST_CASE("the_platform_has_one_bucket", "[net]") {
     auto lg(make_logger(test_suite));
 
-    BOOST_LOG_SEV(lg, info) << "Bucket: " << object_keys::ores_bucket;
+    ORES_LOG_SEV(lg, info) << "Bucket: " << object_keys::ores_bucket;
     CHECK(object_keys::ores_bucket == "ores");
 }
 
@@ -46,7 +46,7 @@ TEST_CASE("make_builds_a_key_from_service_purpose_and_id", "[net]") {
 
     const auto key = object_keys::make("compute", "packages", run_id);
 
-    BOOST_LOG_SEV(lg, info) << "Key: " << key;
+    ORES_LOG_SEV(lg, info) << "Key: " << key;
     CHECK(key == "compute/packages/0b6f1b2c-3d4e-5f60-7182-93a4b5c6d7e8");
 }
 
@@ -55,7 +55,7 @@ TEST_CASE("make_appends_the_file_name_when_one_is_given", "[net]") {
 
     const auto key = object_keys::make("reporting", "runs", run_id, "trades.msgpack");
 
-    BOOST_LOG_SEV(lg, info) << "Key: " << key;
+    ORES_LOG_SEV(lg, info) << "Key: " << key;
     CHECK(key == "reporting/runs/0b6f1b2c-3d4e-5f60-7182-93a4b5c6d7e8/"
                  "trades.msgpack");
 }
@@ -67,8 +67,8 @@ TEST_CASE("parse_is_the_inverse_of_make", "[net]") {
     const auto parsed = object_keys::parse(key);
 
     REQUIRE(parsed.has_value());
-    BOOST_LOG_SEV(lg, info) << "Service: " << parsed->service << " purpose: " << parsed->purpose
-                            << " id: " << parsed->id << " name: " << parsed->name;
+    ORES_LOG_SEV(lg, info) << "Service: " << parsed->service << " purpose: " << parsed->purpose
+                           << " id: " << parsed->id << " name: " << parsed->name;
     CHECK(parsed->service == "ore");
     CHECK(parsed->purpose == "imports");
     CHECK(parsed->id == run_id);
@@ -94,7 +94,7 @@ TEST_CASE("an_id_may_carry_its_own_extension", "[net]") {
     const auto parsed = object_keys::parse(key);
 
     REQUIRE(parsed.has_value());
-    BOOST_LOG_SEV(lg, info) << "Id: " << parsed->id;
+    ORES_LOG_SEV(lg, info) << "Id: " << parsed->id;
     CHECK(parsed->id == run_id + ".tar.gz");
     CHECK(parsed->name.empty());
     CHECK(object_keys::make("compute", "input", run_id + ".tar.gz") == key);
@@ -111,7 +111,7 @@ TEST_CASE("parse_refuses_a_key_that_leaves_the_protocol", "[net]") {
     CHECK_FALSE(object_keys::parse("compute/packages/../etc").has_value());
     CHECK_FALSE(object_keys::parse("compute/pack ages/" + run_id).has_value());
 
-    BOOST_LOG_SEV(lg, info) << "Malformed keys refused";
+    ORES_LOG_SEV(lg, info) << "Malformed keys refused";
 }
 
 TEST_CASE("make_refuses_a_part_that_is_not_a_valid_segment", "[net]") {
@@ -124,5 +124,5 @@ TEST_CASE("make_refuses_a_part_that_is_not_a_valid_segment", "[net]") {
     CHECK_THROWS_AS(object_keys::make("compute", "packages", run_id, "../escape"),
                     std::invalid_argument);
 
-    BOOST_LOG_SEV(lg, info) << "Malformed parts refused";
+    ORES_LOG_SEV(lg, info) << "Malformed parts refused";
 }

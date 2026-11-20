@@ -20,7 +20,7 @@
 #include "ores.compute.api/domain/app_version.hpp"
 #include "ores.compute.api/domain/app_version_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/app_version_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -44,7 +44,7 @@ TEST_CASE("create_app_version_with_valid_fields", "[domain]") {
     sut.engine_version = "ORE-Studio-7.1";
     sut.min_ram_mb = 4096;
 
-    BOOST_LOG_SEV(lg, info) << "AppVersion: " << sut;
+    ORES_LOG_SEV(lg, info) << "AppVersion: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "admin");
@@ -69,7 +69,7 @@ TEST_CASE("create_app_version_with_specific_uuid", "[domain]") {
     sut.engine_version = "ORE-Studio-8.0";
     sut.min_ram_mb = 8192;
 
-    BOOST_LOG_SEV(lg, info) << "AppVersion: " << sut;
+    ORES_LOG_SEV(lg, info) << "AppVersion: " << sut;
 
     CHECK(sut.version == 2);
     CHECK(sut.wrapper_version == "v2.0.0");
@@ -91,7 +91,7 @@ TEST_CASE("app_version_insertion_operator", "[domain]") {
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "AppVersion JSON: " << json_output;
+    ORES_LOG_SEV(lg, info) << "AppVersion JSON: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("v1.0.0") != std::string::npos);
@@ -112,7 +112,7 @@ TEST_CASE("app_version_convert_single_to_table", "[domain]") {
     std::vector<app_version> versions = {av};
     auto table = convert_to_table(versions);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("v1.2.0") != std::string::npos);
@@ -136,7 +136,7 @@ TEST_CASE("app_version_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(versions);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("v1.0.0") != std::string::npos);
@@ -150,7 +150,7 @@ TEST_CASE("app_version_convert_empty_vector_to_table", "[domain]") {
     std::vector<app_version> versions;
     auto table = convert_to_table(versions);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     // The header row survives an empty result set.
     CHECK(!table.empty());
@@ -168,7 +168,7 @@ TEST_CASE("create_app_version_with_faker", "[domain]") {
     sut.engine_version = "ORE-" + std::to_string(faker::number::integer(7, 9));
     sut.min_ram_mb = faker::number::integer(1024, 32768);
 
-    BOOST_LOG_SEV(lg, info) << "AppVersion: " << sut;
+    ORES_LOG_SEV(lg, info) << "AppVersion: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(sut.version <= 10);

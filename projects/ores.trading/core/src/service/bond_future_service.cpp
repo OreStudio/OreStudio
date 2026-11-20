@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_future.hpp"
 #include "ores.trading.api/messaging/bond_future_protocol.hpp"
 #include "ores.trading.core/repository/bond_future_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -450,12 +448,12 @@ bond_future_service::prepare_change(const messaging::bond_future_change& change,
 
 std::vector<domain::bond_future> bond_future_service::list_futures(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond futures";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond futures";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_future_service::count_futures() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond futures count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond futures count";
     return repo_.get_total_future_count(ctx_);
 }
 
@@ -463,14 +461,14 @@ std::uint32_t bond_future_service::count_futures() {
 std::optional<domain::bond_future>
 bond_future_service::get_future_at_version(const boost::uuids::uuid& trade_id,
                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond future at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond future at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::bond_future>
 bond_future_service::get_future(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond future. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond future. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -485,11 +483,11 @@ bond_future_service::get_futures(const std::vector<std::string>& trade_ids) {
 void bond_future_service::save_future(const domain::bond_future& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Bond Future trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond future. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving bond future. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond future. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved bond future. " << "trade_id: " << v.trade_id;
 }
 
 void bond_future_service::save_futures(const std::vector<domain::bond_future>& futures) {
@@ -497,7 +495,7 @@ void bond_future_service::save_futures(const std::vector<domain::bond_future>& f
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Bond Future trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << futures.size() << " bond futures";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << futures.size() << " bond futures";
     auto ts = futures;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -506,9 +504,9 @@ void bond_future_service::save_futures(const std::vector<domain::bond_future>& f
 }
 
 void bond_future_service::delete_future(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond future. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond future. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed bond future. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed bond future. " << "trade_id: " << trade_id;
 }
 
 void bond_future_service::delete_futures(const std::vector<std::string>& trade_ids) {
@@ -517,7 +515,7 @@ void bond_future_service::delete_futures(const std::vector<std::string>& trade_i
 
 std::vector<domain::bond_future>
 bond_future_service::get_future_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond future. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond future. " << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

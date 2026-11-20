@@ -19,7 +19,7 @@
  */
 #include "ores.scheduler.core/service/mq_action_handler.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.scheduler.core/service/action_payloads.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include <boost/lexical_cast.hpp>
@@ -42,7 +42,7 @@ auto& lg() {
 
 boost::asio::awaitable<std::expected<void, std::string>>
 mq_action_handler::execute(const action_context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Executing MQ action for job: " << ctx.job.job_name;
+    ORES_LOG_SEV(lg(), debug) << "Executing MQ action for job: " << ctx.job.job_name;
     try {
         // Parse the action_payload JSON to extract required fields.
         mq_payload_fields fields;
@@ -51,13 +51,13 @@ mq_action_handler::execute(const action_context& ctx) {
         } catch (const std::exception& e) {
             const auto msg = "Failed to parse action_payload JSON for job '" + ctx.job.job_name +
                              "': " + e.what();
-            BOOST_LOG_SEV(lg(), error) << msg;
+            ORES_LOG_SEV(lg(), error) << msg;
             co_return std::unexpected(msg);
         }
         if (fields.queue_id.empty()) {
             const auto msg =
                 std::string("action_payload missing queue_id for job '") + ctx.job.job_name + "'";
-            BOOST_LOG_SEV(lg(), error) << msg;
+            ORES_LOG_SEV(lg(), error) << msg;
             co_return std::unexpected(msg);
         }
 
@@ -72,11 +72,11 @@ mq_action_handler::execute(const action_context& ctx) {
             lg(),
             "Sending MQ message from scheduler.");
 
-        BOOST_LOG_SEV(lg(), info) << "MQ action succeeded for job: " << ctx.job.job_name;
+        ORES_LOG_SEV(lg(), info) << "MQ action succeeded for job: " << ctx.job.job_name;
         co_return std::expected<void, std::string>{};
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "MQ action failed for job: " << ctx.job.job_name << ": " << e.what();
+        ORES_LOG_SEV(lg(), error) << "MQ action failed for job: " << ctx.job.job_name << ": "
+                                  << e.what();
         co_return std::unexpected(std::string(e.what()));
     }
 }

@@ -26,7 +26,7 @@
 #define ORES_REPORTING_CORE_SERVICE_REPORT_METRIC_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/report_metric.hpp"
 #include "ores.reporting.api/messaging/report_metric_protocol.hpp"
 #include "ores.reporting.core/export.hpp"

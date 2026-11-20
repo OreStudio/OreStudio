@@ -29,10 +29,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -468,12 +466,12 @@ ores::utility::domain::result todays_market_collection_kind_service::prepare_cha
 
 std::vector<domain::todays_market_collection_kind>
 todays_market_collection_kind_service::list_kinds(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all today's market collection kinds";
+    ORES_LOG_SEV(lg(), debug) << "Listing all today's market collection kinds";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t todays_market_collection_kind_service::count_kinds() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total today's market collection kinds count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total today's market collection kinds count";
     return repo_.get_total_kind_count(ctx_);
 }
 
@@ -481,14 +479,14 @@ std::uint32_t todays_market_collection_kind_service::count_kinds() {
 std::optional<domain::todays_market_collection_kind>
 todays_market_collection_kind_service::get_kind_at_version(const std::string& code,
                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market collection kind at version. "
-                               << "code: " << code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market collection kind at version. "
+                              << "code: " << code << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::todays_market_collection_kind>
 todays_market_collection_kind_service::get_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market collection kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market collection kind. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -504,11 +502,11 @@ void todays_market_collection_kind_service::save_kind(
     const domain::todays_market_collection_kind& v) {
     if (v.code.empty())
         throw std::invalid_argument("Todays Market Collection Kind code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving today's market collection kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving today's market collection kind. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved today's market collection kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved today's market collection kind. " << "code: " << v.code;
 }
 
 void todays_market_collection_kind_service::save_kinds(
@@ -517,7 +515,7 @@ void todays_market_collection_kind_service::save_kinds(
         if (e.code.empty())
             throw std::invalid_argument("Todays Market Collection Kind code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << kinds.size() << " today's market collection kinds";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << kinds.size() << " today's market collection kinds";
     auto ts = kinds;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -526,9 +524,9 @@ void todays_market_collection_kind_service::save_kinds(
 }
 
 void todays_market_collection_kind_service::delete_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market collection kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market collection kind. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed today's market collection kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed today's market collection kind. " << "code: " << code;
 }
 
 void todays_market_collection_kind_service::delete_kinds(const std::vector<std::string>& codes) {
@@ -537,8 +535,8 @@ void todays_market_collection_kind_service::delete_kinds(const std::vector<std::
 
 std::vector<domain::todays_market_collection_kind>
 todays_market_collection_kind_service::get_kind_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for today's market collection kind. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for today's market collection kind. "
+                              << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

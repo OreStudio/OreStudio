@@ -45,8 +45,8 @@ std::string telemetry_repository::sql() {
 
 void telemetry_repository::create(const context& ctx, const messaging::telemetry_log_entry& entry) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
-                               << boost::uuids::to_string(entry.id);
+    ORES_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
+                              << boost::uuids::to_string(entry.id);
 
     query_builder::execute_write_query(
         ctx,
@@ -60,12 +60,12 @@ std::size_t telemetry_repository::create_batch(const context& ctx,
     ores::telemetry::log::skip_telemetry_guard guard;
 
     if (batch.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "Empty batch, nothing to insert";
+        ORES_LOG_SEV(lg(), debug) << "Empty batch, nothing to insert";
         return 0;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating batch of " << batch.size()
-                               << " telemetry log entries from " << batch.source_name;
+    ORES_LOG_SEV(lg(), debug) << "Creating batch of " << batch.size()
+                              << " telemetry log entries from " << batch.source_name;
 
     const auto tenant_id_str = ctx.tenant_id().to_string();
     std::vector<telemetry_entity> entities;
@@ -80,7 +80,7 @@ std::size_t telemetry_repository::create_batch(const context& ctx,
 
     query_builder::execute_write_query(ctx, entities, lg(), "Creating telemetry log batch");
 
-    BOOST_LOG_SEV(lg(), debug) << "Batch inserted successfully";
+    ORES_LOG_SEV(lg(), debug) << "Batch inserted successfully";
     return entities.size();
 }
 
@@ -173,7 +173,7 @@ std::string build_where_clause(const messaging::telemetry_query& q,
 std::vector<messaging::telemetry_log_entry>
 telemetry_repository::query(const context& ctx, const messaging::telemetry_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Querying telemetry logs";
+    ORES_LOG_SEV(lg(), debug) << "Querying telemetry logs";
 
     const auto start_ts = ores::platform::time::datetime::to_db_string(q.start_time);
     const auto end_ts = ores::platform::time::datetime::to_db_string(q.end_time);
@@ -194,7 +194,7 @@ telemetry_repository::query(const context& ctx, const messaging::telemetry_query
                     effective_limit,
                     q.offset);
 
-    BOOST_LOG_SEV(lg(), trace) << "Executing query: " << sql;
+    ORES_LOG_SEV(lg(), trace) << "Executing query: " << sql;
 
     auto rows =
         query_builder::execute_raw_multi_column_query(ctx, sql, lg(), "Querying telemetry logs");
@@ -228,13 +228,13 @@ telemetry_repository::query(const context& ctx, const messaging::telemetry_query
         entries.push_back(telemetry_mapper::to_domain(entity));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Query returned " << entries.size() << " entries";
+    ORES_LOG_SEV(lg(), debug) << "Query returned " << entries.size() << " entries";
     return entries;
 }
 
 std::uint64_t telemetry_repository::count(const context& ctx, const messaging::telemetry_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Counting telemetry logs";
+    ORES_LOG_SEV(lg(), debug) << "Counting telemetry logs";
 
     const auto start_ts = ores::platform::time::datetime::to_db_string(q.start_time);
     const auto end_ts = ores::platform::time::datetime::to_db_string(q.end_time);
@@ -244,18 +244,18 @@ std::uint64_t telemetry_repository::count(const context& ctx, const messaging::t
     const auto sql =
         std::format("SELECT COUNT(*) FROM ores_telemetry_logs_tbl WHERE {}", where_clause);
 
-    BOOST_LOG_SEV(lg(), trace) << "Executing count: " << sql;
+    ORES_LOG_SEV(lg(), trace) << "Executing count: " << sql;
 
     auto results = query_builder::execute_parameterized_string_query(
         ctx, sql, {}, lg(), "Counting telemetry logs");
 
     if (results.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Count query returned no results";
+        ORES_LOG_SEV(lg(), warn) << "Count query returned no results";
         return 0;
     }
 
     const auto count = std::stoull(results[0]);
-    BOOST_LOG_SEV(lg(), debug) << "Count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Count: " << count;
     return count;
 }
 
@@ -263,8 +263,8 @@ std::vector<messaging::telemetry_log_entry> telemetry_repository::read_by_sessio
     const context& ctx, const boost::uuids::uuid& session_id, std::uint32_t limit_count) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading telemetry for session: "
-                               << boost::uuids::to_string(session_id);
+    ORES_LOG_SEV(lg(), debug) << "Reading telemetry for session: "
+                              << boost::uuids::to_string(session_id);
 
     const auto session_str = boost::lexical_cast<std::string>(session_id);
     const auto query = query_builder::read<std::vector<telemetry_entity>> |
@@ -286,7 +286,7 @@ std::vector<messaging::telemetry_log_entry> telemetry_repository::read_by_sessio
             lg(),
             "Reading telemetry by session");
 
-    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " log entries";
+    ORES_LOG_SEV(lg(), debug) << "Read " << result.size() << " log entries";
     return result;
 }
 
@@ -298,8 +298,8 @@ telemetry_repository::read_by_account(const context& ctx,
                                       std::uint32_t limit_count) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading telemetry for account: "
-                               << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Reading telemetry for account: "
+                              << boost::uuids::to_string(account_id);
 
     const auto account_str = boost::lexical_cast<std::string>(account_id);
     const auto start_ts = start;
@@ -325,7 +325,7 @@ telemetry_repository::read_by_account(const context& ctx,
             lg(),
             "Reading telemetry by account");
 
-    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " log entries";
+    ORES_LOG_SEV(lg(), debug) << "Read " << result.size() << " log entries";
     return result;
 }
 
@@ -333,7 +333,7 @@ std::vector<domain::telemetry_stats>
 telemetry_repository::read_hourly_stats(const context& ctx,
                                         const domain::telemetry_stats_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Reading hourly telemetry stats";
+    ORES_LOG_SEV(lg(), debug) << "Reading hourly telemetry stats";
 
     const auto start_str = ores::platform::time::datetime::to_db_string(q.start_time);
     const auto end_str = ores::platform::time::datetime::to_db_string(q.end_time);
@@ -370,14 +370,14 @@ telemetry_repository::read_hourly_stats(const context& ctx,
         result.push_back(telemetry_mapper::to_domain(entity));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " hourly stats";
+    ORES_LOG_SEV(lg(), debug) << "Read " << result.size() << " hourly stats";
     return result;
 }
 
 std::vector<domain::telemetry_stats>
 telemetry_repository::read_daily_stats(const context& ctx, const domain::telemetry_stats_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Reading daily telemetry stats";
+    ORES_LOG_SEV(lg(), debug) << "Reading daily telemetry stats";
 
     const auto start_str = ores::platform::time::datetime::to_db_string(q.start_time);
     const auto end_str = ores::platform::time::datetime::to_db_string(q.end_time);
@@ -417,14 +417,14 @@ telemetry_repository::read_daily_stats(const context& ctx, const domain::telemet
         result.push_back(telemetry_mapper::to_domain(entity));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " daily stats";
+    ORES_LOG_SEV(lg(), debug) << "Read " << result.size() << " daily stats";
     return result;
 }
 
 domain::telemetry_summary telemetry_repository::get_summary(const context& ctx,
                                                             std::uint32_t hours) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Getting telemetry summary for last " << hours << " hours";
+    ORES_LOG_SEV(lg(), debug) << "Getting telemetry summary for last " << hours << " hours";
 
     domain::telemetry_summary summary;
     summary.end_time = std::chrono::system_clock::now();
@@ -443,7 +443,7 @@ domain::telemetry_summary telemetry_repository::get_summary(const context& ctx,
                 if (!rows.empty())
                     target = std::stoull(rows.front());
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "Summary count failed: " << e.what();
+                ORES_LOG_SEV(lg(), warn) << "Summary count failed: " << e.what();
             }
         };
 
@@ -468,8 +468,8 @@ domain::telemetry_summary telemetry_repository::get_summary(const context& ctx,
                  *target);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Summary: " << summary.total_logs << " total, "
-                               << summary.error_count << " errors";
+    ORES_LOG_SEV(lg(), debug) << "Summary: " << summary.total_logs << " total, "
+                              << summary.error_count << " errors";
     return summary;
 }
 
@@ -478,8 +478,8 @@ std::uint64_t telemetry_repository::count_errors(const context& ctx,
                                                  std::uint32_t hours) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
-    BOOST_LOG_SEV(lg(), debug) << "Counting errors for " << source_name << " in last " << hours
-                               << " hours";
+    ORES_LOG_SEV(lg(), debug) << "Counting errors for " << source_name << " in last " << hours
+                              << " hours";
 
     const auto end_time = std::chrono::system_clock::now();
     const auto start_time = end_time - std::chrono::hours(hours);
@@ -493,7 +493,7 @@ std::uint64_t telemetry_repository::count_errors(const context& ctx,
         "Counting telemetry errors");
     const std::uint64_t count = rows.empty() ? 0 : std::stoull(rows.front());
 
-    BOOST_LOG_SEV(lg(), debug) << "Error count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Error count: " << count;
     return count;
 }
 
@@ -502,7 +502,7 @@ telemetry_repository::delete_old_logs(const context& ctx,
                                       const std::chrono::system_clock::time_point& older_than) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting telemetry logs older than cutoff";
+    ORES_LOG_SEV(lg(), info) << "Deleting telemetry logs older than cutoff";
 
     const auto older_ts = older_than;
     const auto query = query_builder::delete_from<telemetry_entity> |
@@ -518,7 +518,7 @@ telemetry_repository::delete_old_logs(const context& ctx,
 void telemetry_repository::insert_server_sample(const context& ctx,
                                                 const messaging::nats_server_sample& sample) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), trace) << "Inserting NATS server sample";
+    ORES_LOG_SEV(lg(), trace) << "Inserting NATS server sample";
 
     query_builder::execute_write_query(
         ctx,
@@ -535,7 +535,7 @@ void telemetry_repository::insert_stream_samples(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), trace) << "Inserting " << samples.size() << " NATS stream sample(s)";
+    ORES_LOG_SEV(lg(), trace) << "Inserting " << samples.size() << " NATS stream sample(s)";
 
     const auto tenant_id_str = ctx.tenant_id().to_string();
     std::vector<nats_stream_sample_entity> entities;
@@ -551,7 +551,7 @@ std::vector<messaging::nats_server_sample>
 telemetry_repository::query_server_samples(const context& ctx,
                                            const messaging::nats_server_samples_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Querying NATS server samples";
+    ORES_LOG_SEV(lg(), debug) << "Querying NATS server samples";
 
     const auto start_ts = q.start_time;
     const auto end_ts = q.end_time;
@@ -574,7 +574,7 @@ telemetry_repository::query_server_samples(const context& ctx,
             lg(),
             "Querying NATS server samples");
 
-    BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size() << " server sample(s)";
+    ORES_LOG_SEV(lg(), debug) << "Query returned " << result.size() << " server sample(s)";
     return result;
 }
 
@@ -582,7 +582,7 @@ std::vector<messaging::nats_stream_sample>
 telemetry_repository::query_stream_samples(const context& ctx,
                                            const messaging::nats_stream_samples_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Querying NATS stream samples for: " << q.stream_name;
+    ORES_LOG_SEV(lg(), debug) << "Querying NATS stream samples for: " << q.stream_name;
 
     const auto start_ts = q.start_time;
     const auto end_ts = q.end_time;
@@ -606,15 +606,15 @@ telemetry_repository::query_stream_samples(const context& ctx,
             lg(),
             "Querying NATS stream samples");
 
-    BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size() << " stream sample(s)";
+    ORES_LOG_SEV(lg(), debug) << "Query returned " << result.size() << " stream sample(s)";
     return result;
 }
 
 void telemetry_repository::insert_service_sample(const context& ctx,
                                                  const messaging::service_sample& sample) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), trace) << "Inserting service heartbeat: " << sample.service_name
-                               << " instance=" << sample.instance_id;
+    ORES_LOG_SEV(lg(), trace) << "Inserting service heartbeat: " << sample.service_name
+                              << " instance=" << sample.instance_id;
 
     query_builder::execute_write_query(
         ctx, telemetry_mapper::to_entity(sample), lg(), "Inserting service heartbeat");
@@ -623,7 +623,7 @@ void telemetry_repository::insert_service_sample(const context& ctx,
 std::vector<messaging::service_sample>
 telemetry_repository::list_service_samples(const context& ctx) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Listing latest service heartbeat samples";
+    ORES_LOG_SEV(lg(), debug) << "Listing latest service heartbeat samples";
 
     // Fetch all rows inside the running window so we can pick
     // the most recent per (service_name, instance_id) in C++.
@@ -655,7 +655,7 @@ telemetry_repository::list_service_samples(const context& ctx) {
     for (auto& [_, sample] : latest)
         result.push_back(std::move(sample));
 
-    BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " active service instance(s)";
+    ORES_LOG_SEV(lg(), debug) << "Found " << result.size() << " active service instance(s)";
     return result;
 }
 
@@ -663,7 +663,7 @@ std::vector<messaging::service_roster_slot>
 telemetry_repository::list_service_roster(const context& ctx,
                                           std::chrono::system_clock::time_point now) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Reading the services roster";
+    ORES_LOG_SEV(lg(), debug) << "Reading the services roster";
 
     const std::string sql =
         "SELECT service_name, display_name, description, service_account, slot, "
@@ -676,7 +676,7 @@ telemetry_repository::list_service_roster(const context& ctx,
     result.reserve(rows.size());
     for (const auto& row : rows) {
         if (row.size() < 9) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Skipping a roster row with " << row.size() << " column(s); the roster reads 9";
             continue;
         }
@@ -701,7 +701,7 @@ telemetry_repository::list_service_roster(const context& ctx,
         result.push_back(std::move(slot));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Roster has " << result.size() << " expected instance(s)";
+    ORES_LOG_SEV(lg(), debug) << "Roster has " << result.size() << " expected instance(s)";
     return result;
 }
 

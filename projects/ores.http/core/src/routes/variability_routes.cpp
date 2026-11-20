@@ -34,14 +34,14 @@ variability_routes::variability_routes(
     : ctx_(ctx)
     , system_settings_(system_settings)
     , sessions_(sessions) {
-    BOOST_LOG_SEV(lg(), debug) << "Variability routes initialized";
+    ORES_LOG_SEV(lg(), debug) << "Variability routes initialized";
 }
 
 void variability_routes::register_routes(
     std::shared_ptr<http::net::router> router,
     std::shared_ptr<http::openapi::endpoint_registry> registry) {
 
-    BOOST_LOG_SEV(lg(), info) << "Registering Variability routes";
+    ORES_LOG_SEV(lg(), info) << "Registering Variability routes";
 
     auto list_settings =
         router->get("/api/v1/system-settings")
@@ -53,12 +53,12 @@ void variability_routes::register_routes(
     router->add_route(list_settings.build());
     registry->register_route(list_settings.build());
 
-    BOOST_LOG_SEV(lg(), info) << "Variability routes registered: 1 endpoint";
+    ORES_LOG_SEV(lg(), info) << "Variability routes registered: 1 endpoint";
 }
 
 asio::awaitable<http_response>
 variability_routes::handle_list_system_settings(const http_request&) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling list system settings request";
+    ORES_LOG_SEV(lg(), debug) << "Handling list system settings request";
 
     try {
         // The endpoint answers with the protocol's own list response, so the
@@ -71,7 +71,7 @@ variability_routes::handle_list_system_settings(const http_request&) {
             ores::utility::codec::wire_traits<
                 variability::messaging::list_system_settings_response>::write_json(resp));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "List system settings error: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "List system settings error: " << e.what();
         co_return http_response::internal_error(e.what());
     }
 }

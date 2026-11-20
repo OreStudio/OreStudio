@@ -20,7 +20,7 @@
 #define ORES_MARKETDATA_SERVICE_MESSAGING_FX_VOL_SURFACE_OPERATIONS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
@@ -99,7 +99,7 @@ public:
             maker_permission = ores::marketdata::service::app::raise_permission_of(
                 *req_ctx, ores::marketdata::service::app::fx_vol_surface_publish_kind_code);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(fx_vol_surface_operations_handler_lg(), error)
+            ORES_LOG_SEV(fx_vol_surface_operations_handler_lg(), error)
                 << msg.subject << " refused: " << e.what();
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

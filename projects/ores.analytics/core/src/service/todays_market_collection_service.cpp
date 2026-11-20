@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/todays_market_collection.hpp"
 #include "ores.analytics.api/messaging/todays_market_collection_protocol.hpp"
 #include "ores.analytics.core/repository/todays_market_collection_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -546,12 +544,12 @@ ores::utility::domain::result todays_market_collection_service::prepare_change(
 
 std::vector<domain::todays_market_collection>
 todays_market_collection_service::list_collections(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all today's market collections";
+    ORES_LOG_SEV(lg(), debug) << "Listing all today's market collections";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t todays_market_collection_service::count_collections() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total today's market collections count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total today's market collections count";
     return repo_.get_total_collection_count(ctx_);
 }
 
@@ -559,15 +557,15 @@ std::uint32_t todays_market_collection_service::count_collections() {
 std::vector<domain::todays_market_collection>
 todays_market_collection_service::list_collections_by_todays_market_config_id(
     const std::string& todays_market_config_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing today's market collections by todays_market_config_id: "
-                               << todays_market_config_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing today's market collections by todays_market_config_id: "
+                              << todays_market_config_id;
     return repo_.read_latest_by_todays_market_config_id(
         ctx_, todays_market_config_id, offset, limit);
 }
 
 std::uint32_t todays_market_collection_service::count_collections_by_todays_market_config_id(
     const std::string& todays_market_config_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total today's market collections count by todays_market_config_id: "
         << todays_market_config_id;
     return repo_.get_total_collection_count_by_todays_market_config_id(ctx_,
@@ -578,14 +576,14 @@ std::uint32_t todays_market_collection_service::count_collections_by_todays_mark
 std::optional<domain::todays_market_collection>
 todays_market_collection_service::get_collection_at_version(const boost::uuids::uuid& id,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market collection at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market collection at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::todays_market_collection>
 todays_market_collection_service::get_collection(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market collection. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market collection. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -594,7 +592,7 @@ todays_market_collection_service::get_collection(const boost::uuids::uuid& id) {
 
 std::optional<domain::todays_market_collection>
 todays_market_collection_service::get_collection_by_collection(const std::string& collection) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market collection by collection: " << collection;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market collection by collection: " << collection;
     messaging::todays_market_collection_key k;
     k.collection = collection;
     auto found = todays_market_collection_read_one(repo_, ctx_, k);
@@ -605,7 +603,7 @@ todays_market_collection_service::get_collection_by_collection(const std::string
 
 std::optional<domain::todays_market_collection>
 todays_market_collection_service::find_collection(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding today's market collection. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding today's market collection. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -620,11 +618,11 @@ todays_market_collection_service::get_collections(const std::vector<std::string>
 void todays_market_collection_service::save_collection(const domain::todays_market_collection& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Todays Market Collection id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving today's market collection. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving today's market collection. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved today's market collection. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved today's market collection. " << "id: " << v.id;
 }
 
 void todays_market_collection_service::save_collections(
@@ -633,7 +631,7 @@ void todays_market_collection_service::save_collections(
         if (e.id.is_nil())
             throw std::invalid_argument("Todays Market Collection id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << collections.size() << " today's market collections";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << collections.size() << " today's market collections";
     auto ts = collections;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -642,15 +640,15 @@ void todays_market_collection_service::save_collections(
 }
 
 void todays_market_collection_service::delete_collection(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market collection. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market collection. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed today's market collection. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed today's market collection. " << "id: " << id;
 }
 
 void todays_market_collection_service::remove_collection(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market collection. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market collection. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed today's market collection. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed today's market collection. " << "id: " << id;
 }
 
 void todays_market_collection_service::delete_collections(const std::vector<std::string>& ids) {
@@ -659,7 +657,7 @@ void todays_market_collection_service::delete_collections(const std::vector<std:
 
 std::vector<domain::todays_market_collection>
 todays_market_collection_service::get_collection_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for today's market collection. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for today's market collection. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -681,7 +679,7 @@ todays_market_collection_service::get_collection_history(const std::string& key)
 
 std::vector<domain::todays_market_collection>
 todays_market_collection_service::get_collection_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for today's market collection. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for today's market collection. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

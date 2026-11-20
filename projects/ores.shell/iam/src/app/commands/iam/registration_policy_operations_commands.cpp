@@ -61,7 +61,7 @@ void registration_policy_operations_commands::register_commands(cli::Menu& root_
 
 void registration_policy_operations_commands::process_registration_policy(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating registration-policy request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating registration-policy request.";
 
     using request_type = ores::iam::messaging::registration_policy_request;
 

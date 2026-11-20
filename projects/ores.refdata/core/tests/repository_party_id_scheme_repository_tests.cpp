@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party_id_scheme.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_id_scheme_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/party_id_scheme_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -46,7 +44,7 @@ TEST_CASE("write_single_party_id_scheme", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto pis = generate_synthetic_party_id_scheme(ctx);
     pis.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Party ID scheme: " << pis;
+    ORES_LOG_SEV(lg, debug) << "Party ID scheme: " << pis;
 
     party_id_scheme_repository repo;
     repo.write(h.context(), pis);
@@ -67,7 +65,7 @@ TEST_CASE("write_multiple_party_id_schemes", "[repository]") {
     for (auto& pis : party_id_schemes) {
         pis.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Party ID schemes: " << party_id_schemes;
+    ORES_LOG_SEV(lg, debug) << "Party ID schemes: " << party_id_schemes;
 
     party_id_scheme_repository repo;
     repo.write(h.context(), party_id_schemes);
@@ -91,13 +89,13 @@ TEST_CASE("read_latest_party_id_schemes", "[repository]") {
     for (auto& pis : written_party_id_schemes) {
         pis.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written party ID schemes: " << written_party_id_schemes;
+    ORES_LOG_SEV(lg, debug) << "Written party ID schemes: " << written_party_id_schemes;
 
     party_id_scheme_repository repo;
     repo.write(h.context(), written_party_id_schemes);
 
     auto read_party_id_schemes = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
+    ORES_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
 
     for (const auto& written : written_party_id_schemes) {
         const auto it = std::ranges::find_if(read_party_id_schemes, [&](const party_id_scheme& s) {
@@ -117,7 +115,7 @@ TEST_CASE("read_latest_party_id_scheme_by_code", "[repository]") {
     auto pis = generate_synthetic_party_id_scheme(ctx);
     pis.change_reason_code = "system.test";
     const auto original_name = pis.name;
-    BOOST_LOG_SEV(lg, debug) << "Party ID scheme: " << pis;
+    ORES_LOG_SEV(lg, debug) << "Party ID scheme: " << pis;
 
     party_id_scheme_repository repo;
     repo.write(h.context(), pis);
@@ -126,7 +124,7 @@ TEST_CASE("read_latest_party_id_scheme_by_code", "[repository]") {
     repo.write(h.context(), pis);
 
     auto read_party_id_schemes = repo.read_latest(h.context(), pis.code);
-    BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
+    ORES_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
 
     REQUIRE(read_party_id_schemes.size() == 1);
     CHECK(read_party_id_schemes[0].code == pis.code);
@@ -147,10 +145,10 @@ TEST_CASE("read_nonexistent_party_id_scheme_code", "[repository]") {
     repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_party_id_schemes = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
+    ORES_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
 
     const auto answered_with_another_key =
         std::ranges::any_of(read_party_id_schemes,

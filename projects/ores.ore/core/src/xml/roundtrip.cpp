@@ -17,7 +17,7 @@
  *
  */
 #include "ores.ore.core/xml/roundtrip.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
@@ -236,8 +236,8 @@ portfolio_roundtrip roundtrip_portfolio(std::string_view text, std::string_view 
 
 roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
                             const std::filesystem::path& output_dir) {
-    BOOST_LOG_SEV(lg(), debug) << "Starting roundtrip. Input: " << input_dir
-                               << " Output: " << output_dir;
+    ORES_LOG_SEV(lg(), debug) << "Starting roundtrip. Input: " << input_dir
+                              << " Output: " << output_dir;
 
     roundtrip_summary summary;
     const auto wall_start = clock_type::now();
@@ -255,13 +255,13 @@ roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
             relative = std::filesystem::relative(file, input_dir).string();
             const auto kind = detect_document_kind(file);
             if (!kind) {
-                BOOST_LOG_SEV(lg(), debug) << "Unsupported document, not written: " << relative;
+                ORES_LOG_SEV(lg(), debug) << "Unsupported document, not written: " << relative;
                 ++summary.unsupported;
                 continue;
             }
 
             if (!family_of(*kind).roundtrip) {
-                BOOST_LOG_SEV(lg(), debug)
+                ORES_LOG_SEV(lg(), debug)
                     << "Classified document, nothing converts it: " << relative;
                 ++summary.unsupported;
                 continue;
@@ -273,29 +273,29 @@ roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
             std::filesystem::create_directories(out_path.parent_path());
             platform::filesystem::file::write_content(out_path, xml);
             ++summary.output_files_written;
-            BOOST_LOG_SEV(lg(), trace) << "Written: " << out_path;
+            ORES_LOG_SEV(lg(), trace) << "Written: " << out_path;
         } catch (const std::exception& e) {
             ++summary.failed;
             const auto where = relative.empty() ? file.string() : relative;
             summary.failures.push_back(where + ": " + e.what());
-            BOOST_LOG_SEV(lg(), warn) << "Failed: " << where << ": " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Failed: " << where << ": " << e.what();
         }
     }
 
     summary.total_ms = std::chrono::duration_cast<millis>(clock_type::now() - wall_start).count();
 
-    BOOST_LOG_SEV(lg(), debug) << "Roundtrip complete." << " Total: " << summary.total_xml_files
-                               << " Unsupported: " << summary.unsupported
-                               << " Failed: " << summary.failed
-                               << " Written: " << summary.output_files_written
-                               << " Mapped: " << summary.trades_mapped
-                               << " Passthrough: " << summary.trades_passthrough
-                               << " Currencies: " << summary.currency_files
-                               << " Calendars: " << summary.calendar_files
-                               << " Conventions: " << summary.convention_files
-                               << " Import ms: " << summary.import_ms
-                               << " Export ms: " << summary.export_ms
-                               << " Total ms: " << summary.total_ms;
+    ORES_LOG_SEV(lg(), debug) << "Roundtrip complete." << " Total: " << summary.total_xml_files
+                              << " Unsupported: " << summary.unsupported
+                              << " Failed: " << summary.failed
+                              << " Written: " << summary.output_files_written
+                              << " Mapped: " << summary.trades_mapped
+                              << " Passthrough: " << summary.trades_passthrough
+                              << " Currencies: " << summary.currency_files
+                              << " Calendars: " << summary.calendar_files
+                              << " Conventions: " << summary.convention_files
+                              << " Import ms: " << summary.import_ms
+                              << " Export ms: " << summary.export_ms
+                              << " Total ms: " << summary.total_ms;
 
     return summary;
 }

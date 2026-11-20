@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/credit_simulation_matrix_row_config.hpp"
 #include "ores.analytics.api/messaging/credit_simulation_matrix_row_config_protocol.hpp"
 #include "ores.analytics.core/repository/credit_simulation_matrix_row_config_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -562,12 +560,12 @@ ores::utility::domain::result credit_simulation_matrix_row_config_service::prepa
 
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_service::list_rows(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all matrix rows";
+    ORES_LOG_SEV(lg(), debug) << "Listing all matrix rows";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t credit_simulation_matrix_row_config_service::count_rows() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total matrix rows count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total matrix rows count";
     return repo_.get_total_row_count(ctx_);
 }
 
@@ -575,15 +573,15 @@ std::uint32_t credit_simulation_matrix_row_config_service::count_rows() {
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_service::list_rows_by_transition_matrix_id(
     const std::string& transition_matrix_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing matrix rows by transition_matrix_id: "
-                               << transition_matrix_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing matrix rows by transition_matrix_id: "
+                              << transition_matrix_id;
     return repo_.read_latest_by_transition_matrix_id(ctx_, transition_matrix_id, offset, limit);
 }
 
 std::uint32_t credit_simulation_matrix_row_config_service::count_rows_by_transition_matrix_id(
     const std::string& transition_matrix_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total matrix rows count by transition_matrix_id: "
-                               << transition_matrix_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total matrix rows count by transition_matrix_id: "
+                              << transition_matrix_id;
     return repo_.get_total_row_count_by_transition_matrix_id(ctx_, transition_matrix_id);
 }
 
@@ -591,14 +589,14 @@ std::uint32_t credit_simulation_matrix_row_config_service::count_rows_by_transit
 std::optional<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_service::get_row_at_version(const boost::uuids::uuid& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting matrix row at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting matrix row at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_service::get_row(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting matrix row. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting matrix row. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -608,7 +606,7 @@ credit_simulation_matrix_row_config_service::get_row(const boost::uuids::uuid& i
 std::optional<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_service::get_row_by_from_rating(
     const std::string& from_rating) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting matrix row by from_rating: " << from_rating;
+    ORES_LOG_SEV(lg(), debug) << "Getting matrix row by from_rating: " << from_rating;
     messaging::credit_simulation_matrix_row_config_key k;
     k.from_rating = from_rating;
     auto found = credit_simulation_matrix_row_config_read_one(repo_, ctx_, k);
@@ -626,11 +624,11 @@ void credit_simulation_matrix_row_config_service::save_row(
     const domain::credit_simulation_matrix_row_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Credit Simulation Matrix Row Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving matrix row. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving matrix row. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved matrix row. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved matrix row. " << "id: " << v.id;
 }
 
 void credit_simulation_matrix_row_config_service::save_rows(
@@ -639,7 +637,7 @@ void credit_simulation_matrix_row_config_service::save_rows(
         if (e.id.is_nil())
             throw std::invalid_argument("Credit Simulation Matrix Row Config id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << rows.size() << " matrix rows";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << rows.size() << " matrix rows";
     auto ts = rows;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -648,9 +646,9 @@ void credit_simulation_matrix_row_config_service::save_rows(
 }
 
 void credit_simulation_matrix_row_config_service::delete_row(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing matrix row. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing matrix row. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed matrix row. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed matrix row. " << "id: " << id;
 }
 
 void credit_simulation_matrix_row_config_service::delete_rows(const std::vector<std::string>& ids) {
@@ -659,7 +657,7 @@ void credit_simulation_matrix_row_config_service::delete_rows(const std::vector<
 
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_service::get_row_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for matrix row. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for matrix row. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

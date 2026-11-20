@@ -28,7 +28,7 @@
 #include "ores.analytics.api/domain/todays_market_config.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/todays_market_config_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::analytics::repository {
 

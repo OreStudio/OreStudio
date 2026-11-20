@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_EUROPEAN_OPTION_BARRIER_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_EUROPEAN_OPTION_BARRIER_INSTRUMENT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/european_option_barrier_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/european_option_barrier_instrument_entity.hpp"

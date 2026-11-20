@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/book_change.hpp"
 #include "ores.refdata.service/export.hpp"
 #include <boost/uuid/uuid.hpp>

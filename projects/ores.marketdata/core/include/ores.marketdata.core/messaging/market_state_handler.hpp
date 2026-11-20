@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_MARKET_STATE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.nats/domain/message.hpp"

@@ -27,8 +27,6 @@
 #include "ores.inbox.api/domain/approval_policy.hpp"
 #include "ores.inbox.api/domain/approval_policy_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/approval_policy_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::inbox::repository {
@@ -37,7 +35,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::approval_policy approval_policy_mapper::map(const approval_policy_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::approval_policy r;
     r.version = v.version;
@@ -56,12 +54,12 @@ domain::approval_policy approval_policy_mapper::map(const approval_policy_entity
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 approval_policy_entity approval_policy_mapper::map(const domain::approval_policy& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     approval_policy_entity r;
     r.code = v.code;
@@ -79,7 +77,7 @@ approval_policy_entity approval_policy_mapper::map(const domain::approval_policy
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

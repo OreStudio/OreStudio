@@ -24,13 +24,11 @@
  */
 #include "ores.reporting.core/repository/report_metric_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/domain/report_metric.hpp"
 #include "ores.reporting.api/domain/report_metric_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/report_metric_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -44,7 +42,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::report_metric report_metric_mapper::map(const report_metric_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::report_metric r;
     r.tenant_id = v.tenant_id;
@@ -66,12 +64,12 @@ domain::report_metric report_metric_mapper::map(const report_metric_entity& v) {
     r.qualifiers = v.qualifiers.value_or("");
     r.value = v.value;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 report_metric_entity report_metric_mapper::map(const domain::report_metric& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     report_metric_entity r;
     r.id = v.id;
@@ -93,7 +91,7 @@ report_metric_entity report_metric_mapper::map(const domain::report_metric& v) {
     r.qualifiers = v.qualifiers.empty() ? std::nullopt : std::optional(v.qualifiers);
     r.value = v.value;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

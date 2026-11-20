@@ -20,7 +20,7 @@
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "nats_handle.hpp"
 #include "nats_result.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <cstdint>
 #include <nats/nats.h>
 #include <optional>
@@ -168,8 +168,8 @@ void jetstream_admin::prune_consumers(std::string_view name, std::string_view ke
     if (s != NATS_OK) {
         // Not fatal: the consumer that serves this stream is not among the ones
         // this call would have deleted.
-        BOOST_LOG_SEV(jetstream_admin_lg(), warn) << "Could not list the consumers of '" << name_str
-                                                  << "' to prune them: " << natsStatus_GetText(s);
+        ORES_LOG_SEV(jetstream_admin_lg(), warn) << "Could not list the consumers of '" << name_str
+                                                 << "' to prune them: " << natsStatus_GetText(s);
         return;
     }
 
@@ -190,7 +190,7 @@ void jetstream_admin::prune_consumers(std::string_view name, std::string_view ke
         const natsStatus ds =
             js_DeleteConsumer(js, name_str.c_str(), consumer.c_str(), &del_opts, &jerr);
         if (ds != NATS_OK) {
-            BOOST_LOG_SEV(jetstream_admin_lg(), warn)
+            ORES_LOG_SEV(jetstream_admin_lg(), warn)
                 << "Could not prune consumer '" << consumer << "' on '" << name_str
                 << "': " << natsStatus_GetText(ds);
             continue;
@@ -199,7 +199,7 @@ void jetstream_admin::prune_consumers(std::string_view name, std::string_view ke
     }
 
     if (pruned > 0)
-        BOOST_LOG_SEV(jetstream_admin_lg(), info)
+        ORES_LOG_SEV(jetstream_admin_lg(), info)
             << "Pruned " << pruned << " consumer(s) on '" << name_str
             << "' that the service no longer declares";
 }

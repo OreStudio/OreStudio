@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/script_result.hpp"
 #include "ores.trading.api/messaging/script_result_protocol.hpp"
 #include "ores.trading.core/repository/script_result_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -464,12 +462,12 @@ script_result_service::prepare_change(const messaging::script_result_change& cha
 
 std::vector<domain::script_result> script_result_service::list_results(std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all script results";
+    ORES_LOG_SEV(lg(), debug) << "Listing all script results";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t script_result_service::count_results() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total script results count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total script results count";
     return repo_.get_total_result_count(ctx_);
 }
 
@@ -479,10 +477,9 @@ script_result_service::get_result_at_version(const std::string& script_name,
                                              const std::string& purpose,
                                              const std::string& sequence_number,
                                              std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script result at version. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting script result at version. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, script_name, purpose, sequence_number, version);
 }
 
@@ -490,9 +487,8 @@ std::optional<domain::script_result>
 script_result_service::get_result(const std::string& script_name,
                                   const std::string& purpose,
                                   const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script result. " << "script_name: " << script_name
-                               << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting script result. " << "script_name: " << script_name
+                              << " purpose: " << purpose << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, script_name, purpose, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -511,15 +507,15 @@ void script_result_service::save_result(const domain::script_result& v) {
         throw std::invalid_argument("Script Result script_name cannot be empty.");
     if (v.purpose.empty())
         throw std::invalid_argument("Script Result purpose cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving script result. " << "script_name: " << v.script_name
-                               << " purpose: " << v.purpose
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving script result. " << "script_name: " << v.script_name
+                              << " purpose: " << v.purpose
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved script result. " << "script_name: " << v.script_name
-                              << " purpose: " << v.purpose
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved script result. " << "script_name: " << v.script_name
+                             << " purpose: " << v.purpose
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void script_result_service::save_results(const std::vector<domain::script_result>& results) {
@@ -529,7 +525,7 @@ void script_result_service::save_results(const std::vector<domain::script_result
         if (e.purpose.empty())
             throw std::invalid_argument("Script Result purpose cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << results.size() << " script results";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << results.size() << " script results";
     auto ts = results;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -540,12 +536,11 @@ void script_result_service::save_results(const std::vector<domain::script_result
 void script_result_service::delete_result(const std::string& script_name,
                                           const std::string& purpose,
                                           const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing script result. " << "script_name: " << script_name
-                               << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, script_name, purpose, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed script result. " << "script_name: " << script_name
+    ORES_LOG_SEV(lg(), debug) << "Removing script result. " << "script_name: " << script_name
                               << " purpose: " << purpose << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, script_name, purpose, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed script result. " << "script_name: " << script_name
+                             << " purpose: " << purpose << " sequence_number: " << sequence_number;
 }
 
 void script_result_service::delete_results(const std::vector<std::string>& script_names,
@@ -558,9 +553,9 @@ std::vector<domain::script_result>
 script_result_service::get_result_history(const std::string& script_name,
                                           const std::string& purpose,
                                           const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for script result. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for script result. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, script_name, purpose, sequence_number);
 }
 

@@ -25,7 +25,7 @@
 #include "ores.iam.api/workflow/provision_step_arguments.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -141,7 +141,7 @@ public:
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
+            ORES_LOG_SEV(lg(), ores::logging::warn)
                 << "Ignored a command with no workflow headers: " << msg.subject;
             std::move(delivery).reject();
             return;
@@ -177,7 +177,7 @@ public:
             // The work could not be done, and nothing here says it never will
             // be. The step fails, which stops the run or starts its
             // compensation; a person or a resume decides whether to try again.
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Step " << wf->step_id << " failed: " << e.what();
             wf->fail(e.what());
         }
@@ -246,7 +246,7 @@ private:
         const auto seconds_since = [](std::chrono::steady_clock::time_point from) {
             return std::chrono::duration<double>(std::chrono::steady_clock::now() - from).count();
         };
-        BOOST_LOG_SEV(lg(), ores::logging::info)
+        ORES_LOG_SEV(lg(), ores::logging::info)
             << "generate_trades: " << assignments.size() << " entr(y/ies) to write";
         std::size_t position = 0;
         // An entry that cannot be written is named and passed over, so one bad
@@ -259,7 +259,7 @@ private:
                 const auto label = entry.name + " (" + std::to_string(position) + " of " +
                                    std::to_string(assignments.size()) + ")";
                 const auto phase = [&](std::string_view what) {
-                    BOOST_LOG_SEV(lg(), ores::logging::info)
+                    ORES_LOG_SEV(lg(), ores::logging::info)
                         << "generate_trades: " << label << ": " << what << " after "
                         << seconds_since(entry_started) << "s";
                     wf.progress(label + ": " + std::string(what));
@@ -314,7 +314,7 @@ private:
                 try {
                     self = ask(service_nats, ores::iam::messaging::get_my_account_request{});
                 } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), ores::logging::warn)
+                    ORES_LOG_SEV(lg(), ores::logging::warn)
                         << "generate_trades: the service could not read its own account: "
                         << e.what();
                 }
@@ -338,7 +338,7 @@ private:
                 result.trades_written += population.written;
                 result.trades_already_present += population.already_present;
 
-                BOOST_LOG_SEV(lg(), ores::logging::info)
+                ORES_LOG_SEV(lg(), ores::logging::info)
                     << "generate_trades: " << entry.name << " for party " << entry.party
                     << ": planned " << population.planned << ", wrote " << population.written
                     << ", already present " << population.already_present << ", in "
@@ -347,7 +347,7 @@ private:
                           std::to_string(population.written) + " trade(s), " +
                           std::to_string(population.already_present) + " already present");
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), ores::logging::warn)
+                ORES_LOG_SEV(lg(), ores::logging::warn)
                     << "generate_trades: " << entry.name << " for party " << entry.party
                     << " was not written: " << e.what();
                 failures.push_back(entry.name + " for " + entry.party + ": " + e.what());
@@ -366,7 +366,7 @@ private:
             return;
         }
 
-        BOOST_LOG_SEV(lg(), ores::logging::info)
+        ORES_LOG_SEV(lg(), ores::logging::info)
             << "generate_trades: every entry is written (" << result.trades_written << " written, "
             << result.trades_already_present << " already present); completing the step";
         wf.complete(ores::utility::codec::json::write(result));
@@ -508,7 +508,7 @@ private:
                                    const ores::iam::workflow::trade_generation_assignment& entry,
                                    const std::string& reference_curve_id) {
         if (const auto existing = find_trade_generation_config(client, entry.name)) {
-            BOOST_LOG_SEV(lg(), ores::logging::info)
+            ORES_LOG_SEV(lg(), ores::logging::info)
                 << "generate_trades: the config '" << entry.name << "' is already recorded.";
             return existing->id;
         }

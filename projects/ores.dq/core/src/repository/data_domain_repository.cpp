@@ -31,9 +31,7 @@
 #include "ores.dq.api/messaging/data_domain_protocol.hpp"
 #include "ores.dq.core/repository/data_domain_entity.hpp"
 #include "ores.dq.core/repository/data_domain_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -208,7 +206,7 @@ void data_domain_repository::write(const context& ctx, const std::vector<domain:
 void data_domain_repository::write(const context& ctx,
                                    const domain::data_domain& v,
                                    const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing data domain. " << "name: " << v.name;
+    ORES_LOG_SEV(lg(), debug) << "Writing data domain. " << "name: " << v.name;
     const auto t = data_domain_apply_claim(v,
                                            claim,
                                            data_domain_claim_reads_current(claim) ?
@@ -221,7 +219,7 @@ void data_domain_repository::write(const context& ctx,
 void data_domain_repository::write(const context& ctx,
                                    const std::vector<domain::data_domain>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing data domains. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing data domains. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "data_domain_repository::write: one claim is needed for each row");
@@ -256,7 +254,7 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(const conte
 
 std::vector<domain::data_domain> data_domain_repository::read_latest(const context& ctx,
                                                                      const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest data domain. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest data domain. " << "name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
                        query_builder::where("name"_c == name && "valid_to"_c == max);
@@ -272,7 +270,7 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(const conte
 
 std::vector<domain::data_domain> data_domain_repository::read_all(const context& ctx,
                                                                   const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all data domain versions. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading all data domain versions. " << "name: " << name;
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
                        query_builder::where("name"_c == name) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
@@ -288,8 +286,8 @@ std::vector<domain::data_domain> data_domain_repository::read_all(const context&
 std::optional<domain::data_domain> data_domain_repository::read_at_version(const context& ctx,
                                                                            const std::string& name,
                                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading data domain at version. " << "name: " << name
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading data domain at version. " << "name: " << name
+                              << " version: " << version;
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
                        query_builder::where("name"_c == name && "version"_c == version) |
                        query_builder::limit(1);
@@ -309,7 +307,7 @@ std::optional<domain::data_domain> data_domain_repository::read_at_version(const
 
 data_domain_repository::remove_status data_domain_repository::remove(
     const context& ctx, const std::string& name, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing data domain. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Removing data domain. " << "name: " << name;
     const auto current = read_latest(ctx, name);
     if (current.empty())
         return remove_status::missing;
@@ -347,8 +345,8 @@ data_domain_repository::read_latest(const context& ctx,
                                     const ores::utility::domain::order& order,
                                     const std::optional<messaging::data_domains_filter>& filter,
                                     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest data domains with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest data domains with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -367,7 +365,7 @@ std::uint32_t data_domain_repository::get_total_domain_count(
     const context& ctx,
     const std::optional<messaging::data_domains_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active data domain count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active data domain count";
 
     const auto query = query_builder::read<std::vector<data_domain_entity>>;
 

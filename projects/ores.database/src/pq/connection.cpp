@@ -19,7 +19,7 @@
 #include "ores.database/pq/connection.hpp"
 #include "ores.database/pq/result.hpp"
 #include "ores.database/pq/store_error.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <charconv>
 
 namespace ores::database::pq {
@@ -109,7 +109,7 @@ void log_notice(void*, const char* message) {
     std::string_view text(message);
     if (!text.empty() && text.back() == '\n')
         text.remove_suffix(1);
-    BOOST_LOG_SEV(lg, debug) << text;
+    ORES_LOG_SEV(lg, debug) << text;
 }
 
 }

@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/market_data_mapping.hpp"
 #include "ores.marketdata.api/messaging/market_data_mapping_protocol.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -511,12 +509,12 @@ market_data_mapping_service::prepare_change(const messaging::market_data_mapping
 
 std::vector<domain::market_data_mapping>
 market_data_mapping_service::list_mappings(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all market data mappings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all market data mappings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t market_data_mapping_service::count_mappings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total market data mappings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total market data mappings count";
     return repo_.get_total_mapping_count(ctx_);
 }
 
@@ -524,14 +522,14 @@ std::uint32_t market_data_mapping_service::count_mappings() {
 std::optional<domain::market_data_mapping>
 market_data_mapping_service::get_mapping_at_version(const boost::uuids::uuid& id,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data mapping at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data mapping at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::market_data_mapping>
 market_data_mapping_service::get_mapping(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data mapping. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data mapping. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -540,7 +538,7 @@ market_data_mapping_service::get_mapping(const boost::uuids::uuid& id) {
 
 std::optional<domain::market_data_mapping>
 market_data_mapping_service::get_mapping_by_oresmd_uri(const std::string& oresmd_uri) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data mapping by oresmd_uri: " << oresmd_uri;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data mapping by oresmd_uri: " << oresmd_uri;
     messaging::market_data_mapping_key k;
     k.oresmd_uri = oresmd_uri;
     auto found = market_data_mapping_read_one(repo_, ctx_, k);
@@ -557,11 +555,11 @@ market_data_mapping_service::get_mappings(const std::vector<std::string>& ids) {
 void market_data_mapping_service::save_mapping(const domain::market_data_mapping& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Market Data Mapping id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market data mapping. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving market data mapping. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market data mapping. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved market data mapping. " << "id: " << v.id;
 }
 
 void market_data_mapping_service::save_mappings(
@@ -570,7 +568,7 @@ void market_data_mapping_service::save_mappings(
         if (e.id.is_nil())
             throw std::invalid_argument("Market Data Mapping id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << mappings.size() << " market data mappings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << mappings.size() << " market data mappings";
     auto ts = mappings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -579,9 +577,9 @@ void market_data_mapping_service::save_mappings(
 }
 
 void market_data_mapping_service::delete_mapping(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market data mapping. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market data mapping. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed market data mapping. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed market data mapping. " << "id: " << id;
 }
 
 void market_data_mapping_service::delete_mappings(const std::vector<std::string>& ids) {
@@ -590,7 +588,7 @@ void market_data_mapping_service::delete_mappings(const std::vector<std::string>
 
 std::vector<domain::market_data_mapping>
 market_data_mapping_service::get_mapping_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market data mapping. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for market data mapping. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

@@ -55,7 +55,7 @@ using ores::nats::service::nats_client;
 void iam_commands::register_commands(cli::Menu& root_menu,
                                      nats_client& session,
                                      pagination_context& /*pagination*/) {
-    BOOST_LOG_SEV(lg(), debug) << "Registering IAM command surface.";
+    ORES_LOG_SEV(lg(), debug) << "Registering IAM command surface.";
 
     login_info_commands::register_commands(root_menu, session);
     // The declared operations first, so an entity's own verbs are registered

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.workflow.core/service/workflow_actor.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 
 namespace ores::workflow::service {
@@ -48,7 +48,7 @@ actor_from_message(const ores::nats::message& msg,
 
     const auto claims = verifier->validate(token);
     if (!claims) {
-        BOOST_LOG_SEV(workflow_actor_lg(), warn)
+        ORES_LOG_SEV(workflow_actor_lg(), warn)
             << "Caller token rejected (" << ores::security::jwt::to_string(claims.error())
             << "); attributing the run to the service account";
         return fallback;
@@ -59,7 +59,7 @@ actor_from_message(const ores::nats::message& msg,
 
     // A token that verifies but names nobody is still no actor, and the store
     // refuses one, so the run falls back rather than failing to start.
-    BOOST_LOG_SEV(workflow_actor_lg(), warn)
+    ORES_LOG_SEV(workflow_actor_lg(), warn)
         << "Caller token names no username; attributing the run to the service account";
     return fallback;
 }

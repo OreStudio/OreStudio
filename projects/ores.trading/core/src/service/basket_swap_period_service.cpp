@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/basket_swap_period.hpp"
 #include "ores.trading.api/messaging/basket_swap_period_protocol.hpp"
 #include "ores.trading.core/repository/basket_swap_period_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -487,12 +485,12 @@ basket_swap_period_service::prepare_change(const messaging::basket_swap_period_c
 
 std::vector<domain::basket_swap_period>
 basket_swap_period_service::list_basket_swap_periods(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all basket swap periods";
+    ORES_LOG_SEV(lg(), debug) << "Listing all basket swap periods";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t basket_swap_period_service::count_basket_swap_periods() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total basket swap periods count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total basket swap periods count";
     return repo_.get_total_basket_swap_period_count(ctx_);
 }
 
@@ -502,11 +500,10 @@ basket_swap_period_service::get_basket_swap_period_at_version(const std::string&
                                                               const std::string& trade_activity_id,
                                                               const std::string& sequence_number,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting basket swap period at version. "
-                               << "trade_id: " << trade_id
-                               << " trade_activity_id: " << trade_activity_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting basket swap period at version. "
+                              << "trade_id: " << trade_id
+                              << " trade_activity_id: " << trade_activity_id
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, trade_activity_id, sequence_number, version);
 }
 
@@ -514,9 +511,9 @@ std::optional<domain::basket_swap_period>
 basket_swap_period_service::get_basket_swap_period(const std::string& trade_id,
                                                    const std::string& trade_activity_id,
                                                    const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting basket swap period. " << "trade_id: " << trade_id
-                               << " trade_activity_id: " << trade_activity_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting basket swap period. " << "trade_id: " << trade_id
+                              << " trade_activity_id: " << trade_activity_id
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, trade_activity_id, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -535,15 +532,15 @@ void basket_swap_period_service::save_basket_swap_period(const domain::basket_sw
         throw std::invalid_argument("Basket Swap Period trade_id cannot be empty.");
     if (v.trade_activity_id.is_nil())
         throw std::invalid_argument("Basket Swap Period trade_activity_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving basket swap period. " << "trade_id: " << v.trade_id
-                               << " trade_activity_id: " << v.trade_activity_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving basket swap period. " << "trade_id: " << v.trade_id
+                              << " trade_activity_id: " << v.trade_activity_id
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved basket swap period. " << "trade_id: " << v.trade_id
-                              << " trade_activity_id: " << v.trade_activity_id
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved basket swap period. " << "trade_id: " << v.trade_id
+                             << " trade_activity_id: " << v.trade_activity_id
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void basket_swap_period_service::save_basket_swap_periods(
@@ -554,7 +551,7 @@ void basket_swap_period_service::save_basket_swap_periods(
         if (e.trade_activity_id.is_nil())
             throw std::invalid_argument("Basket Swap Period trade_activity_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << basket_swap_periods.size() << " basket swap periods";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << basket_swap_periods.size() << " basket swap periods";
     auto ts = basket_swap_periods;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -565,13 +562,13 @@ void basket_swap_period_service::save_basket_swap_periods(
 void basket_swap_period_service::delete_basket_swap_period(const std::string& trade_id,
                                                            const std::string& trade_activity_id,
                                                            const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing basket swap period. " << "trade_id: " << trade_id
-                               << " trade_activity_id: " << trade_activity_id
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, trade_activity_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed basket swap period. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing basket swap period. " << "trade_id: " << trade_id
                               << " trade_activity_id: " << trade_activity_id
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, trade_activity_id, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed basket swap period. " << "trade_id: " << trade_id
+                             << " trade_activity_id: " << trade_activity_id
+                             << " sequence_number: " << sequence_number;
 }
 
 void basket_swap_period_service::delete_basket_swap_periods(
@@ -585,10 +582,10 @@ std::vector<domain::basket_swap_period>
 basket_swap_period_service::get_basket_swap_period_history(const std::string& trade_id,
                                                            const std::string& trade_activity_id,
                                                            const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for basket swap period. "
-                               << "trade_id: " << trade_id
-                               << " trade_activity_id: " << trade_activity_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for basket swap period. "
+                              << "trade_id: " << trade_id
+                              << " trade_activity_id: " << trade_activity_id
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, trade_activity_id, sequence_number);
 }
 

@@ -21,7 +21,7 @@
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/generators/book_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"

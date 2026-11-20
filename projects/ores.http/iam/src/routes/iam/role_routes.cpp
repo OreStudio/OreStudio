@@ -328,7 +328,7 @@ boost::asio::awaitable<http_response> role_routes::handle_version(const http_req
 void role_routes::register_routes(std::shared_ptr<ores::http::net::router> router,
                                   std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                   nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering roles routes";
+    ORES_LOG_SEV(lg(), info) << "Registering roles routes";
 
     auto list_route =
         router->get("/api/v1/access/roles")
@@ -473,7 +473,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "roles routes registered: " << 10 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "roles routes registered: " << 10 << " endpoint(s)";
 }
 
 }

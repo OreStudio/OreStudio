@@ -25,7 +25,7 @@
 #include "ores.inbox.api/workflow/apply_step_command.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -122,14 +122,14 @@ public:
                                                             apply_result_state(request->state_code),
                                                             request->change_commentary);
             } else {
-                BOOST_LOG_SEV(lg(), ores::logging::warn)
+                ORES_LOG_SEV(lg(), ores::logging::warn)
                     << "Request " << command->request_id << " has the unknown kind "
                     << request->kind_code << ", so the person who asked was not told.";
             }
             wf->complete("{}");
             std::move(delivery).commit();
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Step " << wf->step_id << " failed: " << e.what();
             wf->fail(e.what());
             std::move(delivery).commit();

@@ -26,7 +26,7 @@
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_apply_start.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <chrono>
 #include <string>

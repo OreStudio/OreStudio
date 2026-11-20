@@ -28,7 +28,7 @@
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/eventing/party_event.hpp"
@@ -59,7 +59,7 @@ warm_and_subscribe_party_cache(ores::nats::service::client& nats,
                                std::shared_ptr<party_cache> cache,
                                const std::vector<std::string>& tenant_ids) {
     using namespace ores::logging;
-    BOOST_LOG_SEV(party_cache_registrar_lg(), debug)
+    ORES_LOG_SEV(party_cache_registrar_lg(), debug)
         << "Warming party cache for " << tenant_ids.size() << " tenant(s)";
     for (const auto& tenant_id : tenant_ids)
         // A warm-up failure is logged; nothing here can react to it.

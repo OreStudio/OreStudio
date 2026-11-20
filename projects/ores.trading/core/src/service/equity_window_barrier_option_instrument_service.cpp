@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/equity_window_barrier_option_instrument.hpp"
 #include "ores.trading.api/messaging/equity_window_barrier_option_instrument_protocol.hpp"
 #include "ores.trading.core/repository/equity_window_barrier_option_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -503,13 +501,13 @@ ores::utility::domain::result equity_window_barrier_option_instrument_service::p
 std::vector<domain::equity_window_barrier_option_instrument>
 equity_window_barrier_option_instrument_service::list_equity_window_barrier_option_instruments(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all equity window barrier option instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all equity window barrier option instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t
 equity_window_barrier_option_instrument_service::count_equity_window_barrier_option_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total equity window barrier option instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total equity window barrier option instruments count";
     return repo_.get_total_equity_window_barrier_option_instrument_count(ctx_);
 }
 
@@ -518,16 +516,16 @@ std::optional<domain::equity_window_barrier_option_instrument>
 equity_window_barrier_option_instrument_service::
     get_equity_window_barrier_option_instrument_at_version(const boost::uuids::uuid& trade_id,
                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity window barrier option instrument at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity window barrier option instrument at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::equity_window_barrier_option_instrument>
 equity_window_barrier_option_instrument_service::get_equity_window_barrier_option_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity window barrier option instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity window barrier option instrument. "
+                              << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -545,13 +543,13 @@ void equity_window_barrier_option_instrument_service::save_equity_window_barrier
     if (v.identity.trade_id.is_nil())
         throw std::invalid_argument(
             "Equity Window Barrier Option Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity window barrier option instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving equity window barrier option instrument. "
+                              << "trade_id: " << v.identity.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved equity window barrier option instrument. "
-                              << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved equity window barrier option instrument. "
+                             << "trade_id: " << v.identity.trade_id;
 }
 
 void equity_window_barrier_option_instrument_service::save_equity_window_barrier_option_instruments(
@@ -562,8 +560,8 @@ void equity_window_barrier_option_instrument_service::save_equity_window_barrier
             throw std::invalid_argument(
                 "Equity Window Barrier Option Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_window_barrier_option_instruments.size()
-                               << " equity window barrier option instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << equity_window_barrier_option_instruments.size()
+                              << " equity window barrier option instruments";
     auto ts = equity_window_barrier_option_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -573,11 +571,11 @@ void equity_window_barrier_option_instrument_service::save_equity_window_barrier
 
 void equity_window_barrier_option_instrument_service::
     delete_equity_window_barrier_option_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing equity window barrier option instrument. "
-                               << "trade_id: " << trade_id;
-    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed equity window barrier option instrument. "
+    ORES_LOG_SEV(lg(), debug) << "Removing equity window barrier option instrument. "
                               << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    ORES_LOG_SEV(lg(), info) << "Removed equity window barrier option instrument. "
+                             << "trade_id: " << trade_id;
 }
 
 void equity_window_barrier_option_instrument_service::
@@ -588,8 +586,8 @@ void equity_window_barrier_option_instrument_service::
 std::vector<domain::equity_window_barrier_option_instrument>
 equity_window_barrier_option_instrument_service::
     get_equity_window_barrier_option_instrument_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for equity window barrier option instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for equity window barrier option instrument. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

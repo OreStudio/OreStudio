@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/pricing_engines_import.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "test_suite.hpp"
@@ -99,10 +99,10 @@ TEST_CASE("a_pricing_engine_document_exports_and_imports_back_as_the_same_docume
     auto lg(make_logger(test_suite));
 
     const auto text = exported_swap_document();
-    BOOST_LOG_SEV(lg, debug) << "Exported document:\n" << text;
+    ORES_LOG_SEV(lg, debug) << "Exported document:\n" << text;
 
     const auto file = pricing_engines_import::parse(text);
-    BOOST_LOG_SEV(lg, debug) << "Refusal: " << file.refusal;
+    ORES_LOG_SEV(lg, debug) << "Refusal: " << file.refusal;
     REQUIRE(file.ok());
     CHECK(file.root_element == "PricingEngines");
     REQUIRE(file.products.size() == 1);
@@ -128,7 +128,7 @@ TEST_CASE("importing_a_pricing_engine_document_refuses_another_documents_root",
     const auto file = pricing_engines_import::parse(
         R"(<?xml version="1.0"?><CurrencyConfig><Currency><ISOCode>EUR</ISOCode></Currency>)"
         R"(</CurrencyConfig>)");
-    BOOST_LOG_SEV(lg, debug) << "Refusal: " << file.refusal;
+    ORES_LOG_SEV(lg, debug) << "Refusal: " << file.refusal;
 
     CHECK(!file.ok());
     CHECK(file.root_element == "CurrencyConfig");
@@ -143,7 +143,7 @@ TEST_CASE("importing_a_pricing_engine_document_refuses_text_that_is_not_xml",
     auto lg(make_logger(test_suite));
 
     const auto file = pricing_engines_import::parse("<PricingEngines><Product>");
-    BOOST_LOG_SEV(lg, debug) << "Refusal: " << file.refusal;
+    ORES_LOG_SEV(lg, debug) << "Refusal: " << file.refusal;
 
     CHECK(!file.ok());
     CHECK(file.root_element.empty());
@@ -499,7 +499,7 @@ TEST_CASE("a_document_larger_than_the_import_reads_is_refused_by_its_size",
     const auto padding = std::string(pricing_engines_import::maximum_content + 1 - 64, ' ');
     const auto file = pricing_engines_import::parse("<PricingEngines>" + std::string(64, ' ') +
                                                     padding + "</PricingEngines>");
-    BOOST_LOG_SEV(lg, debug) << "Refusal: " << file.refusal;
+    ORES_LOG_SEV(lg, debug) << "Refusal: " << file.refusal;
 
     CHECK(!file.ok());
     CHECK(file.refusal.starts_with("The file is "));

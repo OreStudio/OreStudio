@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_SERVICE_FEED_SCOPE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/feed_scope.hpp"
 #include "ores.marketdata.api/messaging/feed_scope_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"

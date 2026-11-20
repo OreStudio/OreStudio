@@ -84,7 +84,7 @@ operational_authorisation_service::raise_if_awaiting(const boost::uuids::uuid& t
         if (!request)
             continue;
         if (request->state_code == "waiting" || request->state_code == "held") {
-            BOOST_LOG_SEV(lg(), debug)
+            ORES_LOG_SEV(lg(), debug)
                 << "Trade " << id << " already awaits authorisation by request "
                 << boost::uuids::to_string(earlier.request_id);
             return std::nullopt;
@@ -111,8 +111,8 @@ operational_authorisation_service::raise_if_awaiting(const boost::uuids::uuid& t
     repository::trade_authorisation_request_repository{}.write(
         ctx_, detail, ores::utility::domain::precondition{});
 
-    BOOST_LOG_SEV(lg(), info) << "Raised request " << boost::uuids::to_string(request.id)
-                              << " for trade " << id;
+    ORES_LOG_SEV(lg(), info) << "Raised request " << boost::uuids::to_string(request.id)
+                             << " for trade " << id;
     return raised_authorisation{*prepared.kind, std::move(request)};
 }
 

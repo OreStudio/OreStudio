@@ -29,7 +29,7 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <memory>

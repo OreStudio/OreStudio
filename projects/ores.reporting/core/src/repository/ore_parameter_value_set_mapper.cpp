@@ -24,11 +24,9 @@
  */
 #include "ores.reporting.core/repository/ore_parameter_value_set_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/ore_parameter_value_set.hpp"
 #include "ores.reporting.api/domain/ore_parameter_value_set_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/ore_parameter_value_set_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <vector>
 
@@ -39,7 +37,7 @@ using namespace ores::database::repository;
 
 domain::ore_parameter_value_set
 ore_parameter_value_set_mapper::map(const ore_parameter_value_set_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::ore_parameter_value_set r;
     r.version = v.version;
@@ -60,13 +58,13 @@ ore_parameter_value_set_mapper::map(const ore_parameter_value_set_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 ore_parameter_value_set_entity
 ore_parameter_value_set_mapper::map(const domain::ore_parameter_value_set& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     ore_parameter_value_set_entity r;
     r.code = v.code;
@@ -86,7 +84,7 @@ ore_parameter_value_set_mapper::map(const domain::ore_parameter_value_set& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

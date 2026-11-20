@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -113,7 +113,7 @@ public:
      * stated a party could read another party's bodies.
      */
     void list_cut_rows(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_cut_read_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_cut_read_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -124,8 +124,7 @@ public:
             report_cut_read_handler_lg(), msg, req_ctx.tenant_id().to_string());
         auto req = decode<list_cut_rows_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_cut_read_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(report_cut_read_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -147,7 +146,7 @@ public:
                 // A month a caller stated wrongly is the caller's fault, so the
                 // read answers it as a refusal with its own sentence and the
                 // BFF turns it into the bad request it is.
-                BOOST_LOG_SEV(report_cut_read_handler_lg(), warn)
+                ORES_LOG_SEV(report_cut_read_handler_lg(), warn)
                     << msg.subject << ": " << page.error();
                 response.result.outcome = ores::utility::domain::outcome::invalid;
                 response.result.code = std::string(ores::database::domain::to_string(
@@ -160,10 +159,10 @@ public:
             response.rows.reserve(page->rows.size());
             for (const auto& view : page->rows)
                 response.rows.push_back(row_of(view));
-            BOOST_LOG_SEV(report_cut_read_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_cut_read_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_cut_read_handler_lg(), error)
+            ORES_LOG_SEV(report_cut_read_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_cut_rows_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -180,7 +179,7 @@ public:
      * what the row said.
      */
     void get_cut_record(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_cut_read_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_cut_read_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -191,8 +190,7 @@ public:
             report_cut_read_handler_lg(), msg, req_ctx.tenant_id().to_string());
         auto req = decode<get_cut_record_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_cut_read_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(report_cut_read_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -221,10 +219,10 @@ public:
             response.gaps = record->gaps;
             response.run_count = record->run_count;
             response.detail = record->detail;
-            BOOST_LOG_SEV(report_cut_read_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_cut_read_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_cut_read_handler_lg(), error)
+            ORES_LOG_SEV(report_cut_read_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_cut_record_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

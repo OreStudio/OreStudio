@@ -30,7 +30,7 @@
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/tenant_status_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>

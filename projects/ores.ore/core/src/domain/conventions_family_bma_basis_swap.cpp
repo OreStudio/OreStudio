@@ -29,7 +29,7 @@ using namespace conventions_fields;
 
 refdata::domain::bma_basis_swap_convention
 conventions_mapper::map_bma_basis_swap(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping BMA basis swap convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping BMA basis swap convention: " << text_of(v, "Id");
 
     refdata::domain::bma_basis_swap_convention r;
     r.id = text_of(v, "Id");

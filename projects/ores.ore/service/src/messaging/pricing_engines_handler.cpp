@@ -270,12 +270,12 @@ void pricing_engines_handler::export_pricing_engines(ores::nats::message msg) {
              .content = ores::ore::xml::exporter::export_pricing_engines(read->document)});
         response.success = true;
         response.message = std::format("Exported {} products.", response.count);
-        BOOST_LOG_SEV(lg(), info) << "pricing engines exported | corr=" << correlation_id
-                                  << " products=" << response.count << " file=" << *name;
+        ORES_LOG_SEV(lg(), info) << "pricing engines exported | corr=" << correlation_id
+                                 << " products=" << response.count << " file=" << *name;
         reply(nats_, msg, response);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "pricing engines export refused | corr=" << correlation_id
-                                  << " " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "pricing engines export refused | corr=" << correlation_id
+                                 << " " << e.what();
         response.problems.push_back({.code = "write_failed", .message = e.what()});
         response.message = e.what();
         reply(nats_, msg, response);
@@ -306,8 +306,8 @@ void pricing_engines_handler::preview_pricing_engines_import(ores::nats::message
     preview_pricing_engines_import_response response;
     response.root_element = file.root_element;
     if (!file.ok()) {
-        BOOST_LOG_SEV(lg(), info) << "pricing engines preview refused | corr=" << correlation_id
-                                  << " " << file.refusal;
+        ORES_LOG_SEV(lg(), info) << "pricing engines preview refused | corr=" << correlation_id
+                                 << " " << file.refusal;
         response.message = file.refusal;
         reply(nats_, msg, response);
         return;
@@ -358,14 +358,14 @@ void pricing_engines_handler::preview_pricing_engines_import(ores::nats::message
         response.message = std::format("The file holds {} products and {} settings.",
                                        response.in_file_products,
                                        response.in_file_parameters);
-        BOOST_LOG_SEV(lg(), info) << "pricing engines previewed | corr=" << correlation_id
-                                  << " products=" << response.in_file_products
-                                  << " added=" << response.added << " changed=" << response.changed
-                                  << " removed=" << response.removed;
+        ORES_LOG_SEV(lg(), info) << "pricing engines previewed | corr=" << correlation_id
+                                 << " products=" << response.in_file_products
+                                 << " added=" << response.added << " changed=" << response.changed
+                                 << " removed=" << response.removed;
         reply(nats_, msg, response);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "pricing engines preview refused | corr=" << correlation_id
-                                  << " " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "pricing engines preview refused | corr=" << correlation_id
+                                 << " " << e.what();
         response.message = e.what();
         reply(nats_, msg, response);
     }
@@ -411,7 +411,7 @@ void pricing_engines_handler::import_pricing_engines(ores::nats::message msg) {
             [&](const std::string& name, const ores::utility::domain::change_intent& intent) {
                 std::string error;
                 if (!remove_header(owners(), name, intent, error))
-                    BOOST_LOG_SEV(lg(), warn)
+                    ORES_LOG_SEV(lg(), warn)
                         << "pricing engines import left a configuration behind | corr="
                         << correlation_id << " name=" << name << " " << error;
             },
@@ -432,12 +432,12 @@ void pricing_engines_handler::import_pricing_engines(ores::nats::message msg) {
     try {
         const auto response = run_pricing_engines_import(operations, *req);
         if (response.success)
-            BOOST_LOG_SEV(lg(), info)
+            ORES_LOG_SEV(lg(), info)
                 << "pricing engines imported | corr=" << correlation_id << " " << response.message;
         reply(nats_, msg, response);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "pricing engines import refused | corr=" << correlation_id
-                                  << " " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "pricing engines import refused | corr=" << correlation_id
+                                 << " " << e.what();
         import_pricing_engines_response response;
         response.message = e.what();
         reply(nats_, msg, response);

@@ -26,7 +26,7 @@
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -114,9 +114,9 @@ public:
     template <typename Event>
     void register_entity_event_mapping(const std::string& channel_name) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), info) << "Registering canonical event mapping: channel='"
-                                  << channel_name << "', prefix='"
-                                  << domain::entity_event_traits<Event>::subject_prefix << "'";
+        ORES_LOG_SEV(lg(), info) << "Registering canonical event mapping: channel='" << channel_name
+                                 << "', prefix='"
+                                 << domain::entity_event_traits<Event>::subject_prefix << "'";
 
         entity_event_mappings_[channel_name] = entity_event_mapping{
             .channel_name = channel_name,
@@ -132,7 +132,7 @@ public:
             }};
 
         listener_.subscribe(channel_name);
-        BOOST_LOG_SEV(lg(), debug) << "Subscribed to PostgreSQL channel: " << channel_name;
+        ORES_LOG_SEV(lg(), debug) << "Subscribed to PostgreSQL channel: " << channel_name;
     }
 
     /**

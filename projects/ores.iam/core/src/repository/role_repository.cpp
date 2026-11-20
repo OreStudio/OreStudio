@@ -31,9 +31,7 @@
 #include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.iam.core/repository/role_entity.hpp"
 #include "ores.iam.core/repository/role_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -207,7 +205,7 @@ void role_repository::write(const context& ctx, const std::vector<domain::role>&
 void role_repository::write(const context& ctx,
                             const domain::role& v,
                             const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing role. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing role. " << "id: " << v.id;
     const auto t = role_apply_claim(v,
                                     claim,
                                     role_claim_reads_current(claim) ?
@@ -219,7 +217,7 @@ void role_repository::write(const context& ctx,
 void role_repository::write(const context& ctx,
                             const std::vector<domain::role>& v,
                             const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing roles. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing roles. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("role_repository::write: one claim is needed for each row");
     std::vector<domain::role> to_read;
@@ -252,7 +250,7 @@ std::vector<domain::role> role_repository::read_latest(const context& ctx) {
 }
 
 std::vector<domain::role> role_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -269,7 +267,7 @@ std::vector<domain::role> role_repository::read_latest(const context& ctx, const
 
 std::vector<domain::role> role_repository::read_latest_by_name(const context& ctx,
                                                                const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -303,7 +301,7 @@ role_repository::read_latest_by_name(const context& ctx, const std::vector<std::
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest roles by name. Count: " << names.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest roles by name. Count: " << names.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -320,7 +318,7 @@ role_repository::read_latest_by_name(const context& ctx, const std::vector<std::
 
 std::vector<domain::role> role_repository::read_any_by_name(const context& ctx,
                                                             const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any role by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading any role by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "name"_c == name) |
@@ -336,7 +334,7 @@ std::vector<domain::role> role_repository::read_any_by_name(const context& ctx,
 
 
 std::vector<domain::role> role_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all role versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all role versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -352,8 +350,8 @@ std::vector<domain::role> role_repository::read_all(const context& ctx, const st
 
 std::optional<domain::role>
 role_repository::read_at_version(const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading role at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading role at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<role_entity>> |
@@ -375,7 +373,7 @@ role_repository::read_at_version(const context& ctx, const std::string& id, std:
 role_repository::remove_status role_repository::remove(const context& ctx,
                                                        const std::string& id,
                                                        std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing role. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing role. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -413,8 +411,8 @@ role_repository::read_latest(const context& ctx,
                              const ores::utility::domain::order& order,
                              const std::optional<messaging::roles_filter>& filter,
                              const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest roles with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest roles with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -434,7 +432,7 @@ std::uint32_t
 role_repository::get_total_role_count(const context& ctx,
                                       const std::optional<messaging::roles_filter>& filter,
                                       const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active role count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

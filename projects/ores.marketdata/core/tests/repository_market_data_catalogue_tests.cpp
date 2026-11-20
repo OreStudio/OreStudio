@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/feed.hpp"
 #include "ores.marketdata.api/domain/market_data_mapping.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"

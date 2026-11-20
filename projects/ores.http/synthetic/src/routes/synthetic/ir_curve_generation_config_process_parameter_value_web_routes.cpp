@@ -233,7 +233,7 @@ ir_curve_generation_config_process_parameter_value_web_routes::handle_list(const
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -262,7 +262,7 @@ ir_curve_generation_config_process_parameter_value_web_routes::handle_key(const 
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -296,7 +296,7 @@ ir_curve_generation_config_process_parameter_value_web_routes::handle_by(const h
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -338,7 +338,7 @@ ir_curve_generation_config_process_parameter_value_web_routes::handle_put(const 
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -393,7 +393,7 @@ ir_curve_generation_config_process_parameter_value_web_routes::handle_delete(
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -403,7 +403,7 @@ void ir_curve_generation_config_process_parameter_value_web_routes::register_rou
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering ir-parameter-values record routes";
+    ORES_LOG_SEV(lg(), info) << "Registering ir-parameter-values record routes";
 
     auto list_route =
         router->get("/api/synthetic/ir-parameter-values")

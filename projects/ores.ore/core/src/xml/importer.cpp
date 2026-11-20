@@ -153,7 +153,7 @@ std::string importer::validate_currency(const currency& c) {
 }
 
 std::vector<currency> importer::import_currency_config(const std::filesystem::path& path) {
-    BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
+    ORES_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::platform::filesystem;
     return import_currency_config_text(file::read_content(path));
@@ -170,7 +170,7 @@ std::vector<currency> importer::import_currency_config_text(std::string_view tex
     r.reserve(record.currency.size());
     std::ranges::transform(record.currency, std::back_inserter(r), project_currency);
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " currencies.";
+    ORES_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " currencies.";
     return r;
 }
 
@@ -186,7 +186,7 @@ importer::validate_calendar_adjustment(const refdata::messaging::calendar_adjust
 
 std::vector<refdata::messaging::calendar_adjustment>
 importer::import_calendar_adjustments(const std::filesystem::path& path) {
-    BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
+    ORES_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::platform::filesystem;
     return import_calendar_adjustments_text(file::read_content(path));
@@ -210,14 +210,13 @@ importer::import_calendar_adjustments_text(std::string_view text) {
         ca.change_commentary = std::string(audit_commentary);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " calendar adjustments.";
+    ORES_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " calendar adjustments.";
     return r;
 }
 
 std::vector<trade_import_item>
 importer::import_portfolio_with_context(const std::filesystem::path& path) {
-    BOOST_LOG_SEV(lg(), debug) << "Started portfolio import with context: "
-                               << path.generic_string();
+    ORES_LOG_SEV(lg(), debug) << "Started portfolio import with context: " << path.generic_string();
 
     using namespace ores::platform::filesystem;
     const auto text = file::read_content(path);
@@ -227,21 +226,21 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
     for (auto& item : r)
         item.source_file = path;
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " trades with context.";
+    ORES_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " trades with context.";
     return r;
 }
 
 
 domain::conventions_package importer::import_conventions(const std::filesystem::path& path) {
-    BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
+    ORES_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::platform::filesystem;
     const std::string c(file::read_content(path));
-    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
+    ORES_LOG_SEV(lg(), trace) << "File content: " << c;
 
     auto r = domain::split_conventions(domain::conventions_mapper::read(c, path.generic_string()));
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing conventions from " << path.generic_string();
+    ORES_LOG_SEV(lg(), debug) << "Finished importing conventions from " << path.generic_string();
     return r;
 }
 

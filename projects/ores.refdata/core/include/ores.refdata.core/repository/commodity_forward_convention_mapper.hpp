@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COMMODITY_FORWARD_CONVENTION_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COMMODITY_FORWARD_CONVENTION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/commodity_forward_convention.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/commodity_forward_convention_entity.hpp"

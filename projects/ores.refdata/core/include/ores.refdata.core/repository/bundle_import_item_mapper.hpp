@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BUNDLE_IMPORT_ITEM_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BUNDLE_IMPORT_ITEM_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/bundle_import_item.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/bundle_import_item_entity.hpp"

@@ -31,9 +31,7 @@
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.core/repository/publication_entity.hpp"
 #include "ores.dq.core/repository/publication_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -199,7 +197,7 @@ void publication_repository::write(const context& ctx, const std::vector<domain:
 void publication_repository::write(const context& ctx,
                                    const domain::publication& v,
                                    const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing publication. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing publication. " << "id: " << v.id;
     const auto t = publication_apply_claim(v,
                                            claim,
                                            publication_claim_reads_current(claim) ?
@@ -214,7 +212,7 @@ void publication_repository::write(const context& ctx,
 void publication_repository::write(const context& ctx,
                                    const std::vector<domain::publication>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing publications. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing publications. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "publication_repository::write: one claim is needed for each row");
@@ -250,7 +248,7 @@ std::vector<domain::publication> publication_repository::read_latest(const conte
 
 std::vector<domain::publication> publication_repository::read_latest(const context& ctx,
                                                                      const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest publication. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest publication. " << "id: " << id;
     const auto query =
         query_builder::read<std::vector<publication_entity>> | query_builder::where("id"_c == id);
 
@@ -265,7 +263,7 @@ std::vector<domain::publication> publication_repository::read_latest(const conte
 
 std::vector<domain::publication> publication_repository::read_all(const context& ctx,
                                                                   const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all publication versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all publication versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<publication_entity>> |
                        query_builder::where("id"_c == id) | query_builder::order_by("id"_c);
 
@@ -280,7 +278,7 @@ std::vector<domain::publication> publication_repository::read_all(const context&
 
 publication_repository::remove_status publication_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing publication. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing publication. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -306,8 +304,8 @@ publication_repository::read_latest(const context& ctx,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
                                     const std::optional<messaging::publications_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest publications with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest publications with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<publication_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -323,7 +321,7 @@ publication_repository::read_latest(const context& ctx,
 
 std::uint32_t publication_repository::get_total_publication_count(
     const context& ctx, const std::optional<messaging::publications_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active publication count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active publication count";
 
     const auto query = query_builder::read<std::vector<publication_entity>>;
 

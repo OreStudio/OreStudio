@@ -28,7 +28,7 @@
 #include "ores.analytics.api/domain/shift_type.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/shift_type_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::analytics::repository {
 

@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/repository/tick_entitlement.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -64,7 +64,7 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
-        BOOST_LOG_SEV(watchable_feeds_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(watchable_feeds_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -79,8 +79,7 @@ public:
         }
         const auto req = decode<list_watchable_feeds_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(watchable_feeds_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(watchable_feeds_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -92,14 +91,14 @@ public:
             try {
                 resp.feeds = repository::watchable_feeds(req_ctx, req->for_display);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(watchable_feeds_handler_lg(), error)
+                ORES_LOG_SEV(watchable_feeds_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
                 resp.result.outcome = ores::utility::domain::outcome::failed;
                 resp.result.code = "internal_error";
                 resp.result.message = e.what();
             }
         }
-        BOOST_LOG_SEV(watchable_feeds_handler_lg(), debug)
+        ORES_LOG_SEV(watchable_feeds_handler_lg(), debug)
             << "Completed " << msg.subject << " tenant=" << req_ctx.tenant_id().to_string()
             << " for_display=" << req->for_display << " feeds=" << resp.feeds.size();
         reply(nats_, msg, resp);

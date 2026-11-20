@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/cancellation_signal.hpp>
 #include <atomic>

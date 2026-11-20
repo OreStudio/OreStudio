@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/variance_calibration.hpp"
 #include "ores.synthetic.api/messaging/variance_calibration_protocol.hpp"
 #include "ores.synthetic.core/repository/variance_calibration_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -510,12 +508,12 @@ ores::utility::domain::result variance_calibration_service::prepare_change(
 std::vector<domain::variance_calibration>
 variance_calibration_service::list_variance_calibrations(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all variance calibrations";
+    ORES_LOG_SEV(lg(), debug) << "Listing all variance calibrations";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t variance_calibration_service::count_variance_calibrations() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total variance calibrations count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total variance calibrations count";
     return repo_.get_total_variance_calibration_count(ctx_);
 }
 
@@ -523,14 +521,14 @@ std::uint32_t variance_calibration_service::count_variance_calibrations() {
 std::optional<domain::variance_calibration>
 variance_calibration_service::get_variance_calibration_at_version(const boost::uuids::uuid& id,
                                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting variance calibration at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting variance calibration at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::variance_calibration>
 variance_calibration_service::get_variance_calibration(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting variance calibration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting variance calibration. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -546,11 +544,11 @@ void variance_calibration_service::save_variance_calibration(
     const domain::variance_calibration& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Variance Calibration id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving variance calibration. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving variance calibration. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved variance calibration. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved variance calibration. " << "id: " << v.id;
 }
 
 void variance_calibration_service::save_variance_calibrations(
@@ -559,8 +557,8 @@ void variance_calibration_service::save_variance_calibrations(
         if (e.id.is_nil())
             throw std::invalid_argument("Variance Calibration id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << variance_calibrations.size()
-                               << " variance calibrations";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << variance_calibrations.size()
+                              << " variance calibrations";
     auto ts = variance_calibrations;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -569,9 +567,9 @@ void variance_calibration_service::save_variance_calibrations(
 }
 
 void variance_calibration_service::delete_variance_calibration(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing variance calibration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing variance calibration. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed variance calibration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed variance calibration. " << "id: " << id;
 }
 
 void variance_calibration_service::delete_variance_calibrations(
@@ -581,7 +579,7 @@ void variance_calibration_service::delete_variance_calibrations(
 
 std::vector<domain::variance_calibration>
 variance_calibration_service::get_variance_calibration_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for variance calibration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for variance calibration. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

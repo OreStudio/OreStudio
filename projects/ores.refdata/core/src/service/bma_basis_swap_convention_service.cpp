@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/bma_basis_swap_convention.hpp"
 #include "ores.refdata.api/messaging/bma_basis_swap_convention_protocol.hpp"
 #include "ores.refdata.core/repository/bma_basis_swap_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -474,12 +472,12 @@ ores::utility::domain::result bma_basis_swap_convention_service::prepare_change(
 std::vector<domain::bma_basis_swap_convention>
 bma_basis_swap_convention_service::list_bma_basis_swap_conventions(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all BMA basis swap conventions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all BMA basis swap conventions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bma_basis_swap_convention_service::count_bma_basis_swap_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total BMA basis swap conventions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total BMA basis swap conventions count";
     return repo_.get_total_bma_basis_swap_convention_count(ctx_);
 }
 
@@ -487,14 +485,14 @@ std::uint32_t bma_basis_swap_convention_service::count_bma_basis_swap_convention
 std::optional<domain::bma_basis_swap_convention>
 bma_basis_swap_convention_service::get_bma_basis_swap_convention_at_version(const std::string& id,
                                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting BMA basis swap convention at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting BMA basis swap convention at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::bma_basis_swap_convention>
 bma_basis_swap_convention_service::get_bma_basis_swap_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting BMA basis swap convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting BMA basis swap convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -511,11 +509,11 @@ void bma_basis_swap_convention_service::save_bma_basis_swap_convention(
     const domain::bma_basis_swap_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("BMA Basis Swap Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving BMA basis swap convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving BMA basis swap convention. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved BMA basis swap convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved BMA basis swap convention. " << "id: " << v.id;
 }
 
 void bma_basis_swap_convention_service::save_bma_basis_swap_conventions(
@@ -524,8 +522,8 @@ void bma_basis_swap_convention_service::save_bma_basis_swap_conventions(
         if (e.id.empty())
             throw std::invalid_argument("BMA Basis Swap Convention id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << bma_basis_swap_conventions.size()
-                               << " BMA basis swap conventions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << bma_basis_swap_conventions.size()
+                              << " BMA basis swap conventions";
     auto ts = bma_basis_swap_conventions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -534,9 +532,9 @@ void bma_basis_swap_convention_service::save_bma_basis_swap_conventions(
 }
 
 void bma_basis_swap_convention_service::delete_bma_basis_swap_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing BMA basis swap convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing BMA basis swap convention. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed BMA basis swap convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed BMA basis swap convention. " << "id: " << id;
 }
 
 void bma_basis_swap_convention_service::delete_bma_basis_swap_conventions(
@@ -546,7 +544,7 @@ void bma_basis_swap_convention_service::delete_bma_basis_swap_conventions(
 
 std::vector<domain::bma_basis_swap_convention>
 bma_basis_swap_convention_service::get_bma_basis_swap_convention_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for BMA basis swap convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for BMA basis swap convention. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/refdata/convention_screen_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
@@ -52,7 +52,7 @@ family_named(const std::vector<convention_screen_routes::family>& all, std::stri
 TEST_CASE("convention_families_are_the_registry_less_what_a_composite_stands_for",
           "[convention_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the families the screen lists against the registry";
+    ORES_LOG_SEV(lg, info) << "Testing the families the screen lists against the registry";
 
     // The registry families each composite stands for, as the BFF stated them.
     const std::set<std::string> absorbed{"convention",
@@ -116,7 +116,7 @@ TEST_CASE("convention_families_are_the_registry_less_what_a_composite_stands_for
 
 TEST_CASE("convention_central_row_has_its_groups_flattened", "[convention_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a central row's groups under their own names";
+    ORES_LOG_SEV(lg, info) << "Testing a central row's groups under their own names";
 
     const auto flat = convention_screen_routes::flatten_central(
         R"({"identity":{"id":"a","version":3,"party_id":"p"},"payload":{"kind_code":"K"},"note":"n","list":[1]})");
@@ -125,7 +125,7 @@ TEST_CASE("convention_central_row_has_its_groups_flattened", "[convention_screen
 
 TEST_CASE("convention_parts_lay_their_terms_over_the_central_row", "[convention_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the zip of a composite's parts";
+    ORES_LOG_SEV(lg, info) << "Testing the zip of a composite's parts";
 
     const std::string central = R"({"id":"a","version":3,"party_id":"p","kind_code":"K"})";
     const std::string item =
@@ -143,7 +143,7 @@ TEST_CASE("convention_parts_lay_their_terms_over_the_central_row", "[convention_
 
 TEST_CASE("convention_routes_refuse_a_malformed_request_before_forwarding", "[convention_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing each route's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing each route's refusals";
 
     const auto missing = answer_at<convention_screen_routes>(
         http_method::get, "/api/conventions/nope", http_request{}, "/api/conventions/{family}");
@@ -176,7 +176,7 @@ TEST_CASE("convention_routes_refuse_a_malformed_request_before_forwarding", "[co
 
 TEST_CASE("convention_routes_forward_a_well_formed_request", "[convention_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an accepted request reaches the service";
+    ORES_LOG_SEV(lg, info) << "Testing that an accepted request reaches the service";
 
     // The client is not connected, so an accepted request fails at the forward step.
     CHECK(answer_at<convention_screen_routes>(http_method::get,

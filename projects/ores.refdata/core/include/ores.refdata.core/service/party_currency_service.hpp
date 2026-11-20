@@ -26,7 +26,7 @@
 #define ORES_REFDATA_SERVICE_PARTY_CURRENCY_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party_currency.hpp"
 #include "ores.refdata.api/messaging/party_currency_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

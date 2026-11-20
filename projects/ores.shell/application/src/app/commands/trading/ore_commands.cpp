@@ -558,7 +558,7 @@ void ore_commands::process_upload(std::ostream& out,
     const auto bucket = std::string(ores::ore::net::ore_storage::bucket);
     const auto key = ores::ore::net::ore_storage::import_key(effective_id);
 
-    BOOST_LOG_SEV(lg(), info) << "Uploading " << src_dir << " to " << bucket << "/" << key;
+    ORES_LOG_SEV(lg(), info) << "Uploading " << src_dir << " to " << bucket << "/" << key;
 
     try {
         ores::storage::net::storage_transfer transfer(default_http_base_url(),
@@ -642,7 +642,7 @@ void ore_commands::process_import(std::ostream& out,
     req.correlation_id = request_id;
     req.import_choices_json = ores::utility::codec::object::write_json(choices);
 
-    BOOST_LOG_SEV(lg(), info) << "Starting ORE import for request: " << request_id;
+    ORES_LOG_SEV(lg(), info) << "Starting ORE import for request: " << request_id;
 
     auto result = do_auth_request<ores::ore::messaging::ore_import_response>(
         out, session, req.nats_subject, req, import_request_timeout);
@@ -662,7 +662,7 @@ void ore_commands::process_import(std::ostream& out,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ORE import workflow dispatched: " << result->workflow_instance_id;
+    ORES_LOG_SEV(lg(), info) << "ORE import workflow dispatched: " << result->workflow_instance_id;
     out << "workflow_instance_id: " << result->workflow_instance_id << std::endl;
 
     if (!workflow_run_commands::wait_for_instance(
@@ -679,8 +679,8 @@ void ore_commands::process_export(std::ostream& out,
     req.node_id = node_id;
     req.limit = static_cast<int>(limit);
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting portfolio export (node: "
-                              << (node_id.empty() ? "all" : node_id) << ")";
+    ORES_LOG_SEV(lg(), info) << "Requesting portfolio export (node: "
+                             << (node_id.empty() ? "all" : node_id) << ")";
 
     auto result = do_auth_request<ores::trading::messaging::export_portfolio_response>(
         out, session, req.nats_subject, req, export_request_timeout);
@@ -766,8 +766,8 @@ void ore_commands::process_import_run(std::ostream& out,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Run configuration import dispatched: "
-                              << result->workflow_instance_id;
+    ORES_LOG_SEV(lg(), info) << "Run configuration import dispatched: "
+                             << result->workflow_instance_id;
     out << "workflow_instance_id: " << result->workflow_instance_id << std::endl;
     if (!workflow_run_commands::wait_for_instance(
             out, session, result->workflow_instance_id, default_import_timeout, 1))

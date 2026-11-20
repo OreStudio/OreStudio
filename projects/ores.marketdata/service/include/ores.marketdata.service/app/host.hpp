@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_HOST_HPP
 #define ORES_MARKETDATA_SERVICE_APP_HOST_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <ostream>

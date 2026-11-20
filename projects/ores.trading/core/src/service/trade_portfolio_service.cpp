@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/trade_portfolio.hpp"
 #include "ores.trading.api/messaging/trade_portfolio_protocol.hpp"
 #include "ores.trading.core/repository/trade_portfolio_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -499,42 +497,41 @@ trade_portfolio_service::prepare_change(const messaging::trade_portfolio_change&
 
 std::vector<domain::trade_portfolio>
 trade_portfolio_service::list_trade_portfolios(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade portfolios";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade portfolios";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_portfolio_service::count_trade_portfolios() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade portfolios count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade portfolios count";
     return repo_.get_total_trade_portfolio_count(ctx_);
 }
 
 
 std::vector<domain::trade_portfolio> trade_portfolio_service::list_trade_portfolios_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing trade portfolios by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing trade portfolios by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t
 trade_portfolio_service::count_trade_portfolios_by_trade_id(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade portfolios count by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade portfolios count by trade_id: " << trade_id;
     return repo_.get_total_trade_portfolio_count_by_trade_id(ctx_, trade_id);
 }
 
 
 std::optional<domain::trade_portfolio> trade_portfolio_service::get_trade_portfolio_at_version(
     const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade portfolio at version. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade portfolio at version. " << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::trade_portfolio>
 trade_portfolio_service::get_trade_portfolio(const std::string& trade_id,
                                              const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade portfolio. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade portfolio. " << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -550,13 +547,13 @@ trade_portfolio_service::get_trade_portfolios(const std::vector<std::string>& tr
 void trade_portfolio_service::save_trade_portfolio(const domain::trade_portfolio& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Trade Portfolio trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade portfolio. " << "trade_id: " << v.trade_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade portfolio. " << "trade_id: " << v.trade_id
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade portfolio. " << "trade_id: " << v.trade_id
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved trade portfolio. " << "trade_id: " << v.trade_id
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void trade_portfolio_service::save_trade_portfolios(
@@ -565,7 +562,7 @@ void trade_portfolio_service::save_trade_portfolios(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Trade Portfolio trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << trade_portfolios.size() << " trade portfolios";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << trade_portfolios.size() << " trade portfolios";
     auto ts = trade_portfolios;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -575,11 +572,11 @@ void trade_portfolio_service::save_trade_portfolios(
 
 void trade_portfolio_service::delete_trade_portfolio(const std::string& trade_id,
                                                      const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade portfolio. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed trade portfolio. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing trade portfolio. " << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed trade portfolio. " << "trade_id: " << trade_id
+                             << " sequence_number: " << sequence_number;
 }
 
 void trade_portfolio_service::delete_trade_portfolios(
@@ -590,9 +587,8 @@ void trade_portfolio_service::delete_trade_portfolios(
 std::vector<domain::trade_portfolio>
 trade_portfolio_service::get_trade_portfolio_history(const std::string& trade_id,
                                                      const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade portfolio. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade portfolio. " << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 

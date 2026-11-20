@@ -94,7 +94,7 @@ const Part* at_most_one(const std::vector<Part>& parts, std::string_view convent
 
 ores::refdata::messaging::commodity_future_convention_item
 conventions_mapper::map_commodity_future(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping commodity future convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping commodity future convention: " << text_of(v, "Id");
 
     ores::refdata::messaging::commodity_future_convention_item r;
     refdata::domain::convention central;

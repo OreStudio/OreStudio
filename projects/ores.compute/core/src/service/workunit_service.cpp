@@ -26,7 +26,6 @@
 #include "ores.compute.api/domain/workunit.hpp"
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.compute.core/repository/workunit_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -487,37 +485,37 @@ workunit_service::prepare_change(const messaging::workunit_change& change,
 
 std::vector<domain::workunit> workunit_service::list_workunits(std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all workunits";
+    ORES_LOG_SEV(lg(), debug) << "Listing all workunits";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t workunit_service::count_workunits() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total workunits count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total workunits count";
     return repo_.get_total_workunit_count(ctx_);
 }
 
 
 std::vector<domain::workunit> workunit_service::list_workunits_by_batch_id(
     const std::string& batch_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing workunits by batch_id: " << batch_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing workunits by batch_id: " << batch_id;
     return repo_.read_latest_by_batch_id(ctx_, batch_id, offset, limit);
 }
 
 std::uint32_t workunit_service::count_workunits_by_batch_id(const std::string& batch_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total workunits count by batch_id: " << batch_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total workunits count by batch_id: " << batch_id;
     return repo_.get_total_workunit_count_by_batch_id(ctx_, batch_id);
 }
 
 
 std::optional<domain::workunit>
 workunit_service::get_workunit_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting workunit at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting workunit at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::workunit> workunit_service::get_workunit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting workunit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting workunit. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -531,11 +529,11 @@ std::vector<domain::workunit> workunit_service::get_workunits(const std::vector<
 void workunit_service::save_workunit(const domain::workunit& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Workunit id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving workunit. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving workunit. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved workunit. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved workunit. " << "id: " << v.id;
 }
 
 void workunit_service::save_workunits(const std::vector<domain::workunit>& workunits) {
@@ -543,7 +541,7 @@ void workunit_service::save_workunits(const std::vector<domain::workunit>& worku
         if (e.id.is_nil())
             throw std::invalid_argument("Workunit id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << workunits.size() << " workunits";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << workunits.size() << " workunits";
     auto ts = workunits;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -552,9 +550,9 @@ void workunit_service::save_workunits(const std::vector<domain::workunit>& worku
 }
 
 void workunit_service::delete_workunit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing workunit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing workunit. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed workunit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed workunit. " << "id: " << id;
 }
 
 void workunit_service::delete_workunits(const std::vector<std::string>& ids) {
@@ -562,7 +560,7 @@ void workunit_service::delete_workunits(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::workunit> workunit_service::get_workunit_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for workunit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for workunit. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

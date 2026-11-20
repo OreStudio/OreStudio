@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_PARTY_ID_SCHEME_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

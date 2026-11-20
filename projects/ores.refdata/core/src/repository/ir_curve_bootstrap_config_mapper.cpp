@@ -24,12 +24,10 @@
  */
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
@@ -42,7 +40,7 @@ using namespace ores::database::repository;
 
 domain::ir_curve_bootstrap_config
 ir_curve_bootstrap_config_mapper::map(const ir_curve_bootstrap_config_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::ir_curve_bootstrap_config r;
     r.version = v.version;
@@ -65,13 +63,13 @@ ir_curve_bootstrap_config_mapper::map(const ir_curve_bootstrap_config_entity& v)
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 ir_curve_bootstrap_config_entity
 ir_curve_bootstrap_config_mapper::map(const domain::ir_curve_bootstrap_config& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     ir_curve_bootstrap_config_entity r;
     r.id = v.id;
@@ -93,7 +91,7 @@ ir_curve_bootstrap_config_mapper::map(const domain::ir_curve_bootstrap_config& v
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

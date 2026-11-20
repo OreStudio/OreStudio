@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.core/service/series_identity_lister.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
@@ -179,11 +179,11 @@ series_identity_lister::list(const ores::database::context& ctx,
     if (response.series.size() > max_series) {
         response.series.resize(max_series);
         response.truncated = true;
-        BOOST_LOG_SEV(series_identity_lister_lg(), info)
+        ORES_LOG_SEV(series_identity_lister_lg(), info)
             << "The series list was cut at " << max_series;
     }
     response.success = true;
-    BOOST_LOG_SEV(series_identity_lister_lg(), debug)
+    ORES_LOG_SEV(series_identity_lister_lg(), debug)
         << "Listed " << response.series.size() << " series identities";
     return response;
 }

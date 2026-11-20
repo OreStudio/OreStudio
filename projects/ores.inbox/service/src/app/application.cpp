@@ -79,7 +79,7 @@ constexpr std::string_view service_version = ORES_VERSION;
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.inbox.service", 0, 1);
 
     ores::nats::service::client nats(cfg.nats);
@@ -118,7 +118,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     events.push_back(
         msg::register_notification_preference_event_mapping(event_source, event_bus, nats));
     event_source.start();
-    BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+    ORES_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
     // The two sweeps are the scheduler's to fire, so the service puts their jobs
     // in before it serves anything. One closes what nobody answered, including

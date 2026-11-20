@@ -147,7 +147,7 @@ void {{entity_singular}}_operations_commands::register_commands(cli::Menu& root_
 
 void {{entity_singular}}_operations_commands::process_{{identifier}}(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating {{command}} request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating {{command}} request.";
 
     using request_type = {{namespace}}::{{request}};
 

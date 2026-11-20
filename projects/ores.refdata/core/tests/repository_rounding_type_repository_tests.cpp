@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/rounding_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/rounding_type_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -49,7 +47,7 @@ TEST_CASE("write_single_rounding_type", "[repository]") {
     auto rt = generate_synthetic_rounding_type(ctx);
     rt.code = rt.code + "_" + std::string(faker::string::alphanumeric(8));
     rt.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Rounding type: " << rt;
+    ORES_LOG_SEV(lg, debug) << "Rounding type: " << rt;
 
     rounding_type_repository repo;
     repo.write(h.context(), rt);
@@ -75,7 +73,7 @@ TEST_CASE("read_latest_rounding_types_no_duplicate_codes", "[repository]") {
     // system-tenant seed rows appear alongside the tenant's provisioned
     // copies, duplicating every code in the UI.
     auto read_rounding_types = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read rounding types: " << read_rounding_types;
+    ORES_LOG_SEV(lg, debug) << "Read rounding types: " << read_rounding_types;
 
     const auto it = std::ranges::find_if(read_rounding_types,
                                          [&](const auto& rt) { return rt.code == written.code; });
@@ -97,7 +95,7 @@ TEST_CASE("read_latest_rounding_type_by_code", "[repository]") {
     rt.code = rt.code + "_" + std::string(faker::string::alphanumeric(8));
     rt.change_reason_code = "system.test";
     const auto original_name = rt.name;
-    BOOST_LOG_SEV(lg, debug) << "Rounding type: " << rt;
+    ORES_LOG_SEV(lg, debug) << "Rounding type: " << rt;
 
     rounding_type_repository repo;
     repo.write(h.context(), rt);
@@ -106,7 +104,7 @@ TEST_CASE("read_latest_rounding_type_by_code", "[repository]") {
     repo.write(h.context(), rt);
 
     auto read_rounding_types = repo.read_latest(h.context(), rt.code);
-    BOOST_LOG_SEV(lg, debug) << "Read rounding types: " << read_rounding_types;
+    ORES_LOG_SEV(lg, debug) << "Read rounding types: " << read_rounding_types;
 
     REQUIRE(read_rounding_types.size() == 1);
     CHECK(read_rounding_types[0].code == rt.code);
@@ -128,10 +126,10 @@ TEST_CASE("read_nonexistent_rounding_type_code", "[repository]") {
     repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_rounding_types = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read rounding types: " << read_rounding_types;
+    ORES_LOG_SEV(lg, debug) << "Read rounding types: " << read_rounding_types;
 
     const auto answered_with_another_key = std::ranges::any_of(
         read_rounding_types, [&](const auto& rt) { return rt.code == nonexistent_code; });

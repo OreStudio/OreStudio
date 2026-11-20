@@ -28,7 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/messaging/role_grant_request_role_protocol.hpp"
 #include "ores.iam.core/service/role_grant_request_role_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -74,7 +74,7 @@ public:
      * @brief Serves iam.v1.role_grant_request_roles.list.
      */
     void list_role_grant_request_roles(ores::nats::message msg) {
-        BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,7 +89,7 @@ public:
         }
         auto req = decode<list_role_grant_request_roles_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -97,14 +97,14 @@ public:
         service::role_grant_request_role_service svc(req_ctx);
         try {
             auto response = svc.list_role_grant_request_roles(*req);
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), error)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_role_grant_request_roles_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -118,7 +118,7 @@ public:
      * @brief Serves iam.v1.role_grant_request_roles.get.
      */
     void get_role_grant_request_role(ores::nats::message msg) {
-        BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -133,7 +133,7 @@ public:
         }
         auto req = decode<get_role_grant_request_role_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -141,14 +141,14 @@ public:
         service::role_grant_request_role_service svc(req_ctx);
         try {
             auto response = svc.get_role_grant_request_role(*req);
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), error)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_role_grant_request_role_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -162,7 +162,7 @@ public:
      * @brief Serves iam.v1.role_grant_request_roles.get_many.
      */
     void get_many_role_grant_request_roles(ores::nats::message msg) {
-        BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -177,7 +177,7 @@ public:
         }
         auto req = decode<get_many_role_grant_request_roles_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -185,14 +185,14 @@ public:
         service::role_grant_request_role_service svc(req_ctx);
         try {
             auto response = svc.get_many_role_grant_request_roles(*req);
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), error)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_role_grant_request_roles_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -206,7 +206,7 @@ public:
      * @brief Serves iam.v1.role_grant_request_roles.put.
      */
     void put_role_grant_request_role(ores::nats::message msg) {
-        BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -221,7 +221,7 @@ public:
         }
         auto req = decode<put_role_grant_request_role_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -229,14 +229,14 @@ public:
         service::role_grant_request_role_service svc(req_ctx);
         try {
             auto response = svc.put_role_grant_request_role(*req);
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), error)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_role_grant_request_role_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -250,7 +250,7 @@ public:
      * @brief Serves iam.v1.role_grant_request_roles.put_many.
      */
     void put_many_role_grant_request_roles(ores::nats::message msg) {
-        BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -265,7 +265,7 @@ public:
         }
         auto req = decode<put_many_role_grant_request_roles_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -273,14 +273,14 @@ public:
         service::role_grant_request_role_service svc(req_ctx);
         try {
             auto response = svc.put_many_role_grant_request_roles(*req);
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), error)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_role_grant_request_roles_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -294,7 +294,7 @@ public:
      * @brief Serves iam.v1.role_grant_request_roles.delete.
      */
     void delete_role_grant_request_role(ores::nats::message msg) {
-        BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -309,7 +309,7 @@ public:
         }
         auto req = decode<delete_role_grant_request_role_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -317,14 +317,14 @@ public:
         service::role_grant_request_role_service svc(req_ctx);
         try {
             auto response = svc.delete_role_grant_request_role(*req);
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), error)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_role_grant_request_role_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -338,7 +338,7 @@ public:
      * @brief Serves iam.v1.role_grant_request_roles.delete_many.
      */
     void delete_many_role_grant_request_roles(ores::nats::message msg) {
-        BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -353,7 +353,7 @@ public:
         }
         auto req = decode<delete_many_role_grant_request_roles_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -361,14 +361,14 @@ public:
         service::role_grant_request_role_service svc(req_ctx);
         try {
             auto response = svc.delete_many_role_grant_request_roles(*req);
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), error)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_role_grant_request_roles_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -382,7 +382,7 @@ public:
      * @brief Serves iam.v1.role_grant_request_roles.list_by_request_id.
      */
     void list_by_request_id_role_grant_request_roles(ores::nats::message msg) {
-        BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -397,7 +397,7 @@ public:
         }
         auto req = decode<list_by_request_id_role_grant_request_roles_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -405,14 +405,14 @@ public:
         service::role_grant_request_role_service svc(req_ctx);
         try {
             auto response = svc.list_by_request_id_role_grant_request_roles(*req);
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), debug)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(role_grant_request_role_handler_lg(), error)
+            ORES_LOG_SEV(role_grant_request_role_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_request_id_role_grant_request_roles_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

@@ -80,7 +80,7 @@ void signup_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering signup routes";
+    ORES_LOG_SEV(lg(), info) << "Registering signup routes";
 
     auto signup_route =
         router->post("/api/v1/iam/ops/signup")
@@ -96,7 +96,7 @@ void signup_routes::register_routes(
     router->add_route(signup_built);
     registry->register_route(signup_built);
 
-    BOOST_LOG_SEV(lg(), info) << "signup routes registered: " << 1 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "signup routes registered: " << 1 << " endpoint(s)";
 }
 
 }

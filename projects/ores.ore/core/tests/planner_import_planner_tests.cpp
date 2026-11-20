@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
@@ -129,7 +129,7 @@ TEST_CASE("plan_includes_all_currencies_when_mode_is_all", "[ore][planner][impor
     ore_import_planner planner(sr, {}, choices);
     const auto plan = planner.plan();
 
-    BOOST_LOG_SEV(lg, info) << "Currencies in plan: " << plan.currencies.size();
+    ORES_LOG_SEV(lg, info) << "Currencies in plan: " << plan.currencies.size();
     CHECK(!plan.currencies.empty());
 }
 
@@ -152,7 +152,7 @@ TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only",
     ore_import_planner planner_all(sr, {}, choices);
     const auto plan_all = planner_all.plan();
     const std::size_t total = plan_all.currencies.size();
-    BOOST_LOG_SEV(lg, info) << "All currencies: " << total;
+    ORES_LOG_SEV(lg, info) << "All currencies: " << total;
 
     // Collect all ISO codes from the plan
     std::set<std::string> all_codes;
@@ -163,7 +163,7 @@ TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only",
     ore_import_planner planner_none(sr, all_codes, choices);
     const auto plan_none = planner_none.plan();
 
-    BOOST_LOG_SEV(lg, info) << "Currencies after filtering: " << plan_none.currencies.size();
+    ORES_LOG_SEV(lg, info) << "Currencies after filtering: " << plan_none.currencies.size();
     CHECK(plan_none.currencies.empty());
 
     // Third run — mark only half as existing
@@ -176,7 +176,7 @@ TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only",
         }
         ore_import_planner planner_half(sr, half_codes, choices);
         const auto plan_half = planner_half.plan();
-        BOOST_LOG_SEV(lg, info) << "Currencies with half filtered: " << plan_half.currencies.size();
+        ORES_LOG_SEV(lg, info) << "Currencies with half filtered: " << plan_half.currencies.size();
         CHECK(plan_half.currencies.size() < total);
         CHECK(plan_half.currencies.size() > 0);
     }
@@ -217,9 +217,9 @@ TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files",
     ore_import_planner planner(sr, {}, choices);
     const auto plan = planner.plan();
 
-    BOOST_LOG_SEV(lg, info) << "Portfolios: " << plan.portfolios.size()
-                            << ", Books: " << plan.books.size()
-                            << ", Trades: " << plan.trades.size();
+    ORES_LOG_SEV(lg, info) << "Portfolios: " << plan.portfolios.size()
+                           << ", Books: " << plan.books.size()
+                           << ", Trades: " << plan.trades.size();
 
     // With create_parent_portfolio, we always have at least one portfolio
     CHECK(!plan.portfolios.empty());
@@ -266,7 +266,7 @@ TEST_CASE("the_same_import_planned_twice_names_the_same_trades", "[ore][planner]
     for (const auto& trade : second.trades)
         second_ids.push_back(boost::uuids::to_string(trade.anchor.id));
 
-    BOOST_LOG_SEV(lg, info) << "Planned " << first_ids.size() << " trades twice";
+    ORES_LOG_SEV(lg, info) << "Planned " << first_ids.size() << " trades twice";
     CHECK(first_ids == second_ids);
     // Distinct within one plan, or the second trade of a file would collide
     // with the first when it is booked.
@@ -302,9 +302,9 @@ TEST_CASE("plan_with_parent_portfolio_has_one_extra_portfolio", "[ore][planner][
     ore_import_planner p2(sr, {}, choices_with_parent);
     const auto plan_with_parent = p2.plan();
 
-    BOOST_LOG_SEV(lg, info) << "Without parent: " << plan_no_parent.portfolios.size()
-                            << " portfolios. With parent: " << plan_with_parent.portfolios.size()
-                            << " portfolios.";
+    ORES_LOG_SEV(lg, info) << "Without parent: " << plan_no_parent.portfolios.size()
+                           << " portfolios. With parent: " << plan_with_parent.portfolios.size()
+                           << " portfolios.";
 
     CHECK(plan_with_parent.portfolios.size() == plan_no_parent.portfolios.size() + 1);
 
@@ -382,7 +382,7 @@ TEST_CASE("plan_trades_have_book_id_and_portfolio_id_stamped", "[ore][planner][i
         CHECK(item.booking.trade_id == item.anchor.id);
     }
 
-    BOOST_LOG_SEV(lg, info) << "All " << plan.trades.size() << " trades have a book";
+    ORES_LOG_SEV(lg, info) << "All " << plan.trades.size() << " trades have a book";
 }
 
 TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", "[ore][planner][import_planner]") {
@@ -483,7 +483,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", "[ore][planner][im
     }
 
     CHECK(checked > 0);
-    BOOST_LOG_SEV(lg, info) << "Verified instrument.trade_id key for " << checked << " trade(s)";
+    ORES_LOG_SEV(lg, info) << "Verified instrument.trade_id key for " << checked << " trade(s)";
 }
 
 TEST_CASE("plan_trade_defaults_override_parsed_values", "[ore][planner][import_planner]") {

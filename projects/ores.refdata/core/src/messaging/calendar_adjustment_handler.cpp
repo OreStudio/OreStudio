@@ -19,8 +19,7 @@
  */
 #include "ores.refdata.core/messaging/calendar_adjustment_handler.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
@@ -29,7 +28,6 @@
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <exception>
 #include <optional>
 #include <utility>
@@ -57,7 +55,7 @@ calendar_adjustment_handler::calendar_adjustment_handler(
     , verifier_(verifier) {}
 
 void calendar_adjustment_handler::get(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
+    ORES_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
     auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
     if (!req_ctx_expected) {
         error_reply(nats_, msg, req_ctx_expected.error());
@@ -68,19 +66,19 @@ void calendar_adjustment_handler::get(ores::nats::message msg) {
         try {
             service::calendar_adjustment_export_service svc(req_ctx);
             auto adjustments = svc.assemble(req->calendar_codes);
-            BOOST_LOG_SEV(lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   get_calendar_adjustments_response{.adjustments = std::move(adjustments),
                                                     .success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   get_calendar_adjustments_response{.success = false, .message = e.what()});
         }
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to decode: " << msg.subject;
+        ORES_LOG_SEV(lg(), warn) << "Failed to decode: " << msg.subject;
         error_reply(nats_, msg, ores::service::error_code::bad_request);
     }
 }

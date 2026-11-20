@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_FX_VOL_SURFACE_FEED_CONTRIBUTOR_MAPPER_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_FX_VOL_SURFACE_FEED_CONTRIBUTOR_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed_contributor.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/fx_vol_surface_feed_contributor_entity.hpp"

@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PAYMENT_FREQUENCY_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PAYMENT_FREQUENCY_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/payment_frequency.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/payment_frequency_entity.hpp"

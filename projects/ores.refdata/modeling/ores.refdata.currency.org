@@ -596,7 +596,7 @@ in the UI yet; out of scope for this sync, tracked separately).
 #+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
 std::vector<domain::currency> currency_service::list_currencies_for_party(
     const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing currencies for party: " << party_id
+    ORES_LOG_SEV(lg(), debug) << "Listing currencies for party: " << party_id
                                << " offset=" << offset << " limit=" << limit;
 
     const auto junctions = junction_repo_.read_latest_by_party(party_id);
@@ -620,7 +620,7 @@ std::vector<domain::currency> currency_service::list_currencies_for_party(
 }
 
 std::uint32_t currency_service::count_currencies_for_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Counting currencies for party: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Counting currencies for party: " << party_id;
     const auto junctions = junction_repo_.read_latest_by_party(party_id);
     return static_cast<std::uint32_t>(junctions.size());
 }

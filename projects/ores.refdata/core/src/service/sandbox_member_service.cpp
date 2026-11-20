@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/sandbox_member.hpp"
 #include "ores.refdata.api/messaging/sandbox_member_protocol.hpp"
 #include "ores.refdata.core/repository/sandbox_member_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -546,40 +544,40 @@ sandbox_member_service::prepare_change(const messaging::sandbox_member_change& c
 
 std::vector<domain::sandbox_member>
 sandbox_member_service::list_sandbox_members(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all sandbox members";
+    ORES_LOG_SEV(lg(), debug) << "Listing all sandbox members";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t sandbox_member_service::count_sandbox_members() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total sandbox members count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total sandbox members count";
     return repo_.get_total_sandbox_member_count(ctx_);
 }
 
 
 std::vector<domain::sandbox_member> sandbox_member_service::list_sandbox_members_by_sandbox_id(
     const std::string& sandbox_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing sandbox members by sandbox_id: " << sandbox_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing sandbox members by sandbox_id: " << sandbox_id;
     return repo_.read_latest_by_sandbox_id(ctx_, sandbox_id, offset, limit);
 }
 
 std::uint32_t
 sandbox_member_service::count_sandbox_members_by_sandbox_id(const std::string& sandbox_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total sandbox members count by sandbox_id: "
-                               << sandbox_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total sandbox members count by sandbox_id: "
+                              << sandbox_id;
     return repo_.get_total_sandbox_member_count_by_sandbox_id(ctx_, sandbox_id);
 }
 
 std::vector<domain::sandbox_member> sandbox_member_service::list_sandbox_members_by_sandbox_id(
     const boost::uuids::uuid& sandbox_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing sandbox members by sandbox_id: " << sandbox_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing sandbox members by sandbox_id: " << sandbox_id;
     return repo_.read_latest_by_sandbox_id(
         ctx_, boost::uuids::to_string(sandbox_id), offset, limit);
 }
 
 std::uint32_t
 sandbox_member_service::count_sandbox_members_by_sandbox_id(const boost::uuids::uuid& sandbox_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total sandbox members count by sandbox_id: "
-                               << sandbox_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total sandbox members count by sandbox_id: "
+                              << sandbox_id;
     return repo_.get_total_sandbox_member_count_by_sandbox_id(ctx_,
                                                               boost::uuids::to_string(sandbox_id));
 }
@@ -587,28 +585,28 @@ sandbox_member_service::count_sandbox_members_by_sandbox_id(const boost::uuids::
 
 std::vector<domain::sandbox_member> sandbox_member_service::list_sandbox_members_by_account_id(
     const std::string& account_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing sandbox members by account_id: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing sandbox members by account_id: " << account_id;
     return repo_.read_latest_by_account_id(ctx_, account_id, offset, limit);
 }
 
 std::uint32_t
 sandbox_member_service::count_sandbox_members_by_account_id(const std::string& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total sandbox members count by account_id: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total sandbox members count by account_id: "
+                              << account_id;
     return repo_.get_total_sandbox_member_count_by_account_id(ctx_, account_id);
 }
 
 std::vector<domain::sandbox_member> sandbox_member_service::list_sandbox_members_by_account_id(
     const boost::uuids::uuid& account_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing sandbox members by account_id: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing sandbox members by account_id: " << account_id;
     return repo_.read_latest_by_account_id(
         ctx_, boost::uuids::to_string(account_id), offset, limit);
 }
 
 std::uint32_t
 sandbox_member_service::count_sandbox_members_by_account_id(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total sandbox members count by account_id: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total sandbox members count by account_id: "
+                              << account_id;
     return repo_.get_total_sandbox_member_count_by_account_id(ctx_,
                                                               boost::uuids::to_string(account_id));
 }
@@ -617,14 +615,14 @@ sandbox_member_service::count_sandbox_members_by_account_id(const boost::uuids::
 std::optional<domain::sandbox_member>
 sandbox_member_service::get_sandbox_member_at_version(const boost::uuids::uuid& id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting sandbox member at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting sandbox member at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::sandbox_member>
 sandbox_member_service::get_sandbox_member(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting sandbox member. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting sandbox member. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -633,7 +631,7 @@ sandbox_member_service::get_sandbox_member(const boost::uuids::uuid& id) {
 
 std::optional<domain::sandbox_member>
 sandbox_member_service::find_sandbox_member(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding sandbox member. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding sandbox member. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -648,11 +646,11 @@ sandbox_member_service::get_sandbox_members(const std::vector<std::string>& ids)
 void sandbox_member_service::save_sandbox_member(const domain::sandbox_member& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Sandbox Member id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving sandbox member. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving sandbox member. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved sandbox member. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved sandbox member. " << "id: " << v.id;
 }
 
 void sandbox_member_service::save_sandbox_members(
@@ -661,7 +659,7 @@ void sandbox_member_service::save_sandbox_members(
         if (e.id.is_nil())
             throw std::invalid_argument("Sandbox Member id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << sandbox_members.size() << " sandbox members";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << sandbox_members.size() << " sandbox members";
     auto ts = sandbox_members;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -670,15 +668,15 @@ void sandbox_member_service::save_sandbox_members(
 }
 
 void sandbox_member_service::delete_sandbox_member(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing sandbox member. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing sandbox member. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed sandbox member. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed sandbox member. " << "id: " << id;
 }
 
 void sandbox_member_service::remove_sandbox_member(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing sandbox member. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing sandbox member. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed sandbox member. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed sandbox member. " << "id: " << id;
 }
 
 void sandbox_member_service::delete_sandbox_members(const std::vector<std::string>& ids) {
@@ -687,13 +685,13 @@ void sandbox_member_service::delete_sandbox_members(const std::vector<std::strin
 
 std::vector<domain::sandbox_member>
 sandbox_member_service::get_sandbox_member_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for sandbox member. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for sandbox member. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 
 std::vector<domain::sandbox_member>
 sandbox_member_service::get_sandbox_member_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for sandbox member. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for sandbox member. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

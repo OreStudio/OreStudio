@@ -44,7 +44,7 @@ apply_retry_outcome approval_apply_retry::run(std::chrono::system_clock::time_po
             const auto request = lifecycle.request(stalled.request_id);
             const auto kind = lifecycle.kind(stalled.kind_code);
             if (!request || !kind || request->state_code != "approved") {
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "Request " << stalled.request_id << " could not be read as an approved "
                     << "request of kind " << stalled.kind_code << ", so its apply was left alone.";
                 continue;
@@ -62,9 +62,9 @@ apply_retry_outcome approval_apply_retry::run(std::chrono::system_clock::time_po
                     give_up(lifecycle, ctx, *kind, *request);
                     outcome.gave_up.push_back(stalled.request_id);
                 } else {
-                    BOOST_LOG_SEV(lg(), debug) << "Request " << stalled.request_id
-                                               << " is past its window, but its run is " << status
-                                               << ", so it was left alone.";
+                    ORES_LOG_SEV(lg(), debug) << "Request " << stalled.request_id
+                                              << " is past its window, but its run is " << status
+                                              << ", so it was left alone.";
                 }
                 continue;
             }
@@ -75,17 +75,17 @@ apply_retry_outcome approval_apply_retry::run(std::chrono::system_clock::time_po
             engine_.start(*start);
             const auto resumed = engine_.retry(start->instance_id);
             if (resumed.success) {
-                BOOST_LOG_SEV(lg(), info)
+                ORES_LOG_SEV(lg(), info)
                     << "Request " << stalled.request_id
                     << " had a stopped apply; the engine resumed step " << resumed.step_name << ".";
                 outcome.resumed.push_back(stalled.request_id);
             } else {
-                BOOST_LOG_SEV(lg(), debug)
+                ORES_LOG_SEV(lg(), debug)
                     << "Request " << stalled.request_id << " was not resumed: " << resumed.message;
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Retrying the apply of request " << stalled.request_id
-                                       << " failed: " << e.what();
+            ORES_LOG_SEV(lg(), error) << "Retrying the apply of request " << stalled.request_id
+                                      << " failed: " << e.what();
         }
     }
     return outcome;
@@ -99,8 +99,8 @@ void approval_apply_retry::give_up(approval_lifecycle& lifecycle,
     if (result.outcome != "ok")
         throw std::runtime_error("the request did not move to apply_failed: " + result.message);
 
-    BOOST_LOG_SEV(lg(), warn) << "Request " << boost::uuids::to_string(request.id) << " ("
-                              << kind.code << ") could not be applied within its window.";
+    ORES_LOG_SEV(lg(), warn) << "Request " << boost::uuids::to_string(request.id) << " ("
+                             << kind.code << ") could not be applied within its window.";
 
     // The announcer logs a failure to tell and never throws.
     const auto after = lifecycle.request(boost::uuids::to_string(request.id)).value_or(request);

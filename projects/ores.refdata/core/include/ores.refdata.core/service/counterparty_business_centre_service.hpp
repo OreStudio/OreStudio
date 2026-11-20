@@ -26,7 +26,7 @@
 #define ORES_REFDATA_SERVICE_COUNTERPARTY_BUSINESS_CENTRE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/counterparty_business_centre.hpp"
 #include "ores.refdata.api/messaging/counterparty_business_centre_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

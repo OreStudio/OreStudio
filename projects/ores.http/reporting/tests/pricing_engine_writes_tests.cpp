@@ -22,7 +22,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/reporting/pricing_engine_writes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -82,7 +82,7 @@ http_status pricing_writes_status_of(http_method method,
 
 TEST_CASE("a_create_refuses_a_query_it_does_not_read", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create's query";
+    ORES_LOG_SEV(lg, info) << "Testing a create's query";
 
     http_request req;
     req.body = pricing_document_body("[]", "[]");
@@ -94,7 +94,7 @@ TEST_CASE("a_create_refuses_a_query_it_does_not_read", "[pricing_engine_writes]"
 
 TEST_CASE("a_create_refuses_a_member_it_does_not_read", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create's members";
+    ORES_LOG_SEV(lg, info) << "Testing a create's members";
 
     http_request req;
     req.body = R"({"name":"amc","products":[],"parameters":[],)"
@@ -106,7 +106,7 @@ TEST_CASE("a_create_refuses_a_member_it_does_not_read", "[pricing_engine_writes]
 
 TEST_CASE("a_create_refuses_a_product_with_no_type", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create's product type";
+    ORES_LOG_SEV(lg, info) << "Testing a create's product type";
 
     http_request req;
     req.body = pricing_document_body(
@@ -120,7 +120,7 @@ TEST_CASE("a_create_refuses_a_product_with_no_type", "[pricing_engine_writes]") 
 
 TEST_CASE("a_create_refuses_a_parameter_whose_product_is_not_an_id", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create's parameter product";
+    ORES_LOG_SEV(lg, info) << "Testing a create's parameter product";
 
     http_request req;
     req.body = pricing_document_body(
@@ -134,7 +134,7 @@ TEST_CASE("a_create_refuses_a_parameter_whose_product_is_not_an_id", "[pricing_e
 
 TEST_CASE("a_create_refuses_more_products_than_a_document_holds", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create's product count";
+    ORES_LOG_SEV(lg, info) << "Testing a create's product count";
 
     std::string products = "[";
     for (int i = 0; i != 501; ++i) {
@@ -156,7 +156,7 @@ TEST_CASE("a_create_refuses_more_products_than_a_document_holds", "[pricing_engi
 
 TEST_CASE("a_create_with_no_service_is_refused_as_upstream", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a create with no service behind it";
 
     http_request req;
     req.body = pricing_document_body("[]", "[]");
@@ -167,7 +167,7 @@ TEST_CASE("a_create_with_no_service_is_refused_as_upstream", "[pricing_engine_wr
 
 TEST_CASE("a_change_refuses_an_id_that_is_not_an_id", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a change's id";
+    ORES_LOG_SEV(lg, info) << "Testing a change's id";
 
     http_request req;
     req.body = R"({"name":"amc","products":[],"parameters":[],)"
@@ -181,7 +181,7 @@ TEST_CASE("a_change_refuses_an_id_that_is_not_an_id", "[pricing_engine_writes]")
 
 TEST_CASE("a_change_refuses_a_body_that_states_no_version", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a change's version";
+    ORES_LOG_SEV(lg, info) << "Testing a change's version";
 
     http_request req;
     req.body = pricing_document_body("[]", "[]");
@@ -203,7 +203,7 @@ TEST_CASE("a_change_refuses_a_body_that_states_no_version", "[pricing_engine_wri
 
 TEST_CASE("a_change_with_no_service_is_refused_as_upstream", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a change with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a change with no service behind it";
 
     http_request req;
     req.body = R"({"name":"amc","products":[],"parameters":[],)"
@@ -217,7 +217,7 @@ TEST_CASE("a_change_with_no_service_is_refused_as_upstream", "[pricing_engine_wr
 
 TEST_CASE("a_removal_refuses_an_id_that_is_not_an_id", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a removal's id";
+    ORES_LOG_SEV(lg, info) << "Testing a removal's id";
 
     CHECK(pricing_writes_status_of(http_method::delete_,
                                    "/api/reporting/pricing-engines/not-an-id",
@@ -228,7 +228,7 @@ TEST_CASE("a_removal_refuses_an_id_that_is_not_an_id", "[pricing_engine_writes]"
 
 TEST_CASE("a_removal_with_no_service_is_refused_as_upstream", "[pricing_engine_writes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a removal with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a removal with no service behind it";
 
     CHECK(pricing_writes_status_of(http_method::delete_,
                                    pricing_one_engine_address,

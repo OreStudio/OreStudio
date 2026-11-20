@@ -89,7 +89,7 @@ The full template source. Edit here and re-tangle with
 
 #include "ores.eventing.core/service/cache/partition_token_cache.hpp"
 #include "ores.eventing.core/service/cache/partitioned_cache.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -216,7 +216,7 @@ public:
             };
             if (!authorise(false)) {
                 const std::string msg = "no token acts inside this tenant";
-                BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
+                ORES_LOG_SEV({{entity_singular}}_cache_lg(), warn)
                     << "{{entity_pascal}} cache load failed for tenant " << tenant_id << ": "
                     << msg;
                 return msg;
@@ -244,7 +244,7 @@ public:
                 if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
                     const auto msg = resp ? resp->result.message
                                           : "parse error (malformed or error reply)";
-                    BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
+                    ORES_LOG_SEV({{entity_singular}}_cache_lg(), warn)
                         << "{{entity_pascal}} cache load failed for tenant " << tenant_id << ": "
                         << msg;
                     return msg;
@@ -260,11 +260,11 @@ public:
             auto entries = entries_t.persistent();
 <<paste:60520267-94E5-4369-97E9-7AED54CDEDD2>>
             cache_.replace_partition(tenant_id, entries{{#cache_aux_type}}, aux{{/cache_aux_type}});
-            BOOST_LOG_SEV({{entity_singular}}_cache_lg(), debug)
+            ORES_LOG_SEV({{entity_singular}}_cache_lg(), debug)
                 << "Loaded " << count << " {{entity_plural}} for tenant " << tenant_id;
             return {};
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
+            ORES_LOG_SEV({{entity_singular}}_cache_lg(), warn)
                 << "{{entity_pascal}} cache load exception for tenant " << tenant_id << ": "
                 << e.what();
             return e.what();

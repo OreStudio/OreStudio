@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/entry_channel_type.hpp"
 #include "ores.trading.api/messaging/entry_channel_type_protocol.hpp"
 #include "ores.trading.core/repository/entry_channel_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -451,12 +449,12 @@ entry_channel_type_service::prepare_change(const messaging::entry_channel_type_c
 
 std::vector<domain::entry_channel_type>
 entry_channel_type_service::list_entry_channel_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all entry channel types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all entry channel types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t entry_channel_type_service::count_entry_channel_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total entry channel types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total entry channel types count";
     return repo_.get_total_entry_channel_type_count(ctx_);
 }
 
@@ -464,14 +462,14 @@ std::uint32_t entry_channel_type_service::count_entry_channel_types() {
 std::optional<domain::entry_channel_type>
 entry_channel_type_service::get_entry_channel_type_at_version(const std::string& code,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting entry channel type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting entry channel type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::entry_channel_type>
 entry_channel_type_service::get_entry_channel_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting entry channel type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting entry channel type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -486,11 +484,11 @@ entry_channel_type_service::get_entry_channel_types(const std::vector<std::strin
 void entry_channel_type_service::save_entry_channel_type(const domain::entry_channel_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Entry Channel Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving entry channel type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving entry channel type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved entry channel type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved entry channel type. " << "code: " << v.code;
 }
 
 void entry_channel_type_service::save_entry_channel_types(
@@ -499,7 +497,7 @@ void entry_channel_type_service::save_entry_channel_types(
         if (e.code.empty())
             throw std::invalid_argument("Entry Channel Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << entry_channel_types.size() << " entry channel types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << entry_channel_types.size() << " entry channel types";
     auto ts = entry_channel_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -508,9 +506,9 @@ void entry_channel_type_service::save_entry_channel_types(
 }
 
 void entry_channel_type_service::delete_entry_channel_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing entry channel type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing entry channel type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed entry channel type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed entry channel type. " << "code: " << code;
 }
 
 void entry_channel_type_service::delete_entry_channel_types(const std::vector<std::string>& codes) {
@@ -519,7 +517,7 @@ void entry_channel_type_service::delete_entry_channel_types(const std::vector<st
 
 std::vector<domain::entry_channel_type>
 entry_channel_type_service::get_entry_channel_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for entry channel type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for entry channel type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

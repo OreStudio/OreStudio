@@ -65,7 +65,7 @@ await_verifier(boost::asio::io_context& io_ctx,
     auto pub_key = co_await fetch_public_key_or_shutdown(io_ctx, nats, startup_cancel, name, lg);
     if (!pub_key)
         co_return std::nullopt;
-    BOOST_LOG_SEV(lg, info) << "Fetched JWKS public key from IAM";
+    ORES_LOG_SEV(lg, info) << "Fetched JWKS public key from IAM";
 
     // Dismiss the startup handler before re-arming for the operational phase.
     // signals.cancel() posts the handler with operation_aborted (ignored by !ec).

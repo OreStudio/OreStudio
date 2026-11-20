@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_CHANGE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_CHANGE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/counterparty_change.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_change_entity.hpp"

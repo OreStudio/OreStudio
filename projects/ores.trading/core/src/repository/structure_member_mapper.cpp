@@ -24,12 +24,10 @@
  */
 #include "ores.trading.core/repository/structure_member_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/structure_member.hpp"
 #include "ores.trading.api/domain/structure_member_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/structure_member_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -40,7 +38,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::structure_member structure_member_mapper::map(const structure_member_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::structure_member r;
     r.version = v.version;
@@ -56,12 +54,12 @@ domain::structure_member structure_member_mapper::map(const structure_member_ent
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 structure_member_entity structure_member_mapper::map(const domain::structure_member& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     structure_member_entity r;
     r.trade_id = v.trade_id;
@@ -76,7 +74,7 @@ structure_member_entity structure_member_mapper::map(const domain::structure_mem
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

@@ -23,7 +23,7 @@
 #include "ores.iam.api/eventing/account_permissions_changed_event.hpp"
 #include "ores.iam.api/eventing/role_assigned_event.hpp"
 #include "ores.iam.api/eventing/role_revoked_event.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -41,7 +41,7 @@ using namespace ores::logging;
 TEST_CASE("event_traits_role_assigned_event", "[eventing]") {
     auto lg(make_logger(test_suite));
 
-    BOOST_LOG_SEV(lg, info) << "Testing role_assigned_event traits";
+    ORES_LOG_SEV(lg, info) << "Testing role_assigned_event traits";
 
     REQUIRE(event_traits<role_assigned_event>::name == "ores.iam.role_assigned");
     STATIC_REQUIRE(has_event_traits<role_assigned_event>);
@@ -50,7 +50,7 @@ TEST_CASE("event_traits_role_assigned_event", "[eventing]") {
 TEST_CASE("event_traits_role_revoked_event", "[eventing]") {
     auto lg(make_logger(test_suite));
 
-    BOOST_LOG_SEV(lg, info) << "Testing role_revoked_event traits";
+    ORES_LOG_SEV(lg, info) << "Testing role_revoked_event traits";
 
     REQUIRE(event_traits<role_revoked_event>::name == "ores.iam.role_revoked");
     STATIC_REQUIRE(has_event_traits<role_revoked_event>);
@@ -59,7 +59,7 @@ TEST_CASE("event_traits_role_revoked_event", "[eventing]") {
 TEST_CASE("event_traits_account_permissions_changed_event", "[eventing]") {
     auto lg(make_logger(test_suite));
 
-    BOOST_LOG_SEV(lg, info) << "Testing account_permissions_changed_event traits";
+    ORES_LOG_SEV(lg, info) << "Testing account_permissions_changed_event traits";
 
     REQUIRE(event_traits<account_permissions_changed_event>::name ==
             "ores.iam.account_permissions_changed");
@@ -74,8 +74,8 @@ TEST_CASE("create_role_assigned_event", "[eventing]") {
     sut.role_id = boost::uuids::random_generator()();
     sut.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Role assigned event - account_id: " << sut.account_id
-                            << ", role_id: " << sut.role_id;
+    ORES_LOG_SEV(lg, info) << "Role assigned event - account_id: " << sut.account_id
+                           << ", role_id: " << sut.role_id;
 
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.role_id.is_nil());
@@ -89,8 +89,8 @@ TEST_CASE("create_role_revoked_event", "[eventing]") {
     sut.role_id = boost::uuids::random_generator()();
     sut.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Role revoked event - account_id: " << sut.account_id
-                            << ", role_id: " << sut.role_id;
+    ORES_LOG_SEV(lg, info) << "Role revoked event - account_id: " << sut.account_id
+                           << ", role_id: " << sut.role_id;
 
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.role_id.is_nil());
@@ -104,8 +104,8 @@ TEST_CASE("create_account_permissions_changed_event", "[eventing]") {
     sut.permission_codes = {accounts_read, currencies_read, flags_read};
     sut.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Permissions changed event - account_id: " << sut.account_id
-                            << ", permission_codes count: " << sut.permission_codes.size();
+    ORES_LOG_SEV(lg, info) << "Permissions changed event - account_id: " << sut.account_id
+                           << ", permission_codes count: " << sut.permission_codes.size();
 
     CHECK(!sut.account_id.is_nil());
     CHECK(sut.permission_codes.size() == 3);
@@ -119,8 +119,8 @@ TEST_CASE("account_permissions_changed_event_with_wildcard", "[eventing]") {
     sut.permission_codes = {all};
     sut.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Permissions changed event with wildcard - account_id: "
-                            << sut.account_id;
+    ORES_LOG_SEV(lg, info) << "Permissions changed event with wildcard - account_id: "
+                           << sut.account_id;
 
     CHECK(!sut.account_id.is_nil());
     CHECK(sut.permission_codes.size() == 1);
@@ -134,8 +134,8 @@ TEST_CASE("account_permissions_changed_event_empty_permissions", "[eventing]") {
     sut.account_id = boost::uuids::random_generator()();
     sut.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Permissions changed event with no permissions - account_id: "
-                            << sut.account_id;
+    ORES_LOG_SEV(lg, info) << "Permissions changed event with no permissions - account_id: "
+                           << sut.account_id;
 
     CHECK(!sut.account_id.is_nil());
     CHECK(sut.permission_codes.empty());
@@ -160,7 +160,7 @@ TEST_CASE("event_bus_role_assigned_subscription", "[eventing]") {
     event.role_id = boost::uuids::random_generator()();
     event.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Publishing role_assigned_event";
+    ORES_LOG_SEV(lg, info) << "Publishing role_assigned_event";
     bus.publish(event);
 
     CHECK(event_received);
@@ -187,7 +187,7 @@ TEST_CASE("event_bus_role_revoked_subscription", "[eventing]") {
     event.role_id = boost::uuids::random_generator()();
     event.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Publishing role_revoked_event";
+    ORES_LOG_SEV(lg, info) << "Publishing role_revoked_event";
     bus.publish(event);
 
     CHECK(event_received);
@@ -215,7 +215,7 @@ TEST_CASE("event_bus_permissions_changed_subscription", "[eventing]") {
     event.permission_codes = {accounts_read, accounts_update};
     event.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Publishing account_permissions_changed_event";
+    ORES_LOG_SEV(lg, info) << "Publishing account_permissions_changed_event";
     bus.publish(event);
 
     CHECK(event_received);
@@ -245,7 +245,7 @@ TEST_CASE("event_bus_role_events_isolation", "[eventing]") {
     event.role_id = boost::uuids::random_generator()();
     event.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Publishing role_assigned_event only";
+    ORES_LOG_SEV(lg, info) << "Publishing role_assigned_event only";
     bus.publish(event);
 
     CHECK(assigned_received);
@@ -263,9 +263,8 @@ TEST_CASE("create_role_assigned_event_with_faker", "[eventing]") {
         sut.timestamp =
             std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(0, 168));
 
-        BOOST_LOG_SEV(lg, info) << "Role assigned event " << i
-                                << " - account_id: " << sut.account_id
-                                << ", role_id: " << sut.role_id;
+        ORES_LOG_SEV(lg, info) << "Role assigned event " << i << " - account_id: " << sut.account_id
+                               << ", role_id: " << sut.role_id;
 
         CHECK(!sut.account_id.is_nil());
         CHECK(!sut.role_id.is_nil());
@@ -300,9 +299,9 @@ TEST_CASE("create_account_permissions_changed_event_with_faker", "[eventing]") {
             sut.permission_codes.push_back(available_permissions[idx]);
         }
 
-        BOOST_LOG_SEV(lg, info) << "Permissions changed event " << i
-                                << " - account_id: " << sut.account_id
-                                << ", permissions count: " << sut.permission_codes.size();
+        ORES_LOG_SEV(lg, info) << "Permissions changed event " << i
+                               << " - account_id: " << sut.account_id
+                               << ", permissions count: " << sut.permission_codes.size();
 
         CHECK(!sut.account_id.is_nil());
         CHECK(!sut.permission_codes.empty());

@@ -33,7 +33,7 @@ using namespace conventions_fields;
 
 ores::refdata::messaging::tenor_basis_swap_convention_item
 conventions_mapper::map_tenor_basis_swap(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping tenor basis swap convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping tenor basis swap convention: " << text_of(v, "Id");
 
     ores::refdata::messaging::tenor_basis_swap_convention_item r;
     refdata::domain::convention central;

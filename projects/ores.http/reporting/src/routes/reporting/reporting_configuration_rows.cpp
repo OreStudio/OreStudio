@@ -20,7 +20,7 @@
 #include "ores.http/routes/reporting/reporting_configuration_rows.hpp"
 #include "ores.http.api/domain/http_status.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/messaging/configuration_protocol.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -103,7 +103,7 @@ void remove_configuration(const http_request& req,
         forwarding::forward(req, session, msg);
     } catch (const std::exception& e) {
         // The create's own failure is the one the caller reads.
-        BOOST_LOG_SEV(configuration_lg(), ores::logging::warn)
+        ORES_LOG_SEV(configuration_lg(), ores::logging::warn)
             << "The configuration " << name
             << " a refused create wrote could not be removed, so it stays: " << e.what();
     }

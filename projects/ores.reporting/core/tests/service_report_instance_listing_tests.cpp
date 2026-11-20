@@ -18,8 +18,7 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
@@ -31,7 +30,6 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "report_instance_test_fixture.hpp"
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>

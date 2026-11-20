@@ -321,7 +321,7 @@ void party_country_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering party_countries routes";
+    ORES_LOG_SEV(lg(), info) << "Registering party_countries routes";
 
     auto list_route =
         router->get("/api/v1/reference-data/party_countries")
@@ -451,7 +451,7 @@ void party_country_routes::register_routes(
     router->add_route(by_party_id_built);
     registry->register_route(by_party_id_built);
 
-    BOOST_LOG_SEV(lg(), info) << "party_countries routes registered: " << 9 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "party_countries routes registered: " << 9 << " endpoint(s)";
 }
 
 }

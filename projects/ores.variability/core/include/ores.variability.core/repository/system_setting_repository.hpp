@@ -26,7 +26,7 @@
 #define ORES_VARIABILITY_CORE_REPOSITORY_SYSTEM_SETTING_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/messaging/system_setting_protocol.hpp"

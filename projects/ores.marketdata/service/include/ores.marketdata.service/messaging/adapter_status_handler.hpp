@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_MESSAGING_ADAPTER_STATUS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.service/app/adapter_supervisor.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"

@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/structure_template_role.hpp"
 #include "ores.trading.api/messaging/structure_template_role_protocol.hpp"
 #include "ores.trading.core/repository/structure_template_role_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -469,12 +467,12 @@ ores::utility::domain::result structure_template_role_service::prepare_change(
 
 std::vector<domain::structure_template_role>
 structure_template_role_service::list_template_roles(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all structure template roles";
+    ORES_LOG_SEV(lg(), debug) << "Listing all structure template roles";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t structure_template_role_service::count_template_roles() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total structure template roles count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total structure template roles count";
     return repo_.get_total_template_role_count(ctx_);
 }
 
@@ -483,17 +481,17 @@ std::optional<domain::structure_template_role>
 structure_template_role_service::get_template_role_at_version(const std::string& template_code,
                                                               const std::string& role,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting structure template role at version. "
-                               << "template_code: " << template_code << " role: " << role
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting structure template role at version. "
+                              << "template_code: " << template_code << " role: " << role
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, template_code, role, version);
 }
 
 std::optional<domain::structure_template_role>
 structure_template_role_service::get_template_role(const std::string& template_code,
                                                    const std::string& role) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting structure template role. "
-                               << "template_code: " << template_code << " role: " << role;
+    ORES_LOG_SEV(lg(), debug) << "Getting structure template role. "
+                              << "template_code: " << template_code << " role: " << role;
     auto results = repo_.read_latest(ctx_, template_code, role);
     if (results.empty())
         return std::nullopt;
@@ -511,13 +509,13 @@ void structure_template_role_service::save_template_role(const domain::structure
         throw std::invalid_argument("Structure Template Role template_code cannot be empty.");
     if (v.role.empty())
         throw std::invalid_argument("Structure Template Role role cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving structure template role. "
-                               << "template_code: " << v.template_code << " role: " << v.role;
+    ORES_LOG_SEV(lg(), debug) << "Saving structure template role. "
+                              << "template_code: " << v.template_code << " role: " << v.role;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved structure template role. "
-                              << "template_code: " << v.template_code << " role: " << v.role;
+    ORES_LOG_SEV(lg(), info) << "Saved structure template role. "
+                             << "template_code: " << v.template_code << " role: " << v.role;
 }
 
 void structure_template_role_service::save_template_roles(
@@ -528,7 +526,7 @@ void structure_template_role_service::save_template_roles(
         if (e.role.empty())
             throw std::invalid_argument("Structure Template Role role cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << template_roles.size() << " structure template roles";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << template_roles.size() << " structure template roles";
     auto ts = template_roles;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -538,11 +536,11 @@ void structure_template_role_service::save_template_roles(
 
 void structure_template_role_service::delete_template_role(const std::string& template_code,
                                                            const std::string& role) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing structure template role. "
-                               << "template_code: " << template_code << " role: " << role;
-    repo_.remove(ctx_, template_code, role);
-    BOOST_LOG_SEV(lg(), info) << "Removed structure template role. "
+    ORES_LOG_SEV(lg(), debug) << "Removing structure template role. "
                               << "template_code: " << template_code << " role: " << role;
+    repo_.remove(ctx_, template_code, role);
+    ORES_LOG_SEV(lg(), info) << "Removed structure template role. "
+                             << "template_code: " << template_code << " role: " << role;
 }
 
 void structure_template_role_service::delete_template_roles(
@@ -553,8 +551,8 @@ void structure_template_role_service::delete_template_roles(
 std::vector<domain::structure_template_role>
 structure_template_role_service::get_template_role_history(const std::string& template_code,
                                                            const std::string& role) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for structure template role. "
-                               << "template_code: " << template_code << " role: " << role;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for structure template role. "
+                              << "template_code: " << template_code << " role: " << role;
     return repo_.read_all(ctx_, template_code, role);
 }
 

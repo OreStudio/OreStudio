@@ -320,7 +320,7 @@ void image_tag_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering image_tags routes";
+    ORES_LOG_SEV(lg(), info) << "Registering image_tags routes";
 
     auto list_route =
         router->get("/api/v1/assets/image_tags")
@@ -450,7 +450,7 @@ void image_tag_routes::register_routes(
     router->add_route(by_image_id_built);
     registry->register_route(by_image_id_built);
 
-    BOOST_LOG_SEV(lg(), info) << "image_tags routes registered: " << 9 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "image_tags routes registered: " << 9 << " endpoint(s)";
 }
 
 }

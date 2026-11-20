@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_EQUITY_UNDERLYING_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_EQUITY_UNDERLYING_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/equity_underlying.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/equity_underlying_entity.hpp"

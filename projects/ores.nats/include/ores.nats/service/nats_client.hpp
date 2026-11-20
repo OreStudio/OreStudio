@@ -20,7 +20,7 @@
 #ifndef ORES_NATS_SERVICE_NATS_CLIENT_HPP
 #define ORES_NATS_SERVICE_NATS_CLIENT_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"

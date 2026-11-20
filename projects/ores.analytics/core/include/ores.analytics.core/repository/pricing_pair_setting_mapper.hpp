@@ -28,7 +28,7 @@
 #include "ores.analytics.api/domain/pricing_pair_setting.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/pricing_pair_setting_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::analytics::repository {
 

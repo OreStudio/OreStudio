@@ -60,7 +60,7 @@ std::vector<domain::tenant> read_all_active_tenants(const ores::database::contex
 
 std::vector<domain::tenant> read_active_tenant_by_id(const ores::database::context& ctx,
                                                      const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(tenant_lookups_lg(), debug) << "Reading latest tenant. ID: " << id;
+    ORES_LOG_SEV(tenant_lookups_lg(), debug) << "Reading latest tenant. ID: " << id;
 
     constexpr auto max = db_timestamp::max();
     const auto id_str = boost::lexical_cast<std::string>(id);
@@ -77,7 +77,7 @@ std::vector<domain::tenant> read_active_tenant_by_id(const ores::database::conte
 
 std::vector<domain::tenant> read_active_tenant_by_hostname(const ores::database::context& ctx,
                                                            const std::string& hostname) {
-    BOOST_LOG_SEV(tenant_lookups_lg(), debug) << "Reading latest tenant by hostname: " << hostname;
+    ORES_LOG_SEV(tenant_lookups_lg(), debug) << "Reading latest tenant by hostname: " << hostname;
 
     constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<tenant_entity>> |

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.ore.service/messaging/pricing_engines_import_run.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/pricing_engines_import.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <format>
@@ -61,7 +61,7 @@ run_pricing_engines_import(const pricing_engines_import_operations& operations,
 
     const auto file = pricing_engines_import::parse(request.content);
     if (!file.ok()) {
-        BOOST_LOG_SEV(run_lg(), info) << "pricing engines import refused | " << file.refusal;
+        ORES_LOG_SEV(run_lg(), info) << "pricing engines import refused | " << file.refusal;
         response.message = file.refusal;
         return response;
     }
@@ -169,8 +169,7 @@ run_pricing_engines_import(const pricing_engines_import_operations& operations,
                 }
                 response.errors.push_back({.key = key, .message = problem.message});
             }
-            BOOST_LOG_SEV(run_lg(), warn)
-                << "pricing engines import refused | " << response.message;
+            ORES_LOG_SEV(run_lg(), warn) << "pricing engines import refused | " << response.message;
             return response;
         }
 
@@ -199,11 +198,11 @@ run_pricing_engines_import(const pricing_engines_import_operations& operations,
         try {
             rollback();
         } catch (const std::exception& rollback_error) {
-            BOOST_LOG_SEV(run_lg(), warn) << "pricing engines import could not remove the "
-                                             "configuration it registered | "
-                                          << registered << " | " << rollback_error.what();
+            ORES_LOG_SEV(run_lg(), warn) << "pricing engines import could not remove the "
+                                            "configuration it registered | "
+                                         << registered << " | " << rollback_error.what();
         }
-        BOOST_LOG_SEV(run_lg(), warn) << "pricing engines import refused | " << e.what();
+        ORES_LOG_SEV(run_lg(), warn) << "pricing engines import refused | " << e.what();
         response.message = e.what();
         return response;
     }

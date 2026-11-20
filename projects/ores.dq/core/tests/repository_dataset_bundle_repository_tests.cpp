@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/dataset_bundle_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/dataset_bundle_generator.hpp"
 #include "ores.dq.core/repository/dataset_bundle_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -49,11 +49,11 @@ TEST_CASE("write_single_dataset_bundle", "[repository]") {
     bundle.change_reason_code = "system.test";
     bundle.code = bundle.code + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Dataset bundle: " << bundle;
+    ORES_LOG_SEV(lg, debug) << "Dataset bundle: " << bundle;
     repo.write(h.context(), bundle);
 
     auto read_bundles = repo.read_latest(h.context(), boost::uuids::to_string(bundle.id));
-    BOOST_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
+    ORES_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
 
     REQUIRE(read_bundles.size() == 1);
     CHECK(read_bundles[0].id == bundle.id);
@@ -73,11 +73,11 @@ TEST_CASE("write_multiple_dataset_bundles", "[repository]") {
         b.change_reason_code = "system.test";
         b.code = b.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Dataset bundles: " << bundles;
+    ORES_LOG_SEV(lg, debug) << "Dataset bundles: " << bundles;
     repo.write(h.context(), bundles);
 
     auto read_bundles = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
+    ORES_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
 
     for (const auto& written : bundles) {
         bool found = false;
@@ -104,12 +104,12 @@ TEST_CASE("read_latest_dataset_bundles", "[repository]") {
         b.change_reason_code = "system.test";
         b.code = b.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Written bundles: " << written_bundles;
+    ORES_LOG_SEV(lg, debug) << "Written bundles: " << written_bundles;
 
     repo.write(h.context(), written_bundles);
 
     auto read_bundles = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
+    ORES_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
 
     for (const auto& written : written_bundles) {
         bool found = false;
@@ -138,13 +138,13 @@ TEST_CASE("read_latest_dataset_bundle_by_id", "[repository]") {
     }
 
     const auto target = bundles.front();
-    BOOST_LOG_SEV(lg, debug) << "Write bundles: " << bundles;
+    ORES_LOG_SEV(lg, debug) << "Write bundles: " << bundles;
     repo.write(h.context(), bundles);
 
-    BOOST_LOG_SEV(lg, debug) << "Target bundle: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target bundle: " << target;
 
     auto read_bundles = repo.read_latest(h.context(), boost::uuids::to_string(target.id));
-    BOOST_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
+    ORES_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
 
     REQUIRE(read_bundles.size() == 1);
     CHECK(read_bundles[0].id == target.id);

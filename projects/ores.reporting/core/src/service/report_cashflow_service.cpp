@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/report_cashflow.hpp"
 #include "ores.reporting.api/messaging/report_cashflow_protocol.hpp"
 #include "ores.reporting.core/repository/report_cashflow_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -42,7 +41,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -447,19 +445,19 @@ report_cashflow_service::prepare_change(const messaging::report_cashflow_change&
 
 std::vector<domain::report_cashflow> report_cashflow_service::list_cashflows(std::uint32_t offset,
                                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all report cashflows";
+    ORES_LOG_SEV(lg(), debug) << "Listing all report cashflows";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t report_cashflow_service::count_cashflows() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report cashflows count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total report cashflows count";
     return repo_.get_total_cashflow_count(ctx_);
 }
 
 
 std::optional<domain::report_cashflow>
 report_cashflow_service::get_cashflow(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report cashflow. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting report cashflow. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -474,11 +472,11 @@ report_cashflow_service::get_cashflows(const std::vector<std::string>& ids) {
 void report_cashflow_service::save_cashflow(const domain::report_cashflow& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Report Cashflow id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report cashflow. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving report cashflow. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved report cashflow. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved report cashflow. " << "id: " << v.id;
 }
 
 void report_cashflow_service::save_cashflows(
@@ -487,7 +485,7 @@ void report_cashflow_service::save_cashflows(
         if (e.id.is_nil())
             throw std::invalid_argument("Report Cashflow id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << cashflows.size() << " report cashflows";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << cashflows.size() << " report cashflows";
     auto ts = cashflows;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -496,9 +494,9 @@ void report_cashflow_service::save_cashflows(
 }
 
 void report_cashflow_service::delete_cashflow(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report cashflow. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing report cashflow. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed report cashflow. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed report cashflow. " << "id: " << id;
 }
 
 void report_cashflow_service::delete_cashflows(const std::vector<std::string>& ids) {
@@ -507,7 +505,7 @@ void report_cashflow_service::delete_cashflows(const std::vector<std::string>& i
 
 std::vector<domain::report_cashflow>
 report_cashflow_service::get_cashflow_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for report cashflow. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for report cashflow. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

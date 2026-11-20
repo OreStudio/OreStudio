@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_SWAP_LEG_AMOUNT_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_SWAP_LEG_AMOUNT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/swap_leg_amount_entity.hpp"

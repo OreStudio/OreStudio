@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_ORESMD_SCHEMA_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/service/oresmd_schema_describer.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -66,7 +66,7 @@ public:
         , verifier_(verifier) {}
 
     void describe(ores::nats::message msg) {
-        BOOST_LOG_SEV(oresmd_schema_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(oresmd_schema_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -77,7 +77,7 @@ public:
             return;
         }
         reply(nats_, msg, service::oresmd_schema_describer::describe());
-        BOOST_LOG_SEV(oresmd_schema_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(oresmd_schema_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

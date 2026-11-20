@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/concurrency/atomic_shared_ptr.hpp"
 #include "test_suite.hpp"
 #include <atomic>
@@ -46,7 +46,7 @@ TEST_CASE("a_default_constructed_snapshot_is_empty", "[concurrency][atomic_share
 
     const atomic_shared_ptr<const snapshot> published;
 
-    BOOST_LOG_SEV(lg, info) << "Reading a snapshot never stored";
+    ORES_LOG_SEV(lg, info) << "Reading a snapshot never stored";
     CHECK(published.load() == nullptr);
 }
 
@@ -58,7 +58,7 @@ TEST_CASE("a_stored_snapshot_is_what_the_next_read_returns", "[concurrency][atom
 
     auto read = published.load();
 
-    BOOST_LOG_SEV(lg, info) << "Reading back the stored revision";
+    ORES_LOG_SEV(lg, info) << "Reading back the stored revision";
     REQUIRE(read != nullptr);
     CHECK(read->name == "first");
     CHECK(read->revision == 1);
@@ -75,7 +75,7 @@ TEST_CASE("a_read_survives_the_store_that_replaces_it", "[concurrency][atomic_sh
 
     // The reader holds one whole object, not a view of whatever is current:
     // the store above must not have rewritten what the reader is using.
-    BOOST_LOG_SEV(lg, info) << "Checking the reader's snapshot after a store";
+    ORES_LOG_SEV(lg, info) << "Checking the reader's snapshot after a store";
     CHECK(reader->name == "old");
     CHECK(reader->revision == 1);
     CHECK(published.load()->name == "new");
@@ -116,7 +116,7 @@ TEST_CASE("readers_never_see_a_half_published_snapshot", "[concurrency][atomic_s
     for (auto& t : readers)
         t.join();
 
-    BOOST_LOG_SEV(lg, info) << "Torn reads over " << revisions << " revisions: " << torn.load();
+    ORES_LOG_SEV(lg, info) << "Torn reads over " << revisions << " revisions: " << torn.load();
     CHECK(torn.load() == 0);
     CHECK(published.load()->revision == revisions);
 }

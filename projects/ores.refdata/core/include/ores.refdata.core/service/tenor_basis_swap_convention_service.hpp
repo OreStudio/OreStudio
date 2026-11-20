@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_TENOR_BASIS_SWAP_CONVENTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"

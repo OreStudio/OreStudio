@@ -79,8 +79,8 @@ std::vector<domain::system_setting> system_settings_service::get_all() {
         return repo_.read_latest(ctx_);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading system settings for tenant " << tenant_id_ << " party "
-                               << (party_id_.empty() ? "(system)" : party_id_);
+    ORES_LOG_SEV(lg(), debug) << "Reading system settings for tenant " << tenant_id_ << " party "
+                              << (party_id_.empty() ? "(system)" : party_id_);
 
     const auto rows = party_id_.empty() ?
                           ores::database::query_builder::execute_parameterized_multi_column_query(
@@ -104,11 +104,11 @@ std::vector<domain::system_setting> system_settings_service::get_all() {
 }
 
 void system_settings_service::refresh() {
-    BOOST_LOG_SEV(lg(), debug) << "Refreshing the system settings cache";
+    ORES_LOG_SEV(lg(), debug) << "Refreshing the system settings cache";
     cache_.clear();
     for (const auto& setting : get_all())
         cache_[setting.name] = setting.value;
-    BOOST_LOG_SEV(lg(), info) << "System settings cache refreshed. Count: " << cache_.size();
+    ORES_LOG_SEV(lg(), info) << "System settings cache refreshed. Count: " << cache_.size();
 }
 
 void system_settings_service::save(const domain::system_setting& setting) {
@@ -136,8 +136,8 @@ void system_settings_service::save(const domain::system_setting& setting) {
     if (value.id.is_nil())
         value.id = boost::uuids::random_generator()();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving system setting: " << value.name << " = " << value.value
-                              << " (" << value.data_type << ") with version " << value.version;
+    ORES_LOG_SEV(lg(), info) << "Saving system setting: " << value.name << " = " << value.value
+                             << " (" << value.data_type << ") with version " << value.version;
 
     repo_.write(ctx_, value);
     cache_[value.name] = value.value;
@@ -154,8 +154,8 @@ bool system_settings_service::get_bool(std::string_view name) const {
     if (raw == "false" || raw == "0")
         return false;
 
-    BOOST_LOG_SEV(lg(), warn) << "Unexpected boolean value '" << raw << "' for setting '" << name
-                              << "'. Returning false.";
+    ORES_LOG_SEV(lg(), warn) << "Unexpected boolean value '" << raw << "' for setting '" << name
+                             << "'. Returning false.";
     return false;
 }
 
@@ -167,8 +167,8 @@ int system_settings_service::get_int(std::string_view name) const {
     try {
         return std::stoi(raw);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to parse integer value '" << raw << "' for setting '"
-                                  << name << "': " << e.what() << ". Returning 0.";
+        ORES_LOG_SEV(lg(), warn) << "Failed to parse integer value '" << raw << "' for setting '"
+                                 << name << "': " << e.what() << ". Returning 0.";
         return 0;
     }
 }

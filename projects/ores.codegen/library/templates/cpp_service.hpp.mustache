@@ -9,7 +9,7 @@
 #include <optional>
 #include <string>
 #include <vector>
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 {{#protocol_derived}}
@@ -452,7 +452,7 @@ private:
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid.hpp>
 {{/has_uuid_left_or_right}}
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 {{#protocol_derived}}
@@ -603,7 +603,7 @@ private:
 #include <optional>
 #include <string>
 #include <vector>
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{central.entity}}.hpp"
 {{#parts}}

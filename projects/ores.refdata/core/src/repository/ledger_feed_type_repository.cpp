@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/ledger_feed_type.hpp"
 #include "ores.refdata.api/domain/ledger_feed_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/ledger_feed_type_protocol.hpp"
 #include "ores.refdata.core/repository/ledger_feed_type_entity.hpp"
 #include "ores.refdata.core/repository/ledger_feed_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -233,7 +231,7 @@ void ledger_feed_type_repository::write(const context& ctx,
 void ledger_feed_type_repository::write(const context& ctx,
                                         const domain::ledger_feed_type& v,
                                         const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing ledger feed type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing ledger feed type. " << "code: " << v.code;
     const auto t = ledger_feed_type_apply_claim(
         v,
         claim,
@@ -248,7 +246,7 @@ void ledger_feed_type_repository::write(
     const context& ctx,
     const std::vector<domain::ledger_feed_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing ledger feed types. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing ledger feed types. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "ledger_feed_type_repository::write: one claim is needed for each row");
@@ -286,7 +284,7 @@ std::vector<domain::ledger_feed_type> ledger_feed_type_repository::read_latest(c
 
 std::vector<domain::ledger_feed_type>
 ledger_feed_type_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest ledger feed type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest ledger feed type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -305,7 +303,7 @@ ledger_feed_type_repository::read_latest(const context& ctx, const std::string& 
 
 std::vector<domain::ledger_feed_type>
 ledger_feed_type_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all ledger feed type versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all ledger feed type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -323,8 +321,8 @@ ledger_feed_type_repository::read_all(const context& ctx, const std::string& cod
 
 std::optional<domain::ledger_feed_type> ledger_feed_type_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading ledger feed type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading ledger feed type at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<ledger_feed_type_entity>> |
@@ -347,7 +345,7 @@ std::optional<domain::ledger_feed_type> ledger_feed_type_repository::read_at_ver
 
 ledger_feed_type_repository::remove_status ledger_feed_type_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ledger feed type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing ledger feed type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -386,8 +384,8 @@ std::vector<domain::ledger_feed_type> ledger_feed_type_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::ledger_feed_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest ledger feed types with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest ledger feed types with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<ledger_feed_type_entity>> |
@@ -410,7 +408,7 @@ std::uint32_t ledger_feed_type_repository::get_total_type_count(
     const context& ctx,
     const std::optional<messaging::ledger_feed_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ledger feed type count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active ledger feed type count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

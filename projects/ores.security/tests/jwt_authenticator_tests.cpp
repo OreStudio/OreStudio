@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -88,7 +88,7 @@ using namespace ores::logging;
 
 TEST_CASE("jwt_authenticator_create_hs256_configured", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing HS256 authenticator creation";
+    ORES_LOG_SEV(lg, info) << "Testing HS256 authenticator creation";
 
     auto auth = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
 
@@ -97,7 +97,7 @@ TEST_CASE("jwt_authenticator_create_hs256_configured", "[jwt_authenticator]") {
 
 TEST_CASE("jwt_authenticator_create_hs256_empty_secret_not_configured", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing HS256 with empty secret";
+    ORES_LOG_SEV(lg, info) << "Testing HS256 with empty secret";
 
     auto auth = jwt_authenticator::create_hs256("", test_issuer, test_audience);
 
@@ -106,7 +106,7 @@ TEST_CASE("jwt_authenticator_create_hs256_empty_secret_not_configured", "[jwt_au
 
 TEST_CASE("jwt_authenticator_create_and_validate_hs256_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing HS256 token creation and validation";
+    ORES_LOG_SEV(lg, info) << "Testing HS256 token creation and validation";
 
     auto auth = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
 
@@ -138,7 +138,7 @@ TEST_CASE("jwt_authenticator_create_and_validate_hs256_token", "[jwt_authenticat
 
 TEST_CASE("jwt_authenticator_validate_expired_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing expired token validation";
+    ORES_LOG_SEV(lg, info) << "Testing expired token validation";
 
     auto auth = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
 
@@ -157,7 +157,7 @@ TEST_CASE("jwt_authenticator_validate_expired_token", "[jwt_authenticator]") {
 
 TEST_CASE("jwt_authenticator_validate_invalid_hs256_signature", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing invalid HS256 signature detection";
+    ORES_LOG_SEV(lg, info) << "Testing invalid HS256 signature detection";
 
     auto auth1 = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
     auto auth2 = jwt_authenticator::create_hs256(
@@ -180,7 +180,7 @@ TEST_CASE("jwt_authenticator_validate_invalid_hs256_signature", "[jwt_authentica
 
 TEST_CASE("jwt_authenticator_validate_malformed_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing malformed token detection";
+    ORES_LOG_SEV(lg, info) << "Testing malformed token detection";
 
     auto auth = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
 
@@ -191,7 +191,7 @@ TEST_CASE("jwt_authenticator_validate_malformed_token", "[jwt_authenticator]") {
 
 TEST_CASE("jwt_authenticator_unconfigured_validate_fails", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing unconfigured authenticator validation";
+    ORES_LOG_SEV(lg, info) << "Testing unconfigured authenticator validation";
 
     auto auth = jwt_authenticator::create_hs256("", test_issuer, test_audience);
 
@@ -206,7 +206,7 @@ TEST_CASE("jwt_authenticator_unconfigured_validate_fails", "[jwt_authenticator]"
 
 TEST_CASE("jwt_authenticator_create_rs256_verifier_configured", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing RS256 verifier creation";
+    ORES_LOG_SEV(lg, info) << "Testing RS256 verifier creation";
 
     auto auth = jwt_authenticator::create_rs256_verifier(
         test_rsa_keys().public_key_pem, test_issuer, test_audience);
@@ -217,7 +217,7 @@ TEST_CASE("jwt_authenticator_create_rs256_verifier_configured", "[jwt_authentica
 TEST_CASE("jwt_authenticator_create_rs256_verifier_empty_key_not_configured",
           "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing RS256 verifier with empty key";
+    ORES_LOG_SEV(lg, info) << "Testing RS256 verifier with empty key";
 
     auto auth = jwt_authenticator::create_rs256_verifier("", test_issuer, test_audience);
 
@@ -226,7 +226,7 @@ TEST_CASE("jwt_authenticator_create_rs256_verifier_empty_key_not_configured",
 
 TEST_CASE("jwt_authenticator_rs256_verifier_cannot_create_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing RS256 verifier cannot create tokens";
+    ORES_LOG_SEV(lg, info) << "Testing RS256 verifier cannot create tokens";
 
     auto verifier = jwt_authenticator::create_rs256_verifier(
         test_rsa_keys().public_key_pem, test_issuer, test_audience);
@@ -242,7 +242,7 @@ TEST_CASE("jwt_authenticator_rs256_verifier_cannot_create_token", "[jwt_authenti
 
 TEST_CASE("jwt_authenticator_rs256_round_trip", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing RS256 sign/verify round-trip";
+    ORES_LOG_SEV(lg, info) << "Testing RS256 sign/verify round-trip";
 
     const auto& keys = test_rsa_keys();
     auto signer =
@@ -383,7 +383,7 @@ TEST_CASE("jwt_authenticator_round_trips_a_storage_capability", "[jwt_authentica
 
 TEST_CASE("jwt_authenticator_rs256_tamper_rejected", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing RS256 tampered token rejected";
+    ORES_LOG_SEV(lg, info) << "Testing RS256 tampered token rejected";
 
     const auto& keys = test_rsa_keys();
     auto signer =
@@ -412,7 +412,7 @@ TEST_CASE("jwt_authenticator_rs256_tamper_rejected", "[jwt_authenticator]") {
 
 TEST_CASE("jwt_authenticator_rs256_expired_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing RS256 expired token rejected";
+    ORES_LOG_SEV(lg, info) << "Testing RS256 expired token rejected";
 
     const auto& keys = test_rsa_keys();
     auto signer =
@@ -435,7 +435,7 @@ TEST_CASE("jwt_authenticator_rs256_expired_token", "[jwt_authenticator]") {
 
 TEST_CASE("jwt_error_to_string", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing jwt_error to_string";
+    ORES_LOG_SEV(lg, info) << "Testing jwt_error to_string";
 
     REQUIRE(to_string(jwt_error::invalid_token) == "Invalid token");
     REQUIRE(to_string(jwt_error::expired_token) == "Token has expired");
@@ -459,7 +459,7 @@ jwt_claims claims_expiring_in_an_hour() {
 
 TEST_CASE("jwt_authenticator_rejects_a_token_from_another_issuer", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing issuer mismatch";
+    ORES_LOG_SEV(lg, info) << "Testing issuer mismatch";
 
     auto signer = jwt_authenticator::create_hs256(test_secret, "another-issuer", test_audience);
     auto verifier = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
@@ -474,7 +474,7 @@ TEST_CASE("jwt_authenticator_rejects_a_token_from_another_issuer", "[jwt_authent
 
 TEST_CASE("jwt_authenticator_rejects_a_token_for_another_audience", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing audience mismatch";
+    ORES_LOG_SEV(lg, info) << "Testing audience mismatch";
 
     auto signer = jwt_authenticator::create_hs256(test_secret, test_issuer, "another-audience");
     auto verifier = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
@@ -489,7 +489,7 @@ TEST_CASE("jwt_authenticator_rejects_a_token_for_another_audience", "[jwt_authen
 
 TEST_CASE("jwt_authenticator_allow_expired_accepts_what_validate_rejects", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the refresh path's leeway";
+    ORES_LOG_SEV(lg, info) << "Testing the refresh path's leeway";
 
     auto auth = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
 
@@ -512,7 +512,7 @@ TEST_CASE("jwt_authenticator_allow_expired_accepts_what_validate_rejects", "[jwt
 
 TEST_CASE("jwt_authenticator_allow_expired_still_rejects_a_bad_signature", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the leeway's signature check";
+    ORES_LOG_SEV(lg, info) << "Testing the leeway's signature check";
 
     auto auth = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
 
@@ -536,7 +536,7 @@ TEST_CASE("jwt_authenticator_allow_expired_still_rejects_a_bad_signature", "[jwt
 
 TEST_CASE("jwt_authenticator_rs256_verifier_rejects_an_hs256_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the algorithm confusion case";
+    ORES_LOG_SEV(lg, info) << "Testing the algorithm confusion case";
 
     const auto keys = generate_rsa_keypair();
     auto verifier =
@@ -556,7 +556,7 @@ TEST_CASE("jwt_authenticator_rs256_verifier_rejects_an_hs256_token", "[jwt_authe
 
 TEST_CASE("jwt_authenticator_reports_missing_claims", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a token that omits a required claim";
+    ORES_LOG_SEV(lg, info) << "Testing a token that omits a required claim";
 
     // The signer sets no issuer, so the token carries no iss claim, while the
     // verifier requires one.
@@ -573,7 +573,7 @@ TEST_CASE("jwt_authenticator_reports_missing_claims", "[jwt_authenticator]") {
 
 TEST_CASE("jwt_authenticator_allow_expired_still_checks_the_audience", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the leeway's audience check";
+    ORES_LOG_SEV(lg, info) << "Testing the leeway's audience check";
 
     auto signer = jwt_authenticator::create_hs256(test_secret, test_issuer, "another-audience");
     auto verifier = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);

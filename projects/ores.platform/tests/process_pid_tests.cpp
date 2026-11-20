@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/process/pid.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -30,7 +30,7 @@ TEST_CASE("current_pid_returns_non_zero", "[process]") {
 
     const auto pid = current_pid();
 
-    BOOST_LOG_SEV(lg, info) << "Current pid: " << pid;
+    ORES_LOG_SEV(lg, info) << "Current pid: " << pid;
 
     REQUIRE(pid > 0);
 }

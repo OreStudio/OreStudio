@@ -31,7 +31,7 @@
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/tenant_presence.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
@@ -88,7 +88,7 @@ public:
              */
             const bool has_tenant =
                 service::has_tenant_of_its_own(repository::read_all_active_tenants(ctx_));
-            BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
             /*
              * The version travels with this read because it is the one a
              * browser makes before it has a session, and a screen states it
@@ -100,7 +100,7 @@ public:
                                             .has_tenant = has_tenant,
                                             .version = utility::version::full_version_string()});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   bootstrap_status_response{.is_in_bootstrap_mode = false,
@@ -113,7 +113,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(bootstrap_handler_lg(), msg);
         auto req = decode<create_initial_admin_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(bootstrap_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
 
@@ -123,7 +123,7 @@ public:
             service::bootstrap_mode_service bms(
                 ctx_, database::service::tenant_context::system_tenant_id, auth_svc);
             if (!bms.is_in_bootstrap_mode()) {
-                BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
+                ORES_LOG_SEV(bootstrap_handler_lg(), warn)
                     << "Rejected " << msg.subject << ": system is not in bootstrap mode";
                 reply(nats_,
                       msg,
@@ -167,21 +167,21 @@ public:
                 (void)pc->load(ores::database::service::tenant_context::system_tenant_id);
             }).detach();
 
-            BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   create_initial_admin_response{.success = true,
                                                 .account_id = account_id_str,
                                                 .tenant_id = ctx_.tenant_id().to_string()});
         } catch (const ores::database::repository::repository_exception& e) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), error)
+            ORES_LOG_SEV(bootstrap_handler_lg(), error)
                 << msg.subject << " failed (" << e.sqlstate() << "): " << e.what();
             reply(nats_,
                   msg,
                   create_initial_admin_response{.success = false,
                                                 .error_message = create_refusal(e.sqlstate())});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   create_initial_admin_response{.success = false,

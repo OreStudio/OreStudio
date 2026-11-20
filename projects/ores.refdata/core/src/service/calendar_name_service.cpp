@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/calendar_name.hpp"
 #include "ores.refdata.api/messaging/calendar_name_protocol.hpp"
 #include "ores.refdata.core/repository/calendar_name_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -441,12 +439,12 @@ calendar_name_service::prepare_change(const messaging::calendar_name_change& cha
 
 std::vector<domain::calendar_name> calendar_name_service::list_calendar_names(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all calendar names";
+    ORES_LOG_SEV(lg(), debug) << "Listing all calendar names";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t calendar_name_service::count_calendar_names() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total calendar names count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total calendar names count";
     return repo_.get_total_calendar_name_count(ctx_);
 }
 
@@ -454,14 +452,14 @@ std::uint32_t calendar_name_service::count_calendar_names() {
 std::optional<domain::calendar_name>
 calendar_name_service::get_calendar_name_at_version(const std::string& code,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calendar name at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting calendar name at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::calendar_name>
 calendar_name_service::get_calendar_name(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calendar name. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting calendar name. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -476,11 +474,11 @@ calendar_name_service::get_calendar_names(const std::vector<std::string>& codes)
 void calendar_name_service::save_calendar_name(const domain::calendar_name& v) {
     if (v.code.empty())
         throw std::invalid_argument("Calendar Name code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving calendar name. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving calendar name. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved calendar name. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved calendar name. " << "code: " << v.code;
 }
 
 void calendar_name_service::save_calendar_names(
@@ -489,7 +487,7 @@ void calendar_name_service::save_calendar_names(
         if (e.code.empty())
             throw std::invalid_argument("Calendar Name code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << calendar_names.size() << " calendar names";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << calendar_names.size() << " calendar names";
     auto ts = calendar_names;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -498,9 +496,9 @@ void calendar_name_service::save_calendar_names(
 }
 
 void calendar_name_service::delete_calendar_name(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar name. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing calendar name. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed calendar name. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed calendar name. " << "code: " << code;
 }
 
 void calendar_name_service::delete_calendar_names(const std::vector<std::string>& codes) {
@@ -509,7 +507,7 @@ void calendar_name_service::delete_calendar_names(const std::vector<std::string>
 
 std::vector<domain::calendar_name>
 calendar_name_service::get_calendar_name_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for calendar name. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for calendar name. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

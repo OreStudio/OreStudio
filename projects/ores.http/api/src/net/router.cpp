@@ -231,7 +231,7 @@ domain::route route_builder::build() const {
 // router implementation
 
 router::router() {
-    BOOST_LOG_SEV(lg(), debug) << "Router created";
+    ORES_LOG_SEV(lg(), debug) << "Router created";
 }
 
 route_builder router::get(const std::string& pattern) {
@@ -262,8 +262,8 @@ void router::add_route(const domain::route& route) {
     if (!route.auth_declared)
         throw undeclared_auth(route.method, route.pattern);
 
-    BOOST_LOG_SEV(lg(), info) << "Registered route: " << static_cast<int>(route.method) << " "
-                              << route.pattern;
+    ORES_LOG_SEV(lg(), info) << "Registered route: " << static_cast<int>(route.method) << " "
+                             << route.pattern;
     routes_.push_back(route);
     ranks_.push_back(specificity_of(route.pattern));
 }
@@ -273,8 +273,8 @@ router::match(domain::http_method method,
               const std::string& path,
               std::unordered_map<std::string, std::string>& path_params) const {
 
-    BOOST_LOG_SEV(lg(), trace) << "Matching path: " << path
-                               << " method: " << static_cast<int>(method);
+    ORES_LOG_SEV(lg(), trace) << "Matching path: " << path
+                              << " method: " << static_cast<int>(method);
 
     /*
      * A path two patterns match goes to the more specific one, as the BFF's
@@ -301,10 +301,10 @@ router::match(domain::http_method method,
     }
 
     if (best == nullptr) {
-        BOOST_LOG_SEV(lg(), trace) << "No matching route found for: " << path;
+        ORES_LOG_SEV(lg(), trace) << "No matching route found for: " << path;
         return std::nullopt;
     }
-    BOOST_LOG_SEV(lg(), trace) << "Matched route: " << best->pattern;
+    ORES_LOG_SEV(lg(), trace) << "Matched route: " << best->pattern;
     for (auto& [name, value] : best_params)
         path_params[name] = std::move(value);
     return *best;

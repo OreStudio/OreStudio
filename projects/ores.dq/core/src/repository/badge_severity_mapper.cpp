@@ -27,8 +27,6 @@
 #include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.dq.api/domain/badge_severity_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/badge_severity_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::dq::repository {
@@ -37,7 +35,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::badge_severity badge_severity_mapper::map(const badge_severity_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::badge_severity r;
     r.version = v.version;
@@ -52,12 +50,12 @@ domain::badge_severity badge_severity_mapper::map(const badge_severity_entity& v
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 badge_severity_entity badge_severity_mapper::map(const domain::badge_severity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     badge_severity_entity r;
     r.code = v.code;
@@ -71,7 +69,7 @@ badge_severity_entity badge_severity_mapper::map(const domain::badge_severity& v
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

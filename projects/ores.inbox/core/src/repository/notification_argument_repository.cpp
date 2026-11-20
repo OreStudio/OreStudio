@@ -30,9 +30,7 @@
 #include "ores.inbox.api/domain/notification_argument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/notification_argument_entity.hpp"
 #include "ores.inbox.core/repository/notification_argument_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -193,8 +191,8 @@ void notification_argument_repository::write(
 
 void notification_argument_repository::write(const domain::notification_argument& argument,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing notification argument to database: "
-                               << argument.notification_id << "/" << argument.name;
+    ORES_LOG_SEV(lg(), debug) << "Writing notification argument to database: "
+                              << argument.notification_id << "/" << argument.name;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(argument.notification_id, argument.name) :
                              std::vector<domain::notification_argument>{};
@@ -208,8 +206,8 @@ void notification_argument_repository::write(const domain::notification_argument
 void notification_argument_repository::write(
     const std::vector<domain::notification_argument>& arguments,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing notification arguments to database. Count: "
-                               << arguments.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing notification arguments to database. Count: "
+                              << arguments.size();
     if (claims.size() != arguments.size())
         throw std::invalid_argument(
             "notification_argument_repository::write: one claim is needed for each row");
@@ -248,8 +246,8 @@ std::vector<domain::notification_argument> notification_argument_repository::rea
 
 std::vector<domain::notification_argument>
 notification_argument_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification arguments with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification arguments with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_argument_entity>> |
@@ -269,8 +267,8 @@ notification_argument_repository::read_latest(std::uint32_t offset, std::uint32_
 std::vector<domain::notification_argument>
 notification_argument_repository::read_latest(const boost::uuids::uuid& notification_id,
                                               const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification argument. " << notification_id << "/"
-                               << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification argument. " << notification_id << "/"
+                              << name;
 
     static constexpr auto max = db_timestamp::max();
     const auto notification_id_str = boost::uuids::to_string(notification_id);
@@ -291,7 +289,7 @@ notification_argument_repository::read_latest(const boost::uuids::uuid& notifica
 }
 
 std::uint32_t notification_argument_repository::get_total_argument_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification arguments count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active notification arguments count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -300,15 +298,15 @@ std::uint32_t notification_argument_repository::get_total_argument_count() {
 
     const auto count = query_builder::execute_count_query<notification_argument_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification arguments");
-    BOOST_LOG_SEV(lg(), debug) << "Total active notification arguments count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active notification arguments count: " << count;
     return count;
 }
 
 std::vector<domain::notification_argument>
 notification_argument_repository::read_latest_by_notification(
     const boost::uuids::uuid& notification_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification arguments. Notification: "
-                               << notification_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification arguments. Notification: "
+                              << notification_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto notification_id_str = boost::uuids::to_string(notification_id);
@@ -332,7 +330,7 @@ notification_argument_repository::read_latest_by_notification(
 
 std::vector<domain::notification_argument>
 notification_argument_repository::read_latest_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification arguments. Name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification arguments. Name: " << name;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -356,8 +354,8 @@ std::vector<domain::notification_argument>
 notification_argument_repository::read_latest_by_notification(
     const boost::uuids::uuid& notification_id, std::uint32_t offset, std::uint32_t limit) {
     const auto notification_id_str = boost::uuids::to_string(notification_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification arguments. Notification: "
-                               << notification_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification arguments. Notification: "
+                              << notification_id << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -382,7 +380,7 @@ notification_argument_repository::read_latest_by_notification(
 std::uint32_t notification_argument_repository::get_total_argument_count_by_notification(
     const boost::uuids::uuid& notification_id) {
     const auto notification_id_str = boost::uuids::to_string(notification_id);
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active notification arguments count. Notification: "
         << notification_id;
     static constexpr auto max = db_timestamp::max();
@@ -395,15 +393,15 @@ std::uint32_t notification_argument_repository::get_total_argument_count_by_noti
 
     const auto count = query_builder::execute_count_query<notification_argument_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification arguments");
-    BOOST_LOG_SEV(lg(), debug) << "Total active notification arguments count by notification: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active notification arguments count by notification: "
+                              << count;
     return count;
 }
 
 std::uint32_t
 notification_argument_repository::get_total_argument_count_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification arguments count. Name: "
-                               << name;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active notification arguments count. Name: "
+                              << name;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -413,14 +411,14 @@ notification_argument_repository::get_total_argument_count_by_name(const std::st
 
     const auto count = query_builder::execute_count_query<notification_argument_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification arguments");
-    BOOST_LOG_SEV(lg(), debug) << "Total active notification arguments count by name: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active notification arguments count by name: " << count;
     return count;
 }
 
 std::vector<notification_argument_history_row>
 notification_argument_repository::read_all_by_notification(
     const boost::uuids::uuid& notification_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading every version of the notification arguments. Notification: " << notification_id;
 
     const auto notification_id_str = boost::uuids::to_string(notification_id);
@@ -472,8 +470,8 @@ notification_argument_repository::remove_status
 notification_argument_repository::remove(const boost::uuids::uuid& notification_id,
                                          const std::string& name,
                                          std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing notification argument from database: "
-                               << notification_id << "/" << name;
+    ORES_LOG_SEV(lg(), debug) << "Removing notification argument from database: " << notification_id
+                              << "/" << name;
 
     const auto current = read_latest(notification_id, name);
     if (current.empty())
@@ -521,8 +519,8 @@ void notification_argument_repository::remove(
 
 void notification_argument_repository::remove_by_notification(
     const boost::uuids::uuid& notification_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all notification arguments from database: "
-                               << notification_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all notification arguments from database: "
+                              << notification_id;
 
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto tid = ctx_.tenant_id().to_string();

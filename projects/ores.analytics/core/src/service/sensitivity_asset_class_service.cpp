@@ -29,10 +29,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -465,12 +463,12 @@ ores::utility::domain::result sensitivity_asset_class_service::prepare_change(
 
 std::vector<domain::sensitivity_asset_class>
 sensitivity_asset_class_service::list_asset_classes(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all sensitivity asset classes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all sensitivity asset classes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t sensitivity_asset_class_service::count_asset_classes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total sensitivity asset classes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total sensitivity asset classes count";
     return repo_.get_total_asset_class_count(ctx_);
 }
 
@@ -478,16 +476,16 @@ std::uint32_t sensitivity_asset_class_service::count_asset_classes() {
 std::optional<domain::sensitivity_asset_class>
 sensitivity_asset_class_service::get_asset_class_at_version(const std::string& asset_class_code,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting sensitivity asset class at version. "
-                               << "asset_class_code: " << asset_class_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting sensitivity asset class at version. "
+                              << "asset_class_code: " << asset_class_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, asset_class_code, version);
 }
 
 std::optional<domain::sensitivity_asset_class>
 sensitivity_asset_class_service::get_asset_class(const std::string& asset_class_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting sensitivity asset class. "
-                               << "asset_class_code: " << asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting sensitivity asset class. "
+                              << "asset_class_code: " << asset_class_code;
     auto results = repo_.read_latest(ctx_, asset_class_code);
     if (results.empty())
         return std::nullopt;
@@ -502,13 +500,13 @@ std::vector<domain::sensitivity_asset_class> sensitivity_asset_class_service::ge
 void sensitivity_asset_class_service::save_asset_class(const domain::sensitivity_asset_class& v) {
     if (v.asset_class_code.empty())
         throw std::invalid_argument("Sensitivity Asset Class asset_class_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving sensitivity asset class. "
-                               << "asset_class_code: " << v.asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving sensitivity asset class. "
+                              << "asset_class_code: " << v.asset_class_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved sensitivity asset class. "
-                              << "asset_class_code: " << v.asset_class_code;
+    ORES_LOG_SEV(lg(), info) << "Saved sensitivity asset class. "
+                             << "asset_class_code: " << v.asset_class_code;
 }
 
 void sensitivity_asset_class_service::save_asset_classes(
@@ -518,7 +516,7 @@ void sensitivity_asset_class_service::save_asset_classes(
             throw std::invalid_argument(
                 "Sensitivity Asset Class asset_class_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << asset_classes.size() << " sensitivity asset classes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << asset_classes.size() << " sensitivity asset classes";
     auto ts = asset_classes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -527,11 +525,11 @@ void sensitivity_asset_class_service::save_asset_classes(
 }
 
 void sensitivity_asset_class_service::delete_asset_class(const std::string& asset_class_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing sensitivity asset class. "
-                               << "asset_class_code: " << asset_class_code;
-    repo_.remove(ctx_, asset_class_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed sensitivity asset class. "
+    ORES_LOG_SEV(lg(), debug) << "Removing sensitivity asset class. "
                               << "asset_class_code: " << asset_class_code;
+    repo_.remove(ctx_, asset_class_code);
+    ORES_LOG_SEV(lg(), info) << "Removed sensitivity asset class. "
+                             << "asset_class_code: " << asset_class_code;
 }
 
 void sensitivity_asset_class_service::delete_asset_classes(
@@ -541,8 +539,8 @@ void sensitivity_asset_class_service::delete_asset_classes(
 
 std::vector<domain::sensitivity_asset_class>
 sensitivity_asset_class_service::get_asset_class_history(const std::string& asset_class_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for sensitivity asset class. "
-                               << "asset_class_code: " << asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for sensitivity asset class. "
+                              << "asset_class_code: " << asset_class_code;
     return repo_.read_all(ctx_, asset_class_code);
 }
 

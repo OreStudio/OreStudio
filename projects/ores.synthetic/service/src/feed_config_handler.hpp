@@ -26,7 +26,7 @@
 #include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/feed_start.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -195,7 +195,7 @@ public:
 
         auto req = decode<start_feed_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+            ORES_LOG_SEV(feed_config_handler_lg(), warn)
                 << msg.subject << " — empty or malformed start body; rejecting";
             reply(nats_,
                   msg,
@@ -214,7 +214,7 @@ public:
 
         if (!has_permission(req_ctx, target->row.kind->config_permission) ||
             !feed_kind_registry::permits_run(req_ctx)) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+            ORES_LOG_SEV(feed_config_handler_lg(), warn)
                 << "Rejecting start request: missing permission "
                 << target->row.kind->config_permission << " or " << run_permission << ".";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -245,7 +245,7 @@ public:
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = client_message(e);
-            BOOST_LOG_SEV(feed_config_handler_lg(), error)
+            ORES_LOG_SEV(feed_config_handler_lg(), error)
                 << msg.subject << " — failed to start: " << e.what();
             reply(nats_, msg, resp);
         }
@@ -261,7 +261,7 @@ public:
         const auto& req_ctx = *ctx_expected;
 
         if (!feed_kind_registry::permits_run(req_ctx)) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+            ORES_LOG_SEV(feed_config_handler_lg(), warn)
                 << "Rejecting stop request: missing permission " << run_permission << ".";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -269,7 +269,7 @@ public:
 
         auto req = decode<stop_feed_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+            ORES_LOG_SEV(feed_config_handler_lg(), warn)
                 << msg.subject << " — empty or malformed stop body; rejecting";
             reply(nats_,
                   msg,
@@ -329,13 +329,12 @@ public:
             stop_feed_response resp;
             resp.success = true; // idempotent — 0 stopped means it was already stopped
             resp.message = std::to_string(stopped) + " feed(s) stopped";
-            BOOST_LOG_SEV(feed_config_handler_lg(), info)
+            ORES_LOG_SEV(feed_config_handler_lg(), info)
                 << msg.subject << " — " << resp.message
                 << (source_name.empty() ? " (all)" : " (" + source_name + ")");
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(feed_config_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, stop_feed_response{.success = false, .message = e.what()});
         }
     }
@@ -353,7 +352,7 @@ public:
         // cascade requires — the caller holds every registered kind's config
         // read permission.
         if (!registry_.permits_all_configs(req_ctx)) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+            ORES_LOG_SEV(feed_config_handler_lg(), warn)
                 << "Rejecting list request: missing a registered kind's config read permission.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -370,12 +369,11 @@ public:
                 resp.running_feeds.push_back(std::move(one));
             }
             resp.success = true;
-            BOOST_LOG_SEV(feed_config_handler_lg(), info)
+            ORES_LOG_SEV(feed_config_handler_lg(), info)
                 << msg.subject << " — " << resp.running_feeds.size() << " feed(s) running";
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(feed_config_handler_lg(), error) << msg.subject << " failed: " << e.what();
             // This response carries no message field, so the reason is only in
             // the log; success=false is what the caller can act on.
             reply(nats_, msg, list_feeds_response{.success = false});
@@ -419,8 +417,7 @@ public:
         try {
             reply(nats_, msg, calibrate_class(req_ctx, *kind, *req));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(feed_config_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, calibrate_response{.success = false, .message = client_message(e)});
         }
     }
@@ -456,8 +453,7 @@ public:
         try {
             reply(nats_, msg, review(req_ctx, *req));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(feed_config_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   review_variance_calibration_response{.success = false,
@@ -601,7 +597,7 @@ private:
         if (closed > 0)
             resp.message +=
                 std::format(" {} older proposed fit(s) of the pair were superseded.", closed);
-        BOOST_LOG_SEV(feed_config_handler_lg(), info)
+        ORES_LOG_SEV(feed_config_handler_lg(), info)
             << "Variance calibration " << req.calibration_id << " approved; "
             << resp.repointed_feeds.size() << " feed(s) re-pointed";
         return resp;
@@ -707,7 +703,7 @@ private:
         }
         std::ranges::sort(resp.feeds, {}, &calibrated_feed::source_name);
         resp.success = true;
-        BOOST_LOG_SEV(feed_config_handler_lg(), info)
+        ORES_LOG_SEV(feed_config_handler_lg(), info)
             << "Calibrated " << resp.feeds.size() << " feed(s) of class " << asset_class_code;
         return resp;
     }
@@ -821,7 +817,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+            ORES_LOG_SEV(feed_config_handler_lg(), warn)
                 << "Calibration of " << one.source_name << " was not written: " << e.what();
             one.outcome = "failed";
             one.outcome_message = "The calibration was not written: " + client_message(e);
@@ -829,7 +825,7 @@ private:
         }
         one.outcome = "updated";
         one.outcome_message = words;
-        BOOST_LOG_SEV(feed_config_handler_lg(), info) << one.source_name << ": " << words;
+        ORES_LOG_SEV(feed_config_handler_lg(), info) << one.source_name << ": " << words;
     }
 
     // The daily variance of a GJR-GARCH feed is calibrated from the item the feed resolved to:
@@ -954,7 +950,7 @@ private:
         const auto decided = review(
             req_ctx, {.calibration_id = v.calibration_id, .decision = "approve", .reason = reason});
         if (!decided.success) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+            ORES_LOG_SEV(feed_config_handler_lg(), warn)
                 << "The policy did not approve " << v.calibration_id << ": " << decided.message;
             v.state_reason = "Waits for review: the policy's approval failed: " + decided.message;
             return;
@@ -1242,7 +1238,7 @@ private:
             }
             v.calibration_id = boost::uuids::to_string(calibration_id);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+            ORES_LOG_SEV(feed_config_handler_lg(), warn)
                 << "Variance calibration of " << cfg.source_name << " was not stored: " << e.what();
             v.state = "failed";
             v.input_id.clear();
@@ -1259,7 +1255,7 @@ private:
                                                                  const ores::nats::message& msg) {
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+            ORES_LOG_SEV(feed_config_handler_lg(), warn)
                 << "Rejecting " << verb
                 << " request: auth failed: " << static_cast<int>(ctx_expected.error());
             error_reply(nats_, msg, ctx_expected.error());
@@ -1279,7 +1275,7 @@ private:
         resp.success = true;
         resp.message =
             started ? "Feed started: " + source_name : "Feed already running: " + source_name;
-        BOOST_LOG_SEV(feed_config_handler_lg(), info) << msg.subject << " — " << resp.message;
+        ORES_LOG_SEV(feed_config_handler_lg(), info) << msg.subject << " — " << resp.message;
         reply(nats_, msg, resp);
     }
 

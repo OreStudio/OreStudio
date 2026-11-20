@@ -67,25 +67,25 @@ std::expected<domain::bcch_account, std::string> read_bcch_account() {
 
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         std::string(service_name), 0, 1);
-    BOOST_LOG_SEV(lg(), info) << "Frankfurter : " << cfg.frankfurter_url;
-    BOOST_LOG_SEV(lg(), info) << "New York Fed: " << cfg.nyfed_url;
-    BOOST_LOG_SEV(lg(), info) << "ECB         : " << cfg.ecb_url;
-    BOOST_LOG_SEV(lg(), info) << "BoE         : " << cfg.boe_url;
-    BOOST_LOG_SEV(lg(), info) << "BoC         : " << cfg.boc_url;
-    BOOST_LOG_SEV(lg(), info) << "BoJ         : " << cfg.boj_url;
-    BOOST_LOG_SEV(lg(), info) << "Norges Bank : " << cfg.norges_bank_url;
-    BOOST_LOG_SEV(lg(), info) << "Riksbank    : " << cfg.riksbank_url;
-    BOOST_LOG_SEV(lg(), info) << "RBA         : " << cfg.rba_url;
-    BOOST_LOG_SEV(lg(), info) << "BCB         : " << cfg.bcb_url;
-    BOOST_LOG_SEV(lg(), info) << "Banxico     : " << cfg.banxico_url;
-    BOOST_LOG_SEV(lg(), info) << "BCCh        : " << cfg.bcch_url;
-    BOOST_LOG_SEV(lg(), info) << "CNB         : " << cfg.cnb_url;
-    BOOST_LOG_SEV(lg(), info) << "MAS         : " << cfg.mas_url;
-    BOOST_LOG_SEV(lg(), info) << "Sources     : " << cfg.sources.size();
-    BOOST_LOG_SEV(lg(), info) << "Backfill    : " << cfg.backfill_days << " days";
-    BOOST_LOG_SEV(lg(), info) << "Poll        : every " << cfg.poll_minutes << " minutes";
+    ORES_LOG_SEV(lg(), info) << "Frankfurter : " << cfg.frankfurter_url;
+    ORES_LOG_SEV(lg(), info) << "New York Fed: " << cfg.nyfed_url;
+    ORES_LOG_SEV(lg(), info) << "ECB         : " << cfg.ecb_url;
+    ORES_LOG_SEV(lg(), info) << "BoE         : " << cfg.boe_url;
+    ORES_LOG_SEV(lg(), info) << "BoC         : " << cfg.boc_url;
+    ORES_LOG_SEV(lg(), info) << "BoJ         : " << cfg.boj_url;
+    ORES_LOG_SEV(lg(), info) << "Norges Bank : " << cfg.norges_bank_url;
+    ORES_LOG_SEV(lg(), info) << "Riksbank    : " << cfg.riksbank_url;
+    ORES_LOG_SEV(lg(), info) << "RBA         : " << cfg.rba_url;
+    ORES_LOG_SEV(lg(), info) << "BCB         : " << cfg.bcb_url;
+    ORES_LOG_SEV(lg(), info) << "Banxico     : " << cfg.banxico_url;
+    ORES_LOG_SEV(lg(), info) << "BCCh        : " << cfg.bcch_url;
+    ORES_LOG_SEV(lg(), info) << "CNB         : " << cfg.cnb_url;
+    ORES_LOG_SEV(lg(), info) << "MAS         : " << cfg.mas_url;
+    ORES_LOG_SEV(lg(), info) << "Sources     : " << cfg.sources.size();
+    ORES_LOG_SEV(lg(), info) << "Backfill    : " << cfg.backfill_days << " days";
+    ORES_LOG_SEV(lg(), info) << "Poll        : every " << cfg.poll_minutes << " minutes";
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
@@ -100,8 +100,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     domain::norges_bank_fetcher norges_bank(transport, cfg.norges_bank_url);
     auto riksbank_key = domain::resolve_secret("env:ORES_MARKETDATA_RIKSBANK_API_KEY");
     if (!riksbank_key)
-        BOOST_LOG_SEV(lg(), info) << "The Riksbank is read without a key, at its lower quota: "
-                                  << riksbank_key.error();
+        ORES_LOG_SEV(lg(), info) << "The Riksbank is read without a key, at its lower quota: "
+                                 << riksbank_key.error();
     domain::riksbank_fetcher riksbank(
         transport,
         cfg.riksbank_url,

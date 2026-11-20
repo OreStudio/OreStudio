@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -96,7 +96,7 @@ TEST_CASE("parse_args_unknown_flag_is_error", "[app]") {
 
     auto r = parse_args({"--bogus"}, {{.name = "continue-on-error"}});
     REQUIRE_FALSE(r.has_value());
-    BOOST_LOG_SEV(lg, info) << "Error: " << r.error();
+    ORES_LOG_SEV(lg, info) << "Error: " << r.error();
     CHECK(r.error().find("--bogus") != std::string::npos);
 }
 

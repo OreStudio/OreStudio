@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_EXERCISE_TYPE_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_EXERCISE_TYPE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/exercise_type.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/exercise_type_entity.hpp"

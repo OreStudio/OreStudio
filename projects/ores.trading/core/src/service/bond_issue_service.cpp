@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_issue.hpp"
 #include "ores.trading.api/messaging/bond_issue_protocol.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -459,12 +457,12 @@ bond_issue_service::prepare_change(const messaging::bond_issue_change& change,
 
 std::vector<domain::bond_issue> bond_issue_service::list_issues(std::uint32_t offset,
                                                                 std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond issues";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond issues";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_issue_service::count_issues() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond issues count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond issues count";
     return repo_.get_total_issue_count(ctx_);
 }
 
@@ -472,14 +470,14 @@ std::uint32_t bond_issue_service::count_issues() {
 std::optional<domain::bond_issue>
 bond_issue_service::get_issue_at_version(const boost::uuids::uuid& issue_id,
                                          std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue at version. " << "issue_id: " << issue_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue at version. " << "issue_id: " << issue_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(issue_id), version);
 }
 
 std::optional<domain::bond_issue>
 bond_issue_service::get_issue(const boost::uuids::uuid& issue_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue. " << "issue_id: " << issue_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue. " << "issue_id: " << issue_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(issue_id));
     if (results.empty())
         return std::nullopt;
@@ -494,11 +492,11 @@ bond_issue_service::get_issues(const std::vector<std::string>& issue_ids) {
 void bond_issue_service::save_issue(const domain::bond_issue& v) {
     if (v.issue_id.is_nil())
         throw std::invalid_argument("Bond Issue issue_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond issue. " << "issue_id: " << v.issue_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving bond issue. " << "issue_id: " << v.issue_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond issue. " << "issue_id: " << v.issue_id;
+    ORES_LOG_SEV(lg(), info) << "Saved bond issue. " << "issue_id: " << v.issue_id;
 }
 
 void bond_issue_service::save_issues(const std::vector<domain::bond_issue>& issues) {
@@ -506,7 +504,7 @@ void bond_issue_service::save_issues(const std::vector<domain::bond_issue>& issu
         if (e.issue_id.is_nil())
             throw std::invalid_argument("Bond Issue issue_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << issues.size() << " bond issues";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << issues.size() << " bond issues";
     auto ts = issues;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -515,9 +513,9 @@ void bond_issue_service::save_issues(const std::vector<domain::bond_issue>& issu
 }
 
 void bond_issue_service::delete_issue(const boost::uuids::uuid& issue_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond issue. " << "issue_id: " << issue_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond issue. " << "issue_id: " << issue_id;
     repo_.remove(ctx_, boost::uuids::to_string(issue_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed bond issue. " << "issue_id: " << issue_id;
+    ORES_LOG_SEV(lg(), info) << "Removed bond issue. " << "issue_id: " << issue_id;
 }
 
 void bond_issue_service::delete_issues(const std::vector<std::string>& issue_ids) {
@@ -525,7 +523,7 @@ void bond_issue_service::delete_issues(const std::vector<std::string>& issue_ids
 }
 
 std::vector<domain::bond_issue> bond_issue_service::get_issue_history(const std::string& issue_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond issue. " << "issue_id: " << issue_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond issue. " << "issue_id: " << issue_id;
     return repo_.read_all(ctx_, issue_id);
 }
 

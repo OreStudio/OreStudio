@@ -29,10 +29,8 @@
 #include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.dq.api/messaging/badge_severity_protocol.hpp"
 #include "ores.dq.core/repository/badge_severity_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -446,26 +444,26 @@ badge_severity_service::prepare_change(const messaging::badge_severity_change& c
 
 std::vector<domain::badge_severity> badge_severity_service::list_severities(std::uint32_t offset,
                                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all badge severities";
+    ORES_LOG_SEV(lg(), debug) << "Listing all badge severities";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t badge_severity_service::count_severities() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total badge severities count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total badge severities count";
     return repo_.get_total_severity_count(ctx_);
 }
 
 
 std::optional<domain::badge_severity>
 badge_severity_service::get_severity_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting badge severity at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting badge severity at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::badge_severity>
 badge_severity_service::get_severity(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting badge severity. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting badge severity. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -480,11 +478,11 @@ badge_severity_service::get_severities(const std::vector<std::string>& codes) {
 void badge_severity_service::save_severity(const domain::badge_severity& v) {
     if (v.code.empty())
         throw std::invalid_argument("Badge Severity code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving badge severity. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving badge severity. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved badge severity. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved badge severity. " << "code: " << v.code;
 }
 
 void badge_severity_service::save_severities(
@@ -493,7 +491,7 @@ void badge_severity_service::save_severities(
         if (e.code.empty())
             throw std::invalid_argument("Badge Severity code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << severities.size() << " badge severities";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << severities.size() << " badge severities";
     auto ts = severities;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -502,9 +500,9 @@ void badge_severity_service::save_severities(
 }
 
 void badge_severity_service::delete_severity(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing badge severity. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing badge severity. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed badge severity. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed badge severity. " << "code: " << code;
 }
 
 void badge_severity_service::delete_severities(const std::vector<std::string>& codes) {
@@ -513,7 +511,7 @@ void badge_severity_service::delete_severities(const std::vector<std::string>& c
 
 std::vector<domain::badge_severity>
 badge_severity_service::get_severity_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for badge severity. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for badge severity. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -21,7 +21,7 @@
 #define ORES_TRADING_CORE_MESSAGING_TRADE_OPERATIONS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -81,7 +81,7 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
-        BOOST_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -94,7 +94,7 @@ public:
         }
         auto req = decode<book_trade_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(trade_operations_handler_lg(), warn)
+            ORES_LOG_SEV(trade_operations_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -116,7 +116,7 @@ public:
         } catch (const std::exception& e) {
             // The service reports a conflict in the response; an exception is
             // the store refusing the write, such as a check the trade fails.
-            BOOST_LOG_SEV(trade_operations_handler_lg(), error)
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             book_trade_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -136,7 +136,7 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
-        BOOST_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -149,7 +149,7 @@ public:
         }
         auto req = decode<execute_trade_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(trade_operations_handler_lg(), warn)
+            ORES_LOG_SEV(trade_operations_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -160,7 +160,7 @@ public:
         } catch (const std::exception& e) {
             // A transition the store refuses is the exception here: the machine
             // checks the activity against the state it finds.
-            BOOST_LOG_SEV(trade_operations_handler_lg(), error)
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             execute_trade_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -180,7 +180,7 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
-        BOOST_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -194,7 +194,7 @@ public:
         }
         auto req = decode<complete_structure_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(trade_operations_handler_lg(), warn)
+            ORES_LOG_SEV(trade_operations_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -203,7 +203,7 @@ public:
         try {
             reply(nats_, msg, svc.complete_structure(*req));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(trade_operations_handler_lg(), error)
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             complete_structure_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -223,7 +223,7 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
-        BOOST_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -236,7 +236,7 @@ public:
         }
         auto req = decode<put_bond_issue_composite_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(trade_operations_handler_lg(), warn)
+            ORES_LOG_SEV(trade_operations_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -245,7 +245,7 @@ public:
         try {
             reply(nats_, msg, svc.put_bond_issue_composite(*req));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(trade_operations_handler_lg(), error)
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_bond_issue_composite_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -264,7 +264,7 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
-        BOOST_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -287,7 +287,7 @@ public:
                 resp.message = "Invalid export_portfolio_request.";
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(trade_operations_handler_lg(), error)
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
@@ -304,7 +304,7 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
-        BOOST_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -357,12 +357,12 @@ public:
             for (const auto& item : payload.items)
                 resp.trade_versions[boost::uuids::to_string(item.anchor.id)] = item.anchor.version;
             resp.message = "Exported " + std::to_string(trade_count) + " trades to storage.";
-            BOOST_LOG_SEV(trade_operations_handler_lg(), info)
+            ORES_LOG_SEV(trade_operations_handler_lg(), info)
                 << "export_trades_to_storage: exported " << trade_count << " trades, "
                 << blob.size() << " bytes (pre-compression) to " << req->storage_bucket << "/"
                 << req->storage_key;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(trade_operations_handler_lg(), error)
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.message = e.what();
         }

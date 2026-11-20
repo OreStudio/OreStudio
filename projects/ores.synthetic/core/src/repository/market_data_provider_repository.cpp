@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.synthetic.api/domain/market_data_provider.hpp"
 #include "ores.synthetic.api/domain/market_data_provider_json_io.hpp" // IWYU pragma: keep.
 #include "ores.synthetic.api/messaging/market_data_provider_protocol.hpp"
 #include "ores.synthetic.core/repository/market_data_provider_entity.hpp"
 #include "ores.synthetic.core/repository/market_data_provider_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -236,7 +234,7 @@ void market_data_provider_repository::write(const context& ctx,
 void market_data_provider_repository::write(const context& ctx,
                                             const domain::market_data_provider& v,
                                             const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market data provider. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing market data provider. " << "code: " << v.code;
     const auto t = market_data_provider_apply_claim(
         v,
         claim,
@@ -253,7 +251,7 @@ void market_data_provider_repository::write(
     const context& ctx,
     const std::vector<domain::market_data_provider>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market data providers. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing market data providers. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "market_data_provider_repository::write: one claim is needed for each row");
@@ -295,7 +293,7 @@ market_data_provider_repository::read_latest(const context& ctx) {
 
 std::vector<domain::market_data_provider>
 market_data_provider_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market data provider. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market data provider. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -315,7 +313,7 @@ market_data_provider_repository::read_latest(const context& ctx, const std::stri
 
 std::vector<domain::market_data_provider>
 market_data_provider_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all market data provider versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all market data provider versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -334,8 +332,8 @@ market_data_provider_repository::read_all(const context& ctx, const std::string&
 
 std::optional<domain::market_data_provider> market_data_provider_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading market data provider at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading market data provider at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
@@ -358,7 +356,7 @@ std::optional<domain::market_data_provider> market_data_provider_repository::rea
 
 market_data_provider_repository::remove_status market_data_provider_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market data provider. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing market data provider. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -397,8 +395,8 @@ std::vector<domain::market_data_provider> market_data_provider_repository::read_
     const ores::utility::domain::order& order,
     const std::optional<messaging::market_data_providers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market data providers with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market data providers with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
@@ -421,7 +419,7 @@ std::uint32_t market_data_provider_repository::get_total_provider_count(
     const context& ctx,
     const std::optional<messaging::market_data_providers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market data provider count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active market data provider count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

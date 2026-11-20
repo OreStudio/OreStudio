@@ -26,7 +26,6 @@
 #include "ores.compute.api/domain/platform.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 #include "ores.compute.core/repository/platform_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -480,25 +478,25 @@ platform_service::prepare_change(const messaging::platform_change& change,
 
 std::vector<domain::platform> platform_service::list_platforms(std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all compute platforms";
+    ORES_LOG_SEV(lg(), debug) << "Listing all compute platforms";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t platform_service::count_platforms() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total compute platforms count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total compute platforms count";
     return repo_.get_total_platform_count(ctx_);
 }
 
 
 std::optional<domain::platform>
 platform_service::get_platform_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute platform at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute platform at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::platform> platform_service::get_platform(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute platform. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute platform. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -506,7 +504,7 @@ std::optional<domain::platform> platform_service::get_platform(const boost::uuid
 }
 
 std::optional<domain::platform> platform_service::get_platform_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute platform by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute platform by code: " << code;
     messaging::platform_key k;
     k.code = code;
     auto found = platform_read_one(repo_, ctx_, k);
@@ -522,11 +520,11 @@ std::vector<domain::platform> platform_service::get_platforms(const std::vector<
 void platform_service::save_platform(const domain::platform& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Platform id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving compute platform. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving compute platform. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved compute platform. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved compute platform. " << "id: " << v.id;
 }
 
 void platform_service::save_platforms(const std::vector<domain::platform>& platforms) {
@@ -534,7 +532,7 @@ void platform_service::save_platforms(const std::vector<domain::platform>& platf
         if (e.id.is_nil())
             throw std::invalid_argument("Platform id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << platforms.size() << " compute platforms";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << platforms.size() << " compute platforms";
     auto ts = platforms;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -543,9 +541,9 @@ void platform_service::save_platforms(const std::vector<domain::platform>& platf
 }
 
 void platform_service::delete_platform(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing compute platform. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing compute platform. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed compute platform. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed compute platform. " << "id: " << id;
 }
 
 void platform_service::delete_platforms(const std::vector<std::string>& ids) {
@@ -553,7 +551,7 @@ void platform_service::delete_platforms(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::platform> platform_service::get_platform_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for compute platform. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for compute platform. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

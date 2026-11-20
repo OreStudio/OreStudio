@@ -28,7 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/badge_mapping_protocol.hpp"
 #include "ores.dq.core/service/badge_mapping_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -73,7 +73,7 @@ public:
      * @brief Serves dq.v1.badge_mappings.list.
      */
     void list_badge_mappings(ores::nats::message msg) {
-        BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -88,20 +88,20 @@ public:
         }
         auto req = decode<list_badge_mappings_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::badge_mapping_service svc(req_ctx);
         try {
             auto response = svc.list_badge_mappings(*req);
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), error)
+            ORES_LOG_SEV(badge_mapping_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_badge_mappings_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -115,7 +115,7 @@ public:
      * @brief Serves dq.v1.badge_mappings.get.
      */
     void get_badge_mapping(ores::nats::message msg) {
-        BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -130,20 +130,20 @@ public:
         }
         auto req = decode<get_badge_mapping_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::badge_mapping_service svc(req_ctx);
         try {
             auto response = svc.get_badge_mapping(*req);
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), error)
+            ORES_LOG_SEV(badge_mapping_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_badge_mapping_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -157,7 +157,7 @@ public:
      * @brief Serves dq.v1.badge_mappings.get_many.
      */
     void get_many_badge_mappings(ores::nats::message msg) {
-        BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -172,20 +172,20 @@ public:
         }
         auto req = decode<get_many_badge_mappings_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::badge_mapping_service svc(req_ctx);
         try {
             auto response = svc.get_many_badge_mappings(*req);
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), error)
+            ORES_LOG_SEV(badge_mapping_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_badge_mappings_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -199,7 +199,7 @@ public:
      * @brief Serves dq.v1.badge_mappings.put.
      */
     void put_badge_mapping(ores::nats::message msg) {
-        BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -214,20 +214,20 @@ public:
         }
         auto req = decode<put_badge_mapping_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::badge_mapping_service svc(req_ctx);
         try {
             auto response = svc.put_badge_mapping(*req);
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), error)
+            ORES_LOG_SEV(badge_mapping_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_badge_mapping_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -241,7 +241,7 @@ public:
      * @brief Serves dq.v1.badge_mappings.put_many.
      */
     void put_many_badge_mappings(ores::nats::message msg) {
-        BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -256,20 +256,20 @@ public:
         }
         auto req = decode<put_many_badge_mappings_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::badge_mapping_service svc(req_ctx);
         try {
             auto response = svc.put_many_badge_mappings(*req);
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), error)
+            ORES_LOG_SEV(badge_mapping_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_badge_mappings_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -283,7 +283,7 @@ public:
      * @brief Serves dq.v1.badge_mappings.delete.
      */
     void delete_badge_mapping(ores::nats::message msg) {
-        BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -298,20 +298,20 @@ public:
         }
         auto req = decode<delete_badge_mapping_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::badge_mapping_service svc(req_ctx);
         try {
             auto response = svc.delete_badge_mapping(*req);
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), error)
+            ORES_LOG_SEV(badge_mapping_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_badge_mapping_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -325,7 +325,7 @@ public:
      * @brief Serves dq.v1.badge_mappings.delete_many.
      */
     void delete_many_badge_mappings(ores::nats::message msg) {
-        BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -340,20 +340,20 @@ public:
         }
         auto req = decode<delete_many_badge_mappings_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::badge_mapping_service svc(req_ctx);
         try {
             auto response = svc.delete_many_badge_mappings(*req);
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), error)
+            ORES_LOG_SEV(badge_mapping_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_badge_mappings_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -367,7 +367,7 @@ public:
      * @brief Serves dq.v1.badge_mappings.list_by_code_domain_code.
      */
     void list_by_code_domain_code_badge_mappings(ores::nats::message msg) {
-        BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -382,20 +382,20 @@ public:
         }
         auto req = decode<list_by_code_domain_code_badge_mappings_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::badge_mapping_service svc(req_ctx);
         try {
             auto response = svc.list_by_code_domain_code_badge_mappings(*req);
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(badge_mapping_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(badge_mapping_handler_lg(), error)
+            ORES_LOG_SEV(badge_mapping_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_code_domain_code_badge_mappings_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

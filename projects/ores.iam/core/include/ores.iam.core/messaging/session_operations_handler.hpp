@@ -26,7 +26,7 @@
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.iam.api/messaging/session_statistics_operations_protocol.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -102,19 +102,19 @@ public:
                 if (!row.end_time.has_value())
                     open.push_back(std::move(row));
             }
-            BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   get_active_sessions_response{.sessions = std::move(open), .success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_active_sessions_response{.success = false, .message = e.what()});
         }
     }
 
     void samples(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(session_handler_lg(), msg);
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, get_session_samples_response{.success = true});
     }
 
@@ -141,7 +141,7 @@ public:
         }
         auto request = decode<end_session_request>(msg);
         if (!request) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -170,11 +170,11 @@ public:
                              session->bytes_sent,
                              session->bytes_received);
 
-            BOOST_LOG_SEV(session_handler_lg(), info)
+            ORES_LOG_SEV(session_handler_lg(), info)
                 << "Ended session " << boost::lexical_cast<std::string>(request->session_id);
             reply(nats_, msg, end_session_response{.success = true, .message = "Session ended"});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, end_session_response{.success = false, .message = e.what()});
         }
     }
@@ -201,7 +201,7 @@ public:
         }
         auto request = decode<get_session_statistics_request>(msg);
         if (!request) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -254,13 +254,13 @@ public:
                 stats.push_back(std::move(r));
             }
 
-            BOOST_LOG_SEV(session_handler_lg(), debug)
+            ORES_LOG_SEV(session_handler_lg(), debug)
                 << "Completed " << msg.subject << " with " << stats.size() << " row(s)";
             reply(nats_,
                   msg,
                   get_session_statistics_response{.rows = std::move(stats), .success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(
                 nats_, msg, get_session_statistics_response{.success = false, .message = e.what()});
         }

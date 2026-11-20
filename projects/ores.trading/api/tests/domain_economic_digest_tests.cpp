@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/bond_amortization_data.hpp"
 #include "ores.trading.api/domain/bond_fixed_leg_data.hpp"
 #include "ores.trading.api/domain/bond_float_data.hpp"
@@ -114,7 +114,7 @@ TEST_CASE("economic_digest_is_stable_for_the_same_value", "[domain]") {
     const auto sut = make_bond_instrument("1000000.25");
     const auto first = economic_digest(sut);
     const auto second = economic_digest(sut);
-    BOOST_LOG_SEV(lg, info) << "Digest: " << first;
+    ORES_LOG_SEV(lg, info) << "Digest: " << first;
 
     CHECK(first == second);
     CHECK(first.size() == 64);
@@ -126,8 +126,8 @@ TEST_CASE("economic_digest_changes_when_an_economic_field_changes", "[domain]") 
 
     const auto baseline = make_bond_instrument("1000000.25");
     const auto amended = make_bond_instrument("1000000.26");
-    BOOST_LOG_SEV(lg, info) << "Baseline: " << economic_digest(baseline);
-    BOOST_LOG_SEV(lg, info) << "Amended:  " << economic_digest(amended);
+    ORES_LOG_SEV(lg, info) << "Baseline: " << economic_digest(baseline);
+    ORES_LOG_SEV(lg, info) << "Amended:  " << economic_digest(amended);
 
     CHECK(economic_digest(baseline) != economic_digest(amended));
 
@@ -145,8 +145,8 @@ TEST_CASE("economic_digest_changes_when_an_economic_text_changes", "[domain]") {
     bond_amortization_data amended;
     amended.type = "Annuity";
 
-    BOOST_LOG_SEV(lg, info) << "Baseline: " << economic_digest(baseline);
-    BOOST_LOG_SEV(lg, info) << "Amended:  " << economic_digest(amended);
+    ORES_LOG_SEV(lg, info) << "Baseline: " << economic_digest(baseline);
+    ORES_LOG_SEV(lg, info) << "Amended:  " << economic_digest(amended);
 
     CHECK(economic_digest(baseline) != economic_digest(amended));
 }
@@ -177,8 +177,8 @@ TEST_CASE("economic_digest_ignores_identity_and_audit_fields", "[domain]") {
     changed.audit.change_commentary = "a change nobody agreed to";
     changed.audit.recorded_at = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Baseline:      " << expected;
-    BOOST_LOG_SEV(lg, info) << "Audit changed: " << economic_digest(changed);
+    ORES_LOG_SEV(lg, info) << "Baseline:      " << expected;
+    ORES_LOG_SEV(lg, info) << "Audit changed: " << economic_digest(changed);
 
     CHECK(economic_digest(changed) == expected);
 }
@@ -210,8 +210,8 @@ TEST_CASE("economic_digest_of_a_trade_ignores_its_audit_tail", "[domain]") {
     changed.change_commentary = "a change nobody agreed to";
     changed.recorded_at = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Baseline:      " << expected;
-    BOOST_LOG_SEV(lg, info) << "Audit changed: " << economic_digest(changed);
+    ORES_LOG_SEV(lg, info) << "Baseline:      " << expected;
+    ORES_LOG_SEV(lg, info) << "Audit changed: " << economic_digest(changed);
 
     CHECK(economic_digest(changed) == expected);
 }
@@ -225,8 +225,8 @@ TEST_CASE("economic_digest_of_a_trade_moves_with_a_classification", "[domain]") 
     auto amended = baseline;
     amended.counterparty_scope = ores::trading::domain::counterparty_scope::intra_entity;
 
-    BOOST_LOG_SEV(lg, info) << "Baseline: " << economic_digest(baseline);
-    BOOST_LOG_SEV(lg, info) << "Amended:  " << economic_digest(amended);
+    ORES_LOG_SEV(lg, info) << "Baseline: " << economic_digest(baseline);
+    ORES_LOG_SEV(lg, info) << "Amended:  " << economic_digest(amended);
 
     CHECK(economic_digest(baseline) != economic_digest(amended));
 }
@@ -242,8 +242,8 @@ TEST_CASE("economic_digest_treats_a_sequence_as_ordered_elements", "[domain]") {
     descending.rates = {bond_float_data{decimal_of("0.02"), std::string("2026-07-01")},
                         bond_float_data{decimal_of("0.01"), std::string("2026-01-01")}};
 
-    BOOST_LOG_SEV(lg, info) << "Ascending:  " << economic_digest(ascending);
-    BOOST_LOG_SEV(lg, info) << "Descending: " << economic_digest(descending);
+    ORES_LOG_SEV(lg, info) << "Ascending:  " << economic_digest(ascending);
+    ORES_LOG_SEV(lg, info) << "Descending: " << economic_digest(descending);
 
     CHECK(economic_digest(ascending) != economic_digest(descending));
 }
@@ -254,8 +254,8 @@ TEST_CASE("economic_digest_does_not_collide_on_ambiguous_concatenation", "[domai
     const ambiguous_pair left{"ab", "c"};
     const ambiguous_pair right{"a", "bc"};
 
-    BOOST_LOG_SEV(lg, info) << "Left:  " << economic_digest(left);
-    BOOST_LOG_SEV(lg, info) << "Right: " << economic_digest(right);
+    ORES_LOG_SEV(lg, info) << "Left:  " << economic_digest(left);
+    ORES_LOG_SEV(lg, info) << "Right: " << economic_digest(right);
 
     CHECK(left.first + left.second == right.first + right.second);
     CHECK(economic_digest(left) != economic_digest(right));
@@ -284,9 +284,9 @@ TEST_CASE("economic_digest_moves_with_an_external_identifier", "[domain]") {
     auto re_keyed = baseline;
     re_keyed.issue_id = uuid_of("00000000-0000-0000-0000-000000000202");
 
-    BOOST_LOG_SEV(lg, info) << "Baseline:   " << economic_digest(baseline);
-    BOOST_LOG_SEV(lg, info) << "Re-pointed: " << economic_digest(re_pointed);
-    BOOST_LOG_SEV(lg, info) << "Re-keyed:   " << economic_digest(re_keyed);
+    ORES_LOG_SEV(lg, info) << "Baseline:   " << economic_digest(baseline);
+    ORES_LOG_SEV(lg, info) << "Re-pointed: " << economic_digest(re_pointed);
+    ORES_LOG_SEV(lg, info) << "Re-keyed:   " << economic_digest(re_keyed);
 
     CHECK(economic_digest(re_pointed) != economic_digest(baseline));
     CHECK(economic_digest(re_keyed) == economic_digest(baseline));
@@ -299,9 +299,9 @@ TEST_CASE("economic_digest_follows_the_declaration_and_not_the_names", "[domain]
     const declared_against_its_names other_amount{"999", "party-1"};
     const declared_against_its_names other_party{"100", "party-2"};
 
-    BOOST_LOG_SEV(lg, info) << "Baseline:     " << economic_digest(baseline);
-    BOOST_LOG_SEV(lg, info) << "Other amount: " << economic_digest(other_amount);
-    BOOST_LOG_SEV(lg, info) << "Other party:  " << economic_digest(other_party);
+    ORES_LOG_SEV(lg, info) << "Baseline:     " << economic_digest(baseline);
+    ORES_LOG_SEV(lg, info) << "Other amount: " << economic_digest(other_amount);
+    ORES_LOG_SEV(lg, info) << "Other party:  " << economic_digest(other_party);
 
     CHECK(economic_digest(other_amount) == economic_digest(baseline));
     CHECK(economic_digest(other_party) != economic_digest(baseline));
@@ -324,8 +324,8 @@ TEST_CASE("economic_digest_is_unchanged_by_the_generated_canonical_form", "[doma
                  bond_float_data{decimal_of("0.02"), std::string("2026-07-01")}};
 
     const auto bond = economic_digest(make_bond_instrument("1000000.25"));
-    BOOST_LOG_SEV(lg, info) << "Bond: " << bond << " trade: " << economic_digest(swap)
-                            << " leg: " << economic_digest(leg);
+    ORES_LOG_SEV(lg, info) << "Bond: " << bond << " trade: " << economic_digest(swap)
+                           << " leg: " << economic_digest(leg);
 
     CHECK(bond == "ed19158ac277a18b8f0b822d35bcb0d7fb13757d312fc9530e19f8d948b90d00");
     CHECK(economic_digest(swap) ==

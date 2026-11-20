@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_segment_reference.hpp"
 #include "ores.refdata.api/messaging/curve_segment_reference_protocol.hpp"
 #include "ores.refdata.core/repository/curve_segment_reference_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -467,12 +465,12 @@ ores::utility::domain::result curve_segment_reference_service::prepare_change(
 std::vector<domain::curve_segment_reference>
 curve_segment_reference_service::list_segment_references(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve segment references";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve segment references";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_segment_reference_service::count_segment_references() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve segment references count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve segment references count";
     return repo_.get_total_segment_reference_count(ctx_);
 }
 
@@ -480,14 +478,14 @@ std::uint32_t curve_segment_reference_service::count_segment_references() {
 std::optional<domain::curve_segment_reference>
 curve_segment_reference_service::get_segment_reference_at_version(const boost::uuids::uuid& id,
                                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment reference at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment reference at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_segment_reference>
 curve_segment_reference_service::get_segment_reference(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment reference. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment reference. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -503,11 +501,11 @@ void curve_segment_reference_service::save_segment_reference(
     const domain::curve_segment_reference& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Segment Reference id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve segment reference. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve segment reference. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve segment reference. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve segment reference. " << "id: " << v.id;
 }
 
 void curve_segment_reference_service::save_segment_references(
@@ -516,8 +514,8 @@ void curve_segment_reference_service::save_segment_references(
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Segment Reference id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << segment_references.size()
-                               << " curve segment references";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << segment_references.size()
+                              << " curve segment references";
     auto ts = segment_references;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -526,9 +524,9 @@ void curve_segment_reference_service::save_segment_references(
 }
 
 void curve_segment_reference_service::delete_segment_reference(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve segment reference. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve segment reference. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve segment reference. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve segment reference. " << "id: " << id;
 }
 
 void curve_segment_reference_service::delete_segment_references(
@@ -538,7 +536,7 @@ void curve_segment_reference_service::delete_segment_references(
 
 std::vector<domain::curve_segment_reference>
 curve_segment_reference_service::get_segment_reference_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve segment reference. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve segment reference. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

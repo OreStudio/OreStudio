@@ -173,7 +173,7 @@ workflow_claim_handler::workflow_claim_handler(ores::nats::service::client& nats
 }
 
 void workflow_claim_handler::claim_step(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "claim_step request received";
+    ORES_LOG_SEV(lg(), debug) << "claim_step request received";
 
     const auto req = decode<claim_step_request>(msg);
     if (!req || req->step_id.empty() || req->tenant_id.empty()) {
@@ -194,21 +194,21 @@ void workflow_claim_handler::claim_step(ores::nats::message msg) {
     try {
         resp = decide(ctx_, step_state_names_, claim_repo_, step_repo_, *req);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
         resp = claim_step_response{.success = false, .message = e.what()};
     }
 
     // A claim on a later attempt is a takeover: the earlier holder's lease ended while the step
     // was still in progress, so two deliveries may now be doing its work. That is worth seeing.
     if (resp.success && resp.claimed && resp.attempts > 1)
-        BOOST_LOG_SEV(lg(), warn) << "Step " << req->step_id << " taken over by " << req->owner
-                                  << " on attempt " << resp.attempts
-                                  << ": the earlier holder's lease ended while it was in progress";
+        ORES_LOG_SEV(lg(), warn) << "Step " << req->step_id << " taken over by " << req->owner
+                                 << " on attempt " << resp.attempts
+                                 << ": the earlier holder's lease ended while it was in progress";
     else if (resp.success && resp.claimed)
-        BOOST_LOG_SEV(lg(), info) << "Step " << req->step_id << " claimed by " << req->owner;
+        ORES_LOG_SEV(lg(), info) << "Step " << req->step_id << " claimed by " << req->owner;
     else
-        BOOST_LOG_SEV(lg(), info) << "Step " << req->step_id << " not claimed by " << req->owner
-                                  << ": " << (resp.message.empty() ? resp.state : resp.message);
+        ORES_LOG_SEV(lg(), info) << "Step " << req->step_id << " not claimed by " << req->owner
+                                 << ": " << (resp.message.empty() ? resp.state : resp.message);
 
     reply(nats_, msg, resp);
 }
@@ -226,15 +226,14 @@ void workflow_claim_handler::renew_step_claim(ores::nats::message msg) {
     try {
         resp = renew(ctx_, step_state_names_, claim_repo_, step_repo_, *req);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
         resp = renew_step_claim_response{.success = false, .message = e.what()};
     }
     if (resp.success && resp.renewed)
-        BOOST_LOG_SEV(lg(), debug)
-            << "Step " << req->step_id << " lease renewed for " << req->owner;
+        ORES_LOG_SEV(lg(), debug) << "Step " << req->step_id << " lease renewed for " << req->owner;
     else
-        BOOST_LOG_SEV(lg(), warn) << "Step " << req->step_id << " lease not renewed for "
-                                  << req->owner << ": " << resp.message;
+        ORES_LOG_SEV(lg(), warn) << "Step " << req->step_id << " lease not renewed for "
+                                 << req->owner << ": " << resp.message;
     reply(nats_, msg, resp);
 }
 

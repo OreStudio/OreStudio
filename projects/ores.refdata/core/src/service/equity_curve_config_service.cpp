@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/messaging/equity_curve_config_protocol.hpp"
 #include "ores.refdata.core/repository/equity_curve_config_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -471,12 +469,12 @@ equity_curve_config_service::prepare_change(const messaging::equity_curve_config
 
 std::vector<domain::equity_curve_config>
 equity_curve_config_service::list_equity_curve_configs(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all equity curve configs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all equity curve configs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t equity_curve_config_service::count_equity_curve_configs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total equity curve configs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total equity curve configs count";
     return repo_.get_total_equity_curve_config_count(ctx_);
 }
 
@@ -484,14 +482,14 @@ std::uint32_t equity_curve_config_service::count_equity_curve_configs() {
 std::optional<domain::equity_curve_config>
 equity_curve_config_service::get_equity_curve_config_at_version(const boost::uuids::uuid& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity curve config at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity curve config at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::equity_curve_config>
 equity_curve_config_service::get_equity_curve_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity curve config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity curve config. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -506,11 +504,11 @@ equity_curve_config_service::get_equity_curve_configs(const std::vector<std::str
 void equity_curve_config_service::save_equity_curve_config(const domain::equity_curve_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Equity Curve Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity curve config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving equity curve config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved equity curve config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved equity curve config. " << "id: " << v.id;
 }
 
 void equity_curve_config_service::save_equity_curve_configs(
@@ -519,8 +517,8 @@ void equity_curve_config_service::save_equity_curve_configs(
         if (e.id.is_nil())
             throw std::invalid_argument("Equity Curve Config id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_curve_configs.size()
-                               << " equity curve configs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << equity_curve_configs.size()
+                              << " equity curve configs";
     auto ts = equity_curve_configs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -529,9 +527,9 @@ void equity_curve_config_service::save_equity_curve_configs(
 }
 
 void equity_curve_config_service::delete_equity_curve_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing equity curve config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing equity curve config. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed equity curve config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed equity curve config. " << "id: " << id;
 }
 
 void equity_curve_config_service::delete_equity_curve_configs(const std::vector<std::string>& ids) {
@@ -540,7 +538,7 @@ void equity_curve_config_service::delete_equity_curve_configs(const std::vector<
 
 std::vector<domain::equity_curve_config>
 equity_curve_config_service::get_equity_curve_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for equity curve config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for equity curve config. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

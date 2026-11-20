@@ -21,7 +21,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.inbox.api/messaging/approval_kind_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/messaging/cut_family_protocol.hpp"
 #include "ores.reporting.api/messaging/cut_resolution_rule_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -99,7 +99,7 @@ std::map<std::string, approval_kind> approval_kinds_of(const http_request& req,
     } catch (const rr::refusal& refused) {
         if (refused.status != ores::http::domain::http_status::forbidden)
             throw;
-        BOOST_LOG_SEV(kind_lg(), ores::logging::debug)
+        ORES_LOG_SEV(kind_lg(), ores::logging::debug)
             << "The approval kinds are not readable by this account, so a kind names no decider.";
     }
     return kinds;

@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/credit_simulation_config.hpp"
 #include "ores.analytics.api/messaging/credit_simulation_config_protocol.hpp"
 #include "ores.analytics.core/repository/credit_simulation_config_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -552,12 +550,12 @@ ores::utility::domain::result credit_simulation_config_service::prepare_change(
 
 std::vector<domain::credit_simulation_config>
 credit_simulation_config_service::list_configs(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all credit simulation configurations";
+    ORES_LOG_SEV(lg(), debug) << "Listing all credit simulation configurations";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t credit_simulation_config_service::count_configs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total credit simulation configurations count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total credit simulation configurations count";
     return repo_.get_total_config_count(ctx_);
 }
 
@@ -565,14 +563,14 @@ std::uint32_t credit_simulation_config_service::count_configs() {
 std::vector<domain::credit_simulation_config>
 credit_simulation_config_service::list_configs_by_configuration_id(
     const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing credit simulation configurations by configuration_id: "
-                               << configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing credit simulation configurations by configuration_id: "
+                              << configuration_id;
     return repo_.read_latest_by_configuration_id(ctx_, configuration_id, offset, limit);
 }
 
 std::uint32_t credit_simulation_config_service::count_configs_by_configuration_id(
     const std::string& configuration_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total credit simulation configurations count by configuration_id: "
         << configuration_id;
     return repo_.get_total_config_count_by_configuration_id(ctx_, configuration_id);
@@ -582,14 +580,14 @@ std::uint32_t credit_simulation_config_service::count_configs_by_configuration_i
 std::optional<domain::credit_simulation_config>
 credit_simulation_config_service::get_config_at_version(const boost::uuids::uuid& id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting credit simulation configuration at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting credit simulation configuration at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::credit_simulation_config>
 credit_simulation_config_service::get_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting credit simulation configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting credit simulation configuration. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -598,7 +596,7 @@ credit_simulation_config_service::get_config(const boost::uuids::uuid& id) {
 
 std::optional<domain::credit_simulation_config>
 credit_simulation_config_service::get_config_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting credit simulation configuration by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting credit simulation configuration by name: " << name;
     messaging::credit_simulation_config_key k;
     k.name = name;
     auto found = credit_simulation_config_read_one(repo_, ctx_, k);
@@ -615,11 +613,11 @@ credit_simulation_config_service::get_configs(const std::vector<std::string>& id
 void credit_simulation_config_service::save_config(const domain::credit_simulation_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Credit Simulation Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving credit simulation configuration. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving credit simulation configuration. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved credit simulation configuration. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved credit simulation configuration. " << "id: " << v.id;
 }
 
 void credit_simulation_config_service::save_configs(
@@ -628,8 +626,7 @@ void credit_simulation_config_service::save_configs(
         if (e.id.is_nil())
             throw std::invalid_argument("Credit Simulation Config id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << configs.size()
-                               << " credit simulation configurations";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << configs.size() << " credit simulation configurations";
     auto ts = configs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -638,9 +635,9 @@ void credit_simulation_config_service::save_configs(
 }
 
 void credit_simulation_config_service::delete_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing credit simulation configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing credit simulation configuration. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed credit simulation configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed credit simulation configuration. " << "id: " << id;
 }
 
 void credit_simulation_config_service::delete_configs(const std::vector<std::string>& ids) {
@@ -649,8 +646,8 @@ void credit_simulation_config_service::delete_configs(const std::vector<std::str
 
 std::vector<domain::credit_simulation_config>
 credit_simulation_config_service::get_config_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for credit simulation configuration. key: "
-                               << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for credit simulation configuration. key: "
+                              << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

@@ -41,7 +41,7 @@ trace correlation.
 
 * Entry points
 
-- =include/ores.logging/make_logger.hpp= — logger factory.
+- =include/ores.logging/logger.hpp= — the logger handle, its factory and =ORES_LOG_SEV=.
 - =include/ores.logging/severity_level.hpp= — severity level enum.
 - =include/ores.logging/lifecycle_manager.hpp= — sink lifecycle base class.
 - =include/ores.logging/logging_options.hpp= — parsed logging configuration.

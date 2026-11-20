@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_COMMODITY_FUTURE_CONVENTION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/commodity_future_convention_protocol.hpp"
@@ -74,8 +74,7 @@ public:
      * @brief Serves refdata.v1.commodity_future_conventions.get.
      */
     void get_commodity_future_convention(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_future_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -88,7 +87,7 @@ public:
         }
         auto req = decode<get_commodity_future_convention_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -96,14 +95,14 @@ public:
         service::commodity_future_convention_service svc(req_ctx);
         try {
             auto response = svc.get_commodity_future_convention(*req);
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), error)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_commodity_future_convention_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -117,8 +116,7 @@ public:
      * @brief Serves refdata.v1.commodity_future_conventions.get_many.
      */
     void get_many_commodity_future_conventions(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_future_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -131,7 +129,7 @@ public:
         }
         auto req = decode<get_many_commodity_future_conventions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -139,14 +137,14 @@ public:
         service::commodity_future_convention_service svc(req_ctx);
         try {
             auto response = svc.get_many_commodity_future_conventions(*req);
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), error)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_commodity_future_conventions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -160,8 +158,7 @@ public:
      * @brief Serves refdata.v1.commodity_future_conventions.put.
      */
     void put_commodity_future_convention(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_future_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -174,7 +171,7 @@ public:
         }
         auto req = decode<put_commodity_future_convention_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -182,14 +179,14 @@ public:
         service::commodity_future_convention_service svc(req_ctx);
         try {
             auto response = svc.put_commodity_future_convention(*req);
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), error)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_commodity_future_convention_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -203,8 +200,7 @@ public:
      * @brief Serves refdata.v1.commodity_future_conventions.put_many.
      */
     void put_many_commodity_future_conventions(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_future_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -217,7 +213,7 @@ public:
         }
         auto req = decode<put_many_commodity_future_conventions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -225,14 +221,14 @@ public:
         service::commodity_future_convention_service svc(req_ctx);
         try {
             auto response = svc.put_many_commodity_future_conventions(*req);
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), error)
+            ORES_LOG_SEV(commodity_future_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_commodity_future_conventions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

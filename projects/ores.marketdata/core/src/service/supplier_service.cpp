@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/supplier.hpp"
 #include "ores.marketdata.api/messaging/supplier_protocol.hpp"
 #include "ores.marketdata.core/repository/supplier_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -228,25 +226,25 @@ supplier_service::get_supplier_version(const messaging::get_supplier_version_req
 
 std::vector<domain::supplier> supplier_service::list_suppliers(std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all suppliers";
+    ORES_LOG_SEV(lg(), debug) << "Listing all suppliers";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t supplier_service::count_suppliers() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total suppliers count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total suppliers count";
     return repo_.get_total_supplier_count(ctx_);
 }
 
 
 std::optional<domain::supplier> supplier_service::get_supplier_at_version(const std::string& code,
                                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting supplier at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting supplier at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::supplier> supplier_service::get_supplier(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting supplier. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting supplier. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -261,11 +259,11 @@ supplier_service::get_suppliers(const std::vector<std::string>& codes) {
 void supplier_service::save_supplier(const domain::supplier& v) {
     if (v.code.empty())
         throw std::invalid_argument("Supplier code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving supplier. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving supplier. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved supplier. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved supplier. " << "code: " << v.code;
 }
 
 void supplier_service::save_suppliers(const std::vector<domain::supplier>& suppliers) {
@@ -273,7 +271,7 @@ void supplier_service::save_suppliers(const std::vector<domain::supplier>& suppl
         if (e.code.empty())
             throw std::invalid_argument("Supplier code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << suppliers.size() << " suppliers";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << suppliers.size() << " suppliers";
     auto ts = suppliers;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -282,9 +280,9 @@ void supplier_service::save_suppliers(const std::vector<domain::supplier>& suppl
 }
 
 void supplier_service::delete_supplier(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing supplier. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing supplier. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed supplier. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed supplier. " << "code: " << code;
 }
 
 void supplier_service::delete_suppliers(const std::vector<std::string>& codes) {
@@ -292,7 +290,7 @@ void supplier_service::delete_suppliers(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::supplier> supplier_service::get_supplier_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for supplier. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for supplier. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

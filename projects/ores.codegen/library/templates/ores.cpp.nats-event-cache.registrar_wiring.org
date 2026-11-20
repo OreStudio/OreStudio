@@ -39,7 +39,7 @@ The full template source. Edit here and re-tangle with
 
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.{{cache_component}}.{{cache_subcomponent}}/service/cache/{{entity_singular}}_cache.hpp"
 #include "ores.{{component_include}}/eventing/{{entity_singular}}_event.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -72,7 +72,7 @@ warm_and_subscribe_{{entity_singular}}_cache(
     std::shared_ptr<{{entity_singular}}_cache> cache,
     const std::vector<std::string>& tenant_ids) {
     using namespace ores::logging;
-    BOOST_LOG_SEV({{entity_singular}}_cache_registrar_lg(), debug)
+    ORES_LOG_SEV({{entity_singular}}_cache_registrar_lg(), debug)
         << "Warming {{entity_singular}} cache for " << tenant_ids.size() << " tenant(s)";
     for (const auto& tenant_id : tenant_ids)
         // A warm-up failure is logged; nothing here can react to it.

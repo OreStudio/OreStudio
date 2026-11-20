@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
 #include "ores.testing/project_root.hpp"
 #include "test_suite.hpp"
@@ -95,8 +95,8 @@ TEST_CASE("scan_empty_directory_produces_empty_results", "[ore][scanner][directo
     ore_directory_scanner scanner(d.path);
     const auto result = scanner.scan();
 
-    BOOST_LOG_SEV(lg, debug) << "Empty scan: " << result.currency_files.size() << " currency, "
-                             << result.portfolio_files.size() << " portfolio";
+    ORES_LOG_SEV(lg, debug) << "Empty scan: " << result.currency_files.size() << " currency, "
+                            << result.portfolio_files.size() << " portfolio";
 
     CHECK(result.currency_files.empty());
     CHECK(result.portfolio_files.empty());
@@ -115,7 +115,7 @@ TEST_CASE("scan_classifies_currency_config_by_root_element", "[ore][scanner][dir
     ore_directory_scanner scanner(d.path);
     const auto result = scanner.scan();
 
-    BOOST_LOG_SEV(lg, debug) << "Currency files: " << result.currency_files.size();
+    ORES_LOG_SEV(lg, debug) << "Currency files: " << result.currency_files.size();
 
     REQUIRE(result.currency_files.size() == 2);
     CHECK(result.portfolio_files.empty());
@@ -135,7 +135,7 @@ TEST_CASE("scan_classifies_portfolio_xml_by_root_element", "[ore][scanner][direc
     ore_directory_scanner scanner(d.path);
     const auto result = scanner.scan();
 
-    BOOST_LOG_SEV(lg, debug) << "Portfolio files: " << result.portfolio_files.size();
+    ORES_LOG_SEV(lg, debug) << "Portfolio files: " << result.portfolio_files.size();
 
     REQUIRE(result.portfolio_files.size() == 3);
     CHECK(result.currency_files.empty());
@@ -171,8 +171,8 @@ TEST_CASE("scan_recurses_into_subdirectories", "[ore][scanner][directory_scanner
     ore_directory_scanner scanner(d.path);
     const auto result = scanner.scan();
 
-    BOOST_LOG_SEV(lg, debug) << "Portfolio files: " << result.portfolio_files.size()
-                             << ", Currency files: " << result.currency_files.size();
+    ORES_LOG_SEV(lg, debug) << "Portfolio files: " << result.portfolio_files.size()
+                            << ", Currency files: " << result.currency_files.size();
 
     REQUIRE(result.portfolio_files.size() == 2);
     REQUIRE(result.currency_files.size() == 1);
@@ -192,8 +192,8 @@ TEST_CASE("scan_excludes_files_in_excluded_directory", "[ore][scanner][directory
     ore_directory_scanner scanner(d.path, {"Input"});
     const auto result = scanner.scan();
 
-    BOOST_LOG_SEV(lg, debug) << "Portfolio files: " << result.portfolio_files.size()
-                             << ", Ignored: " << result.ignored_files.size();
+    ORES_LOG_SEV(lg, debug) << "Portfolio files: " << result.portfolio_files.size()
+                            << ", Ignored: " << result.ignored_files.size();
 
     REQUIRE(result.portfolio_files.size() == 1);
     CHECK(contains(result.portfolio_files, d.path / "Rates" / "irs.xml"));

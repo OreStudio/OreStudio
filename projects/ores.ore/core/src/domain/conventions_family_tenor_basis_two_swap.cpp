@@ -29,7 +29,7 @@ using namespace conventions_fields;
 
 refdata::domain::tenor_basis_two_swap_convention
 conventions_mapper::map_tenor_basis_two_swap(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping two-tenor basis swap convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping two-tenor basis swap convention: " << text_of(v, "Id");
 
     refdata::domain::tenor_basis_two_swap_convention r;
     r.id = text_of(v, "Id");

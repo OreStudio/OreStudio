@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_position_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_position_instrument_repository.hpp"
@@ -71,7 +71,7 @@ TEST_CASE("equity_position_instrument_write_and_read_latest",
 
     auto instr = repository_equity_position_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
-    BOOST_LOG_SEV(lg, debug) << "Writing equity position instrument: " << instr;
+    ORES_LOG_SEV(lg, debug) << "Writing equity position instrument: " << instr;
 
     equity_position_instrument_repository repo;
     CHECK_NOTHROW(repo.write(ctx, instr));
@@ -83,7 +83,7 @@ TEST_CASE("equity_position_instrument_write_and_read_latest",
     CHECK(read[0].currency == "USD");
     CHECK(read[0].quantity == 18101.486);
     CHECK(read[0].price.value_or(ores::utility::decimal::decimal{}).to_double() == 6927.586);
-    BOOST_LOG_SEV(lg, debug) << "Read equity position instrument: " << read[0];
+    ORES_LOG_SEV(lg, debug) << "Read equity position instrument: " << read[0];
 }
 
 TEST_CASE("equity_position_instrument_read_nonexistent", "[repository][equity][equity_position]") {
@@ -125,6 +125,6 @@ TEST_CASE("equity_position_instrument_remove", "[repository][equity][equity_posi
     CHECK_NOTHROW(repo.remove(ctx, id_str));
 
     const auto after = repo.read_latest(ctx, id_str);
-    BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
+    ORES_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.size() == before.size() - 1);
 }

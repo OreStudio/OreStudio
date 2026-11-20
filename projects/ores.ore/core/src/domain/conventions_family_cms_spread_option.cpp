@@ -29,7 +29,7 @@ using namespace conventions_fields;
 
 refdata::domain::cms_spread_option_convention
 conventions_mapper::map_cms_spread_option(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping CMS spread option convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping CMS spread option convention: " << text_of(v, "Id");
 
     refdata::domain::cms_spread_option_convention r;
     r.id = text_of(v, "Id");

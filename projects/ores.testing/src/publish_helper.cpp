@@ -19,7 +19,7 @@
  */
 #include "ores.testing/publish_helper.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <string>
 #include <vector>
 

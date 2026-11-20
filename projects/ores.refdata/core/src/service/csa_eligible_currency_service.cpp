@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/csa_eligible_currency.hpp"
 #include "ores.refdata.api/messaging/csa_eligible_currency_protocol.hpp"
 #include "ores.refdata.core/repository/csa_eligible_currency_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -544,12 +542,12 @@ ores::utility::domain::result csa_eligible_currency_service::prepare_change(
 std::vector<domain::csa_eligible_currency>
 csa_eligible_currency_service::list_csa_eligible_currencies(std::uint32_t offset,
                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all CSA eligible currencies";
+    ORES_LOG_SEV(lg(), debug) << "Listing all CSA eligible currencies";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t csa_eligible_currency_service::count_csa_eligible_currencies() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CSA eligible currencies count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total CSA eligible currencies count";
     return repo_.get_total_csa_eligible_currency_count(ctx_);
 }
 
@@ -558,28 +556,28 @@ std::vector<domain::csa_eligible_currency>
 csa_eligible_currency_service::list_csa_eligible_currencies_by_csa_id(const std::string& csa_id,
                                                                       std::uint32_t offset,
                                                                       std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing CSA eligible currencies by csa_id: " << csa_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing CSA eligible currencies by csa_id: " << csa_id;
     return repo_.read_latest_by_csa_id(ctx_, csa_id, offset, limit);
 }
 
 std::uint32_t
 csa_eligible_currency_service::count_csa_eligible_currencies_by_csa_id(const std::string& csa_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CSA eligible currencies count by csa_id: "
-                               << csa_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total CSA eligible currencies count by csa_id: "
+                              << csa_id;
     return repo_.get_total_csa_eligible_currency_count_by_csa_id(ctx_, csa_id);
 }
 
 std::vector<domain::csa_eligible_currency>
 csa_eligible_currency_service::list_csa_eligible_currencies_by_csa_id(
     const boost::uuids::uuid& csa_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing CSA eligible currencies by csa_id: " << csa_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing CSA eligible currencies by csa_id: " << csa_id;
     return repo_.read_latest_by_csa_id(ctx_, boost::uuids::to_string(csa_id), offset, limit);
 }
 
 std::uint32_t csa_eligible_currency_service::count_csa_eligible_currencies_by_csa_id(
     const boost::uuids::uuid& csa_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CSA eligible currencies count by csa_id: "
-                               << csa_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total CSA eligible currencies count by csa_id: "
+                              << csa_id;
     return repo_.get_total_csa_eligible_currency_count_by_csa_id(ctx_,
                                                                  boost::uuids::to_string(csa_id));
 }
@@ -588,14 +586,14 @@ std::uint32_t csa_eligible_currency_service::count_csa_eligible_currencies_by_cs
 std::optional<domain::csa_eligible_currency>
 csa_eligible_currency_service::get_csa_eligible_currency_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CSA eligible currency at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting CSA eligible currency at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::csa_eligible_currency>
 csa_eligible_currency_service::get_csa_eligible_currency(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CSA eligible currency. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting CSA eligible currency. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -605,8 +603,8 @@ csa_eligible_currency_service::get_csa_eligible_currency(const boost::uuids::uui
 std::optional<domain::csa_eligible_currency>
 csa_eligible_currency_service::get_csa_eligible_currency_by_currency_code(
     const std::string& currency_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CSA eligible currency by currency_code: "
-                               << currency_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting CSA eligible currency by currency_code: "
+                              << currency_code;
     messaging::csa_eligible_currency_key k;
     k.currency_code = currency_code;
     auto found = csa_eligible_currency_read_one(repo_, ctx_, k);
@@ -617,7 +615,7 @@ csa_eligible_currency_service::get_csa_eligible_currency_by_currency_code(
 
 std::optional<domain::csa_eligible_currency>
 csa_eligible_currency_service::find_csa_eligible_currency(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding CSA eligible currency. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding CSA eligible currency. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -633,11 +631,11 @@ void csa_eligible_currency_service::save_csa_eligible_currency(
     const domain::csa_eligible_currency& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("CSA Eligible Currency id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CSA eligible currency. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving CSA eligible currency. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CSA eligible currency. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved CSA eligible currency. " << "id: " << v.id;
 }
 
 void csa_eligible_currency_service::save_csa_eligible_currencies(
@@ -646,8 +644,8 @@ void csa_eligible_currency_service::save_csa_eligible_currencies(
         if (e.id.is_nil())
             throw std::invalid_argument("CSA Eligible Currency id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << csa_eligible_currencies.size()
-                               << " CSA eligible currencies";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << csa_eligible_currencies.size()
+                              << " CSA eligible currencies";
     auto ts = csa_eligible_currencies;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -656,15 +654,15 @@ void csa_eligible_currency_service::save_csa_eligible_currencies(
 }
 
 void csa_eligible_currency_service::delete_csa_eligible_currency(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CSA eligible currency. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CSA eligible currency. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed CSA eligible currency. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed CSA eligible currency. " << "id: " << id;
 }
 
 void csa_eligible_currency_service::remove_csa_eligible_currency(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CSA eligible currency. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CSA eligible currency. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed CSA eligible currency. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed CSA eligible currency. " << "id: " << id;
 }
 
 void csa_eligible_currency_service::delete_csa_eligible_currencies(
@@ -674,7 +672,7 @@ void csa_eligible_currency_service::delete_csa_eligible_currencies(
 
 std::vector<domain::csa_eligible_currency>
 csa_eligible_currency_service::get_csa_eligible_currency_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CSA eligible currency. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for CSA eligible currency. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -696,7 +694,7 @@ csa_eligible_currency_service::get_csa_eligible_currency_history(const std::stri
 
 std::vector<domain::csa_eligible_currency>
 csa_eligible_currency_service::get_csa_eligible_currency_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CSA eligible currency. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for CSA eligible currency. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

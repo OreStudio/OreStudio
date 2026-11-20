@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_TESTS_TICK_HANDLER_SUPPORT_HPP
 
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.testing/scoped_database_helper.hpp"

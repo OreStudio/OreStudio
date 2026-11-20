@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_table.hpp"
@@ -54,7 +54,7 @@ TEST_CASE("create_currency_with_valid_fields", "[domain]") {
     ccy.modified_by = "admin";
     ccy.recorded_at = datetime::make_timepoint(2025, 1, 1);
 
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy;
+    ORES_LOG_SEV(lg, debug) << "Currency: " << ccy;
 
     CHECK(ccy.iso_code == "USD");
     CHECK(ccy.name == "United States Dollar");
@@ -84,7 +84,7 @@ TEST_CASE("create_currency_with_faker", "[domain]") {
     ccy.modified_by = std::string(faker::internet::username());
     ccy.recorded_at = {};
 
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy;
+    ORES_LOG_SEV(lg, debug) << "Currency: " << ccy;
 
     CHECK(!ccy.iso_code.empty());
     CHECK(!ccy.name.empty());
@@ -117,7 +117,7 @@ TEST_CASE("create_multiple_random_currencies", "[domain]") {
             std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
         ccy.recorded_at = {};
 
-        BOOST_LOG_SEV(lg, debug) << "Currency " << i << ": " << ccy;
+        ORES_LOG_SEV(lg, debug) << "Currency " << i << ": " << ccy;
 
         CHECK(!ccy.iso_code.empty());
         CHECK(!ccy.name.empty());
@@ -143,7 +143,7 @@ TEST_CASE("create_currency_with_high_precision", "[domain]") {
     ccy.modified_by = "system";
     ccy.recorded_at = {};
 
-    BOOST_LOG_SEV(lg, debug) << "High precision currency: " << ccy;
+    ORES_LOG_SEV(lg, debug) << "High precision currency: " << ccy;
 
     CHECK(ccy.iso_code == "BTC");
     CHECK(ccy.fractions_per_unit == 100000000);
@@ -168,7 +168,7 @@ TEST_CASE("create_currency_with_no_fractions", "[domain]") {
     ccy.modified_by = "admin";
     ccy.recorded_at = {};
 
-    BOOST_LOG_SEV(lg, debug) << "Currency with no fractions: " << ccy;
+    ORES_LOG_SEV(lg, debug) << "Currency with no fractions: " << ccy;
 
     CHECK(ccy.iso_code == "JPY");
     CHECK(ccy.fractions_per_unit == 1);
@@ -193,7 +193,7 @@ TEST_CASE("create_currency_with_three_decimal_places", "[domain]") {
     ccy.modified_by = "admin";
     ccy.recorded_at = {};
 
-    BOOST_LOG_SEV(lg, debug) << "Currency with three decimal places: " << ccy;
+    ORES_LOG_SEV(lg, debug) << "Currency with three decimal places: " << ccy;
 
     CHECK(ccy.iso_code == "BHD");
     CHECK(ccy.fractions_per_unit == 1000);
@@ -229,7 +229,7 @@ TEST_CASE("create_currencies_with_different_symbols", "[domain]") {
         ccy.modified_by = "system";
         ccy.recorded_at = {};
 
-        BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy;
+        ORES_LOG_SEV(lg, debug) << "Currency: " << ccy;
 
         CHECK(ccy.iso_code == code);
         CHECK(ccy.symbol == symbol);
@@ -256,7 +256,7 @@ TEST_CASE("currency_convert_single_to_table", "[domain]") {
 
     auto table = convert_to_table(std::vector<currency>{ccy});
 
-    BOOST_LOG_SEV(lg, debug) << "Table output:" << table;
+    ORES_LOG_SEV(lg, debug) << "Table output:" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("USD") != std::string::npos);
@@ -287,7 +287,7 @@ TEST_CASE("currency_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(currencies);
 
-    BOOST_LOG_SEV(lg, debug) << "Table output:" << table;
+    ORES_LOG_SEV(lg, debug) << "Table output:" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("XX0") != std::string::npos);
@@ -321,7 +321,7 @@ TEST_CASE("currency_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(currencies);
 
-    BOOST_LOG_SEV(lg, debug) << "Faker table output:" << table;
+    ORES_LOG_SEV(lg, debug) << "Faker table output:" << table;
 
     CHECK(!table.empty());
     for (const auto& ccy : currencies) {

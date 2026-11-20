@@ -25,7 +25,7 @@
 #ifndef ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
 #define ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.core/export.hpp"
 #include "ores.scheduler.core/repository/job_definition_entity.hpp"

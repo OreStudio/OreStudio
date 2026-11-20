@@ -128,7 +128,7 @@ trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids)
         add("PortfolioNames", names);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " trade envelopes.";
+    ORES_LOG_SEV(lg(), debug) << "Read " << result.size() << " trade envelopes.";
     return result;
 }
 }

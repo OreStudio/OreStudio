@@ -175,7 +175,7 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     auto booking = request.booking;
     stamp(anchor, ctx_);
     stamp(booking, ctx_);
-    BOOST_LOG_SEV(lg(), debug) << "Booking trade " << anchor.id;
+    ORES_LOG_SEV(lg(), debug) << "Booking trade " << anchor.id;
 
     messaging::book_trade_response response;
 
@@ -224,7 +224,7 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
                 "Book " + boost::uuids::to_string(booking.book_id) + " is not open for booking.";
             return response;
         case book_rules_port::status::unknown:
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Could not read the status of book " << boost::uuids::to_string(booking.book_id)
                 << "; booking continues.";
             break;
@@ -242,7 +242,7 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
                 "them.";
             return response;
         case book_rules_port::product_type::unknown:
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Could not read the product types book "
                 << boost::uuids::to_string(booking.book_id) << " allows; booking continues.";
             break;
@@ -356,8 +356,8 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         try {
             operational_authorisation_service(ctx_).announce(*raised);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Trade " << anchor.id
-                                      << " was booked but its deciders were not told: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Trade " << anchor.id
+                                     << " was booked but its deciders were not told: " << e.what();
         }
     }
 
@@ -421,7 +421,7 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
 
     messaging::execute_trade_response response;
     const auto id = boost::uuids::to_string(request.trade_id);
-    BOOST_LOG_SEV(lg(), debug) << "Executing trade " << id;
+    ORES_LOG_SEV(lg(), debug) << "Executing trade " << id;
 
     // The authorisation's kind and policy are read before the unit of work
     // opens, because a context bound to a transaction cannot read for another
@@ -497,7 +497,7 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
         try {
             operational_authorisation_service(ctx_).announce(*raised);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Trade " << id << " was executed but its deciders were not told: " << e.what();
         }
     }
@@ -671,7 +671,7 @@ trade_operations_service::complete_structure(const messaging::complete_structure
         try {
             operational_authorisation_service(ctx_).announce(one);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "A leg of structure " << structure_id
                 << " was completed but its deciders were not told: " << e.what();
         }
@@ -709,7 +709,7 @@ messaging::put_bond_issue_composite_response trade_operations_service::put_bond_
     stamp_rows(amortizations, ctx_);
     stamp_rows(call_dates, ctx_);
     stamp_rows(conversion_targets, ctx_);
-    BOOST_LOG_SEV(lg(), debug) << "Creating bond issue " << issue.issue_id;
+    ORES_LOG_SEV(lg(), debug) << "Creating bond issue " << issue.issue_id;
 
     messaging::put_bond_issue_composite_response response;
     const auto issue_key = boost::uuids::to_string(issue.issue_id);
@@ -742,8 +742,8 @@ messaging::put_bond_issue_composite_response trade_operations_service::put_bond_
         answer.result.code = same ? "already_exists" : "content_differs";
         answer.result.message = "Bond issue " + issue_key +
                                 (same ? " is already stored." : " is stored with other terms.");
-        BOOST_LOG_SEV(lg(), info) << "Bond issue " << issue_key << " answered "
-                                  << answer.result.code << ".";
+        ORES_LOG_SEV(lg(), info) << "Bond issue " << issue_key << " answered " << answer.result.code
+                                 << ".";
         return answer;
     };
 
@@ -780,13 +780,13 @@ messaging::put_bond_issue_composite_response trade_operations_service::put_bond_
         create_rows(conversion_target_repository, ctx, conversion_targets, must_not_exist);
 
         uow.commit();
-        BOOST_LOG_SEV(lg(), info) << "Created bond issue " << issue_key << " with " << legs.size()
-                                  << " legs, " << amounts.size() << " amounts, " << rates.size()
-                                  << " rates, " << schedules.size() << " schedules, "
-                                  << schedule_dates.size() << " schedule dates, "
-                                  << amortizations.size() << " amortisations, " << call_dates.size()
-                                  << " call dates and " << conversion_targets.size()
-                                  << " conversion targets.";
+        ORES_LOG_SEV(lg(), info) << "Created bond issue " << issue_key << " with " << legs.size()
+                                 << " legs, " << amounts.size() << " amounts, " << rates.size()
+                                 << " rates, " << schedules.size() << " schedules, "
+                                 << schedule_dates.size() << " schedule dates, "
+                                 << amortizations.size() << " amortisations, " << call_dates.size()
+                                 << " call dates and " << conversion_targets.size()
+                                 << " conversion targets.";
         return response;
     } catch (const std::exception&) {
         // A parallel write of the same issue can pass the read above and fail

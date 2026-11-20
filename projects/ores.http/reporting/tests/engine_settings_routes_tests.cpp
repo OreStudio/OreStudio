@@ -22,7 +22,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/reporting/engine_settings_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -98,7 +98,7 @@ http_status reads_status_of(http_method method,
 
 TEST_CASE("a_documentation_page_refuses_a_query_it_does_not_read", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the documentation page's query";
+    ORES_LOG_SEV(lg, info) << "Testing the documentation page's query";
 
     http_request req;
     req.query_params["scope"] = "Setup";
@@ -107,14 +107,14 @@ TEST_CASE("a_documentation_page_refuses_a_query_it_does_not_read", "[engine_sett
 
 TEST_CASE("a_documentation_page_with_no_service_is_refused_as_upstream", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a documentation page with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a documentation page with no service behind it";
 
     CHECK(documentation_status_of(http_request{}) == http_status::bad_gateway);
 }
 
 TEST_CASE("a_page_of_settings_refuses_a_query_it_does_not_read", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the page of settings' query";
+    ORES_LOG_SEV(lg, info) << "Testing the page of settings' query";
 
     http_request req;
     req.query_params["party"] = "acme";
@@ -126,7 +126,7 @@ TEST_CASE("a_page_of_settings_refuses_a_query_it_does_not_read", "[engine_settin
 
 TEST_CASE("a_page_of_settings_with_no_service_is_refused_as_upstream", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a page of settings with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a page of settings with no service behind it";
 
     CHECK(reads_status_of(http_method::get,
                           "/api/reporting/engine-settings",
@@ -136,7 +136,7 @@ TEST_CASE("a_page_of_settings_with_no_service_is_refused_as_upstream", "[engine_
 
 TEST_CASE("one_setting_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing one setting's id";
+    ORES_LOG_SEV(lg, info) << "Testing one setting's id";
 
     CHECK(reads_status_of(http_method::get,
                           "/api/reporting/engine-settings/not-an-id",
@@ -146,7 +146,7 @@ TEST_CASE("one_setting_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
 
 TEST_CASE("one_setting_with_no_service_is_refused_as_upstream", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing one setting with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing one setting with no service behind it";
 
     CHECK(reads_status_of(http_method::get,
                           "/api/reporting/engine-settings/00000000-0000-0000-0000-0000000000e1",
@@ -156,7 +156,7 @@ TEST_CASE("one_setting_with_no_service_is_refused_as_upstream", "[engine_setting
 
 TEST_CASE("a_history_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a history's id";
+    ORES_LOG_SEV(lg, info) << "Testing a history's id";
 
     CHECK(reads_status_of(http_method::get,
                           "/api/reporting/engine-settings/not-an-id/history",
@@ -167,7 +167,7 @@ TEST_CASE("a_history_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
 
 TEST_CASE("a_history_with_no_service_is_refused_as_upstream", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a history with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a history with no service behind it";
 
     CHECK(reads_status_of(
               http_method::get,
@@ -178,7 +178,7 @@ TEST_CASE("a_history_with_no_service_is_refused_as_upstream", "[engine_settings]
 
 TEST_CASE("the_documentation_address_is_not_read_as_a_configuration_id", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the documentation address beside the reads";
+    ORES_LOG_SEV(lg, info) << "Testing the documentation address beside the reads";
 
     ores::nats::service::nats_client session;
     auto table = std::make_shared<ores::http::net::router>();
@@ -226,7 +226,7 @@ http_status writes_status_of(http_method method,
 
 TEST_CASE("a_create_refuses_a_member_it_does_not_read", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create's members";
+    ORES_LOG_SEV(lg, info) << "Testing a create's members";
 
     http_request req;
     req.body = R"({"name":"alpha","description":"","intent":{"reason_code":"seed"},"extra":1})";
@@ -238,7 +238,7 @@ TEST_CASE("a_create_refuses_a_member_it_does_not_read", "[engine_settings]") {
 
 TEST_CASE("a_create_refuses_a_name_it_cannot_use", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create's name";
+    ORES_LOG_SEV(lg, info) << "Testing a create's name";
 
     http_request req;
     req.body = R"({"name":"  ","description":"","intent":{"reason_code":"seed"}})";
@@ -250,7 +250,7 @@ TEST_CASE("a_create_refuses_a_name_it_cannot_use", "[engine_settings]") {
 
 TEST_CASE("a_create_with_no_party_to_hold_it_is_refused", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create that names no party";
+    ORES_LOG_SEV(lg, info) << "Testing a create that names no party";
 
     // A configuration belongs to a party: the body may name one, and a caller
     // whose token names none has nothing to fall back on.
@@ -264,7 +264,7 @@ TEST_CASE("a_create_with_no_party_to_hold_it_is_refused", "[engine_settings]") {
 
 TEST_CASE("a_create_with_no_service_is_refused_as_upstream", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a create with no service behind it";
 
     http_request req;
     req.body = R"({"name":"alpha","description":"","intent":{"reason_code":"seed"}})";
@@ -279,7 +279,7 @@ TEST_CASE("a_create_with_no_service_is_refused_as_upstream", "[engine_settings]"
 
 TEST_CASE("an_update_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing an update's id";
+    ORES_LOG_SEV(lg, info) << "Testing an update's id";
 
     http_request req;
     req.body = R"({"name":"alpha","description":"","version":1,"intent":{"reason_code":"seed"}})";
@@ -291,7 +291,7 @@ TEST_CASE("an_update_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
 
 TEST_CASE("an_update_refuses_a_version_it_was_not_read_at", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing an update's version";
+    ORES_LOG_SEV(lg, info) << "Testing an update's version";
 
     http_request req;
     req.body = R"({"name":"alpha","description":"","version":0,"intent":{"reason_code":"seed"}})";
@@ -303,7 +303,7 @@ TEST_CASE("an_update_refuses_a_version_it_was_not_read_at", "[engine_settings]")
 
 TEST_CASE("a_group_write_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a group write's id";
+    ORES_LOG_SEV(lg, info) << "Testing a group write's id";
 
     http_request req;
     CHECK(writes_status_of(http_method::put,
@@ -315,7 +315,7 @@ TEST_CASE("a_group_write_refuses_an_id_that_is_not_an_id", "[engine_settings]") 
 
 TEST_CASE("a_group_write_with_no_service_is_refused_as_upstream", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a group write with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a group write with no service behind it";
 
     http_request req;
     req.body = R"({"version":1,"values":{"n_threads":4},"intent":{"reason_code":"seed"}})";
@@ -329,7 +329,7 @@ TEST_CASE("a_group_write_with_no_service_is_refused_as_upstream", "[engine_setti
 
 TEST_CASE("a_removal_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a removal's id";
+    ORES_LOG_SEV(lg, info) << "Testing a removal's id";
 
     http_request req;
     req.body = R"({"intent":{"reason_code":"seed"}})";
@@ -341,7 +341,7 @@ TEST_CASE("a_removal_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
 
 TEST_CASE("a_removal_with_no_service_is_refused_as_upstream", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a removal with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a removal with no service behind it";
 
     http_request req;
     req.body = R"({"intent":{"reason_code":"seed"}})";
@@ -353,7 +353,7 @@ TEST_CASE("a_removal_with_no_service_is_refused_as_upstream", "[engine_settings]
 
 TEST_CASE("an_update_refuses_a_member_it_does_not_read", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing an update's members";
+    ORES_LOG_SEV(lg, info) << "Testing an update's members";
 
     http_request req;
     req.body =
@@ -366,7 +366,7 @@ TEST_CASE("an_update_refuses_a_member_it_does_not_read", "[engine_settings]") {
 
 TEST_CASE("a_removal_refuses_a_member_it_does_not_read", "[engine_settings]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a removal's members";
+    ORES_LOG_SEV(lg, info) << "Testing a removal's members";
 
     http_request req;
     req.body = R"({"intent":{"reason_code":"seed"},"extra":1})";

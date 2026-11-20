@@ -20,7 +20,7 @@
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.api/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/login_info_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -42,7 +42,7 @@ TEST_CASE("create_login_info_with_ipv4_addresses", "[domain]") {
     sut.locked = false;
     sut.last_login = std::chrono::system_clock::now();
     sut.online = true;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
+    ORES_LOG_SEV(lg, info) << "Login info: " << sut;
 
     CHECK(sut.failed_logins == 0);
     CHECK(sut.locked == false);
@@ -62,7 +62,7 @@ TEST_CASE("create_login_info_with_ipv6_addresses", "[domain]") {
     sut.locked = false;
     sut.last_login = std::chrono::system_clock::now();
     sut.online = false;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
+    ORES_LOG_SEV(lg, info) << "Login info: " << sut;
 
     CHECK(sut.failed_logins == 0);
     CHECK(sut.locked == false);
@@ -81,7 +81,7 @@ TEST_CASE("create_locked_account_login_info", "[domain]") {
     sut.locked = true;
     sut.last_login = std::chrono::system_clock::now() - std::chrono::hours(24);
     sut.online = false;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
+    ORES_LOG_SEV(lg, info) << "Login info: " << sut;
 
     CHECK(sut.failed_logins == 5);
     CHECK(sut.locked == true);
@@ -100,7 +100,7 @@ TEST_CASE("login_info_with_failed_attempts", "[domain]") {
     sut.locked = false;
     sut.last_login = std::chrono::system_clock::now() - std::chrono::minutes(30);
     sut.online = false;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
+    ORES_LOG_SEV(lg, info) << "Login info: " << sut;
 
     CHECK(sut.failed_logins == 3);
     CHECK(sut.locked == false);
@@ -121,7 +121,7 @@ TEST_CASE("login_info_serialization_to_json", "[domain]") {
     sut.locked = false;
     sut.last_login = std::chrono::system_clock::now();
     sut.online = true;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
+    ORES_LOG_SEV(lg, info) << "Login info: " << sut;
 
     std::ostringstream os;
     os << sut;
@@ -143,7 +143,7 @@ TEST_CASE("login_info_with_different_ip_versions", "[domain]") {
     sut.locked = false;
     sut.last_login = std::chrono::system_clock::now();
     sut.online = true;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
+    ORES_LOG_SEV(lg, info) << "Login info: " << sut;
 
     CHECK(sut.last_ip.is_v4());
     CHECK(sut.last_attempt_ip.is_v6());
@@ -163,7 +163,7 @@ TEST_CASE("create_login_info_with_faker", "[domain]") {
     sut.last_login =
         std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(0, 168));
     sut.online = faker::datatype::boolean();
-    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
+    ORES_LOG_SEV(lg, info) << "Login info: " << sut;
 
     CHECK(sut.failed_logins >= 0);
     CHECK(sut.failed_logins <= 10);
@@ -190,7 +190,7 @@ TEST_CASE("create_multiple_random_login_infos", "[domain]") {
         sut.last_login = std::chrono::system_clock::now() -
                          std::chrono::minutes(faker::number::integer(0, 1440));
         sut.online = faker::datatype::boolean();
-        BOOST_LOG_SEV(lg, info) << "Login info " << i << ":" << sut;
+        ORES_LOG_SEV(lg, info) << "Login info " << i << ":" << sut;
 
         CHECK(sut.failed_logins >= 0);
         if (sut.locked) {
@@ -214,7 +214,7 @@ TEST_CASE("login_info_convert_single_to_table", "[domain]") {
     std::vector<login_info> logins = {li};
     auto table = convert_to_table(logins);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("192.168.1.100") != std::string::npos);
@@ -239,7 +239,7 @@ TEST_CASE("login_info_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(logins);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("10.0.0.1") != std::string::npos);
@@ -265,7 +265,7 @@ TEST_CASE("login_info_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(logins);
 
-    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
     // Verify all IP addresses appear in table

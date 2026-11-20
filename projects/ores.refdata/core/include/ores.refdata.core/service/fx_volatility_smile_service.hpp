@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_FX_VOLATILITY_SMILE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/fx_volatility_smile.hpp"
 #include "ores.refdata.api/messaging/fx_volatility_smile_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

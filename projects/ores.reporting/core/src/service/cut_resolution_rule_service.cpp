@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/cut_resolution_rule.hpp"
 #include "ores.reporting.api/messaging/cut_resolution_rule_protocol.hpp"
 #include "ores.reporting.core/repository/cut_resolution_rule_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -455,26 +453,26 @@ cut_resolution_rule_service::prepare_change(const messaging::cut_resolution_rule
 
 std::vector<domain::cut_resolution_rule>
 cut_resolution_rule_service::list_rules(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all cut resolution rules";
+    ORES_LOG_SEV(lg(), debug) << "Listing all cut resolution rules";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cut_resolution_rule_service::count_rules() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cut resolution rules count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total cut resolution rules count";
     return repo_.get_total_rule_count(ctx_);
 }
 
 
 std::optional<domain::cut_resolution_rule>
 cut_resolution_rule_service::get_rule_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cut resolution rule at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting cut resolution rule at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::cut_resolution_rule>
 cut_resolution_rule_service::get_rule(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cut resolution rule. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting cut resolution rule. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -489,11 +487,11 @@ cut_resolution_rule_service::get_rules(const std::vector<std::string>& codes) {
 void cut_resolution_rule_service::save_rule(const domain::cut_resolution_rule& v) {
     if (v.code.empty())
         throw std::invalid_argument("Cut Resolution Rule code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving cut resolution rule. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving cut resolution rule. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved cut resolution rule. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved cut resolution rule. " << "code: " << v.code;
 }
 
 void cut_resolution_rule_service::save_rules(
@@ -502,7 +500,7 @@ void cut_resolution_rule_service::save_rules(
         if (e.code.empty())
             throw std::invalid_argument("Cut Resolution Rule code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << rules.size() << " cut resolution rules";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << rules.size() << " cut resolution rules";
     auto ts = rules;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -511,9 +509,9 @@ void cut_resolution_rule_service::save_rules(
 }
 
 void cut_resolution_rule_service::delete_rule(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cut resolution rule. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing cut resolution rule. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed cut resolution rule. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed cut resolution rule. " << "code: " << code;
 }
 
 void cut_resolution_rule_service::delete_rules(const std::vector<std::string>& codes) {
@@ -522,7 +520,7 @@ void cut_resolution_rule_service::delete_rules(const std::vector<std::string>& c
 
 std::vector<domain::cut_resolution_rule>
 cut_resolution_rule_service::get_rule_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for cut resolution rule. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for cut resolution rule. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

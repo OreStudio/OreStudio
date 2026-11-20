@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/messaging/swap_leg_amount_protocol.hpp"
 #include "ores.trading.core/repository/swap_leg_amount_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -517,25 +515,25 @@ swap_leg_amount_service::prepare_change(const messaging::swap_leg_amount_change&
 
 std::vector<domain::swap_leg_amount>
 swap_leg_amount_service::list_swap_leg_amounts(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all swap leg amounts";
+    ORES_LOG_SEV(lg(), debug) << "Listing all swap leg amounts";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t swap_leg_amount_service::count_swap_leg_amounts() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total swap leg amounts count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total swap leg amounts count";
     return repo_.get_total_swap_leg_amount_count(ctx_);
 }
 
 
 std::vector<domain::swap_leg_amount> swap_leg_amount_service::list_swap_leg_amounts_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing swap leg amounts by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing swap leg amounts by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t
 swap_leg_amount_service::count_swap_leg_amounts_by_trade_id(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total swap leg amounts count by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total swap leg amounts count by trade_id: " << trade_id;
     return repo_.get_total_swap_leg_amount_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -545,10 +543,9 @@ swap_leg_amount_service::get_swap_leg_amount_at_version(const std::string& trade
                                                         const std::string& leg_number,
                                                         const std::string& sequence_number,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting swap leg amount at version. " << "trade_id: " << trade_id
-                               << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting swap leg amount at version. " << "trade_id: " << trade_id
+                              << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, leg_number, sequence_number, version);
 }
 
@@ -556,9 +553,9 @@ std::optional<domain::swap_leg_amount>
 swap_leg_amount_service::get_swap_leg_amount(const std::string& trade_id,
                                              const std::string& leg_number,
                                              const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting swap leg amount. " << "trade_id: " << trade_id
-                               << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting swap leg amount. " << "trade_id: " << trade_id
+                              << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, leg_number, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -575,15 +572,15 @@ swap_leg_amount_service::get_swap_leg_amounts(const std::vector<std::string>& tr
 void swap_leg_amount_service::save_swap_leg_amount(const domain::swap_leg_amount& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Swap Leg Amount trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving swap leg amount. " << "trade_id: " << v.trade_id
-                               << " leg_number: " << v.leg_number
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving swap leg amount. " << "trade_id: " << v.trade_id
+                              << " leg_number: " << v.leg_number
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved swap leg amount. " << "trade_id: " << v.trade_id
-                              << " leg_number: " << v.leg_number
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved swap leg amount. " << "trade_id: " << v.trade_id
+                             << " leg_number: " << v.leg_number
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void swap_leg_amount_service::save_swap_leg_amounts(
@@ -592,7 +589,7 @@ void swap_leg_amount_service::save_swap_leg_amounts(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Swap Leg Amount trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << swap_leg_amounts.size() << " swap leg amounts";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << swap_leg_amounts.size() << " swap leg amounts";
     auto ts = swap_leg_amounts;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -603,13 +600,13 @@ void swap_leg_amount_service::save_swap_leg_amounts(
 void swap_leg_amount_service::delete_swap_leg_amount(const std::string& trade_id,
                                                      const std::string& leg_number,
                                                      const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing swap leg amount. " << "trade_id: " << trade_id
-                               << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, leg_number, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed swap leg amount. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing swap leg amount. " << "trade_id: " << trade_id
                               << " leg_number: " << leg_number
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, leg_number, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed swap leg amount. " << "trade_id: " << trade_id
+                             << " leg_number: " << leg_number
+                             << " sequence_number: " << sequence_number;
 }
 
 void swap_leg_amount_service::delete_swap_leg_amounts(
@@ -623,9 +620,9 @@ std::vector<domain::swap_leg_amount>
 swap_leg_amount_service::get_swap_leg_amount_history(const std::string& trade_id,
                                                      const std::string& leg_number,
                                                      const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for swap leg amount. "
-                               << "trade_id: " << trade_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for swap leg amount. " << "trade_id: " << trade_id
+                              << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, leg_number, sequence_number);
 }
 

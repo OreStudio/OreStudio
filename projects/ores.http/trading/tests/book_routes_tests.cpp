@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/trading/book_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -78,7 +78,7 @@ http_status book_change_status(const std::string& target, const std::string& bod
 
 TEST_CASE("books_preview_shapes_each_line_and_its_parts", "[book]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a preview's answer";
+    ORES_LOG_SEV(lg, info) << "Testing a preview's answer";
 
     const auto preview = book_routes::preview_json(
         {book_line_of(1, "put", ""), book_line_of(2, "delete", "The book holds trades.")},
@@ -95,7 +95,7 @@ TEST_CASE("books_preview_shapes_each_line_and_its_parts", "[book]") {
 
 TEST_CASE("books_raise_states_the_request_or_why_none_was_made", "[book]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a raise's answer";
+    ORES_LOG_SEV(lg, info) << "Testing a raise's answer";
 
     const auto raised = book_routes::raise_json(
         {book_line_of(1, "put", "")}, {"refdata.book"}, true, book_uuid(book_id), "", "");
@@ -116,7 +116,7 @@ TEST_CASE("books_raise_states_the_request_or_why_none_was_made", "[book]") {
 
 TEST_CASE("books_refuse_a_malformed_request", "[book]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the book routes' refusals";
+    ORES_LOG_SEV(lg, info) << "Testing the book routes' refusals";
 
     CHECK(answer_at<book_routes>(
               http_method::get, "/api/books/acme", http_request{}, "/api/books/{id}")

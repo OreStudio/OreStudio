@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/provider.hpp"
 #include "ores.marketdata.api/messaging/provider_protocol.hpp"
 #include "ores.marketdata.core/repository/provider_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -453,25 +451,25 @@ provider_service::prepare_change(const messaging::provider_change& change,
 
 std::vector<domain::provider> provider_service::list_providers(std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all providers";
+    ORES_LOG_SEV(lg(), debug) << "Listing all providers";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t provider_service::count_providers() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total providers count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total providers count";
     return repo_.get_total_provider_count(ctx_);
 }
 
 
 std::optional<domain::provider> provider_service::get_provider_at_version(const std::string& code,
                                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting provider at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting provider at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::provider> provider_service::get_provider(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting provider. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting provider. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -486,11 +484,11 @@ provider_service::get_providers(const std::vector<std::string>& codes) {
 void provider_service::save_provider(const domain::provider& v) {
     if (v.code.empty())
         throw std::invalid_argument("Provider code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving provider. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving provider. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved provider. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved provider. " << "code: " << v.code;
 }
 
 void provider_service::save_providers(const std::vector<domain::provider>& providers) {
@@ -498,7 +496,7 @@ void provider_service::save_providers(const std::vector<domain::provider>& provi
         if (e.code.empty())
             throw std::invalid_argument("Provider code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << providers.size() << " providers";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << providers.size() << " providers";
     auto ts = providers;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -507,9 +505,9 @@ void provider_service::save_providers(const std::vector<domain::provider>& provi
 }
 
 void provider_service::delete_provider(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing provider. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing provider. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed provider. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed provider. " << "code: " << code;
 }
 
 void provider_service::delete_providers(const std::vector<std::string>& codes) {
@@ -517,7 +515,7 @@ void provider_service::delete_providers(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::provider> provider_service::get_provider_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for provider. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for provider. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

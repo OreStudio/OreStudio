@@ -207,7 +207,7 @@ void calendar_event_commands::register_commands(cli::Menu& root_menu, nats_clien
 void calendar_event_commands::process_list(std::ostream& out,
                                            nats_client& session,
                                            const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list request.";
 
     using request_type = messaging::list_calendar_events_request;
     if constexpr (request_type::requires_session) {
@@ -257,7 +257,7 @@ void calendar_event_commands::process_list(std::ostream& out,
 void calendar_event_commands::process_get(std::ostream& out,
                                           nats_client& session,
                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get request.";
 
     using request_type = messaging::get_calendar_event_request;
     if constexpr (request_type::requires_session) {
@@ -302,7 +302,7 @@ void calendar_event_commands::process_get(std::ostream& out,
 void calendar_event_commands::process_get_many(std::ostream& out,
                                                nats_client& session,
                                                const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
     using request_type = messaging::get_many_calendar_events_request;
     if constexpr (request_type::requires_session) {
@@ -351,7 +351,7 @@ void calendar_event_commands::process_get_many(std::ostream& out,
 void calendar_event_commands::process_add(std::ostream& out,
                                           nats_client& session,
                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating add request.";
 
     using request_type = messaging::put_calendar_event_request;
     if constexpr (request_type::requires_session) {
@@ -409,7 +409,7 @@ void calendar_event_commands::process_add(std::ostream& out,
 void calendar_event_commands::process_set(std::ostream& out,
                                           nats_client& session,
                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating set request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating set request.";
 
     using request_type = messaging::put_calendar_event_request;
     if constexpr (request_type::requires_session) {
@@ -475,7 +475,7 @@ void calendar_event_commands::process_set(std::ostream& out,
 void calendar_event_commands::process_put_many(std::ostream& out,
                                                nats_client& session,
                                                const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating put-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating put-many request.";
 
     using request_type = messaging::put_many_calendar_events_request;
     if constexpr (request_type::requires_session) {
@@ -545,7 +545,7 @@ void calendar_event_commands::process_put_many(std::ostream& out,
 void calendar_event_commands::process_delete(std::ostream& out,
                                              nats_client& session,
                                              const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete request.";
 
     using request_type = messaging::delete_calendar_event_request;
     if constexpr (request_type::requires_session) {
@@ -600,7 +600,7 @@ void calendar_event_commands::process_delete(std::ostream& out,
 void calendar_event_commands::process_delete_many(std::ostream& out,
                                                   nats_client& session,
                                                   const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
 
     using request_type = messaging::delete_many_calendar_events_request;
     if constexpr (request_type::requires_session) {
@@ -652,7 +652,7 @@ void calendar_event_commands::process_delete_many(std::ostream& out,
 void calendar_event_commands::process_by_calendar_code(std::ostream& out,
                                                        nats_client& session,
                                                        const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating by-calendar-code request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating by-calendar-code request.";
 
     using request_type = messaging::list_by_calendar_code_calendar_events_request;
     if constexpr (request_type::requires_session) {
@@ -709,7 +709,7 @@ void calendar_event_commands::process_by_calendar_code(std::ostream& out,
 void calendar_event_commands::process_by_diary_entry_type(std::ostream& out,
                                                           nats_client& session,
                                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating by-diary-entry-type request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating by-diary-entry-type request.";
 
     using request_type = messaging::list_by_diary_entry_type_calendar_events_request;
     if constexpr (request_type::requires_session) {
@@ -766,7 +766,7 @@ void calendar_event_commands::process_by_diary_entry_type(std::ostream& out,
 void calendar_event_commands::process_versions(std::ostream& out,
                                                nats_client& session,
                                                const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating versions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating versions request.";
 
     using request_type = messaging::list_calendar_event_versions_request;
     if constexpr (request_type::requires_session) {
@@ -817,7 +817,7 @@ void calendar_event_commands::process_versions(std::ostream& out,
 void calendar_event_commands::process_version(std::ostream& out,
                                               nats_client& session,
                                               const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating version request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating version request.";
 
     using request_type = messaging::get_calendar_event_version_request;
     if constexpr (request_type::requires_session) {

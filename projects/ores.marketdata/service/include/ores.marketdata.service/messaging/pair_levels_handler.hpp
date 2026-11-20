@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_MESSAGING_PAIR_LEVELS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
 #include "ores.marketdata.core/service/fixing_reader.hpp"
 #include "ores.marketdata.service/app/fixing_sources.hpp"
@@ -76,7 +76,7 @@ public:
         }
         auto req = ores::service::messaging::decode<get_pair_levels_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(pair_levels_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(pair_levels_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -84,8 +84,7 @@ public:
         try {
             resp = read(*req_ctx, *req);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(pair_levels_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(pair_levels_handler_lg(), error) << msg.subject << " failed: " << e.what();
             resp = {};
             resp.result.outcome = ores::utility::domain::outcome::failed;
             resp.result.code = "internal_error";

@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_schedule_protocol.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -526,12 +524,12 @@ ores::utility::domain::result bond_issue_leg_schedule_service::prepare_change(
 std::vector<domain::bond_issue_leg_schedule>
 bond_issue_leg_schedule_service::list_bond_issue_leg_schedules(std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond issue leg schedules";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond issue leg schedules";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_issue_leg_schedule_service::count_bond_issue_leg_schedules() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond issue leg schedules count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond issue leg schedules count";
     return repo_.get_total_bond_issue_leg_schedule_count(ctx_);
 }
 
@@ -543,11 +541,10 @@ bond_issue_leg_schedule_service::get_bond_issue_leg_schedule_at_version(
     const std::string& schedule_role,
     const std::string& sequence_number,
     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue leg schedule at version. "
-                               << "issue_id: " << issue_id << " leg_number: " << leg_number
-                               << " schedule_role: " << schedule_role
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue leg schedule at version. "
+                              << "issue_id: " << issue_id << " leg_number: " << leg_number
+                              << " schedule_role: " << schedule_role
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(
         ctx_, issue_id, leg_number, schedule_role, sequence_number, version);
 }
@@ -557,10 +554,10 @@ bond_issue_leg_schedule_service::get_bond_issue_leg_schedule(const std::string& 
                                                              const std::string& leg_number,
                                                              const std::string& schedule_role,
                                                              const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue leg schedule. " << "issue_id: " << issue_id
-                               << " leg_number: " << leg_number
-                               << " schedule_role: " << schedule_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue leg schedule. " << "issue_id: " << issue_id
+                              << " leg_number: " << leg_number
+                              << " schedule_role: " << schedule_role
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, issue_id, leg_number, schedule_role, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -582,17 +579,17 @@ void bond_issue_leg_schedule_service::save_bond_issue_leg_schedule(
         throw std::invalid_argument("Bond Issue Leg Schedule issue_id cannot be empty.");
     if (v.schedule_role.empty())
         throw std::invalid_argument("Bond Issue Leg Schedule schedule_role cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond issue leg schedule. " << "issue_id: " << v.issue_id
-                               << " leg_number: " << v.leg_number
-                               << " schedule_role: " << v.schedule_role
-                               << " sequence_number: " << v.sequence_number;
-    auto t = v;
-    stamp(t, ctx_);
-    repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond issue leg schedule. " << "issue_id: " << v.issue_id
+    ORES_LOG_SEV(lg(), debug) << "Saving bond issue leg schedule. " << "issue_id: " << v.issue_id
                               << " leg_number: " << v.leg_number
                               << " schedule_role: " << v.schedule_role
                               << " sequence_number: " << v.sequence_number;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    ORES_LOG_SEV(lg(), info) << "Saved bond issue leg schedule. " << "issue_id: " << v.issue_id
+                             << " leg_number: " << v.leg_number
+                             << " schedule_role: " << v.schedule_role
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void bond_issue_leg_schedule_service::save_bond_issue_leg_schedules(
@@ -603,8 +600,8 @@ void bond_issue_leg_schedule_service::save_bond_issue_leg_schedules(
         if (e.schedule_role.empty())
             throw std::invalid_argument("Bond Issue Leg Schedule schedule_role cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << bond_issue_leg_schedules.size()
-                               << " bond issue leg schedules";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << bond_issue_leg_schedules.size()
+                              << " bond issue leg schedules";
     auto ts = bond_issue_leg_schedules;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -617,15 +614,14 @@ void bond_issue_leg_schedule_service::delete_bond_issue_leg_schedule(
     const std::string& leg_number,
     const std::string& schedule_role,
     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond issue leg schedule. " << "issue_id: " << issue_id
-                               << " leg_number: " << leg_number
-                               << " schedule_role: " << schedule_role
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, issue_id, leg_number, schedule_role, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed bond issue leg schedule. " << "issue_id: " << issue_id
+    ORES_LOG_SEV(lg(), debug) << "Removing bond issue leg schedule. " << "issue_id: " << issue_id
                               << " leg_number: " << leg_number
                               << " schedule_role: " << schedule_role
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, issue_id, leg_number, schedule_role, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed bond issue leg schedule. " << "issue_id: " << issue_id
+                             << " leg_number: " << leg_number << " schedule_role: " << schedule_role
+                             << " sequence_number: " << sequence_number;
 }
 
 void bond_issue_leg_schedule_service::delete_bond_issue_leg_schedules(
@@ -642,10 +638,10 @@ bond_issue_leg_schedule_service::get_bond_issue_leg_schedule_history(
     const std::string& leg_number,
     const std::string& schedule_role,
     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond issue leg schedule. "
-                               << "issue_id: " << issue_id << " leg_number: " << leg_number
-                               << " schedule_role: " << schedule_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond issue leg schedule. "
+                              << "issue_id: " << issue_id << " leg_number: " << leg_number
+                              << " schedule_role: " << schedule_role
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, issue_id, leg_number, schedule_role, sequence_number);
 }
 

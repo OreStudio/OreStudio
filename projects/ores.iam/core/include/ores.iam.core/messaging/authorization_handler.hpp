@@ -29,7 +29,7 @@
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -125,7 +125,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<assign_role_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -147,7 +147,7 @@ public:
                 return;
             }
             if (!svc.has_permission(*caller_id, domain::permissions::roles_assign)) {
-                BOOST_LOG_SEV(authorization_handler_lg(), warn)
+                ORES_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:assign permission";
                 reply(nats_,
                       msg,
@@ -162,10 +162,10 @@ public:
                             req->change_commentary.empty() ? "Role assigned to account" :
                                                              req->change_commentary,
                             req->change_reason_code);
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, assign_role_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, assign_role_response{.success = false, .error_message = e.what()});
         }
@@ -176,7 +176,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<revoke_role_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -198,7 +198,7 @@ public:
                 return;
             }
             if (!svc.has_permission(*caller_id, domain::permissions::roles_revoke)) {
-                BOOST_LOG_SEV(authorization_handler_lg(), warn)
+                ORES_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:revoke permission";
                 reply(nats_,
                       msg,
@@ -214,10 +214,10 @@ public:
                 return;
             }
             svc.revoke_role(account_id, sg(req->role_id));
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, revoke_role_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, revoke_role_response{.success = false, .error_message = e.what()});
         }
@@ -228,7 +228,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<get_account_roles_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -250,10 +250,10 @@ public:
                 return;
             }
             auto answer = svc.read_account_access(*caller_id, sg(req->account_id));
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, to_response(std::move(answer)));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_account_roles_response{.result = failed_result(e.what())});
         }
@@ -280,10 +280,10 @@ public:
                 return;
             }
             auto answer = svc.read_own_access(*caller_id);
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, to_response(std::move(answer)));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_account_roles_response{.result = failed_result(e.what())});
         }
@@ -298,7 +298,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<list_account_permissions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -324,9 +324,9 @@ public:
                                                   .offset = req->offset,
                                                   .limit = req->limit};
             reply(nats_, msg, svc.read_account_permissions(*caller_id, sg(req->account_id), query));
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, permission_page_response{.result = failed_result(e.what())});
         }
@@ -341,7 +341,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<list_my_permissions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -366,9 +366,9 @@ public:
                                                   .offset = req->offset,
                                                   .limit = req->limit};
             reply(nats_, msg, svc.read_own_permissions(*caller_id, query));
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, permission_page_response{.result = failed_result(e.what())});
         }
@@ -383,7 +383,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<list_role_permissions_page_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -410,9 +410,9 @@ public:
                                                   .limit = req->limit,
                                                   .include_unheld = req->include_unheld};
             reply(nats_, msg, svc.read_role_permissions(*caller_id, sg(req->role_id), query));
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, permission_page_response{.result = failed_result(e.what())});
         }
@@ -427,7 +427,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<list_roles_page_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -453,9 +453,9 @@ public:
                                              .offset = req->offset,
                                              .limit = req->limit};
             reply(nats_, msg, svc.read_roles_page(*caller_id, query));
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, role_page_response{.result = failed_result(e.what())});
         }
@@ -470,7 +470,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<list_role_holders_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -494,9 +494,9 @@ public:
             reply(nats_,
                   msg,
                   svc.read_role_holders(*caller_id, sg(req->role_id), req->offset, req->limit));
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, role_holders_response{.result = failed_result(e.what())});
         }
@@ -507,7 +507,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<get_role_permissions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -521,10 +521,10 @@ public:
             service::authorization_service svc(ctx);
             boost::uuids::string_generator sg;
             auto codes = svc.get_role_permissions(sg(req->role_id));
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, get_role_permissions_response{.permission_codes = std::move(codes)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_role_permissions_response{.result = failed_result(e.what())});
         }
@@ -535,7 +535,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<put_role_permissions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -561,14 +561,14 @@ public:
                                                        req->permission_codes,
                                                        req->change_reason_code,
                                                        req->change_commentary);
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   get_role_permissions_response{.result = std::move(answer.result),
                                                 .permission_codes =
                                                     std::move(answer.permission_codes)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_role_permissions_response{.result = failed_result(e.what())});
         }
@@ -579,7 +579,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<assign_role_by_name_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -600,7 +600,7 @@ public:
                 return;
             }
             if (!caller_svc.has_permission(*caller_id, domain::permissions::roles_assign)) {
-                BOOST_LOG_SEV(authorization_handler_lg(), warn)
+                ORES_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:assign permission";
                 reply(nats_,
                       msg,
@@ -661,10 +661,10 @@ public:
             }
 
             auth_svc.assign_role(accounts.front().id, role->id, ctx.actor());
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, assign_role_by_name_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
@@ -677,7 +677,7 @@ public:
             log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<revoke_role_by_name_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -699,7 +699,7 @@ public:
                 return;
             }
             if (!caller_svc.has_permission(*caller_id, domain::permissions::roles_revoke)) {
-                BOOST_LOG_SEV(authorization_handler_lg(), warn)
+                ORES_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:revoke permission";
                 reply(nats_,
                       msg,
@@ -767,10 +767,10 @@ public:
                 return;
             }
             auth_svc.revoke_role(accounts.front().id, role->id);
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, revoke_role_by_name_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
@@ -797,7 +797,7 @@ public:
         }
         auto req = decode<suggest_role_commands_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         const auto& caller = *ctx_expected;
@@ -831,10 +831,10 @@ public:
                 reply(nats_, msg, suggest_role_commands_response{});
                 return;
             }
-            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, suggest_role_commands_response{.commands = std::move(results)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error)
+            ORES_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, suggest_role_commands_response{});
         }

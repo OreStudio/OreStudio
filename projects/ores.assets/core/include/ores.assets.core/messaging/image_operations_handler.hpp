@@ -23,7 +23,7 @@
 #include "ores.assets.api/messaging/image_operations_protocol.hpp"
 #include "ores.assets.core/service/image_operations_service.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -73,7 +73,7 @@ public:
      * @brief Serves assets.v1.ops.upload_image.
      */
     void upload_image(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -82,7 +82,7 @@ public:
         const auto& req_ctx = *req_ctx_expected;
         auto req = decode<upload_image_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_operations_handler_lg(), warn)
+            ORES_LOG_SEV(image_operations_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -90,13 +90,13 @@ public:
         service::image_operations_service svc(req_ctx);
         try {
             auto response = svc.upload_image(*req);
-            BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_operations_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different thing
             // and is reported as such. The store's words stay in the log.
-            BOOST_LOG_SEV(image_operations_handler_lg(), error)
+            ORES_LOG_SEV(image_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             upload_image_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -110,7 +110,7 @@ public:
      * @brief Serves assets.v1.ops.get_image_upload_policy.
      */
     void get_image_upload_policy(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -123,7 +123,7 @@ public:
         }
         auto req = decode<get_image_upload_policy_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_operations_handler_lg(), warn)
+            ORES_LOG_SEV(image_operations_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -131,10 +131,10 @@ public:
         service::image_operations_service svc(req_ctx);
         try {
             auto response = svc.get_image_upload_policy(*req);
-            BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_operations_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(image_operations_handler_lg(), error)
+            ORES_LOG_SEV(image_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_image_upload_policy_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -148,7 +148,7 @@ public:
      * @brief Serves assets.v1.ops.ensure_image.
      */
     void ensure_image(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -157,7 +157,7 @@ public:
         const auto& req_ctx = *req_ctx_expected;
         auto req = decode<ensure_image_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_operations_handler_lg(), warn)
+            ORES_LOG_SEV(image_operations_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -165,10 +165,10 @@ public:
         service::image_operations_service svc(req_ctx);
         try {
             auto response = svc.ensure_image(*req);
-            BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_operations_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(image_operations_handler_lg(), error)
+            ORES_LOG_SEV(image_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             ensure_image_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

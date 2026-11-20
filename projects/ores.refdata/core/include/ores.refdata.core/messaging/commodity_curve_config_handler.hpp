@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_COMMODITY_CURVE_CONFIG_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/commodity_curve_config_protocol.hpp"
@@ -74,7 +74,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_commodity_curve_configs(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,7 +89,7 @@ public:
         }
         auto req = decode<list_commodity_curve_configs_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -97,14 +97,13 @@ public:
         service::commodity_curve_config_service svc(req_ctx);
         try {
             auto response = svc.list_commodity_curve_configs(*req);
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), error)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_commodity_curve_configs_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -124,7 +123,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_commodity_curve_config(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -139,7 +138,7 @@ public:
         }
         auto req = decode<get_commodity_curve_config_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -147,14 +146,13 @@ public:
         service::commodity_curve_config_service svc(req_ctx);
         try {
             auto response = svc.get_commodity_curve_config(*req);
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), error)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_commodity_curve_config_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -174,7 +172,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_commodity_curve_configs(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -189,7 +187,7 @@ public:
         }
         auto req = decode<get_many_commodity_curve_configs_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -197,14 +195,13 @@ public:
         service::commodity_curve_config_service svc(req_ctx);
         try {
             auto response = svc.get_many_commodity_curve_configs(*req);
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), error)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_commodity_curve_configs_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -224,7 +221,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_commodity_curve_config(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -239,7 +236,7 @@ public:
         }
         auto req = decode<put_commodity_curve_config_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -247,14 +244,13 @@ public:
         service::commodity_curve_config_service svc(req_ctx);
         try {
             auto response = svc.put_commodity_curve_config(*req);
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), error)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_commodity_curve_config_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -274,7 +270,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_commodity_curve_configs(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -289,7 +285,7 @@ public:
         }
         auto req = decode<put_many_commodity_curve_configs_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -297,14 +293,13 @@ public:
         service::commodity_curve_config_service svc(req_ctx);
         try {
             auto response = svc.put_many_commodity_curve_configs(*req);
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), error)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_commodity_curve_configs_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -324,7 +319,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_commodity_curve_config(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -339,7 +334,7 @@ public:
         }
         auto req = decode<delete_commodity_curve_config_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -347,14 +342,13 @@ public:
         service::commodity_curve_config_service svc(req_ctx);
         try {
             auto response = svc.delete_commodity_curve_config(*req);
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), error)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_commodity_curve_config_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -374,7 +368,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_commodity_curve_configs(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -389,7 +383,7 @@ public:
         }
         auto req = decode<delete_many_commodity_curve_configs_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -397,14 +391,13 @@ public:
         service::commodity_curve_config_service svc(req_ctx);
         try {
             auto response = svc.delete_many_commodity_curve_configs(*req);
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), error)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_commodity_curve_configs_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -424,7 +417,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_commodity_curve_config_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -439,7 +432,7 @@ public:
         }
         auto req = decode<list_commodity_curve_config_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -447,14 +440,13 @@ public:
         service::commodity_curve_config_service svc(req_ctx);
         try {
             auto response = svc.list_commodity_curve_config_versions(*req);
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), error)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_commodity_curve_config_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -474,7 +466,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_commodity_curve_config_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -489,7 +481,7 @@ public:
         }
         auto req = decode<get_commodity_curve_config_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), warn)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -497,14 +489,13 @@ public:
         service::commodity_curve_config_service svc(req_ctx);
         try {
             auto response = svc.get_commodity_curve_config_version(*req);
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_curve_config_handler_lg(), error)
+            ORES_LOG_SEV(commodity_curve_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_commodity_curve_config_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

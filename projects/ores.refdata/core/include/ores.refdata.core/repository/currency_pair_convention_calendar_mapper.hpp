@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_PAIR_CONVENTION_CALENDAR_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_PAIR_CONVENTION_CALENDAR_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_entity.hpp"

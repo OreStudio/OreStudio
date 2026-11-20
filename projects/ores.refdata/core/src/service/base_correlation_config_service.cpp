@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
 #include "ores.refdata.api/messaging/base_correlation_config_protocol.hpp"
 #include "ores.refdata.core/repository/base_correlation_config_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -482,12 +480,12 @@ ores::utility::domain::result base_correlation_config_service::prepare_change(
 std::vector<domain::base_correlation_config>
 base_correlation_config_service::list_base_correlation_configs(std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all base correlation configs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all base correlation configs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t base_correlation_config_service::count_base_correlation_configs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total base correlation configs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total base correlation configs count";
     return repo_.get_total_base_correlation_config_count(ctx_);
 }
 
@@ -495,14 +493,14 @@ std::uint32_t base_correlation_config_service::count_base_correlation_configs() 
 std::optional<domain::base_correlation_config>
 base_correlation_config_service::get_base_correlation_config_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting base correlation config at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting base correlation config at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::base_correlation_config>
 base_correlation_config_service::get_base_correlation_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting base correlation config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting base correlation config. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -518,11 +516,11 @@ void base_correlation_config_service::save_base_correlation_config(
     const domain::base_correlation_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Base Correlation Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving base correlation config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving base correlation config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved base correlation config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved base correlation config. " << "id: " << v.id;
 }
 
 void base_correlation_config_service::save_base_correlation_configs(
@@ -531,8 +529,8 @@ void base_correlation_config_service::save_base_correlation_configs(
         if (e.id.is_nil())
             throw std::invalid_argument("Base Correlation Config id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << base_correlation_configs.size()
-                               << " base correlation configs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << base_correlation_configs.size()
+                              << " base correlation configs";
     auto ts = base_correlation_configs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -541,9 +539,9 @@ void base_correlation_config_service::save_base_correlation_configs(
 }
 
 void base_correlation_config_service::delete_base_correlation_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing base correlation config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing base correlation config. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed base correlation config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed base correlation config. " << "id: " << id;
 }
 
 void base_correlation_config_service::delete_base_correlation_configs(
@@ -553,7 +551,7 @@ void base_correlation_config_service::delete_base_correlation_configs(
 
 std::vector<domain::base_correlation_config>
 base_correlation_config_service::get_base_correlation_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for base correlation config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for base correlation config. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

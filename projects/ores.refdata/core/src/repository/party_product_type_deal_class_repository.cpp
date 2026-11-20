@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party_product_type_deal_class.hpp"
 #include "ores.refdata.api/domain/party_product_type_deal_class_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/party_product_type_deal_class_protocol.hpp"
 #include "ores.refdata.core/repository/party_product_type_deal_class_entity.hpp"
 #include "ores.refdata.core/repository/party_product_type_deal_class_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -231,7 +229,7 @@ void party_product_type_deal_class_repository::write(
     const context& ctx,
     const domain::party_product_type_deal_class& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party product type deal class. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing party product type deal class. " << "id: " << v.id;
     const auto t = party_product_type_deal_class_apply_claim(
         v,
         claim,
@@ -248,7 +246,7 @@ void party_product_type_deal_class_repository::write(
     const context& ctx,
     const std::vector<domain::party_product_type_deal_class>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party product type deal classes. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing party product type deal classes. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "party_product_type_deal_class_repository::write: one claim is needed for each row");
@@ -288,7 +286,7 @@ party_product_type_deal_class_repository::read_latest(const context& ctx) {
 
 std::vector<domain::party_product_type_deal_class>
 party_product_type_deal_class_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party product type deal class. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party product type deal class. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -307,8 +305,8 @@ party_product_type_deal_class_repository::read_latest(const context& ctx, const 
 
 std::vector<domain::party_product_type_deal_class>
 party_product_type_deal_class_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all party product type deal class versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all party product type deal class versions. "
+                              << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_product_type_deal_class_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -327,8 +325,8 @@ std::optional<domain::party_product_type_deal_class>
 party_product_type_deal_class_repository::read_at_version(const context& ctx,
                                                           const std::string& id,
                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party product type deal class at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading party product type deal class at version. "
+                              << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_product_type_deal_class_entity>> |
@@ -356,8 +354,8 @@ party_product_type_deal_class_repository::read_latest_by_party_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::party_product_type_deal_classes_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party product type deal classes. party_id: "
-                               << party_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party product type deal classes. party_id: "
+                              << party_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_product_type_deal_class_entity>> |
@@ -381,7 +379,7 @@ party_product_type_deal_class_repository::get_total_party_product_type_deal_clas
     const context& ctx,
     const std::string& party_id,
     const std::optional<messaging::party_product_type_deal_classes_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active party product type deal classes count. party_id: " << party_id;
     static constexpr auto max = db_timestamp::max();
 
@@ -403,7 +401,7 @@ party_product_type_deal_class_repository::remove_status
 party_product_type_deal_class_repository::remove(const context& ctx,
                                                  const std::string& id,
                                                  std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party product type deal class. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing party product type deal class. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -443,8 +441,8 @@ party_product_type_deal_class_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::party_product_type_deal_classes_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party product type deal classes with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party product type deal classes with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_product_type_deal_class_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -467,7 +465,7 @@ party_product_type_deal_class_repository::get_total_party_product_type_deal_clas
     const context& ctx,
     const std::optional<messaging::party_product_type_deal_classes_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party product type deal class count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active party product type deal class count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_product_type_deal_class_entity>> |

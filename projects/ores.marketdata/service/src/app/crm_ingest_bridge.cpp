@@ -70,7 +70,7 @@ void crm_ingest_bridge::refresh() {
     // pairs - but it must be visible, because it means the store could not be read.
     const auto fixings = read_fixing_sources(ctx_);
     if (!fixings)
-        BOOST_LOG_SEV(lg(), error)
+        ORES_LOG_SEV(lg(), error)
             << "CRM: could not read the fixing sources, so every party keeps its configured "
                "pairs: "
             << fixings.error();
@@ -116,23 +116,23 @@ void crm_ingest_bridge::refresh() {
                                quant::service::topology_from_sources(held->second.sources)) {
                     edges = chosen->pairs;
                     pivot_code = chosen->pivot_code;
-                    BOOST_LOG_SEV(lg(), info)
+                    ORES_LOG_SEV(lg(), info)
                         << "CRM: party=" << party_id_str << " config='" << cfg.name << "' reads "
                         << chosen->provider_code << " against " << chosen->pivot_code;
                 } else {
-                    BOOST_LOG_SEV(lg(), info)
+                    ORES_LOG_SEV(lg(), info)
                         << "CRM: party=" << party_id_str << " config='" << cfg.name
                         << "' keeps its configured pairs: " << chosen.error();
                 }
             }
         }
         if (refusal) {
-            BOOST_LOG_SEV(lg(), error) << "CRM: refusing party=" << party_id_str << " config='"
-                                       << cfg.name << "': " << *refusal;
+            ORES_LOG_SEV(lg(), error) << "CRM: refusing party=" << party_id_str << " config='"
+                                      << cfg.name << "': " << *refusal;
             continue;
         }
         if (edges.empty()) {
-            BOOST_LOG_SEV(lg(), info)
+            ORES_LOG_SEV(lg(), info)
                 << "CRM: config '" << cfg.name << "' (tenant=" << tenant_id_str
                 << " party=" << party_id_str << ") has no driver pairs and no fixings -- skipping";
             continue;
@@ -182,11 +182,11 @@ void crm_ingest_bridge::refresh() {
                 named_engine{cfg.name, std::move(engine), std::move(configured_pairs)});
             engine_by_config_id.emplace(cfg.id, std::make_pair(key, named_engines.size() - 1));
 
-            BOOST_LOG_SEV(lg(), info) << "CRM: built rate_engine for tenant=" << tenant_id_str
-                                      << " party=" << party_id_str << " config='" << cfg.name
-                                      << "' (" << configured_pairs.size() << " pair(s))";
+            ORES_LOG_SEV(lg(), info) << "CRM: built rate_engine for tenant=" << tenant_id_str
+                                     << " party=" << party_id_str << " config='" << cfg.name
+                                     << "' (" << configured_pairs.size() << " pair(s))";
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "CRM: failed to build topology for tenant=" << tenant_id_str
                 << " party=" << party_id_str << " config='" << cfg.name << "': " << e.what();
         }
@@ -215,7 +215,7 @@ void crm_ingest_bridge::refresh() {
         std::lock_guard lock(engines_mutex_);
         engines_ = std::move(new_engines);
     }
-    BOOST_LOG_SEV(lg(), info) << "CRM: refresh complete, " << total_engines << " active engine(s)";
+    ORES_LOG_SEV(lg(), info) << "CRM: refresh complete, " << total_engines << " active engine(s)";
 }
 
 void crm_ingest_bridge::update(const std::string& tenant_id_str,

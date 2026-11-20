@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/refdata/calendar_screen_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -58,7 +58,7 @@ http_response rebuilt_to(const std::string& body) {
 
 TEST_CASE("calendar_days_are_read_one_year_from_1900_to_2200", "[calendar_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the years a calendar's days are read for";
+    ORES_LOG_SEV(lg, info) << "Testing the years a calendar's days are read for";
 
     for (const std::string year : {"", "1899", "2201", "x", "2026.5"})
         CHECK(days_in(year).status == http_status::bad_request);
@@ -70,7 +70,7 @@ TEST_CASE("calendar_days_are_read_one_year_from_1900_to_2200", "[calendar_screen
 
 TEST_CASE("calendar_rebuild_names_its_last_year_from_1900_to_2200", "[calendar_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the years a calendar is built to";
+    ORES_LOG_SEV(lg, info) << "Testing the years a calendar is built to";
 
     for (const std::string body :
          {"{}", R"({"endYear":1899})", R"({"endYear":2201})", R"({"endYear":"2030"})", "not json"})

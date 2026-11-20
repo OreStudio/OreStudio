@@ -23,7 +23,7 @@
 #include "client_message.hpp"
 #include "feed_kind_registry.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -134,7 +134,7 @@ public:
             resp.success = true;
         } catch (const std::exception& e) {
             resp.message = client_message(e);
-            BOOST_LOG_SEV(ir_parameter_conversion_handler_lg(), warn)
+            ORES_LOG_SEV(ir_parameter_conversion_handler_lg(), warn)
                 << "convert_ir_parameters refused: " << e.what();
         }
         reply(nats_, msg, resp);

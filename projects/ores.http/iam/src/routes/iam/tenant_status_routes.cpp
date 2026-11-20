@@ -337,7 +337,7 @@ void tenant_status_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering tenant_statuses routes";
+    ORES_LOG_SEV(lg(), info) << "Registering tenant_statuses routes";
 
     auto list_route =
         router->get("/api/v1/tenancy/tenant_statuses")
@@ -482,7 +482,7 @@ void tenant_status_routes::register_routes(
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "tenant_statuses routes registered: " << 10 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "tenant_statuses routes registered: " << 10 << " endpoint(s)";
 }
 
 }

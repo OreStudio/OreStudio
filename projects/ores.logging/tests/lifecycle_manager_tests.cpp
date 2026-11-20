@@ -18,8 +18,8 @@
  *
  */
 #include "ores.logging/lifecycle_manager.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.logging/logging_options.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/log/core.hpp>
@@ -46,7 +46,7 @@ TEST_CASE("absent_configuration_disables_core_logging", "[logging]") {
 
     const lifecycle_manager mgr(std::nullopt);
 
-    BOOST_LOG_SEV(lg, ores::logging::info) << "core logging enabled: " << core_logging_enabled();
+    ORES_LOG_SEV(lg, ores::logging::info) << "core logging enabled: " << core_logging_enabled();
 
     CHECK_FALSE(core_logging_enabled());
 }
@@ -58,7 +58,7 @@ TEST_CASE("valid_configuration_enables_core_logging", "[logging]") {
 
     const lifecycle_manager mgr(make_console_only_options());
 
-    BOOST_LOG_SEV(lg, ores::logging::info) << "core logging enabled: " << core_logging_enabled();
+    ORES_LOG_SEV(lg, ores::logging::info) << "core logging enabled: " << core_logging_enabled();
 
     CHECK(core_logging_enabled());
 }

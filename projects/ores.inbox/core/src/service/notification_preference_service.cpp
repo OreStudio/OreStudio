@@ -26,7 +26,6 @@
 #include "ores.inbox.api/domain/notification_preference.hpp"
 #include "ores.inbox.api/messaging/notification_preference_protocol.hpp"
 #include "ores.inbox.core/repository/notification_preference_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -526,12 +524,12 @@ ores::utility::domain::result notification_preference_service::prepare_change(
 
 std::vector<domain::notification_preference>
 notification_preference_service::list_preferences(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all notification preferences";
+    ORES_LOG_SEV(lg(), debug) << "Listing all notification preferences";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t notification_preference_service::count_preferences() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total notification preferences count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total notification preferences count";
     return repo_.get_total_preference_count(ctx_);
 }
 
@@ -540,14 +538,14 @@ std::vector<domain::notification_preference>
 notification_preference_service::list_preferences_by_account_id(const std::string& account_id,
                                                                 std::uint32_t offset,
                                                                 std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing notification preferences by account_id: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing notification preferences by account_id: " << account_id;
     return repo_.read_latest_by_account_id(ctx_, account_id, offset, limit);
 }
 
 std::uint32_t
 notification_preference_service::count_preferences_by_account_id(const std::string& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total notification preferences count by account_id: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total notification preferences count by account_id: "
+                              << account_id;
     return repo_.get_total_preference_count_by_account_id(ctx_, account_id);
 }
 
@@ -557,17 +555,16 @@ notification_preference_service::get_preference_at_version(const std::string& ac
                                                            const std::string& kind_code,
                                                            const std::string& channel_code,
                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting notification preference at version. "
-                               << "account_id: " << account_id << " kind_code: " << kind_code
-                               << " channel_code: " << channel_code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting notification preference at version. "
+                              << "account_id: " << account_id << " kind_code: " << kind_code
+                              << " channel_code: " << channel_code << " version: " << version;
     return repo_.read_at_version(ctx_, account_id, kind_code, channel_code, version);
 }
 
 std::optional<domain::notification_preference> notification_preference_service::get_preference(
     const std::string& account_id, const std::string& kind_code, const std::string& channel_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting notification preference. "
-                               << "account_id: " << account_id << " kind_code: " << kind_code
-                               << " channel_code: " << channel_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting notification preference. " << "account_id: " << account_id
+                              << " kind_code: " << kind_code << " channel_code: " << channel_code;
     auto results = repo_.read_latest(ctx_, account_id, kind_code, channel_code);
     if (results.empty())
         return std::nullopt;
@@ -588,15 +585,15 @@ void notification_preference_service::save_preference(const domain::notification
         throw std::invalid_argument("Notification Preference kind_code cannot be empty.");
     if (v.channel_code.empty())
         throw std::invalid_argument("Notification Preference channel_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving notification preference. "
-                               << "account_id: " << v.account_id << " kind_code: " << v.kind_code
-                               << " channel_code: " << v.channel_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving notification preference. "
+                              << "account_id: " << v.account_id << " kind_code: " << v.kind_code
+                              << " channel_code: " << v.channel_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved notification preference. " << "account_id: " << v.account_id
-                              << " kind_code: " << v.kind_code
-                              << " channel_code: " << v.channel_code;
+    ORES_LOG_SEV(lg(), info) << "Saved notification preference. " << "account_id: " << v.account_id
+                             << " kind_code: " << v.kind_code
+                             << " channel_code: " << v.channel_code;
 }
 
 void notification_preference_service::save_preferences(
@@ -609,7 +606,7 @@ void notification_preference_service::save_preferences(
         if (e.channel_code.empty())
             throw std::invalid_argument("Notification Preference channel_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << preferences.size() << " notification preferences";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << preferences.size() << " notification preferences";
     auto ts = preferences;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -620,12 +617,12 @@ void notification_preference_service::save_preferences(
 void notification_preference_service::delete_preference(const std::string& account_id,
                                                         const std::string& kind_code,
                                                         const std::string& channel_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing notification preference. "
-                               << "account_id: " << account_id << " kind_code: " << kind_code
-                               << " channel_code: " << channel_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing notification preference. "
+                              << "account_id: " << account_id << " kind_code: " << kind_code
+                              << " channel_code: " << channel_code;
     repo_.remove(ctx_, account_id, kind_code, channel_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed notification preference. " << "account_id: " << account_id
-                              << " kind_code: " << kind_code << " channel_code: " << channel_code;
+    ORES_LOG_SEV(lg(), info) << "Removed notification preference. " << "account_id: " << account_id
+                             << " kind_code: " << kind_code << " channel_code: " << channel_code;
 }
 
 void notification_preference_service::delete_preferences(
@@ -639,9 +636,9 @@ std::vector<domain::notification_preference>
 notification_preference_service::get_preference_history(const std::string& account_id,
                                                         const std::string& kind_code,
                                                         const std::string& channel_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for notification preference. "
-                               << "account_id: " << account_id << " kind_code: " << kind_code
-                               << " channel_code: " << channel_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for notification preference. "
+                              << "account_id: " << account_id << " kind_code: " << kind_code
+                              << " channel_code: " << channel_code;
     return repo_.read_all(ctx_, account_id, kind_code, channel_code);
 }
 

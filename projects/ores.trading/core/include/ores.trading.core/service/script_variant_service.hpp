@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_SCRIPT_VARIANT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/script_variant.hpp"
 #include "ores.trading.api/messaging/script_variant_protocol.hpp"
 #include "ores.trading.core/export.hpp"

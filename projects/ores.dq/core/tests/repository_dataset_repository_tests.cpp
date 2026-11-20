@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/dataset_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/dataset_generator.hpp"
 #include "ores.dq.core/repository/dataset_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -68,11 +68,11 @@ TEST_CASE("write_single_dataset", "[repository]") {
     dataset.tenant_id = h.tenant_id();
     make_unique(dataset);
 
-    BOOST_LOG_SEV(lg, debug) << "Dataset: " << dataset;
+    ORES_LOG_SEV(lg, debug) << "Dataset: " << dataset;
     repo.write(h.context(), dataset);
 
     auto read_datasets = repo.read_latest(h.context(), boost::uuids::to_string(dataset.id));
-    BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
+    ORES_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
 
     REQUIRE(read_datasets.size() == 1);
     CHECK(read_datasets[0].id == dataset.id);
@@ -91,11 +91,11 @@ TEST_CASE("write_multiple_datasets", "[repository]") {
         d.tenant_id = h.tenant_id();
         make_unique(d);
     }
-    BOOST_LOG_SEV(lg, debug) << "Datasets: " << datasets;
+    ORES_LOG_SEV(lg, debug) << "Datasets: " << datasets;
     repo.write(h.context(), datasets);
 
     auto read_datasets = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
+    ORES_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
 
     for (const auto& written : datasets) {
         bool found = false;
@@ -121,12 +121,12 @@ TEST_CASE("read_latest_datasets", "[repository]") {
         d.tenant_id = h.tenant_id();
         make_unique(d);
     }
-    BOOST_LOG_SEV(lg, debug) << "Written datasets: " << written_datasets;
+    ORES_LOG_SEV(lg, debug) << "Written datasets: " << written_datasets;
 
     repo.write(h.context(), written_datasets);
 
     auto read_datasets = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
+    ORES_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
 
     for (const auto& written : written_datasets) {
         bool found = false;
@@ -154,13 +154,13 @@ TEST_CASE("read_latest_dataset_by_id", "[repository]") {
     }
 
     const auto target = datasets.front();
-    BOOST_LOG_SEV(lg, debug) << "Write datasets: " << datasets;
+    ORES_LOG_SEV(lg, debug) << "Write datasets: " << datasets;
     repo.write(h.context(), datasets);
 
-    BOOST_LOG_SEV(lg, debug) << "Target dataset: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target dataset: " << target;
 
     auto read_datasets = repo.read_latest(h.context(), boost::uuids::to_string(target.id));
-    BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
+    ORES_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
 
     REQUIRE(read_datasets.size() == 1);
     CHECK(read_datasets[0].id == target.id);
@@ -186,10 +186,10 @@ TEST_CASE("read_nonexistent_dataset_by_id", "[repository]") {
     CHECK(written_datasets[0].code == dataset.code);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_datasets = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
+    ORES_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
 
     CHECK(read_datasets.size() == 0);
 }

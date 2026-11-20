@@ -30,9 +30,7 @@
 #include "ores.iam.api/domain/role_permission_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/role_permission_entity.hpp"
 #include "ores.iam.core/repository/role_permission_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -191,8 +189,8 @@ void role_permission_repository::write(
 
 void role_permission_repository::write(const domain::role_permission& role_permission,
                                        const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing role permission to database: " << role_permission.role_id
-                               << "/" << role_permission.permission_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing role permission to database: " << role_permission.role_id
+                              << "/" << role_permission.permission_id;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(role_permission.role_id, role_permission.permission_id) :
                              std::vector<domain::role_permission>{};
@@ -204,8 +202,8 @@ void role_permission_repository::write(const domain::role_permission& role_permi
 void role_permission_repository::write(
     const std::vector<domain::role_permission>& role_permissions,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing role permissions to database. Count: "
-                               << role_permissions.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing role permissions to database. Count: "
+                              << role_permissions.size();
     if (claims.size() != role_permissions.size())
         throw std::invalid_argument(
             "role_permission_repository::write: one claim is needed for each row");
@@ -241,8 +239,8 @@ std::vector<domain::role_permission> role_permission_repository::read_latest() {
 
 std::vector<domain::role_permission> role_permission_repository::read_latest(std::uint32_t offset,
                                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role permissions with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role permissions with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_permission_entity>> |
@@ -261,8 +259,8 @@ std::vector<domain::role_permission> role_permission_repository::read_latest(std
 std::vector<domain::role_permission>
 role_permission_repository::read_latest(const boost::uuids::uuid& role_id,
                                         const boost::uuids::uuid& permission_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role permission. " << role_id << "/"
-                               << permission_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role permission. " << role_id << "/"
+                              << permission_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto role_id_str = boost::uuids::to_string(role_id);
@@ -282,7 +280,7 @@ role_permission_repository::read_latest(const boost::uuids::uuid& role_id,
 }
 
 std::uint32_t role_permission_repository::get_total_role_permission_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role permissions count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active role permissions count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -291,13 +289,13 @@ std::uint32_t role_permission_repository::get_total_role_permission_count() {
 
     const auto count = query_builder::execute_count_query<role_permission_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role permissions");
-    BOOST_LOG_SEV(lg(), debug) << "Total active role permissions count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active role permissions count: " << count;
     return count;
 }
 
 std::vector<domain::role_permission>
 role_permission_repository::read_latest_by_role(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role permissions. Role: " << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role permissions. Role: " << role_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto role_id_str = boost::uuids::to_string(role_id);
@@ -319,7 +317,7 @@ role_permission_repository::read_latest_by_role(const boost::uuids::uuid& role_i
 
 std::vector<domain::role_permission>
 role_permission_repository::read_latest_by_permission(const boost::uuids::uuid& permission_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role permissions. Permission: " << permission_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role permissions. Permission: " << permission_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto permission_id_str = boost::uuids::to_string(permission_id);
@@ -343,8 +341,8 @@ role_permission_repository::read_latest_by_permission(const boost::uuids::uuid& 
 std::vector<domain::role_permission> role_permission_repository::read_latest_by_role(
     const boost::uuids::uuid& role_id, std::uint32_t offset, std::uint32_t limit) {
     const auto role_id_str = boost::uuids::to_string(role_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role permissions. Role: " << role_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role permissions. Role: " << role_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -367,8 +365,8 @@ std::vector<domain::role_permission> role_permission_repository::read_latest_by_
 std::uint32_t role_permission_repository::get_total_role_permission_count_by_role(
     const boost::uuids::uuid& role_id) {
     const auto role_id_str = boost::uuids::to_string(role_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role permissions count. Role: "
-                               << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active role permissions count. Role: "
+                              << role_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -378,15 +376,15 @@ std::uint32_t role_permission_repository::get_total_role_permission_count_by_rol
 
     const auto count = query_builder::execute_count_query<role_permission_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role permissions");
-    BOOST_LOG_SEV(lg(), debug) << "Total active role permissions count by role: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active role permissions count by role: " << count;
     return count;
 }
 
 std::vector<domain::role_permission> role_permission_repository::read_latest_by_permission(
     const boost::uuids::uuid& permission_id, std::uint32_t offset, std::uint32_t limit) {
     const auto permission_id_str = boost::uuids::to_string(permission_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role permissions. Permission: " << permission_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role permissions. Permission: " << permission_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -410,8 +408,8 @@ std::vector<domain::role_permission> role_permission_repository::read_latest_by_
 std::uint32_t role_permission_repository::get_total_role_permission_count_by_permission(
     const boost::uuids::uuid& permission_id) {
     const auto permission_id_str = boost::uuids::to_string(permission_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role permissions count. Permission: "
-                               << permission_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active role permissions count. Permission: "
+                              << permission_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -422,14 +420,13 @@ std::uint32_t role_permission_repository::get_total_role_permission_count_by_per
 
     const auto count = query_builder::execute_count_query<role_permission_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role permissions");
-    BOOST_LOG_SEV(lg(), debug) << "Total active role permissions count by permission: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active role permissions count by permission: " << count;
     return count;
 }
 
 std::vector<role_permission_history_row>
 role_permission_repository::read_all_by_role(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the role permissions. Role: "
-                               << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the role permissions. Role: " << role_id;
 
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -479,8 +476,8 @@ role_permission_repository::remove_status
 role_permission_repository::remove(const boost::uuids::uuid& role_id,
                                    const boost::uuids::uuid& permission_id,
                                    std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing role permission from database: " << role_id << "/"
-                               << permission_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing role permission from database: " << role_id << "/"
+                              << permission_id;
 
     const auto current = read_latest(role_id, permission_id);
     if (current.empty())
@@ -526,7 +523,7 @@ void role_permission_repository::remove(const std::vector<boost::uuids::uuid>& r
 }
 
 void role_permission_repository::remove_by_role(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all role permissions from database: " << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all role permissions from database: " << role_id;
 
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();

@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/regulatory_book_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/regulatory_book_type_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -46,7 +44,7 @@ TEST_CASE("write_single_regulatory_book_type", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto rbt = generate_synthetic_regulatory_book_type(ctx);
     rbt.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Regulatory book type: " << rbt;
+    ORES_LOG_SEV(lg, debug) << "Regulatory book type: " << rbt;
 
     regulatory_book_type_repository repo;
     repo.write(h.context(), rbt);
@@ -65,7 +63,7 @@ TEST_CASE("write_multiple_regulatory_book_types", "[repository]") {
     for (auto& rbt : regulatory_book_types) {
         rbt.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Regulatory book types: " << regulatory_book_types;
+    ORES_LOG_SEV(lg, debug) << "Regulatory book types: " << regulatory_book_types;
 
     regulatory_book_type_repository repo;
     repo.write(h.context(), regulatory_book_types);
@@ -90,13 +88,13 @@ TEST_CASE("read_latest_regulatory_book_types", "[repository]") {
     for (auto& rbt : written_regulatory_book_types) {
         rbt.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written regulatory book types: " << written_regulatory_book_types;
+    ORES_LOG_SEV(lg, debug) << "Written regulatory book types: " << written_regulatory_book_types;
 
     regulatory_book_type_repository repo;
     repo.write(h.context(), written_regulatory_book_types);
 
     auto read_regulatory_book_types = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read regulatory book types: " << read_regulatory_book_types;
+    ORES_LOG_SEV(lg, debug) << "Read regulatory book types: " << read_regulatory_book_types;
 
     for (const auto& written : written_regulatory_book_types) {
         const auto it =
@@ -116,7 +114,7 @@ TEST_CASE("read_latest_regulatory_book_type_by_code", "[repository]") {
     auto rbt = generate_synthetic_regulatory_book_type(ctx);
     rbt.change_reason_code = "system.test";
     const auto original_name = rbt.name;
-    BOOST_LOG_SEV(lg, debug) << "Regulatory book type: " << rbt;
+    ORES_LOG_SEV(lg, debug) << "Regulatory book type: " << rbt;
 
     regulatory_book_type_repository repo;
     repo.write(h.context(), rbt);
@@ -125,7 +123,7 @@ TEST_CASE("read_latest_regulatory_book_type_by_code", "[repository]") {
     repo.write(h.context(), rbt);
 
     auto read_regulatory_book_types = repo.read_latest(h.context(), rbt.code);
-    BOOST_LOG_SEV(lg, debug) << "Read regulatory book types: " << read_regulatory_book_types;
+    ORES_LOG_SEV(lg, debug) << "Read regulatory book types: " << read_regulatory_book_types;
 
     REQUIRE(read_regulatory_book_types.size() == 1);
     CHECK(read_regulatory_book_types[0].code == rbt.code);
@@ -146,10 +144,10 @@ TEST_CASE("read_nonexistent_regulatory_book_type_code", "[repository]") {
     repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_regulatory_book_types = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read regulatory book types: " << read_regulatory_book_types;
+    ORES_LOG_SEV(lg, debug) << "Read regulatory book types: " << read_regulatory_book_types;
 
     const auto answered_with_another_key =
         std::ranges::any_of(read_regulatory_book_types, [&](const regulatory_book_type& rbt) {
@@ -170,7 +168,7 @@ TEST_CASE("read_regulatory_book_types_versions_by_key", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto rbt = generate_synthetic_regulatory_book_type(ctx);
     rbt.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Regulatory book type: " << rbt;
+    ORES_LOG_SEV(lg, debug) << "Regulatory book type: " << rbt;
 
     regulatory_book_type_repository repo;
     repo.write(h.context(), rbt);
@@ -189,13 +187,13 @@ TEST_CASE("read_regulatory_book_types_versions_resolve_each_version", "[reposito
     auto rbt = generate_synthetic_regulatory_book_type(ctx);
     rbt.change_reason_code = "system.test";
     const auto original_name = rbt.name;
-    BOOST_LOG_SEV(lg, debug) << "Regulatory book type v1: " << rbt;
+    ORES_LOG_SEV(lg, debug) << "Regulatory book type v1: " << rbt;
 
     regulatory_book_type_repository repo;
     repo.write(h.context(), rbt);
 
     rbt.name = original_name + " v2";
-    BOOST_LOG_SEV(lg, debug) << "Regulatory book type v2: " << rbt;
+    ORES_LOG_SEV(lg, debug) << "Regulatory book type v2: " << rbt;
     repo.write(h.context(), rbt);
 
     const auto versions = repo.read_all(h.context(), rbt.code);
@@ -219,7 +217,7 @@ TEST_CASE("read_latest_regulatory_book_types_includes_the_written_row", "[reposi
     auto ctx = ores::testing::make_generation_context(h);
     auto rbt = generate_synthetic_regulatory_book_type(ctx);
     rbt.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Regulatory book type: " << rbt;
+    ORES_LOG_SEV(lg, debug) << "Regulatory book type: " << rbt;
 
     regulatory_book_type_repository repo;
     repo.write(h.context(), rbt);

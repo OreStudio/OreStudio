@@ -172,7 +172,7 @@ application::application() = default;
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.trading.service", 0, 1);
 
     ores::nats::service::client nats(cfg.nats);
@@ -497,7 +497,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
 
     event_source.start();
-    BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+    ORES_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

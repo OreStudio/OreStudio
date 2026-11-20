@@ -21,7 +21,7 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_session_protocol.hpp"
 #include "ores.iam.client/client/tenant_session.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -65,7 +65,7 @@ struct token_state {
     int access_lifetime_s = 1800;
 
     void authenticate() {
-        BOOST_LOG_SEV(service_token_provider_lg(), info)
+        ORES_LOG_SEV(service_token_provider_lg(), info)
             << "Authenticating service account: " << username;
 
         // Retry with exponential backoff. This handles the startup race where
@@ -85,7 +85,7 @@ struct token_state {
                 auto resp = codec.decode<ores::iam::messaging::service_login_response>(reply.data);
                 if (!resp || !resp->success || resp->token.empty()) {
                     const auto msg = resp ? resp->message : "parse error";
-                    BOOST_LOG_SEV(service_token_provider_lg(), error)
+                    ORES_LOG_SEV(service_token_provider_lg(), error)
                         << "Service authentication failed for " << username << ": " << msg;
                     throw std::runtime_error("Service authentication failed for " + username +
                                              ": " + msg);
@@ -98,7 +98,7 @@ struct token_state {
                 // Tune proactive refresh margin to 20% of the actual TTL so
                 // the token is renewed at ~80% of its lifetime.
                 refresh_margin = std::chrono::seconds(access_lifetime_s / 5);
-                BOOST_LOG_SEV(service_token_provider_lg(), info)
+                ORES_LOG_SEV(service_token_provider_lg(), info)
                     << "Service authentication successful for " << username
                     << " (lifetime=" << access_lifetime_s << "s"
                     << ", refresh_margin=" << refresh_margin.count() << "s)";
@@ -108,7 +108,7 @@ struct token_state {
                 // Credential errors are fatal — retrying won't help.
                 if (what.starts_with("Service authentication failed"))
                     throw;
-                BOOST_LOG_SEV(service_token_provider_lg(), warn)
+                ORES_LOG_SEV(service_token_provider_lg(), warn)
                     << "Authentication attempt " << attempt << " failed: " << e.what()
                     << ". Retrying in " << delay.count() << " ms.";
             }
@@ -118,7 +118,7 @@ struct token_state {
     }
 
     void refresh() {
-        BOOST_LOG_SEV(service_token_provider_lg(), debug) << "Refreshing JWT for " << username;
+        ORES_LOG_SEV(service_token_provider_lg(), debug) << "Refreshing JWT for " << username;
         const std::unordered_map<std::string, std::string> headers{
             {std::string(ores::nats::headers::authorization),
              std::string(ores::nats::headers::bearer_prefix) + jwt}};
@@ -128,7 +128,7 @@ struct token_state {
         auto resp = ores::nats::default_wire_codec().decode<ores::iam::messaging::refresh_response>(
             reply.data);
         if (!resp || !resp->success || resp->token.empty()) {
-            BOOST_LOG_SEV(service_token_provider_lg(), warn)
+            ORES_LOG_SEV(service_token_provider_lg(), warn)
                 << "Token refresh failed for " << username << ", re-authenticating";
             authenticate();
             return;
@@ -137,7 +137,7 @@ struct token_state {
         jwt = std::move(resp->token);
         access_lifetime_s = resp->access_lifetime_s;
         expires_at = std::chrono::system_clock::now() + std::chrono::seconds(access_lifetime_s);
-        BOOST_LOG_SEV(service_token_provider_lg(), debug) << "JWT refreshed for " << username;
+        ORES_LOG_SEV(service_token_provider_lg(), debug) << "JWT refreshed for " << username;
     }
 
     void refresh_if_needed() {
@@ -194,7 +194,7 @@ struct session_state {
     tenant_session session;
 
     void enter() {
-        BOOST_LOG_SEV(service_token_provider_lg(), info)
+        ORES_LOG_SEV(service_token_provider_lg(), info)
             << "Entering tenant " << tenant_id << " as the service account";
 
         const auto& codec = ores::nats::default_wire_codec();
@@ -211,14 +211,14 @@ struct session_state {
             codec.decode<ores::iam::messaging::enter_tenant_as_service_response>(reply.data);
         if (!resp || !resp->success || resp->token.empty()) {
             const auto why = resp ? resp->message : "unreadable answer";
-            BOOST_LOG_SEV(service_token_provider_lg(), error)
+            ORES_LOG_SEV(service_token_provider_lg(), error)
                 << "Entering tenant " << tenant_id << " was refused: " << why;
             throw std::runtime_error("Entering tenant " + tenant_id + " was refused: " + why);
         }
 
         session.entered(
             std::move(resp->token), resp->access_lifetime_s, std::chrono::system_clock::now());
-        BOOST_LOG_SEV(service_token_provider_lg(), info) << "Entered tenant " << tenant_id;
+        ORES_LOG_SEV(service_token_provider_lg(), info) << "Entered tenant " << tenant_id;
     }
 };
 

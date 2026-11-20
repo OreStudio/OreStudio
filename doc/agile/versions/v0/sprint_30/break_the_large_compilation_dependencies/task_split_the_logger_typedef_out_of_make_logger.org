@@ -8,7 +8,7 @@
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
 #+branch: feature/split-the-logger-typedef-out-of-make-logger
-#+pr:
+#+pr: 4922
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -140,7 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4922][#4922]] | [logging] Hold the logger behind a handle of our own |
 
 * Review
 

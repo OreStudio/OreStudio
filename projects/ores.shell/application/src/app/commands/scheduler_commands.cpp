@@ -20,7 +20,7 @@
 #include "ores.shell/app/commands/scheduler_commands.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -192,7 +192,7 @@ void scheduler_commands::register_commands(cli::Menu& root_menu, nats_client& se
 }
 
 void scheduler_commands::process_jobs(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing job definitions.";
+    ORES_LOG_SEV(lg(), debug) << "Listing job definitions.";
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to list jobs." << std::endl;
@@ -223,7 +223,7 @@ void scheduler_commands::process_jobs(std::ostream& out, nats_client& session) {
 void scheduler_commands::process_schedule(std::ostream& out,
                                           nats_client& session,
                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Scheduling a job.";
+    ORES_LOG_SEV(lg(), debug) << "Scheduling a job.";
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to schedule a job." << std::endl;
@@ -299,7 +299,7 @@ void scheduler_commands::process_schedule(std::ostream& out,
 void scheduler_commands::process_remove(std::ostream& out,
                                         nats_client& session,
                                         const std::string& job_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing job " << job_name;
+    ORES_LOG_SEV(lg(), debug) << "Removing job " << job_name;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to remove a job." << std::endl;
@@ -328,7 +328,7 @@ void scheduler_commands::process_remove(std::ostream& out,
 void scheduler_commands::process_instances(std::ostream& out,
                                            nats_client& session,
                                            const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing job instances.";
+    ORES_LOG_SEV(lg(), debug) << "Listing job instances.";
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to list executions." << std::endl;
@@ -394,7 +394,7 @@ void scheduler_commands::process_instances(std::ostream& out,
 }
 
 void scheduler_commands::process_status(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the scheduler status.";
+    ORES_LOG_SEV(lg(), debug) << "Reading the scheduler status.";
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to read the scheduler status." << std::endl;
@@ -437,7 +437,7 @@ void scheduler_commands::process_status(std::ostream& out, nats_client& session)
 void scheduler_commands::process_watch(std::ostream& out,
                                        nats_client& session,
                                        const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Watching scheduler execution events.";
+    ORES_LOG_SEV(lg(), debug) << "Watching scheduler execution events.";
 
     const std::vector<flag_spec> specs{{.name = "seconds",
                                         .requires_value = true,

@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/treatment_dimension.hpp"
 #include "ores.dq.api/domain/treatment_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/treatment_dimension_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -36,7 +36,7 @@ TEST_CASE("create_treatment_dimension_with_valid_fields", "[domain]") {
     sut.description = "Production data for operational use";
     sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
-    BOOST_LOG_SEV(lg, info) << "Treatment dimension: " << sut;
+    ORES_LOG_SEV(lg, info) << "Treatment dimension: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "live");
@@ -57,7 +57,7 @@ TEST_CASE("treatment_dimension_convert_single_to_table", "[domain]") {
     std::vector<treatment_dimension> dimensions = {td};
     auto table = convert_to_table(dimensions);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Code"));

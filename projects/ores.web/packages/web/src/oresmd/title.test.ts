@@ -28,6 +28,7 @@ const row = (code: string, title: string) => ({
     ore_name: code.toUpperCase(),
     title,
     asset: 'fx',
+    asset_class: 'fx',
     subject: 'unit_ccy',
     fields: [],
 });

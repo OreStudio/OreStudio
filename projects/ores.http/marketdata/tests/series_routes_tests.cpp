@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/marketdata/series_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -66,7 +66,7 @@ http_status series_status(const std::string& window) {
 
 TEST_CASE("series_state_their_observations_oldest_first", "[series]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a series' observations";
+    ORES_LOG_SEV(lg, info) << "Testing a series' observations";
 
     const auto answer = series_routes::observations_json(
         {observation_of(15, "1.2", "bloomberg"), observation_of(14, "1.1", "")}, 42);
@@ -81,7 +81,7 @@ TEST_CASE("series_state_their_observations_oldest_first", "[series]") {
 
 TEST_CASE("series_refuse_a_read_that_names_no_series", "[series]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a read of observations";
+    ORES_LOG_SEV(lg, info) << "Testing a read of observations";
 
     http_request req;
     CHECK(answer_at<series_routes>(
@@ -93,7 +93,7 @@ TEST_CASE("series_refuse_a_read_that_names_no_series", "[series]") {
 
 TEST_CASE("series_refuse_a_query_they_do_not_read", "[series]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a read's query";
+    ORES_LOG_SEV(lg, info) << "Testing a read's query";
 
     http_request req;
     req.query_params["colour"] = "red";

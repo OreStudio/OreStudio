@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/curve_segment_cross_currency_terms.hpp"
 #include "ores.refdata.api/domain/curve_segment_cross_currency_terms_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/curve_segment_cross_currency_terms_protocol.hpp"
 #include "ores.refdata.core/repository/curve_segment_cross_currency_terms_entity.hpp"
 #include "ores.refdata.core/repository/curve_segment_cross_currency_terms_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -224,7 +222,7 @@ void curve_segment_cross_currency_terms_repository::write(
     const context& ctx,
     const domain::curve_segment_cross_currency_terms& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing curve segment cross currency terms. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing curve segment cross currency terms. " << "id: " << v.id;
     const auto t = curve_segment_cross_currency_terms_apply_claim(
         v,
         claim,
@@ -241,7 +239,7 @@ void curve_segment_cross_currency_terms_repository::write(
     const context& ctx,
     const std::vector<domain::curve_segment_cross_currency_terms>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing curve segment cross currency terms. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing curve segment cross currency terms. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("curve_segment_cross_currency_terms_repository::write: one "
                                     "claim is needed for each row");
@@ -284,8 +282,8 @@ curve_segment_cross_currency_terms_repository::read_latest(const context& ctx) {
 std::vector<domain::curve_segment_cross_currency_terms>
 curve_segment_cross_currency_terms_repository::read_latest(const context& ctx,
                                                            const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest curve segment cross currency terms. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest curve segment cross currency terms. "
+                              << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -306,8 +304,8 @@ curve_segment_cross_currency_terms_repository::read_latest(const context& ctx,
 
 std::vector<domain::curve_segment_cross_currency_terms>
 curve_segment_cross_currency_terms_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all curve segment cross currency terms versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all curve segment cross currency terms versions. "
+                              << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_segment_cross_currency_terms_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -328,8 +326,8 @@ std::optional<domain::curve_segment_cross_currency_terms>
 curve_segment_cross_currency_terms_repository::read_at_version(const context& ctx,
                                                                const std::string& id,
                                                                std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading curve segment cross currency terms at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading curve segment cross currency terms at version. "
+                              << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<curve_segment_cross_currency_terms_entity>> |
@@ -357,7 +355,7 @@ curve_segment_cross_currency_terms_repository::remove_status
 curve_segment_cross_currency_terms_repository::remove(const context& ctx,
                                                       const std::string& id,
                                                       std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve segment cross currency terms. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve segment cross currency terms. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -398,8 +396,8 @@ curve_segment_cross_currency_terms_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::curve_segment_cross_currency_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest curve segment cross currency terms with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest curve segment cross currency terms with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_segment_cross_currency_terms_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -424,8 +422,7 @@ curve_segment_cross_currency_terms_repository::get_total_segment_cross_currency_
     const context& ctx,
     const std::optional<messaging::curve_segment_cross_currency_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Retrieving total active curve segment cross currency terms count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active curve segment cross currency terms count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_segment_cross_currency_terms_entity>> |

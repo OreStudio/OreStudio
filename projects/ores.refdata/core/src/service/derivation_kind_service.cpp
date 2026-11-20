@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/derivation_kind.hpp"
 #include "ores.refdata.api/messaging/derivation_kind_protocol.hpp"
 #include "ores.refdata.core/repository/derivation_kind_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -446,25 +444,25 @@ derivation_kind_service::prepare_change(const messaging::derivation_kind_change&
 
 std::vector<domain::derivation_kind> derivation_kind_service::list_kinds(std::uint32_t offset,
                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all derivation kinds";
+    ORES_LOG_SEV(lg(), debug) << "Listing all derivation kinds";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t derivation_kind_service::count_kinds() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total derivation kinds count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total derivation kinds count";
     return repo_.get_total_kind_count(ctx_);
 }
 
 
 std::optional<domain::derivation_kind>
 derivation_kind_service::get_kind_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting derivation kind at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting derivation kind at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::derivation_kind> derivation_kind_service::get_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting derivation kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting derivation kind. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -479,11 +477,11 @@ derivation_kind_service::get_kinds(const std::vector<std::string>& codes) {
 void derivation_kind_service::save_kind(const domain::derivation_kind& v) {
     if (v.code.empty())
         throw std::invalid_argument("Derivation Kind code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving derivation kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving derivation kind. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved derivation kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved derivation kind. " << "code: " << v.code;
 }
 
 void derivation_kind_service::save_kinds(const std::vector<domain::derivation_kind>& kinds) {
@@ -491,7 +489,7 @@ void derivation_kind_service::save_kinds(const std::vector<domain::derivation_ki
         if (e.code.empty())
             throw std::invalid_argument("Derivation Kind code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << kinds.size() << " derivation kinds";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << kinds.size() << " derivation kinds";
     auto ts = kinds;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -500,9 +498,9 @@ void derivation_kind_service::save_kinds(const std::vector<domain::derivation_ki
 }
 
 void derivation_kind_service::delete_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing derivation kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing derivation kind. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed derivation kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed derivation kind. " << "code: " << code;
 }
 
 void derivation_kind_service::delete_kinds(const std::vector<std::string>& codes) {
@@ -511,7 +509,7 @@ void derivation_kind_service::delete_kinds(const std::vector<std::string>& codes
 
 std::vector<domain::derivation_kind>
 derivation_kind_service::get_kind_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for derivation kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for derivation kind. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

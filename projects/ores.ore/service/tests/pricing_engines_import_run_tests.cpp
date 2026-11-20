@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.service/messaging/pricing_engines_import_run.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -162,7 +162,7 @@ TEST_CASE("a_vocabulary_that_cannot_be_read_registers_no_configuration", "[ore][
     world w;
     w.vocabulary_unreadable = true;
     const auto response = run_pricing_engines_import(w.operations(), new_configuration());
-    BOOST_LOG_SEV(lg, debug) << "Refusal: " << response.message;
+    ORES_LOG_SEV(lg, debug) << "Refusal: " << response.message;
 
     CHECK_FALSE(response.success);
     CHECK(response.message.find("could not be read") != std::string::npos);
@@ -181,7 +181,7 @@ TEST_CASE("a_target_that_cannot_be_read_registers_no_configuration", "[ore][impo
     w.target_unreadable = true;
     const auto response =
         run_pricing_engines_import(w.operations(), into(boost::uuids::random_generator()()));
-    BOOST_LOG_SEV(lg, debug) << "Refusal: " << response.message;
+    ORES_LOG_SEV(lg, debug) << "Refusal: " << response.message;
 
     CHECK_FALSE(response.success);
     CHECK(response.message.find("No pricing engines document fills configuration") !=
@@ -196,7 +196,7 @@ TEST_CASE("a_refused_save_removes_the_configuration_the_import_registered", "[or
     world w;
     w.save_refused = true;
     const auto response = run_pricing_engines_import(w.operations(), new_configuration());
-    BOOST_LOG_SEV(lg, debug) << "Refusal: " << response.message;
+    ORES_LOG_SEV(lg, debug) << "Refusal: " << response.message;
 
     CHECK_FALSE(response.success);
     CHECK(response.message == "The document has 1 problem.");
@@ -218,7 +218,7 @@ TEST_CASE("a_save_that_throws_removes_the_configuration_the_import_registered",
     world w;
     w.save_threw = true;
     const auto response = run_pricing_engines_import(w.operations(), new_configuration());
-    BOOST_LOG_SEV(lg, debug) << "Refusal: " << response.message;
+    ORES_LOG_SEV(lg, debug) << "Refusal: " << response.message;
 
     CHECK_FALSE(response.success);
     CHECK(response.message == "the pricing engines document could not be saved");
@@ -235,7 +235,7 @@ TEST_CASE("an_import_into_a_configuration_that_exists_registers_nothing", "[ore]
     // is what analytics finds a document by.
     const auto response =
         run_pricing_engines_import(w.operations(), into(w.target.config.configuration_id));
-    BOOST_LOG_SEV(lg, debug) << "Answer: " << response.message;
+    ORES_LOG_SEV(lg, debug) << "Answer: " << response.message;
 
     CHECK(response.success);
     CHECK(w.registered.empty());
@@ -259,7 +259,7 @@ TEST_CASE("a_new_configuration_is_named_and_counted_as_the_file_states_it", "[or
 
     world w;
     const auto response = run_pricing_engines_import(w.operations(), new_configuration());
-    BOOST_LOG_SEV(lg, debug) << "Answer: " << response.message;
+    ORES_LOG_SEV(lg, debug) << "Answer: " << response.message;
 
     CHECK(response.success);
     CHECK(response.configuration_name == "From a test");

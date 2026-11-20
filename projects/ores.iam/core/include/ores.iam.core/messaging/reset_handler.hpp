@@ -24,7 +24,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/messaging/reset_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -63,7 +63,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(reset_handler_lg(), msg);
         auto req = decode<reset_tenant_command>(msg);
         if (!req) {
-            BOOST_LOG_SEV(reset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(reset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -88,7 +88,7 @@ public:
                 reset_handler_lg(),
                 "reset_tenant");
 
-            BOOST_LOG_SEV(reset_handler_lg(), info)
+            ORES_LOG_SEV(reset_handler_lg(), info)
                 << "Tenant bootstrap reset complete: " << req->tenant_code;
             reply(
                 nats_,
@@ -96,7 +96,7 @@ public:
                 reset_tenant_result{.success = true,
                                     .message = "Tenant '" + req->tenant_code + "' has been reset"});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(reset_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(reset_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, reset_tenant_result{.success = false, .message = e.what()});
         }
     }
@@ -125,13 +125,13 @@ public:
                 reset_handler_lg(),
                 "reset_system");
 
-            BOOST_LOG_SEV(reset_handler_lg(), info) << "System bootstrap reset complete";
+            ORES_LOG_SEV(reset_handler_lg(), info) << "System bootstrap reset complete";
             reply(nats_,
                   msg,
                   reset_system_result{.success = true,
                                       .message = "System has been reset to pre-bootstrap state"});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(reset_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(reset_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, reset_system_result{.success = false, .message = e.what()});
         }
     }

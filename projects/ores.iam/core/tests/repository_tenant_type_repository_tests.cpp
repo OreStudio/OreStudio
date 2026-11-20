@@ -20,7 +20,7 @@
 #include "ores.iam.api/domain/tenant_type.hpp"
 #include "ores.iam.api/domain/tenant_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/tenant_type_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -68,7 +68,7 @@ TEST_CASE("write_single_tenant_type", "[repository]") {
     tenant_type_repository repo;
     auto tt = make_tenant_type(h);
 
-    BOOST_LOG_SEV(lg, debug) << "Tenant type: " << tt;
+    ORES_LOG_SEV(lg, debug) << "Tenant type: " << tt;
     CHECK_NOTHROW(repo.write(sys_ctx, tt));
 }
 
@@ -83,7 +83,7 @@ TEST_CASE("write_multiple_tenant_types", "[repository]") {
     for (int i = 0; i < 3; ++i)
         types.push_back(make_tenant_type(h));
 
-    BOOST_LOG_SEV(lg, debug) << "Tenant types: " << types;
+    ORES_LOG_SEV(lg, debug) << "Tenant types: " << types;
     CHECK_NOTHROW(repo.write(sys_ctx, types));
 }
 
@@ -98,11 +98,11 @@ TEST_CASE("read_latest_tenant_types", "[repository]") {
     for (int i = 0; i < 3; ++i)
         written.push_back(make_tenant_type(h));
 
-    BOOST_LOG_SEV(lg, debug) << "Written types: " << written;
+    ORES_LOG_SEV(lg, debug) << "Written types: " << written;
     repo.write(sys_ctx, written);
 
     auto read_types = repo.read_latest(sys_ctx);
-    BOOST_LOG_SEV(lg, debug) << "Read types: " << read_types;
+    ORES_LOG_SEV(lg, debug) << "Read types: " << read_types;
 
     CHECK(!read_types.empty());
     CHECK(read_types.size() >= written.size());
@@ -118,13 +118,13 @@ TEST_CASE("read_latest_tenant_type_by_type", "[repository]") {
     auto tt = make_tenant_type(h);
     const auto target_type = tt.type;
 
-    BOOST_LOG_SEV(lg, debug) << "Tenant type: " << tt;
+    ORES_LOG_SEV(lg, debug) << "Tenant type: " << tt;
     repo.write(sys_ctx, tt);
 
-    BOOST_LOG_SEV(lg, debug) << "Target type: " << target_type;
+    ORES_LOG_SEV(lg, debug) << "Target type: " << target_type;
 
     auto read_types = repo.read_latest(sys_ctx, target_type);
-    BOOST_LOG_SEV(lg, debug) << "Read types: " << read_types;
+    ORES_LOG_SEV(lg, debug) << "Read types: " << read_types;
 
     REQUIRE(read_types.size() == 1);
     // version and recorded_at are stamped by the database, so they are taken
@@ -144,10 +144,10 @@ TEST_CASE("read_nonexistent_tenant_type", "[repository]") {
     tenant_type_repository repo;
 
     const std::string nonexistent("nonexistent_type_xyz_99999");
-    BOOST_LOG_SEV(lg, debug) << "Non-existent type: " << nonexistent;
+    ORES_LOG_SEV(lg, debug) << "Non-existent type: " << nonexistent;
 
     auto read_types = repo.read_latest(sys_ctx, nonexistent);
-    BOOST_LOG_SEV(lg, debug) << "Read types: " << read_types;
+    ORES_LOG_SEV(lg, debug) << "Read types: " << read_types;
 
     CHECK(read_types.size() == 0);
 }

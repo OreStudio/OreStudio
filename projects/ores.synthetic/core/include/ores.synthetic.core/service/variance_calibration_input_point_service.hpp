@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_SERVICE_VARIANCE_CALIBRATION_INPUT_POINT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/variance_calibration_input_point.hpp"
 #include "ores.synthetic.api/messaging/variance_calibration_input_point_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

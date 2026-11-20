@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
@@ -78,7 +78,7 @@ TEST_CASE("fx_accumulator_instrument_write_and_read_latest", "[repository][fx][f
 
     auto instr = repository_fx_accumulator_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
-    BOOST_LOG_SEV(lg, debug) << "Writing FX accumulator instrument: " << instr;
+    ORES_LOG_SEV(lg, debug) << "Writing FX accumulator instrument: " << instr;
 
     fx_accumulator_instrument_repository repo;
     CHECK_NOTHROW(repo.write(ctx, instr));
@@ -95,7 +95,7 @@ TEST_CASE("fx_accumulator_instrument_write_and_read_latest", "[repository][fx][f
     REQUIRE(read[0].knock_out_barrier.has_value());
     CHECK(*read[0].knock_out_barrier ==
           ores::utility::decimal::decimal::from_string("126.0").value());
-    BOOST_LOG_SEV(lg, debug) << "Read FX accumulator instrument: " << read[0];
+    ORES_LOG_SEV(lg, debug) << "Read FX accumulator instrument: " << read[0];
 }
 
 TEST_CASE("fx_accumulator_instrument_read_nonexistent", "[repository][fx][fx_accumulator]") {
@@ -137,6 +137,6 @@ TEST_CASE("fx_accumulator_instrument_remove", "[repository][fx][fx_accumulator]"
     CHECK_NOTHROW(repo.remove(ctx, id_str));
 
     const auto after = repo.read_latest(ctx, id_str);
-    BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
+    ORES_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.size() == before.size() - 1);
 }

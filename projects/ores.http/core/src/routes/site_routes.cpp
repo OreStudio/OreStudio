@@ -19,7 +19,7 @@
  */
 #include "ores.http.core/routes/site_routes.hpp"
 #include "ores.http.api/net/record_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <algorithm>
@@ -134,17 +134,17 @@ std::string one_line(std::string_view text) {
     return out;
 }
 
-ores::logging::boost_severity severity_of(const std::string& level) {
-    using enum ores::logging::boost_severity;
+ores::logging::severity_level severity_of(const std::string& level) {
+    using level_t = ores::logging::severity_level;
     if (level == "trace")
-        return trace;
+        return level_t::trace;
     if (level == "debug")
-        return debug;
+        return level_t::debug;
     if (level == "info")
-        return info;
+        return level_t::info;
     if (level == "warn")
-        return warn;
-    return error;
+        return level_t::warn;
+    return level_t::error;
 }
 
 std::string text_of(yyjson_val* v) {
@@ -265,7 +265,7 @@ http_response site_routes::handle_client_log(const http_request& req) {
         for (const auto& [key, value] : entry.fields)
             if (std::ranges::find(reserved, key) == reserved.end())
                 facts += " " + key + "=" + value;
-        BOOST_LOG_SEV(lg, severity_of(entry.level))
+        ORES_LOG_SEV(lg, severity_of(entry.level))
             << "[" << entry.logger << "] " << entry.message << facts << " session_id=" << session_id
             << " account=" << account << " client_time=" << entry.at;
     }

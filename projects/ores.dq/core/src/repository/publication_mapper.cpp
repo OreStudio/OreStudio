@@ -27,10 +27,8 @@
 #include "ores.dq.api/domain/publication.hpp"
 #include "ores.dq.api/domain/publication_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/publication_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -43,7 +41,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::publication publication_mapper::map(const publication_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::publication r;
     r.tenant_id = v.tenant_id;
@@ -59,12 +57,12 @@ domain::publication publication_mapper::map(const publication_entity& v) {
     r.published_by = v.published_by;
     r.published_at = v.published_at;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 publication_entity publication_mapper::map(const domain::publication& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     publication_entity r;
     r.id = v.id;
@@ -80,7 +78,7 @@ publication_entity publication_mapper::map(const domain::publication& v) {
     r.published_by = v.published_by;
     r.published_at = v.published_at;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

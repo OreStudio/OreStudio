@@ -29,7 +29,7 @@
 #include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.dq.api/messaging/fsm_transition_protocol.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>

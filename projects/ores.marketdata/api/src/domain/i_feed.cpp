@@ -29,4 +29,8 @@ std::optional<feed_start> i_feed::start_source() const {
     return std::nullopt;
 }
 
+std::vector<std::string> i_feed::vendor_watch_subjects() const {
+    return {};
+}
+
 }

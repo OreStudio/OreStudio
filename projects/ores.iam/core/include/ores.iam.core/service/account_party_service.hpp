@@ -24,7 +24,7 @@
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>

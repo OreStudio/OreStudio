@@ -105,7 +105,7 @@ feed::derived_fx_readers derived_fx_vol_adapter::make_readers() {
                                                   .days = window_days});
                 if (!levels)
                     return std::unexpected(levels.error());
-                BOOST_LOG_SEV(lg(), debug)
+                ORES_LOG_SEV(lg(), debug)
                     << "Read " << levels->levels.size() << " level(s) of " << pair.base << "/"
                     << pair.quote << " from " << levels->provider_code << " through "
                     << levels->pivot_currency_code;
@@ -148,7 +148,7 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
             ores::marketdata::client::market_data_client md(svc_nats_);
             const auto started = std::chrono::steady_clock::now();
             const auto series = md.list_series_of_provider(provider_code_);
-            BOOST_LOG_SEV(lg(), debug)
+            ORES_LOG_SEV(lg(), debug)
                 << "Listed the series of provider " << provider_code_ << " in "
                 << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count()
                 << "s: " << (series ? std::to_string(series->size()) + " series" : "failed");
@@ -195,7 +195,7 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
                                                .party_id = *party,
                                                .to = end,
                                                .days = stored_chunk_days});
-                BOOST_LOG_SEV(lg(), debug)
+                ORES_LOG_SEV(lg(), debug)
                     << "Read the stored days of " << feed::derived_fx_series_uri(pair) << " ending "
                     << end << " in "
                     << std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
@@ -233,7 +233,7 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
                     md.put_observations(batch,
                                         {.reason_code = "system.new_record",
                                          .commentary = "Derived FX volatility quotes"});
-                BOOST_LOG_SEV(lg(), debug)
+                ORES_LOG_SEV(lg(), debug)
                     << "Wrote " << batch.size() << " derived observation(s) of series " << series_id
                     << " in "
                     << std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
@@ -267,8 +267,8 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
 
 void derived_fx_vol_adapter::start() {
     const auto subject = subjects::adapter_demand_subject(source_name_);
-    BOOST_LOG_SEV(lg(), info) << "Starting the derived source '" << source_name_ << "': demand on '"
-                              << subject << "'";
+    ORES_LOG_SEV(lg(), info) << "Starting the derived source '" << source_name_ << "': demand on '"
+                             << subject << "'";
     demand_sub_ =
         nats_.subscribe(subject, [this](ores::nats::message msg) { demand_message(msg); });
     thread_ = std::thread(&derived_fx_vol_adapter::loop, this);
@@ -289,7 +289,7 @@ bool derived_fx_vol_adapter::load_universe() {
         ores::marketdata::client::market_data_client md(svc_nats_);
         const auto instruments = md.list_vendor_instruments(provider_code_);
         if (!instruments) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Cannot read the universe of '" << source_name_ << "': " << instruments.error();
             return false;
         }
@@ -301,8 +301,8 @@ bool derived_fx_vol_adapter::load_universe() {
         feed_.set_universe(ids);
         return feed_.has_universe();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot read the universe of '" << source_name_
-                                  << "': " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Cannot read the universe of '" << source_name_
+                                 << "': " << e.what();
         return false;
     }
 }
@@ -310,8 +310,8 @@ bool derived_fx_vol_adapter::load_universe() {
 void derived_fx_vol_adapter::demand_message(const ores::nats::message& msg) {
     auto request = ores::nats::default_wire_codec().decode<mm::adapter_demand_request>(msg.data);
     if (!request) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to decode a demand on '" << msg.subject
-                                  << "': " << request.error().what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to decode a demand on '" << msg.subject
+                                 << "': " << request.error().what();
         return;
     }
     // Until the universe is read the source has not announced, and it refuses every id as
@@ -343,18 +343,17 @@ bool derived_fx_vol_adapter::announce() {
         const auto response =
             ores::nats::default_wire_codec().decode<mm::adapter_announce_response>(reply.data);
         if (!response || !response->success) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The service refused the announce of '" << source_name_
                 << "': " << (response ? response->message : response.error().what());
             return false;
         }
-        BOOST_LOG_SEV(lg(), info) << "Announced '" << source_name_
-                                  << "': " << response->served_count << " served, "
-                                  << response->unknown_count << " unknown";
+        ORES_LOG_SEV(lg(), info) << "Announced '" << source_name_ << "': " << response->served_count
+                                 << " served, " << response->unknown_count << " unknown";
         return true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "The announce of '" << source_name_ << "' got no answer: " << e.what();
+        ORES_LOG_SEV(lg(), debug) << "The announce of '" << source_name_
+                                  << "' got no answer: " << e.what();
         return false;
     }
 }
@@ -401,16 +400,16 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
                               ores::nats::default_wire_codec().encode(tick));
             });
             for (const auto& failure : feed_.failures())
-                BOOST_LOG_SEV(lg(), warn) << "The derived source left out " << failure;
+                ORES_LOG_SEV(lg(), warn) << "The derived source left out " << failure;
             for (const auto& notice : feed_.notices())
-                BOOST_LOG_SEV(lg(), info) << "The derived source's reach: " << notice;
+                ORES_LOG_SEV(lg(), info) << "The derived source's reach: " << notice;
             if (sent > 0)
-                BOOST_LOG_SEV(lg(), info)
+                ORES_LOG_SEV(lg(), info)
                     << "Sent " << sent << " derived quote(s) of '" << source_name_ << "'";
             history_pending_ = true;
             next_refresh_ = now + timing_.refresh_interval;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to refresh '" << source_name_ << "': " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Failed to refresh '" << source_name_ << "': " << e.what();
             next_refresh_ = now + timing_.retry_interval;
             return;
         }
@@ -423,16 +422,16 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
     try {
         const auto kept = feed_.persist(today, 1);
         for (const auto& failure : feed_.failures())
-            BOOST_LOG_SEV(lg(), warn) << "The derived history left out " << failure;
+            ORES_LOG_SEV(lg(), warn) << "The derived history left out " << failure;
         if (kept > 0)
-            BOOST_LOG_SEV(lg(), info)
+            ORES_LOG_SEV(lg(), info)
                 << "Kept " << kept << " day(s) of derived quotes of '" << source_name_ << "'";
         // A pass that wrote nothing means every pair is whole or failed; a failed pair is
         // tried again after the next refresh, as persist states.
         history_pending_ = kept > 0;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to keep the history of '" << source_name_
-                                  << "': " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to keep the history of '" << source_name_
+                                 << "': " << e.what();
         next_history_ = now + timing_.retry_interval;
     }
 }
@@ -450,7 +449,7 @@ void derived_fx_vol_adapter::heartbeat_loop() {
                 nats_.publish(subjects::adapter_heartbeat_subject(source_name_),
                               ores::nats::default_wire_codec().encode(beat));
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "Failed to send the heartbeat of '" << source_name_ << "': " << e.what();
             }
             next = now + timing_.heartbeat_interval;

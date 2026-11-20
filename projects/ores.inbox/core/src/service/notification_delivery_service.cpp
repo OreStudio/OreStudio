@@ -26,7 +26,6 @@
 #include "ores.inbox.api/domain/notification_delivery.hpp"
 #include "ores.inbox.api/messaging/notification_delivery_protocol.hpp"
 #include "ores.inbox.core/repository/notification_delivery_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -513,12 +511,12 @@ ores::utility::domain::result notification_delivery_service::prepare_change(
 
 std::vector<domain::notification_delivery>
 notification_delivery_service::list_deliveries(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all notification deliveries";
+    ORES_LOG_SEV(lg(), debug) << "Listing all notification deliveries";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t notification_delivery_service::count_deliveries() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total notification deliveries count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total notification deliveries count";
     return repo_.get_total_delivery_count(ctx_);
 }
 
@@ -526,15 +524,15 @@ std::uint32_t notification_delivery_service::count_deliveries() {
 std::vector<domain::notification_delivery>
 notification_delivery_service::list_deliveries_by_notification_id(
     const std::string& notification_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing notification deliveries by notification_id: "
-                               << notification_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing notification deliveries by notification_id: "
+                              << notification_id;
     return repo_.read_latest_by_notification_id(ctx_, notification_id, offset, limit);
 }
 
 std::uint32_t notification_delivery_service::count_deliveries_by_notification_id(
     const std::string& notification_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total notification deliveries count by notification_id: "
-                               << notification_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total notification deliveries count by notification_id: "
+                              << notification_id;
     return repo_.get_total_delivery_count_by_notification_id(ctx_, notification_id);
 }
 
@@ -542,14 +540,14 @@ std::uint32_t notification_delivery_service::count_deliveries_by_notification_id
 std::optional<domain::notification_delivery>
 notification_delivery_service::get_delivery_at_version(const boost::uuids::uuid& id,
                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting notification delivery at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting notification delivery at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::notification_delivery>
 notification_delivery_service::get_delivery(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting notification delivery. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting notification delivery. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -564,11 +562,11 @@ notification_delivery_service::get_deliveries(const std::vector<std::string>& id
 void notification_delivery_service::save_delivery(const domain::notification_delivery& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Notification Delivery id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving notification delivery. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving notification delivery. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved notification delivery. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved notification delivery. " << "id: " << v.id;
 }
 
 void notification_delivery_service::save_deliveries(
@@ -577,7 +575,7 @@ void notification_delivery_service::save_deliveries(
         if (e.id.is_nil())
             throw std::invalid_argument("Notification Delivery id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << deliveries.size() << " notification deliveries";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << deliveries.size() << " notification deliveries";
     auto ts = deliveries;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -586,9 +584,9 @@ void notification_delivery_service::save_deliveries(
 }
 
 void notification_delivery_service::delete_delivery(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing notification delivery. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing notification delivery. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed notification delivery. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed notification delivery. " << "id: " << id;
 }
 
 void notification_delivery_service::delete_deliveries(const std::vector<std::string>& ids) {
@@ -597,7 +595,7 @@ void notification_delivery_service::delete_deliveries(const std::vector<std::str
 
 std::vector<domain::notification_delivery>
 notification_delivery_service::get_delivery_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for notification delivery. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for notification delivery. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

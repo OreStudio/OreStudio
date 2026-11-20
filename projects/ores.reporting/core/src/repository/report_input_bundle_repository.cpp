@@ -30,18 +30,18 @@ using namespace ores::logging;
 void report_input_bundle_repository::create(const context& ctx,
                                             const report_input_bundle_entity& bundle) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating report_input_bundle: " << bundle.id;
+    ORES_LOG_SEV(lg(), debug) << "Creating report_input_bundle: " << bundle.id;
 
     query_builder::execute_write_query(ctx, bundle, lg(), "Creating report_input_bundle");
 
-    BOOST_LOG_SEV(lg(), debug) << "report_input_bundle created.";
+    ORES_LOG_SEV(lg(), debug) << "report_input_bundle created.";
 }
 
 std::optional<report_input_bundle_entity>
 report_input_bundle_repository::find_by_instance_id(const context& ctx,
                                                     const std::string& instance_id) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Finding report_input_bundle for instance: " << instance_id;
+    ORES_LOG_SEV(lg(), debug) << "Finding report_input_bundle for instance: " << instance_id;
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

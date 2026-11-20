@@ -24,7 +24,7 @@
 #include "feed_kind_registry.hpp"
 #include "ir_curve_preview_process.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -87,7 +87,7 @@ public:
             // No registered kind, so no permission to derive the gate from:
             // the caller gets one response shape regardless of what it asked
             // for.
-            BOOST_LOG_SEV(ir_curve_preview_handler_lg(), error) << "Unknown feed kind: " << kind;
+            ORES_LOG_SEV(ir_curve_preview_handler_lg(), error) << "Unknown feed kind: " << kind;
             reply(nats_,
                   msg,
                   preview_ir_curve_shape_response{.success = false,
@@ -160,7 +160,7 @@ public:
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = client_message(e);
-            BOOST_LOG_SEV(ir_curve_preview_handler_lg(), warn)
+            ORES_LOG_SEV(ir_curve_preview_handler_lg(), warn)
                 << "preview_shape failed: " << e.what();
         }
         reply(nats_, msg, resp);

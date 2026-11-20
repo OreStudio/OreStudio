@@ -40,7 +40,7 @@ std::optional<double> opt_decimal(const record_reader& v, std::string_view name)
 
 refdata::domain::commodity_forward_convention
 conventions_mapper::map_commodity_forward(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping commodity forward convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping commodity forward convention: " << text_of(v, "Id");
 
     refdata::domain::commodity_forward_convention r;
     r.id = text_of(v, "Id");

@@ -25,7 +25,7 @@
 #include "ores.inbox.api/messaging/approval_kind_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/hold_reason_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <cstdint>
@@ -128,7 +128,7 @@ void lookup_routes::register_routes(
                     } catch (const rr::refusal& refused) {
                         if (refused.status != http_status::forbidden)
                             throw;
-                        BOOST_LOG_SEV(lookup_lg(), ores::logging::warn)
+                        ORES_LOG_SEV(lookup_lg(), ores::logging::warn)
                             << "The approval kinds are not readable by this account, so no kind "
                                "is offered a hold.";
                     }

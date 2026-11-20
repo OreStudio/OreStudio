@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/synthetic_catalog.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -30,7 +30,7 @@ TEST_CASE("default_constructed_synthetic_catalog_has_zero_seed_and_empty_vectors
     auto lg(make_logger(test_suite));
 
     const synthetic_catalog sut;
-    BOOST_LOG_SEV(lg, info) << "Default synthetic_catalog seed: " << sut.seed;
+    ORES_LOG_SEV(lg, info) << "Default synthetic_catalog seed: " << sut.seed;
 
     CHECK(sut.seed == 0);
     CHECK(sut.accounts.empty());
@@ -49,7 +49,7 @@ TEST_CASE("synthetic_catalog_seed_can_be_set", "[domain][synthetic_catalog]") {
 
     synthetic_catalog sut;
     sut.seed = 777ULL;
-    BOOST_LOG_SEV(lg, info) << "synthetic_catalog seed: " << sut.seed;
+    ORES_LOG_SEV(lg, info) << "synthetic_catalog seed: " << sut.seed;
 
     CHECK(sut.seed == 777ULL);
 }
@@ -60,7 +60,7 @@ TEST_CASE("synthetic_catalog_dependency_can_be_added", "[domain][synthetic_catal
     synthetic_catalog sut;
     sut.dependencies.push_back("ISO Reference Data");
     sut.dependencies.push_back("Core DQ Dimensions");
-    BOOST_LOG_SEV(lg, info) << "synthetic_catalog dependency count: " << sut.dependencies.size();
+    ORES_LOG_SEV(lg, info) << "synthetic_catalog dependency count: " << sut.dependencies.size();
 
     CHECK(sut.dependencies.size() == 2);
     CHECK(sut.dependencies[0] == "ISO Reference Data");

@@ -20,7 +20,7 @@
 #ifndef ORES_SHELL_APP_APPLICATION_HPP
 #define ORES_SHELL_APP_APPLICATION_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.shell/config/login_options.hpp"
 #include <optional>

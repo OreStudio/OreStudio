@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/series_axis.hpp"
 #include "ores.marketdata.api/domain/series_axis_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.core/repository/series_axis_entity.hpp"
 #include "ores.marketdata.core/repository/series_axis_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -190,8 +188,8 @@ void series_axis_repository::write(const context& ctx, const std::vector<domain:
 void series_axis_repository::write(const context& ctx,
                                    const domain::series_axis& v,
                                    const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing series axis. " << "series_id: " << v.series_id
-                               << " axis_field: " << v.axis_field;
+    ORES_LOG_SEV(lg(), debug) << "Writing series axis. " << "series_id: " << v.series_id
+                              << " axis_field: " << v.axis_field;
     const auto t = series_axis_apply_claim(
         v,
         claim,
@@ -207,7 +205,7 @@ void series_axis_repository::write(const context& ctx,
 void series_axis_repository::write(const context& ctx,
                                    const std::vector<domain::series_axis>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing series axes. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing series axes. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "series_axis_repository::write: one claim is needed for each row");
@@ -245,8 +243,8 @@ std::vector<domain::series_axis> series_axis_repository::read_latest(const conte
 
 std::vector<domain::series_axis> series_axis_repository::read_latest(
     const context& ctx, const std::string& series_id, const std::string& axis_field) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest series axis. " << "series_id: " << series_id
-                               << " axis_field: " << axis_field;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest series axis. " << "series_id: " << series_id
+                              << " axis_field: " << axis_field;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<series_axis_entity>> |
                        query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id &&
@@ -264,8 +262,8 @@ std::vector<domain::series_axis> series_axis_repository::read_latest(
 std::vector<domain::series_axis> series_axis_repository::read_all(const context& ctx,
                                                                   const std::string& series_id,
                                                                   const std::string& axis_field) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all series axis versions. " << "series_id: " << series_id
-                               << " axis_field: " << axis_field;
+    ORES_LOG_SEV(lg(), debug) << "Reading all series axis versions. " << "series_id: " << series_id
+                              << " axis_field: " << axis_field;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<series_axis_entity>> |
                        query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id &&
@@ -286,8 +284,8 @@ series_axis_repository::remove(const context& ctx,
                                const std::string& series_id,
                                const std::string& axis_field,
                                std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing series axis. " << "series_id: " << series_id
-                               << " axis_field: " << axis_field;
+    ORES_LOG_SEV(lg(), debug) << "Removing series axis. " << "series_id: " << series_id
+                              << " axis_field: " << axis_field;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -315,8 +313,8 @@ series_axis_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest series axes with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest series axes with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<series_axis_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -333,7 +331,7 @@ series_axis_repository::read_latest(const context& ctx,
 }
 
 std::uint32_t series_axis_repository::get_total_series_axis_count(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series axis count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active series axis count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<series_axis_entity>> |

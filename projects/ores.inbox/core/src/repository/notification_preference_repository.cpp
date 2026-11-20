@@ -31,9 +31,7 @@
 #include "ores.inbox.api/messaging/notification_preference_protocol.hpp"
 #include "ores.inbox.core/repository/notification_preference_entity.hpp"
 #include "ores.inbox.core/repository/notification_preference_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -236,9 +234,9 @@ void notification_preference_repository::write(
 void notification_preference_repository::write(const context& ctx,
                                                const domain::notification_preference& v,
                                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing notification preference. "
-                               << "account_id: " << v.account_id << " kind_code: " << v.kind_code
-                               << " channel_code: " << v.channel_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing notification preference. "
+                              << "account_id: " << v.account_id << " kind_code: " << v.kind_code
+                              << " channel_code: " << v.channel_code;
     const auto t = notification_preference_apply_claim(
         v,
         claim,
@@ -255,7 +253,7 @@ void notification_preference_repository::write(
     const context& ctx,
     const std::vector<domain::notification_preference>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing notification preferences. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing notification preferences. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "notification_preference_repository::write: one claim is needed for each row");
@@ -298,9 +296,9 @@ notification_preference_repository::read_latest(const context& ctx,
                                                 const std::string& account_id,
                                                 const std::string& kind_code,
                                                 const std::string& channel_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification preference. "
-                               << "account_id: " << account_id << " kind_code: " << kind_code
-                               << " channel_code: " << channel_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification preference. "
+                              << "account_id: " << account_id << " kind_code: " << kind_code
+                              << " channel_code: " << channel_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -324,9 +322,9 @@ notification_preference_repository::read_all(const context& ctx,
                                              const std::string& account_id,
                                              const std::string& kind_code,
                                              const std::string& channel_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all notification preference versions. "
-                               << "account_id: " << account_id << " kind_code: " << kind_code
-                               << " channel_code: " << channel_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all notification preference versions. "
+                              << "account_id: " << account_id << " kind_code: " << kind_code
+                              << " channel_code: " << channel_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_preference_entity>> |
@@ -349,9 +347,9 @@ notification_preference_repository::read_at_version(const context& ctx,
                                                     const std::string& kind_code,
                                                     const std::string& channel_code,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading notification preference at version. "
-                               << "account_id: " << account_id << " kind_code: " << kind_code
-                               << " channel_code: " << channel_code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading notification preference at version. "
+                              << "account_id: " << account_id << " kind_code: " << kind_code
+                              << " channel_code: " << channel_code << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_preference_entity>> |
@@ -381,8 +379,8 @@ notification_preference_repository::read_latest_by_account_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::notification_preferences_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification preferences. account_id: "
-                               << account_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification preferences. account_id: "
+                              << account_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_preference_entity>> |
@@ -406,7 +404,7 @@ std::uint32_t notification_preference_repository::get_total_preference_count_by_
     const context& ctx,
     const std::string& account_id,
     const std::optional<messaging::notification_preferences_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active notification preferences count. account_id: " << account_id;
     static constexpr auto max = db_timestamp::max();
 
@@ -430,9 +428,9 @@ notification_preference_repository::remove(const context& ctx,
                                            const std::string& kind_code,
                                            const std::string& channel_code,
                                            std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing notification preference. "
-                               << "account_id: " << account_id << " kind_code: " << kind_code
-                               << " channel_code: " << channel_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing notification preference. "
+                              << "account_id: " << account_id << " kind_code: " << kind_code
+                              << " channel_code: " << channel_code;
     const auto current = read_latest(ctx, account_id, kind_code, channel_code);
     if (current.empty())
         return remove_status::missing;
@@ -476,8 +474,8 @@ std::vector<domain::notification_preference> notification_preference_repository:
     const ores::utility::domain::order& order,
     const std::optional<messaging::notification_preferences_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification preferences with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification preferences with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_preference_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -500,7 +498,7 @@ std::uint32_t notification_preference_repository::get_total_preference_count(
     const context& ctx,
     const std::optional<messaging::notification_preferences_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification preference count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active notification preference count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_preference_entity>> |

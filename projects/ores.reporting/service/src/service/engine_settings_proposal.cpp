@@ -960,7 +960,7 @@ engine_settings_apply engine_settings_proposal_service::apply(const std::string&
         // answer.
         out.refusal = e.what();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Applying request " << request_id << " failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Applying request " << request_id << " failed: " << e.what();
         return {.refusal = e.what(), .transient = true};
     }
 
@@ -971,13 +971,12 @@ engine_settings_apply engine_settings_proposal_service::apply(const std::string&
         const auto moved =
             lifecycle.fail_apply(request_id, "The proposal could not be applied: " + out.refusal);
         if (moved.outcome != "ok") {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Request " << request_id << " was refused but is " << moved.state_code
-                << ", not apply_failed: " << moved.message;
+            ORES_LOG_SEV(lg(), warn) << "Request " << request_id << " was refused but is "
+                                     << moved.state_code << ", not apply_failed: " << moved.message;
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Request " << request_id << " could not be moved to apply_failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Request " << request_id
+                                  << " could not be moved to apply_failed: " << e.what();
         return {.refusal = e.what(), .transient = true};
     }
     return out;

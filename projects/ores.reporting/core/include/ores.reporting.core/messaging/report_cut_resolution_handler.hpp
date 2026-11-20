@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -192,7 +192,7 @@ public:
      * permission, =reporting::report_instances:write=, and not the cut's read.
      */
     void resolve_cut(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_cut_resolution_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_cut_resolution_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -203,7 +203,7 @@ public:
             report_cut_resolution_handler_lg(), msg, req_ctx.tenant_id().to_string());
         auto req = decode<resolve_cut_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_cut_resolution_handler_lg(), warn)
+            ORES_LOG_SEV(report_cut_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -219,10 +219,10 @@ public:
         service::cut_resolution_service cuts(req_ctx);
         try {
             auto response = apply_cut_resolution(definitions, cuts, *req, req_ctx);
-            BOOST_LOG_SEV(report_cut_resolution_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_cut_resolution_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_cut_resolution_handler_lg(), error)
+            ORES_LOG_SEV(report_cut_resolution_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resolve_cut_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

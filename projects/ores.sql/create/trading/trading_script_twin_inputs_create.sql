@@ -62,7 +62,7 @@ create table if not exists "ores_trading_script_twin_inputs_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_type_code" <> ''),
     check ("data_type" in ('Number', 'Event', 'Index', 'Currency', 'Daycounter')),
-    check ("transform" is null or "transform" in ('sign', 'flag')),
+    check ("transform" is null or "transform" in ('barrier', 'flag', 'sign')),
     check ("source" <> '')
 );
 

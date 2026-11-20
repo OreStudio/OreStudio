@@ -24,7 +24,7 @@
 #include "ores.history.api/messaging/history_protocol.hpp"
 #include "ores.history.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -76,13 +76,13 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(history_handler_lg(), msg);
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
-            BOOST_LOG_SEV(history_handler_lg(), warn) << "Unauthorized: " << msg.subject;
+            ORES_LOG_SEV(history_handler_lg(), warn) << "Unauthorized: " << msg.subject;
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         auto req = decode<get_entity_history_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(history_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(history_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -93,10 +93,10 @@ public:
         using response_type = get_entity_history_request::response_type;
         try {
             const auto resp = registry_.dispatch(*req, *req_ctx_expected);
-            BOOST_LOG_SEV(history_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(history_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(history_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(history_handler_lg(), error) << msg.subject << " failed: " << e.what();
             response_type failure;
             failure.success = false;
             failure.message = e.what();

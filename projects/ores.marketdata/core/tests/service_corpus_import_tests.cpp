@@ -20,7 +20,7 @@
 #include "corpus_files.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/ore_index_codec.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
@@ -335,8 +335,8 @@ TEST_CASE("every_line_of_a_sampled_corpus_file_reaches_the_database", "[corpus][
     for (const auto& path : sample)
         total += import_and_verify(path, svc, tenant.ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Verified " << total << " line(s) over " << sample.size()
-                            << " corpus file(s).";
+    ORES_LOG_SEV(lg, info) << "Verified " << total << " line(s) over " << sample.size()
+                           << " corpus file(s).";
     CHECK(total > 0);
 }
 
@@ -359,8 +359,8 @@ TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[corpus-full]"
     for (const auto& path : all)
         total += import_and_verify(path, svc, tenant.ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Verified " << total << " line(s) over " << all.size()
-                            << " corpus file(s).";
+    ORES_LOG_SEV(lg, info) << "Verified " << total << " line(s) over " << all.size()
+                           << " corpus file(s).";
     CHECK(total > 0);
 }
 
@@ -380,7 +380,7 @@ TEST_CASE("every_line_of_every_corpus_fixing_file_reaches_the_database",
     for (const auto& path : all)
         total += import_fixings_and_verify(path, svc, tenant.ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Verified " << total << " fixing line(s) over " << all.size()
-                            << " corpus file(s).";
+    ORES_LOG_SEV(lg, info) << "Verified " << total << " fixing line(s) over " << all.size()
+                           << " corpus file(s).";
     CHECK(total > 0);
 }

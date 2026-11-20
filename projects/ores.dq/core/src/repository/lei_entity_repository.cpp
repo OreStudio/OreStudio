@@ -31,9 +31,7 @@
 #include "ores.dq.api/messaging/lei_entity_protocol.hpp"
 #include "ores.dq.core/repository/lei_entity_entity.hpp"
 #include "ores.dq.core/repository/lei_entity_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -198,7 +196,7 @@ void lei_entity_repository::write(const context& ctx, const std::vector<domain::
 void lei_entity_repository::write(const context& ctx,
                                   const domain::lei_entity& v,
                                   const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing LEI entity. " << "lei: " << v.lei;
+    ORES_LOG_SEV(lg(), debug) << "Writing LEI entity. " << "lei: " << v.lei;
     const auto t = lei_entity_apply_claim(v,
                                           claim,
                                           lei_entity_claim_reads_current(claim) ?
@@ -213,7 +211,7 @@ void lei_entity_repository::write(const context& ctx,
 void lei_entity_repository::write(const context& ctx,
                                   const std::vector<domain::lei_entity>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing LEI entities. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing LEI entities. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "lei_entity_repository::write: one claim is needed for each row");
@@ -247,7 +245,7 @@ std::vector<domain::lei_entity> lei_entity_repository::read_latest(const context
 
 std::vector<domain::lei_entity> lei_entity_repository::read_latest(const context& ctx,
                                                                    const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI entity. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest LEI entity. " << "lei: " << lei;
     const auto query =
         query_builder::read<std::vector<lei_entity_entity>> | query_builder::where("lei"_c == lei);
 
@@ -262,7 +260,7 @@ std::vector<domain::lei_entity> lei_entity_repository::read_latest(const context
 
 std::vector<domain::lei_entity> lei_entity_repository::read_all(const context& ctx,
                                                                 const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all LEI entity versions. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Reading all LEI entity versions. " << "lei: " << lei;
     const auto query = query_builder::read<std::vector<lei_entity_entity>> |
                        query_builder::where("lei"_c == lei) | query_builder::order_by("lei"_c);
 
@@ -277,7 +275,7 @@ std::vector<domain::lei_entity> lei_entity_repository::read_all(const context& c
 
 lei_entity_repository::remove_status lei_entity_repository::remove(
     const context& ctx, const std::string& lei, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing LEI entity. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Removing LEI entity. " << "lei: " << lei;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -303,8 +301,8 @@ lei_entity_repository::read_latest(const context& ctx,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
                                    const std::optional<messaging::lei_entities_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI entities with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest LEI entities with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<lei_entity_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -320,7 +318,7 @@ lei_entity_repository::read_latest(const context& ctx,
 
 std::uint32_t lei_entity_repository::get_total_entity_count(
     const context& ctx, const std::optional<messaging::lei_entities_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active LEI entity count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active LEI entity count";
 
     const auto query = query_builder::read<std::vector<lei_entity_entity>>;
 

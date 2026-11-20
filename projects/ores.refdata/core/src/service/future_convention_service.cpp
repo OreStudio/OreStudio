@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/future_convention.hpp"
 #include "ores.refdata.api/messaging/future_convention_protocol.hpp"
 #include "ores.refdata.core/repository/future_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -453,12 +451,12 @@ future_convention_service::prepare_change(const messaging::future_convention_cha
 
 std::vector<domain::future_convention>
 future_convention_service::list_future_conventions(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all future conventions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all future conventions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t future_convention_service::count_future_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total future conventions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total future conventions count";
     return repo_.get_total_future_convention_count(ctx_);
 }
 
@@ -466,14 +464,14 @@ std::uint32_t future_convention_service::count_future_conventions() {
 std::optional<domain::future_convention>
 future_convention_service::get_future_convention_at_version(const std::string& id,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting future convention at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting future convention at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::future_convention>
 future_convention_service::get_future_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting future convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting future convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -488,11 +486,11 @@ future_convention_service::get_future_conventions(const std::vector<std::string>
 void future_convention_service::save_future_convention(const domain::future_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("Future Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving future convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving future convention. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved future convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved future convention. " << "id: " << v.id;
 }
 
 void future_convention_service::save_future_conventions(
@@ -501,7 +499,7 @@ void future_convention_service::save_future_conventions(
         if (e.id.empty())
             throw std::invalid_argument("Future Convention id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << future_conventions.size() << " future conventions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << future_conventions.size() << " future conventions";
     auto ts = future_conventions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -510,9 +508,9 @@ void future_convention_service::save_future_conventions(
 }
 
 void future_convention_service::delete_future_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing future convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing future convention. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed future convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed future convention. " << "id: " << id;
 }
 
 void future_convention_service::delete_future_conventions(const std::vector<std::string>& ids) {
@@ -521,7 +519,7 @@ void future_convention_service::delete_future_conventions(const std::vector<std:
 
 std::vector<domain::future_convention>
 future_convention_service::get_future_convention_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for future convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for future convention. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

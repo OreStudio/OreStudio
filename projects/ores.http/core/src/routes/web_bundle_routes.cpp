@@ -77,8 +77,8 @@ bool accepts_brotli(const http::domain::http_request& request) {
 
 web_bundle_routes::web_bundle_routes(std::filesystem::path root)
     : manifest_(std::move(root)) {
-    BOOST_LOG_SEV(lg(), info) << "Serving the browser bundle from " << manifest_.root().string()
-                              << " (" << manifest_.size() << " files)";
+    ORES_LOG_SEV(lg(), info) << "Serving the browser bundle from " << manifest_.root().string()
+                             << " (" << manifest_.size() << " files)";
 }
 
 void web_bundle_routes::register_routes(std::shared_ptr<http::net::router> router,

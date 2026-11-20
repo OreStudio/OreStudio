@@ -27,51 +27,52 @@ using namespace ores::logging;
 
 }
 
-TEST_CASE("to_boost_severity_from_string_converts_all_valid_levels", "[boost_severity]") {
-    REQUIRE(to_boost_severity("trace") == boost_severity::trace);
-    REQUIRE(to_boost_severity("debug") == boost_severity::debug);
-    REQUIRE(to_boost_severity("info") == boost_severity::info);
-    REQUIRE(to_boost_severity("warn") == boost_severity::warn);
-    REQUIRE(to_boost_severity("error") == boost_severity::error);
+TEST_CASE("to_boost_severity_from_string_converts_all_valid_levels", "[backend::boost_severity]") {
+    REQUIRE(to_boost_severity("trace") == backend::boost_severity::trace);
+    REQUIRE(to_boost_severity("debug") == backend::boost_severity::debug);
+    REQUIRE(to_boost_severity("info") == backend::boost_severity::info);
+    REQUIRE(to_boost_severity("warn") == backend::boost_severity::warn);
+    REQUIRE(to_boost_severity("error") == backend::boost_severity::error);
 }
 
-TEST_CASE("to_boost_severity_from_string_throws_on_invalid_input", "[boost_severity]") {
+TEST_CASE("to_boost_severity_from_string_throws_on_invalid_input", "[backend::boost_severity]") {
     REQUIRE_THROWS_AS(to_boost_severity(""), std::invalid_argument);
     REQUIRE_THROWS_AS(to_boost_severity("invalid"), std::invalid_argument);
     REQUIRE_THROWS_AS(to_boost_severity("TRACE"), std::invalid_argument);
     REQUIRE_THROWS_AS(to_boost_severity("fatal"), std::invalid_argument);
 }
 
-TEST_CASE("to_boost_severity_from_domain_converts_all_levels", "[boost_severity]") {
-    REQUIRE(to_boost_severity(severity_level::trace) == boost_severity::trace);
-    REQUIRE(to_boost_severity(severity_level::debug) == boost_severity::debug);
-    REQUIRE(to_boost_severity(severity_level::info) == boost_severity::info);
-    REQUIRE(to_boost_severity(severity_level::warn) == boost_severity::warn);
-    REQUIRE(to_boost_severity(severity_level::error) == boost_severity::error);
+TEST_CASE("to_boost_severity_from_domain_converts_all_levels", "[backend::boost_severity]") {
+    REQUIRE(to_boost_severity(severity_level::trace) == backend::boost_severity::trace);
+    REQUIRE(to_boost_severity(severity_level::debug) == backend::boost_severity::debug);
+    REQUIRE(to_boost_severity(severity_level::info) == backend::boost_severity::info);
+    REQUIRE(to_boost_severity(severity_level::warn) == backend::boost_severity::warn);
+    REQUIRE(to_boost_severity(severity_level::error) == backend::boost_severity::error);
 }
 
-TEST_CASE("to_boost_severity_maps_fatal_to_error", "[boost_severity]") {
-    REQUIRE(to_boost_severity(severity_level::fatal) == boost_severity::error);
+TEST_CASE("to_boost_severity_maps_fatal_to_error", "[backend::boost_severity]") {
+    REQUIRE(to_boost_severity(severity_level::fatal) == backend::boost_severity::error);
 }
 
-TEST_CASE("to_domain_severity_converts_all_boost_levels", "[boost_severity]") {
-    REQUIRE(to_domain_severity(boost_severity::trace) == severity_level::trace);
-    REQUIRE(to_domain_severity(boost_severity::debug) == severity_level::debug);
-    REQUIRE(to_domain_severity(boost_severity::info) == severity_level::info);
-    REQUIRE(to_domain_severity(boost_severity::warn) == severity_level::warn);
-    REQUIRE(to_domain_severity(boost_severity::error) == severity_level::error);
+TEST_CASE("to_domain_severity_converts_all_boost_levels", "[backend::boost_severity]") {
+    REQUIRE(to_domain_severity(backend::boost_severity::trace) == severity_level::trace);
+    REQUIRE(to_domain_severity(backend::boost_severity::debug) == severity_level::debug);
+    REQUIRE(to_domain_severity(backend::boost_severity::info) == severity_level::info);
+    REQUIRE(to_domain_severity(backend::boost_severity::warn) == severity_level::warn);
+    REQUIRE(to_domain_severity(backend::boost_severity::error) == severity_level::error);
 }
 
-TEST_CASE("boost_severity_stream_insertion_produces_expected_strings", "[boost_severity]") {
-    auto to_string = [](boost_severity sev) {
+TEST_CASE("boost_severity_stream_insertion_produces_expected_strings",
+          "[backend::boost_severity]") {
+    auto to_string = [](backend::boost_severity sev) {
         std::ostringstream ss;
         ss << sev;
         return ss.str();
     };
 
-    REQUIRE(to_string(boost_severity::trace) == "TRACE");
-    REQUIRE(to_string(boost_severity::debug) == "DEBUG");
-    REQUIRE(to_string(boost_severity::info) == "INFO");
-    REQUIRE(to_string(boost_severity::warn) == "WARN");
-    REQUIRE(to_string(boost_severity::error) == "ERROR");
+    REQUIRE(to_string(backend::boost_severity::trace) == "TRACE");
+    REQUIRE(to_string(backend::boost_severity::debug) == "DEBUG");
+    REQUIRE(to_string(backend::boost_severity::info) == "INFO");
+    REQUIRE(to_string(backend::boost_severity::warn) == "WARN");
+    REQUIRE(to_string(backend::boost_severity::error) == "ERROR");
 }

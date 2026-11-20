@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
 #include "ores.refdata.core/repository/tenor_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -440,25 +438,25 @@ tenor_service::prepare_change(const messaging::tenor_change& change,
 
 
 std::vector<domain::tenor> tenor_service::list_tenors(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all tenors";
+    ORES_LOG_SEV(lg(), debug) << "Listing all tenors";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t tenor_service::count_tenors() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total tenors count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total tenors count";
     return repo_.get_total_tenor_count(ctx_);
 }
 
 
 std::optional<domain::tenor> tenor_service::get_tenor_at_version(const std::string& code,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenor at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::tenor> tenor_service::get_tenor(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenor. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -472,11 +470,11 @@ std::vector<domain::tenor> tenor_service::get_tenors(const std::vector<std::stri
 void tenor_service::save_tenor(const domain::tenor& v) {
     if (v.code.empty())
         throw std::invalid_argument("Tenor code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving tenor. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved tenor. " << "code: " << v.code;
 }
 
 void tenor_service::save_tenors(const std::vector<domain::tenor>& tenors) {
@@ -484,7 +482,7 @@ void tenor_service::save_tenors(const std::vector<domain::tenor>& tenors) {
         if (e.code.empty())
             throw std::invalid_argument("Tenor code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << tenors.size() << " tenors";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << tenors.size() << " tenors";
     auto ts = tenors;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -493,9 +491,9 @@ void tenor_service::save_tenors(const std::vector<domain::tenor>& tenors) {
 }
 
 void tenor_service::delete_tenor(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing tenor. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenor. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed tenor. " << "code: " << code;
 }
 
 void tenor_service::delete_tenors(const std::vector<std::string>& codes) {
@@ -503,7 +501,7 @@ void tenor_service::delete_tenors(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::tenor> tenor_service::get_tenor_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for tenor. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

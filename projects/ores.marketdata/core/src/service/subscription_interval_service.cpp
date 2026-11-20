@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/subscription_interval.hpp"
 #include "ores.marketdata.api/messaging/subscription_interval_protocol.hpp"
 #include "ores.marketdata.core/repository/subscription_interval_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -526,12 +524,12 @@ ores::utility::domain::result subscription_interval_service::prepare_change(
 std::vector<domain::subscription_interval>
 subscription_interval_service::list_subscription_intervals(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all subscription intervals";
+    ORES_LOG_SEV(lg(), debug) << "Listing all subscription intervals";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t subscription_interval_service::count_subscription_intervals() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total subscription intervals count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total subscription intervals count";
     return repo_.get_total_subscription_interval_count(ctx_);
 }
 
@@ -539,14 +537,14 @@ std::uint32_t subscription_interval_service::count_subscription_intervals() {
 std::optional<domain::subscription_interval>
 subscription_interval_service::get_subscription_interval_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting subscription interval at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting subscription interval at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::subscription_interval>
 subscription_interval_service::get_subscription_interval(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting subscription interval. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting subscription interval. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -556,8 +554,8 @@ subscription_interval_service::get_subscription_interval(const boost::uuids::uui
 std::optional<domain::subscription_interval>
 subscription_interval_service::get_subscription_interval_by_provider_code(
     const std::string& provider_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting subscription interval by provider_code: "
-                               << provider_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting subscription interval by provider_code: "
+                              << provider_code;
     messaging::subscription_interval_key k;
     k.provider_code = provider_code;
     auto found = subscription_interval_read_one(repo_, ctx_, k);
@@ -575,11 +573,11 @@ void subscription_interval_service::save_subscription_interval(
     const domain::subscription_interval& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Subscription Interval id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving subscription interval. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving subscription interval. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved subscription interval. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved subscription interval. " << "id: " << v.id;
 }
 
 void subscription_interval_service::save_subscription_intervals(
@@ -588,8 +586,8 @@ void subscription_interval_service::save_subscription_intervals(
         if (e.id.is_nil())
             throw std::invalid_argument("Subscription Interval id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << subscription_intervals.size()
-                               << " subscription intervals";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << subscription_intervals.size()
+                              << " subscription intervals";
     auto ts = subscription_intervals;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -598,9 +596,9 @@ void subscription_interval_service::save_subscription_intervals(
 }
 
 void subscription_interval_service::delete_subscription_interval(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing subscription interval. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing subscription interval. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed subscription interval. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed subscription interval. " << "id: " << id;
 }
 
 void subscription_interval_service::delete_subscription_intervals(
@@ -610,7 +608,7 @@ void subscription_interval_service::delete_subscription_intervals(
 
 std::vector<domain::subscription_interval>
 subscription_interval_service::get_subscription_interval_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for subscription interval. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for subscription interval. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

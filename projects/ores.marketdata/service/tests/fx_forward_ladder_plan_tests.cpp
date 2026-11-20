@@ -391,3 +391,36 @@ TEST_CASE("a cross's spot and value dates match QuantLib's", "[fx_forward_ladder
         CHECK(row(l, "1Y").value_date == c.one_year);
     }
 }
+
+TEST_CASE("a spot reads the highest-ranked source, not the one that ticked last",
+          "[fx_forward_ladder]") {
+    const auto earlier = at(monday);
+    const auto later = earlier + minutes(1);
+    const std::vector<spot_source> sources{
+        {.provider_code = "demo", .precedence = 7, .latest = later},
+        {.provider_code = "bloomberg", .precedence = 1, .latest = earlier},
+    };
+    REQUIRE(preferred_spot_source(sources) == std::optional<std::size_t>(1));
+}
+
+TEST_CASE("a spot falls to the next source when a higher one has no observation",
+          "[fx_forward_ladder]") {
+    const std::vector<spot_source> sources{
+        {.provider_code = "bloomberg", .precedence = 1, .latest = std::nullopt},
+        {.provider_code = "demo", .precedence = 7, .latest = at(monday)},
+    };
+    REQUIRE(preferred_spot_source(sources) == std::optional<std::size_t>(1));
+}
+
+TEST_CASE("the provider code breaks a tie of rank, and no observation is no source",
+          "[fx_forward_ladder]") {
+    const std::vector<spot_source> tied{
+        {.provider_code = "tradeweb", .precedence = 3, .latest = at(monday)},
+        {.provider_code = "ice", .precedence = 3, .latest = at(monday)},
+    };
+    REQUIRE(preferred_spot_source(tied) == std::optional<std::size_t>(1));
+    const std::vector<spot_source> none{
+        {.provider_code = "bloomberg", .precedence = 1, .latest = std::nullopt},
+    };
+    REQUIRE_FALSE(preferred_spot_source(none).has_value());
+}

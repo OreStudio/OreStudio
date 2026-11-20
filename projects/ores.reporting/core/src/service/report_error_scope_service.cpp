@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_error_scope.hpp"
 #include "ores.reporting.api/messaging/report_error_scope_protocol.hpp"
 #include "ores.reporting.core/repository/report_error_scope_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -452,26 +450,26 @@ report_error_scope_service::prepare_change(const messaging::report_error_scope_c
 
 std::vector<domain::report_error_scope>
 report_error_scope_service::list_scopes(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all report error scopes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all report error scopes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t report_error_scope_service::count_scopes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report error scopes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total report error scopes count";
     return repo_.get_total_scope_count(ctx_);
 }
 
 
 std::optional<domain::report_error_scope>
 report_error_scope_service::get_scope_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report error scope at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting report error scope at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::report_error_scope>
 report_error_scope_service::get_scope(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report error scope. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting report error scope. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -486,11 +484,11 @@ report_error_scope_service::get_scopes(const std::vector<std::string>& codes) {
 void report_error_scope_service::save_scope(const domain::report_error_scope& v) {
     if (v.code.empty())
         throw std::invalid_argument("Report Error Scope code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report error scope. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving report error scope. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved report error scope. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved report error scope. " << "code: " << v.code;
 }
 
 void report_error_scope_service::save_scopes(
@@ -499,7 +497,7 @@ void report_error_scope_service::save_scopes(
         if (e.code.empty())
             throw std::invalid_argument("Report Error Scope code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << scopes.size() << " report error scopes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << scopes.size() << " report error scopes";
     auto ts = scopes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -508,9 +506,9 @@ void report_error_scope_service::save_scopes(
 }
 
 void report_error_scope_service::delete_scope(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report error scope. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing report error scope. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed report error scope. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed report error scope. " << "code: " << code;
 }
 
 void report_error_scope_service::delete_scopes(const std::vector<std::string>& codes) {
@@ -519,7 +517,7 @@ void report_error_scope_service::delete_scopes(const std::vector<std::string>& c
 
 std::vector<domain::report_error_scope>
 report_error_scope_service::get_scope_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for report error scope. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for report error scope. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

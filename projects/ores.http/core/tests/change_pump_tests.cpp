@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.core/stream/change_pump.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -37,7 +37,7 @@ const std::string pump_system_tenant = "ffffffff-ffff-ffff-ffff-ffffffffffff";
 
 TEST_CASE("a_frame_names_its_collection_and_carries_its_tenancy", "[change_pump]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the event-stream message a frame becomes";
+    ORES_LOG_SEV(lg, info) << "Testing the event-stream message a frame becomes";
 
     const coalesced_frame frame{
         .tenant = "acme",
@@ -54,7 +54,7 @@ TEST_CASE("a_frame_names_its_collection_and_carries_its_tenancy", "[change_pump]
 
 TEST_CASE("a_pump_gives_every_open_stream_the_window", "[change_pump]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a pumped window reaches every stream";
+    ORES_LOG_SEV(lg, info) << "Testing that a pumped window reaches every stream";
 
     change_coalescer coalescer;
     change_hub hub(pump_system_tenant);
@@ -73,7 +73,7 @@ TEST_CASE("a_pump_gives_every_open_stream_the_window", "[change_pump]") {
 
 TEST_CASE("a_window_with_nothing_in_it_publishes_nothing", "[change_pump]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an empty window is silent";
+    ORES_LOG_SEV(lg, info) << "Testing that an empty window is silent";
 
     change_coalescer coalescer;
     change_hub hub(pump_system_tenant);
@@ -86,7 +86,7 @@ TEST_CASE("a_window_with_nothing_in_it_publishes_nothing", "[change_pump]") {
 
 TEST_CASE("a_stream_that_ended_is_not_given_the_next_window", "[change_pump]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a ended stream is forgotten by the pump";
+    ORES_LOG_SEV(lg, info) << "Testing that a ended stream is forgotten by the pump";
 
     change_coalescer coalescer;
     change_hub hub(pump_system_tenant);
@@ -105,7 +105,7 @@ TEST_CASE("a_stream_that_ended_is_not_given_the_next_window", "[change_pump]") {
 
 TEST_CASE("a_change_with_no_party_builds_its_message", "[change_pump]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a change that concerns the whole tenant";
+    ORES_LOG_SEV(lg, info) << "Testing a change that concerns the whole tenant";
 
     const coalesced_frame frame{
         .tenant = "acme",
@@ -119,7 +119,7 @@ TEST_CASE("a_change_with_no_party_builds_its_message", "[change_pump]") {
 
 TEST_CASE("two_windows_for_one_collection_leave_one_pending_frame", "[change_pump]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info)
+    ORES_LOG_SEV(lg, info)
         << "Testing that a stream that fell behind holds one frame per collection";
 
     change_coalescer coalescer;

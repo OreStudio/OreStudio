@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/todays_market_entry.hpp"
 #include "ores.analytics.api/messaging/todays_market_entry_protocol.hpp"
 #include "ores.analytics.core/repository/todays_market_entry_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -567,12 +565,12 @@ todays_market_entry_service::prepare_change(const messaging::todays_market_entry
 
 std::vector<domain::todays_market_entry>
 todays_market_entry_service::list_entries(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all today's market entries";
+    ORES_LOG_SEV(lg(), debug) << "Listing all today's market entries";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t todays_market_entry_service::count_entries() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total today's market entries count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total today's market entries count";
     return repo_.get_total_entry_count(ctx_);
 }
 
@@ -580,15 +578,15 @@ std::uint32_t todays_market_entry_service::count_entries() {
 std::vector<domain::todays_market_entry>
 todays_market_entry_service::list_entries_by_todays_market_config_id(
     const std::string& todays_market_config_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing today's market entries by todays_market_config_id: "
-                               << todays_market_config_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing today's market entries by todays_market_config_id: "
+                              << todays_market_config_id;
     return repo_.read_latest_by_todays_market_config_id(
         ctx_, todays_market_config_id, offset, limit);
 }
 
 std::uint32_t todays_market_entry_service::count_entries_by_todays_market_config_id(
     const std::string& todays_market_config_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total today's market entries count by todays_market_config_id: "
         << todays_market_config_id;
     return repo_.get_total_entry_count_by_todays_market_config_id(ctx_, todays_market_config_id);
@@ -598,15 +596,15 @@ std::uint32_t todays_market_entry_service::count_entries_by_todays_market_config
 std::vector<domain::todays_market_entry>
 todays_market_entry_service::list_entries_by_todays_market_collection_id(
     const std::string& todays_market_collection_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing today's market entries by todays_market_collection_id: "
-                               << todays_market_collection_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing today's market entries by todays_market_collection_id: "
+                              << todays_market_collection_id;
     return repo_.read_latest_by_todays_market_collection_id(
         ctx_, todays_market_collection_id, offset, limit);
 }
 
 std::uint32_t todays_market_entry_service::count_entries_by_todays_market_collection_id(
     const std::string& todays_market_collection_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total today's market entries count by todays_market_collection_id: "
         << todays_market_collection_id;
     return repo_.get_total_entry_count_by_todays_market_collection_id(ctx_,
@@ -617,14 +615,14 @@ std::uint32_t todays_market_entry_service::count_entries_by_todays_market_collec
 std::optional<domain::todays_market_entry>
 todays_market_entry_service::get_entry_at_version(const boost::uuids::uuid& id,
                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market entry at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market entry at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::todays_market_entry>
 todays_market_entry_service::get_entry(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market entry. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -633,7 +631,7 @@ todays_market_entry_service::get_entry(const boost::uuids::uuid& id) {
 
 std::optional<domain::todays_market_entry>
 todays_market_entry_service::find_entry(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding today's market entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding today's market entry. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -648,11 +646,11 @@ todays_market_entry_service::get_entries(const std::vector<std::string>& ids) {
 void todays_market_entry_service::save_entry(const domain::todays_market_entry& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Todays Market Entry id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving today's market entry. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving today's market entry. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved today's market entry. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved today's market entry. " << "id: " << v.id;
 }
 
 void todays_market_entry_service::save_entries(
@@ -661,7 +659,7 @@ void todays_market_entry_service::save_entries(
         if (e.id.is_nil())
             throw std::invalid_argument("Todays Market Entry id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << entries.size() << " today's market entries";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << entries.size() << " today's market entries";
     auto ts = entries;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -670,15 +668,15 @@ void todays_market_entry_service::save_entries(
 }
 
 void todays_market_entry_service::delete_entry(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market entry. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed today's market entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed today's market entry. " << "id: " << id;
 }
 
 void todays_market_entry_service::remove_entry(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market entry. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed today's market entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed today's market entry. " << "id: " << id;
 }
 
 void todays_market_entry_service::delete_entries(const std::vector<std::string>& ids) {
@@ -687,13 +685,13 @@ void todays_market_entry_service::delete_entries(const std::vector<std::string>&
 
 std::vector<domain::todays_market_entry>
 todays_market_entry_service::get_entry_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for today's market entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for today's market entry. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 
 std::vector<domain::todays_market_entry>
 todays_market_entry_service::get_entry_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for today's market entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for today's market entry. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

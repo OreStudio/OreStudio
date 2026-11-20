@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/compute/compute_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -90,7 +90,7 @@ bool body_holds(const std::string& json, const std::string& member) {
 
 TEST_CASE("every_jobs_route_is_served_and_requires_a_session", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the addresses the jobs routes are served at";
+    ORES_LOG_SEV(lg, info) << "Testing the addresses the jobs routes are served at";
 
     for (const auto& stated : addresses()) {
         const auto answer = answer_at<compute_routes>(
@@ -101,7 +101,7 @@ TEST_CASE("every_jobs_route_is_served_and_requires_a_session", "[grid_jobs]") {
 
 TEST_CASE("the_batch_list_refuses_a_page_that_is_not_one", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the page the batch list refuses";
+    ORES_LOG_SEV(lg, info) << "Testing the page the batch list refuses";
 
     const std::vector<std::pair<std::string, std::string>> pages = {
         {"offset", "-1"}, {"offset", "ten"}, {"limit", "0"}, {"limit", "201"}, {"limit", "ten"}};
@@ -115,7 +115,7 @@ TEST_CASE("the_batch_list_refuses_a_page_that_is_not_one", "[grid_jobs]") {
 
 TEST_CASE("the_batch_list_refuses_a_status_and_a_reference_that_are_not_ones", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the narrowing the batch list refuses";
+    ORES_LOG_SEV(lg, info) << "Testing the narrowing the batch list refuses";
 
     for (const auto& query : std::vector<std::vector<std::pair<std::string, std::string>>>{
              {{"status", std::string(33, 'a')}},
@@ -131,7 +131,7 @@ TEST_CASE("the_batch_list_refuses_a_status_and_a_reference_that_are_not_ones", "
 
 TEST_CASE("the_batch_list_takes_a_status_a_party_and_part_of_a_reference", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the narrowing the batch list takes";
+    ORES_LOG_SEV(lg, info) << "Testing the narrowing the batch list takes";
 
     const auto answer = answer_at<compute_routes>(http_method::get,
                                                   batches_pattern,
@@ -146,7 +146,7 @@ TEST_CASE("the_batch_list_takes_a_status_a_party_and_part_of_a_reference", "[gri
 
 TEST_CASE("a_jobs_route_refuses_a_parameter_it_does_not_take", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter the jobs routes do not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter the jobs routes do not name";
 
     const auto answer = answer_at<compute_routes>(
         http_method::get, batches_pattern, asking({{"sort", "status"}}), batches_pattern);
@@ -162,7 +162,7 @@ TEST_CASE("a_jobs_route_refuses_a_parameter_it_does_not_take", "[grid_jobs]") {
 
 TEST_CASE("a_job_is_named_by_an_identifier", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier a job address names";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier a job address names";
 
     const auto not_an_id = std::pair{"/api/operations/grid/jobs/batches/not-an-id", batch_pattern};
     const auto workunit_id =
@@ -184,7 +184,7 @@ TEST_CASE("a_job_is_named_by_an_identifier", "[grid_jobs]") {
 
 TEST_CASE("the_runs_read_refuses_an_outcome_it_does_not_name", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the outcome codes the runs read names";
+    ORES_LOG_SEV(lg, info) << "Testing the outcome codes the runs read names";
 
     const auto absent = answer_at<compute_routes>(
         http_method::get, results_pattern, http_request{}, results_pattern);
@@ -207,7 +207,7 @@ TEST_CASE("the_runs_read_refuses_an_outcome_it_does_not_name", "[grid_jobs]") {
 
 TEST_CASE("the_runs_read_refuses_a_page_that_is_not_one", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the page the runs read refuses";
+    ORES_LOG_SEV(lg, info) << "Testing the page the runs read refuses";
 
     const std::vector<std::pair<std::string, std::string>> pages = {{"offset", "-1"},
                                                                     {"limit", "1000"}};
@@ -223,7 +223,7 @@ TEST_CASE("the_runs_read_refuses_a_page_that_is_not_one", "[grid_jobs]") {
 
 TEST_CASE("the_children_of_a_job_refuse_a_page_that_is_not_one", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the page the children of a job refuse";
+    ORES_LOG_SEV(lg, info) << "Testing the page the children of a job refuse";
 
     const auto workunits = answer_at<compute_routes>(http_method::get,
                                                      a_batch_path + "/workunits",

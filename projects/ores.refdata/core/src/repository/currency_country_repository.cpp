@@ -27,13 +27,11 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_country.hpp"
 #include "ores.refdata.api/domain/currency_country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/currency_country_entity.hpp"
 #include "ores.refdata.core/repository/currency_country_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -194,9 +192,9 @@ void currency_country_repository::write(
 
 void currency_country_repository::write(const domain::currency_country& currency_country,
                                         const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency country to database: "
-                               << currency_country.currency_iso_code << "/"
-                               << currency_country.country_alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing currency country to database: "
+                              << currency_country.currency_iso_code << "/"
+                              << currency_country.country_alpha2_code;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(currency_country.currency_iso_code, currency_country.country_alpha2_code) :
@@ -209,8 +207,8 @@ void currency_country_repository::write(const domain::currency_country& currency
 void currency_country_repository::write(
     const std::vector<domain::currency_country>& currency_countries,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency countries to database. Count: "
-                               << currency_countries.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing currency countries to database. Count: "
+                              << currency_countries.size();
     if (claims.size() != currency_countries.size())
         throw std::invalid_argument(
             "currency_country_repository::write: one claim is needed for each row");
@@ -250,8 +248,8 @@ std::vector<domain::currency_country> currency_country_repository::read_latest()
 
 std::vector<domain::currency_country>
 currency_country_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency countries with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -272,8 +270,8 @@ currency_country_repository::read_latest(std::uint32_t offset, std::uint32_t lim
 std::vector<domain::currency_country>
 currency_country_repository::read_latest(const std::string& currency_iso_code,
                                          const std::string& country_alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency country. " << currency_iso_code << "/"
-                               << country_alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency country. " << currency_iso_code << "/"
+                              << country_alpha2_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto currency_iso_code_str = currency_iso_code;
@@ -295,7 +293,7 @@ currency_country_repository::read_latest(const std::string& currency_iso_code,
 }
 
 std::uint32_t currency_country_repository::get_total_currency_country_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -306,14 +304,14 @@ std::uint32_t currency_country_repository::get_total_currency_country_count() {
 
     const auto count = query_builder::execute_count_query<currency_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency countries");
-    BOOST_LOG_SEV(lg(), debug) << "Total active currency countries count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active currency countries count: " << count;
     return count;
 }
 
 std::vector<domain::currency_country>
 currency_country_repository::read_latest_by_currency(const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Currency: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency countries. Currency: "
+                              << currency_iso_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -337,8 +335,8 @@ currency_country_repository::read_latest_by_currency(const std::string& currency
 
 std::vector<domain::currency_country>
 currency_country_repository::read_latest_by_country(const std::string& country_alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Country: "
-                               << country_alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency countries. Country: "
+                              << country_alpha2_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -362,8 +360,8 @@ currency_country_repository::read_latest_by_country(const std::string& country_a
 
 std::vector<domain::currency_country> currency_country_repository::read_latest_by_currency(
     const std::string& currency_iso_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Currency: "
-                               << currency_iso_code << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency countries. Currency: "
+                              << currency_iso_code << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -388,8 +386,8 @@ std::vector<domain::currency_country> currency_country_repository::read_latest_b
 
 std::uint32_t currency_country_repository::get_total_currency_country_count_by_currency(
     const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count. Currency: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count. Currency: "
+                              << currency_iso_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -401,14 +399,14 @@ std::uint32_t currency_country_repository::get_total_currency_country_count_by_c
 
     const auto count = query_builder::execute_count_query<currency_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency countries");
-    BOOST_LOG_SEV(lg(), debug) << "Total active currency countries count by currency: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active currency countries count by currency: " << count;
     return count;
 }
 
 std::uint32_t currency_country_repository::get_total_currency_country_count_by_country(
     const std::string& country_alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count. Country: "
-                               << country_alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count. Country: "
+                              << country_alpha2_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -420,14 +418,14 @@ std::uint32_t currency_country_repository::get_total_currency_country_count_by_c
 
     const auto count = query_builder::execute_count_query<currency_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency countries");
-    BOOST_LOG_SEV(lg(), debug) << "Total active currency countries count by country: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active currency countries count by country: " << count;
     return count;
 }
 
 std::vector<currency_country_history_row>
 currency_country_repository::read_all_by_currency(const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the currency countries. Currency: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the currency countries. Currency: "
+                              << currency_iso_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -479,8 +477,8 @@ currency_country_repository::remove_status
 currency_country_repository::remove(const std::string& currency_iso_code,
                                     const std::string& country_alpha2_code,
                                     std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency country from database: " << currency_iso_code
-                               << "/" << country_alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing currency country from database: " << currency_iso_code
+                              << "/" << country_alpha2_code;
 
     const auto current = read_latest(currency_iso_code, country_alpha2_code);
     if (current.empty())
@@ -527,8 +525,8 @@ void currency_country_repository::remove(const std::vector<std::string>& currenc
 }
 
 void currency_country_repository::remove_by_currency(const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all currency countries from database: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing all currency countries from database: "
+                              << currency_iso_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =

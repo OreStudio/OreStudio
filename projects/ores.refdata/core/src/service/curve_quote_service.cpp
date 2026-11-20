@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_quote.hpp"
 #include "ores.refdata.api/messaging/curve_quote_protocol.hpp"
 #include "ores.refdata.core/repository/curve_quote_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -453,25 +451,25 @@ curve_quote_service::prepare_change(const messaging::curve_quote_change& change,
 
 std::vector<domain::curve_quote> curve_quote_service::list_quotes(std::uint32_t offset,
                                                                   std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve quotes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve quotes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_quote_service::count_quotes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve quotes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve quotes count";
     return repo_.get_total_quote_count(ctx_);
 }
 
 
 std::optional<domain::curve_quote>
 curve_quote_service::get_quote_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve quote at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve quote at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_quote> curve_quote_service::get_quote(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve quote. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve quote. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -486,11 +484,11 @@ curve_quote_service::get_quotes(const std::vector<std::string>& ids) {
 void curve_quote_service::save_quote(const domain::curve_quote& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Quote id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve quote. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve quote. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve quote. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve quote. " << "id: " << v.id;
 }
 
 void curve_quote_service::save_quotes(const std::vector<domain::curve_quote>& quotes) {
@@ -498,7 +496,7 @@ void curve_quote_service::save_quotes(const std::vector<domain::curve_quote>& qu
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Quote id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << quotes.size() << " curve quotes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << quotes.size() << " curve quotes";
     auto ts = quotes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -507,9 +505,9 @@ void curve_quote_service::save_quotes(const std::vector<domain::curve_quote>& qu
 }
 
 void curve_quote_service::delete_quote(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve quote. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve quote. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve quote. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve quote. " << "id: " << id;
 }
 
 void curve_quote_service::delete_quotes(const std::vector<std::string>& ids) {
@@ -517,7 +515,7 @@ void curve_quote_service::delete_quotes(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::curve_quote> curve_quote_service::get_quote_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve quote. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve quote. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

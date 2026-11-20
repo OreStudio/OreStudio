@@ -144,6 +144,7 @@ struct oresmd_instrument {
     std::string ore_name;
     std::string title;
     std::string asset;
+    std::string asset_class;
     std::string subject;
     std::vector<oresmd_field_spec> fields;
 
@@ -1991,6 +1992,7 @@ struct get_series_ticks_response {
 struct watchable_feed {
     std::string provider_code;
     std::string feed_id;
+    int precedence = 1000;
 
     friend bool operator==(const watchable_feed&, const watchable_feed&) = default;
 };
@@ -2165,6 +2167,7 @@ struct store_market_state_response {
         ::ores::utility::codec::field{"ore_name", &oresmd_instrument::ore_name},
         ::ores::utility::codec::field{"title", &oresmd_instrument::title},
         ::ores::utility::codec::field{"asset", &oresmd_instrument::asset},
+        ::ores::utility::codec::field{"asset_class", &oresmd_instrument::asset_class},
         ::ores::utility::codec::field{"subject", &oresmd_instrument::subject},
         ::ores::utility::codec::field{"fields", &oresmd_instrument::fields},
     };
@@ -3558,6 +3561,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"provider_code", &watchable_feed::provider_code},
         ::ores::utility::codec::field{"feed_id", &watchable_feed::feed_id},
+        ::ores::utility::codec::field{"precedence", &watchable_feed::precedence},
     };
 }
 

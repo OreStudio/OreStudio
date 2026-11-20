@@ -19,7 +19,7 @@
  */
 #include "ores.compute.service/config/parser.hpp"
 #include "ores.compute.service/config/parser_exception.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/scoped_environment_override.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>

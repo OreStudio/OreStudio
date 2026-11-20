@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_EQUITY_UNDERLYING_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/equity_underlying.hpp"
 #include "ores.refdata.api/messaging/equity_underlying_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

@@ -29,10 +29,8 @@
 #include "ores.inbox.api/domain/approval_part.hpp"
 #include "ores.inbox.api/messaging/approval_part_protocol.hpp"
 #include "ores.inbox.core/repository/approval_part_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -444,25 +442,25 @@ approval_part_service::prepare_change(const messaging::approval_part_change& cha
 
 std::vector<domain::approval_part> approval_part_service::list_parts(std::uint32_t offset,
                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all approval parts";
+    ORES_LOG_SEV(lg(), debug) << "Listing all approval parts";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t approval_part_service::count_parts() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total approval parts count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total approval parts count";
     return repo_.get_total_part_count(ctx_);
 }
 
 
 std::optional<domain::approval_part>
 approval_part_service::get_part_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting approval part at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting approval part at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::approval_part> approval_part_service::find_part(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding approval part. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding approval part. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -477,11 +475,11 @@ approval_part_service::get_parts(const std::vector<std::string>& codes) {
 void approval_part_service::save_part(const domain::approval_part& v) {
     if (v.code.empty())
         throw std::invalid_argument("Approval Part code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving approval part. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving approval part. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved approval part. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved approval part. " << "code: " << v.code;
 }
 
 void approval_part_service::save_parts(const std::vector<domain::approval_part>& parts) {
@@ -489,7 +487,7 @@ void approval_part_service::save_parts(const std::vector<domain::approval_part>&
         if (e.code.empty())
             throw std::invalid_argument("Approval Part code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << parts.size() << " approval parts";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << parts.size() << " approval parts";
     auto ts = parts;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -498,9 +496,9 @@ void approval_part_service::save_parts(const std::vector<domain::approval_part>&
 }
 
 void approval_part_service::delete_part(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing approval part. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing approval part. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed approval part. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed approval part. " << "code: " << code;
 }
 
 void approval_part_service::delete_parts(const std::vector<std::string>& codes) {
@@ -509,7 +507,7 @@ void approval_part_service::delete_parts(const std::vector<std::string>& codes) 
 
 std::vector<domain::approval_part>
 approval_part_service::get_part_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for approval part. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for approval part. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

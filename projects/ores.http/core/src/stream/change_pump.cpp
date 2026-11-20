@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.core/stream/change_pump.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <chrono>
 #include <format>
 
@@ -71,7 +71,7 @@ std::size_t change_pump::pump() {
         ++published;
     }
     if (published > 0)
-        BOOST_LOG_SEV(pump_lg(), debug)
+        ORES_LOG_SEV(pump_lg(), debug)
             << "Published " << published << " coalesced frame(s) to every open stream";
     return published;
 }

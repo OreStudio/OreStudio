@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_SERVICE_MARKET_DATA_VENDOR_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/messaging/market_data_vendor_instrument_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"

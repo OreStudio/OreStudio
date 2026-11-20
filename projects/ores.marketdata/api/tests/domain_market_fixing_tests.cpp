@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/domain/market_fixing_json_io.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
@@ -48,7 +48,7 @@ TEST_CASE("create_fixing_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_euribor_fixing("0.038940");
-    BOOST_LOG_SEV(lg, info) << "Fixing: " << sut;
+    ORES_LOG_SEV(lg, info) << "Fixing: " << sut;
 
     CHECK(!sut.id.is_nil());
     CHECK(!sut.series_id.is_nil());
@@ -68,7 +68,7 @@ TEST_CASE("create_fixing_without_source", "[domain]") {
     sut.series_id = gen();
     sut.fixing_date = std::chrono::year{2024} / std::chrono::month{1} / std::chrono::day{15};
     sut.value = "0.052300";
-    BOOST_LOG_SEV(lg, info) << "Fixing without source: " << sut;
+    ORES_LOG_SEV(lg, info) << "Fixing without source: " << sut;
 
     CHECK(sut.source.empty());
     CHECK(sut.value == "0.052300");
@@ -82,7 +82,7 @@ TEST_CASE("market_fixing_json_serialisation", "[domain]") {
     std::ostringstream os;
     os << sut;
     const std::string json_output = os.str();
-    BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
+    ORES_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("0.038940") != std::string::npos);
@@ -105,7 +105,7 @@ TEST_CASE("create_fixing_history_series", "[domain]") {
         f.value = std::to_string(0.039 + day * 0.0001);
         fixings.push_back(f);
     }
-    BOOST_LOG_SEV(lg, info) << "Fixing history size: " << fixings.size();
+    ORES_LOG_SEV(lg, info) << "Fixing history size: " << fixings.size();
 
     CHECK(fixings.size() == 5);
     for (const auto& f : fixings) {

@@ -28,10 +28,8 @@
 #include "ores.dq.api/domain/lei_relationship.hpp"
 #include "ores.dq.api/messaging/lei_relationship_protocol.hpp"
 #include "ores.dq.core/repository/lei_relationship_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <map>
@@ -180,21 +178,20 @@ messaging::get_many_lei_relationships_response lei_relationship_service::get_man
 
 std::vector<domain::lei_relationship>
 lei_relationship_service::list_relationships(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all LEI relationships";
+    ORES_LOG_SEV(lg(), debug) << "Listing all LEI relationships";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t lei_relationship_service::count_relationships() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total LEI relationships count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total LEI relationships count";
     return repo_.get_total_relationship_count(ctx_);
 }
 
 
 std::optional<domain::lei_relationship>
 lei_relationship_service::get_relationship(const std::string& relationship_start_node_node_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting LEI relationship. "
-                               << "relationship_start_node_node_id: "
-                               << relationship_start_node_node_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting LEI relationship. " << "relationship_start_node_node_id: "
+                              << relationship_start_node_node_id;
     auto results = repo_.read_latest(ctx_, relationship_start_node_node_id);
     if (results.empty())
         return std::nullopt;
@@ -210,13 +207,13 @@ void lei_relationship_service::save_relationship(const domain::lei_relationship&
     if (v.relationship_start_node_node_id.empty())
         throw std::invalid_argument(
             "LEI Relationship relationship_start_node_node_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving LEI relationship. " << "relationship_start_node_node_id: "
-                               << v.relationship_start_node_node_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving LEI relationship. " << "relationship_start_node_node_id: "
+                              << v.relationship_start_node_node_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved LEI relationship. " << "relationship_start_node_node_id: "
-                              << v.relationship_start_node_node_id;
+    ORES_LOG_SEV(lg(), info) << "Saved LEI relationship. " << "relationship_start_node_node_id: "
+                             << v.relationship_start_node_node_id;
 }
 
 void lei_relationship_service::save_relationships(
@@ -226,7 +223,7 @@ void lei_relationship_service::save_relationships(
             throw std::invalid_argument(
                 "LEI Relationship relationship_start_node_node_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << relationships.size() << " LEI relationships";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << relationships.size() << " LEI relationships";
     auto ts = relationships;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -236,12 +233,12 @@ void lei_relationship_service::save_relationships(
 
 void lei_relationship_service::delete_relationship(
     const std::string& relationship_start_node_node_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing LEI relationship. "
-                               << "relationship_start_node_node_id: "
-                               << relationship_start_node_node_id;
-    repo_.remove(ctx_, relationship_start_node_node_id);
-    BOOST_LOG_SEV(lg(), info) << "Removed LEI relationship. " << "relationship_start_node_node_id: "
+    ORES_LOG_SEV(lg(), debug) << "Removing LEI relationship. "
+                              << "relationship_start_node_node_id: "
                               << relationship_start_node_node_id;
+    repo_.remove(ctx_, relationship_start_node_node_id);
+    ORES_LOG_SEV(lg(), info) << "Removed LEI relationship. " << "relationship_start_node_node_id: "
+                             << relationship_start_node_node_id;
 }
 
 void lei_relationship_service::delete_relationships(

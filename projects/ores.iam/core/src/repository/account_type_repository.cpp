@@ -31,9 +31,7 @@
 #include "ores.iam.api/messaging/account_type_protocol.hpp"
 #include "ores.iam.core/repository/account_type_entity.hpp"
 #include "ores.iam.core/repository/account_type_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -210,7 +208,7 @@ void account_type_repository::write(const context& ctx,
 void account_type_repository::write(const context& ctx,
                                     const domain::account_type& v,
                                     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account type. " << "type: " << v.type;
+    ORES_LOG_SEV(lg(), debug) << "Writing account type. " << "type: " << v.type;
     const auto t = account_type_apply_claim(v,
                                             claim,
                                             account_type_claim_reads_current(claim) ?
@@ -224,7 +222,7 @@ void account_type_repository::write(
     const context& ctx,
     const std::vector<domain::account_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account types. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing account types. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "account_type_repository::write: one claim is needed for each row");
@@ -260,7 +258,7 @@ std::vector<domain::account_type> account_type_repository::read_latest(const con
 
 std::vector<domain::account_type> account_type_repository::read_latest(const context& ctx,
                                                                        const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account type. " << "type: " << type;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -278,7 +276,7 @@ std::vector<domain::account_type> account_type_repository::read_latest(const con
 
 std::vector<domain::account_type> account_type_repository::read_all(const context& ctx,
                                                                     const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all account type versions. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Reading all account type versions. " << "type: " << type;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_type_entity>> |
                        query_builder::where("tenant_id"_c == tid && "type"_c == type) |
@@ -294,8 +292,8 @@ std::vector<domain::account_type> account_type_repository::read_all(const contex
 
 std::optional<domain::account_type> account_type_repository::read_at_version(
     const context& ctx, const std::string& type, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading account type at version. " << "type: " << type
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading account type at version. " << "type: " << type
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<account_type_entity>> |
@@ -317,7 +315,7 @@ std::optional<domain::account_type> account_type_repository::read_at_version(
 
 account_type_repository::remove_status account_type_repository::remove(
     const context& ctx, const std::string& type, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Removing account type. " << "type: " << type;
     const auto current = read_latest(ctx, type);
     if (current.empty())
         return remove_status::missing;
@@ -355,8 +353,8 @@ account_type_repository::read_latest(const context& ctx,
                                      const ores::utility::domain::order& order,
                                      const std::optional<messaging::account_types_filter>& filter,
                                      const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account types with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account types with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_type_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -377,7 +375,7 @@ std::uint32_t account_type_repository::get_total_type_count(
     const context& ctx,
     const std::optional<messaging::account_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account type count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active account type count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_type_entity>> |

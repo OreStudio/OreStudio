@@ -66,6 +66,7 @@ export const PATHS = {
     instruments: '/market-data/instruments',
     rateLadder: '/market-data/rate-ladder',
     fxMontage: '/market-data/fx-montage',
+    quotes: '/market-data/quotes',
     curveAnalytics: '/market-data/curve-analytics',
     publicRates: '/market-data/public-rates',
     calibration: '/market-data/calibration',

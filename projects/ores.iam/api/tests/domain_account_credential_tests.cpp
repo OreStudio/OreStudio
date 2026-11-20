@@ -20,7 +20,7 @@
 #include "ores.iam.api/domain/account_credential.hpp"
 #include "ores.iam.api/domain/account_credential_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_credential_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -43,7 +43,7 @@ TEST_CASE("credential_domain_carries_every_secret", "[domain]") {
     sut.service_password_hash = "6b3a55e0261b0304143f805a24924d0c1c44524821305f31d9277843b8a1f10f";
     sut.totp_secret = "JBSWY3DPEHPK3PXP";
     sut.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "Credential: " << sut;
+    ORES_LOG_SEV(lg, info) << "Credential: " << sut;
 
     CHECK(sut.account_id == account_id);
     CHECK(sut.password_hash == "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
@@ -68,7 +68,7 @@ TEST_CASE("credential_serialisation_carries_no_secret", "[domain]") {
     os << acc;
     const auto json = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "JSON: " << json;
+    ORES_LOG_SEV(lg, info) << "JSON: " << json;
 
     // The struct holds the secrets so the service can prove them. Nothing that
     // leaves the process carries one: no field name and no value.
@@ -117,7 +117,7 @@ TEST_CASE("credential_convert_to_table_shows_the_account", "[domain]") {
     std::vector<account_credential> credentials = {acc};
     auto table = convert_to_table(credentials);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find(boost::uuids::to_string(acc.account_id)) != std::string::npos);
@@ -129,7 +129,7 @@ TEST_CASE("credential_convert_empty_vector_to_table", "[domain]") {
     std::vector<account_credential> credentials;
     auto table = convert_to_table(credentials);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     CHECK(!table.empty());
 }

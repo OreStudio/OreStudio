@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CURVE_CORRELATION_CONFIG_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/curve_correlation_config.hpp"
 #include "ores.refdata.api/messaging/curve_correlation_config_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

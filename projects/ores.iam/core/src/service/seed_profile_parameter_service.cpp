@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/seed_profile_parameter.hpp"
 #include "ores.iam.api/messaging/seed_profile_parameter_protocol.hpp"
 #include "ores.iam.core/repository/seed_profile_parameter_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -517,12 +515,12 @@ ores::utility::domain::result seed_profile_parameter_service::prepare_change(
 std::vector<domain::seed_profile_parameter>
 seed_profile_parameter_service::list_seed_profile_parameters(std::uint32_t offset,
                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all seed profile parameters";
+    ORES_LOG_SEV(lg(), debug) << "Listing all seed profile parameters";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t seed_profile_parameter_service::count_seed_profile_parameters() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total seed profile parameters count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total seed profile parameters count";
     return repo_.get_total_seed_profile_parameter_count(ctx_);
 }
 
@@ -530,15 +528,15 @@ std::uint32_t seed_profile_parameter_service::count_seed_profile_parameters() {
 std::vector<domain::seed_profile_parameter>
 seed_profile_parameter_service::list_seed_profile_parameters_by_seed_profile_id(
     const std::string& seed_profile_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing seed profile parameters by seed_profile_id: "
-                               << seed_profile_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing seed profile parameters by seed_profile_id: "
+                              << seed_profile_id;
     return repo_.read_latest_by_seed_profile_id(ctx_, seed_profile_id, offset, limit);
 }
 
 std::uint32_t seed_profile_parameter_service::count_seed_profile_parameters_by_seed_profile_id(
     const std::string& seed_profile_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total seed profile parameters count by seed_profile_id: "
-                               << seed_profile_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total seed profile parameters count by seed_profile_id: "
+                              << seed_profile_id;
     return repo_.get_total_seed_profile_parameter_count_by_seed_profile_id(ctx_, seed_profile_id);
 }
 
@@ -546,14 +544,14 @@ std::uint32_t seed_profile_parameter_service::count_seed_profile_parameters_by_s
 std::optional<domain::seed_profile_parameter>
 seed_profile_parameter_service::get_seed_profile_parameter_at_version(const boost::uuids::uuid& id,
                                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting seed profile parameter at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting seed profile parameter at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::seed_profile_parameter>
 seed_profile_parameter_service::get_seed_profile_parameter(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting seed profile parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting seed profile parameter. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -569,11 +567,11 @@ void seed_profile_parameter_service::save_seed_profile_parameter(
     const domain::seed_profile_parameter& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Seed Profile Parameter id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving seed profile parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving seed profile parameter. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved seed profile parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved seed profile parameter. " << "id: " << v.id;
 }
 
 void seed_profile_parameter_service::save_seed_profile_parameters(
@@ -582,8 +580,8 @@ void seed_profile_parameter_service::save_seed_profile_parameters(
         if (e.id.is_nil())
             throw std::invalid_argument("Seed Profile Parameter id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << seed_profile_parameters.size()
-                               << " seed profile parameters";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << seed_profile_parameters.size()
+                              << " seed profile parameters";
     auto ts = seed_profile_parameters;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -592,9 +590,9 @@ void seed_profile_parameter_service::save_seed_profile_parameters(
 }
 
 void seed_profile_parameter_service::delete_seed_profile_parameter(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing seed profile parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing seed profile parameter. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed seed profile parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed seed profile parameter. " << "id: " << id;
 }
 
 void seed_profile_parameter_service::delete_seed_profile_parameters(
@@ -604,7 +602,7 @@ void seed_profile_parameter_service::delete_seed_profile_parameters(
 
 std::vector<domain::seed_profile_parameter>
 seed_profile_parameter_service::get_seed_profile_parameter_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for seed profile parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for seed profile parameter. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

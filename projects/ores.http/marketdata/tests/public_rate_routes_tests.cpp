@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/marketdata/public_rate_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -81,7 +81,7 @@ terms_status(const std::string& address, const std::string& pattern, const std::
 
 TEST_CASE("public_rates_state_a_series_oldest_first", "[public-rate]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a read of fixings";
+    ORES_LOG_SEV(lg, info) << "Testing a read of fixings";
 
     const auto answer = public_rate_routes::fixings_json(
         {boost::uuids::string_generator()(rates_series)},
@@ -95,7 +95,7 @@ TEST_CASE("public_rates_state_a_series_oldest_first", "[public-rate]") {
 
 TEST_CASE("public_rates_state_every_series_asked_for", "[public-rate]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a series the store holds no fixing for";
+    ORES_LOG_SEV(lg, info) << "Testing a series the store holds no fixing for";
 
     const auto answer =
         public_rate_routes::fixings_json({boost::uuids::string_generator()(rates_series),
@@ -108,7 +108,7 @@ TEST_CASE("public_rates_state_every_series_asked_for", "[public-rate]") {
 
 TEST_CASE("public_rates_refuse_a_read_that_names_no_series", "[public-rate]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a read of fixings without a series";
+    ORES_LOG_SEV(lg, info) << "Testing a read of fixings without a series";
 
     CHECK(fixings_status(http_request{}) == http_status::bad_request);
     CHECK(fixings_status(fixings_request("")) == http_status::bad_request);
@@ -131,14 +131,14 @@ TEST_CASE("public_rates_refuse_a_read_that_names_no_series", "[public-rate]") {
 
 TEST_CASE("public_rates_refuse_a_read_without_a_service", "[public-rate]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the fixings' refusal when the service does not answer";
+    ORES_LOG_SEV(lg, info) << "Testing the fixings' refusal when the service does not answer";
 
     CHECK(fixings_status(fixings_request(rates_series)) == http_status::bad_gateway);
 }
 
 TEST_CASE("public_rates_refuse_a_terms_body_they_do_not_read", "[public-rate]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the terms writes' bodies";
+    ORES_LOG_SEV(lg, info) << "Testing the terms writes' bodies";
 
     const std::string accept = "/api/marketdata/public-rates/bloomberg/accept-terms";
     CHECK(terms_status(accept, "/api/marketdata/public-rates/{code}/accept-terms", "") ==
@@ -159,7 +159,7 @@ TEST_CASE("public_rates_refuse_a_terms_body_they_do_not_read", "[public-rate]") 
 
 TEST_CASE("public_rates_refuse_a_terms_write_without_a_service", "[public-rate]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the terms writes' refusal when the service does not answer";
+    ORES_LOG_SEV(lg, info) << "Testing the terms writes' refusal when the service does not answer";
 
     CHECK(terms_status("/api/marketdata/public-rates/bloomberg/accept-terms",
                        "/api/marketdata/public-rates/{code}/accept-terms",

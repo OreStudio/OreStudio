@@ -22,7 +22,7 @@
  * Template: cpp_shell_command_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/refdata/tenor_basis_swap_pay_receive_commands.hpp"
@@ -86,7 +86,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_registers_every_derived_verb", 
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 11 command(s).";
 }
 
 TEST_CASE("tenor_basis_swap_pay_receive_commands_process_list_requires_a_session", "[commands]") {
@@ -99,7 +99,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_list_requires_a_session
     tenor_basis_swap_pay_receive_commands::process_list(
         out, session, tenor_basis_swap_pay_receive_tokens(0));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -114,7 +114,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_get_requires_a_session"
     tenor_basis_swap_pay_receive_commands::process_get(
         out, session, tenor_basis_swap_pay_receive_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -130,7 +130,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_get_reports_the_expecte
     command_feedback::reset();
     tenor_basis_swap_pay_receive_commands::process_get(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -151,7 +151,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_get_many_requires_a_ses
     tenor_basis_swap_pay_receive_commands::process_get_many(
         out, session, tenor_basis_swap_pay_receive_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -166,7 +166,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_add_requires_a_session"
     tenor_basis_swap_pay_receive_commands::process_add(
         out, session, tenor_basis_swap_pay_receive_tokens(11));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -182,7 +182,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_add_reports_the_expecte
     command_feedback::reset();
     tenor_basis_swap_pay_receive_commands::process_add(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -202,7 +202,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_set_requires_a_session"
     tenor_basis_swap_pay_receive_commands::process_set(
         out, session, tenor_basis_swap_pay_receive_tokens(11));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -218,7 +218,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_set_reports_the_expecte
     command_feedback::reset();
     tenor_basis_swap_pay_receive_commands::process_set(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -239,7 +239,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_put_many_requires_a_ses
     tenor_basis_swap_pay_receive_commands::process_put_many(
         out, session, tenor_basis_swap_pay_receive_tokens(11));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -254,7 +254,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_delete_requires_a_sessi
     tenor_basis_swap_pay_receive_commands::process_delete(
         out, session, tenor_basis_swap_pay_receive_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -270,7 +270,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_delete_reports_the_expe
     command_feedback::reset();
     tenor_basis_swap_pay_receive_commands::process_delete(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -291,7 +291,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_delete_many_requires_a_
     tenor_basis_swap_pay_receive_commands::process_delete_many(
         out, session, tenor_basis_swap_pay_receive_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -307,7 +307,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_by_convention_id_requir
     tenor_basis_swap_pay_receive_commands::process_by_convention_id(
         out, session, tenor_basis_swap_pay_receive_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -324,7 +324,7 @@ TEST_CASE(
     command_feedback::reset();
     tenor_basis_swap_pay_receive_commands::process_by_convention_id(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -345,7 +345,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_versions_requires_a_ses
     tenor_basis_swap_pay_receive_commands::process_versions(
         out, session, tenor_basis_swap_pay_receive_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -361,7 +361,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_versions_reports_the_ex
     command_feedback::reset();
     tenor_basis_swap_pay_receive_commands::process_versions(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -382,7 +382,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_version_requires_a_sess
     tenor_basis_swap_pay_receive_commands::process_version(
         out, session, tenor_basis_swap_pay_receive_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -398,7 +398,7 @@ TEST_CASE("tenor_basis_swap_pay_receive_commands_process_version_reports_the_exp
     command_feedback::reset();
     tenor_basis_swap_pay_receive_commands::process_version(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received

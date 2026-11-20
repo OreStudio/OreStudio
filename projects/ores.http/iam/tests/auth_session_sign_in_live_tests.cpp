@@ -19,7 +19,7 @@
  */
 #include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/jwks.hpp"
 #include "ores.nats/service/timeouts.hpp"
@@ -101,7 +101,7 @@ std::optional<std::string> fetch_public_key(ores::nats::service::nats_client& se
 
 TEST_CASE("a_person_signs_in_and_the_token_stays_with_the_server", "[auth_session][live]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the sign-in round trip against the running fleet";
+    ORES_LOG_SEV(lg, info) << "Testing the sign-in round trip against the running fleet";
 
     const auto options = fleet_options();
     const auto username = env("ORES_SHELL_LOGIN_USERNAME");

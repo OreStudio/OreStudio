@@ -778,7 +778,7 @@ report_instance_repository::read_latest_by_definition_ids(
     if (definition_ids.empty())
         return {};
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading the latest instance of "
+    ORES_LOG_SEV(lg(), debug) << "Reading the latest instance of "
                                << definition_ids.size() << " definition(s).";
 
     // One bound array rather than one parameter per id, so a party with a
@@ -867,7 +867,7 @@ report_instance_repository::read_health_facts_by_instance_ids(
     if (instance_ids.empty())
         return {};
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading the health facts of " << instance_ids.size()
+    ORES_LOG_SEV(lg(), debug) << "Reading the health facts of " << instance_ids.size()
                                << " run(s).";
 
     std::string id_array("{");
@@ -1144,7 +1144,7 @@ report_instance_service::count_report_definitions_by_health(
      * run reads are gated by.
      */
     void get_latest_report_instances_by_definition(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -1159,7 +1159,7 @@ report_instance_service::count_report_definitions_by_health(
         }
         auto req = decode<get_latest_report_instances_by_definition_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_instance_handler_lg(), warn)
+            ORES_LOG_SEV(report_instance_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -1167,10 +1167,10 @@ report_instance_service::count_report_definitions_by_health(
         service::report_instance_service svc(req_ctx);
         try {
             auto response = svc.get_latest_report_instances_by_definition(*req);
-            BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_instance_handler_lg(), error)
+            ORES_LOG_SEV(report_instance_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_latest_report_instances_by_definition_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -1191,7 +1191,7 @@ report_instance_service::count_report_definitions_by_health(
      * run reads are gated by.
      */
     void get_report_instance_health(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -1206,7 +1206,7 @@ report_instance_service::count_report_definitions_by_health(
         }
         auto req = decode<get_report_instance_health_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_instance_handler_lg(), warn)
+            ORES_LOG_SEV(report_instance_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -1214,10 +1214,10 @@ report_instance_service::count_report_definitions_by_health(
         service::report_instance_service svc(req_ctx);
         try {
             auto response = svc.get_report_instance_health(*req);
-            BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_instance_handler_lg(), error)
+            ORES_LOG_SEV(report_instance_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_report_instance_health_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -1238,7 +1238,7 @@ report_instance_service::count_report_definitions_by_health(
      * allowed to read both.
      */
     void count_report_definitions_by_health(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -1254,7 +1254,7 @@ report_instance_service::count_report_definitions_by_health(
         }
         auto req = decode<count_report_definitions_by_health_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_instance_handler_lg(), warn)
+            ORES_LOG_SEV(report_instance_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -1262,10 +1262,10 @@ report_instance_service::count_report_definitions_by_health(
         service::report_instance_service svc(req_ctx);
         try {
             auto response = svc.count_report_definitions_by_health(*req);
-            BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_instance_handler_lg(), error)
+            ORES_LOG_SEV(report_instance_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             count_report_definitions_by_health_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

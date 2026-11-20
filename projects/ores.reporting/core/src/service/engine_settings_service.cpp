@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/engine_settings.hpp"
 #include "ores.reporting.api/messaging/engine_settings_protocol.hpp"
 #include "ores.reporting.core/repository/engine_settings_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -525,27 +523,27 @@ engine_settings_service::prepare_change(const messaging::engine_settings_change&
 
 std::vector<domain::engine_settings> engine_settings_service::list_settings(std::uint32_t offset,
                                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all engine settings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all engine settings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t engine_settings_service::count_settings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total engine settings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total engine settings count";
     return repo_.get_total_settings_count(ctx_);
 }
 
 
 std::vector<domain::engine_settings> engine_settings_service::list_settings_by_configuration_id(
     const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing engine settings by configuration_id: "
-                               << configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing engine settings by configuration_id: "
+                              << configuration_id;
     return repo_.read_latest_by_configuration_id(ctx_, configuration_id, offset, limit);
 }
 
 std::uint32_t
 engine_settings_service::count_settings_by_configuration_id(const std::string& configuration_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total engine settings count by configuration_id: "
-                               << configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total engine settings count by configuration_id: "
+                              << configuration_id;
     return repo_.get_total_settings_count_by_configuration_id(ctx_, configuration_id);
 }
 
@@ -553,14 +551,14 @@ engine_settings_service::count_settings_by_configuration_id(const std::string& c
 std::optional<domain::engine_settings>
 engine_settings_service::get_settings_at_version(const boost::uuids::uuid& id,
                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting engine settings at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting engine settings at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::engine_settings>
 engine_settings_service::get_settings(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting engine settings. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting engine settings. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -569,7 +567,7 @@ engine_settings_service::get_settings(const boost::uuids::uuid& id) {
 
 std::optional<domain::engine_settings>
 engine_settings_service::get_settings_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting engine settings by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting engine settings by name: " << name;
     messaging::engine_settings_key k;
     k.name = name;
     auto found = engine_settings_read_one(repo_, ctx_, k);
@@ -586,11 +584,11 @@ engine_settings_service::get_settings(const std::vector<std::string>& ids) {
 void engine_settings_service::save_settings(const domain::engine_settings& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Engine Settings id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving engine settings. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving engine settings. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved engine settings. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved engine settings. " << "id: " << v.id;
 }
 
 void engine_settings_service::save_settings(const std::vector<domain::engine_settings>& settings) {
@@ -598,7 +596,7 @@ void engine_settings_service::save_settings(const std::vector<domain::engine_set
         if (e.id.is_nil())
             throw std::invalid_argument("Engine Settings id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << settings.size() << " engine settings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << settings.size() << " engine settings";
     auto ts = settings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -607,9 +605,9 @@ void engine_settings_service::save_settings(const std::vector<domain::engine_set
 }
 
 void engine_settings_service::delete_settings(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing engine settings. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing engine settings. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed engine settings. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed engine settings. " << "id: " << id;
 }
 
 void engine_settings_service::delete_settings(const std::vector<std::string>& ids) {
@@ -618,7 +616,7 @@ void engine_settings_service::delete_settings(const std::vector<std::string>& id
 
 std::vector<domain::engine_settings>
 engine_settings_service::get_settings_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for engine settings. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for engine settings. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

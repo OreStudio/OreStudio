@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/netting_agreement.hpp"
 #include "ores.refdata.api/domain/netting_agreement_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/netting_agreement_protocol.hpp"
 #include "ores.refdata.core/repository/netting_agreement_entity.hpp"
 #include "ores.refdata.core/repository/netting_agreement_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -224,7 +222,7 @@ void netting_agreement_repository::write(const context& ctx,
 void netting_agreement_repository::write(const context& ctx,
                                          const domain::netting_agreement& v,
                                          const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing netting agreement. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing netting agreement. " << "id: " << v.id;
     const auto t =
         netting_agreement_apply_claim(v,
                                       claim,
@@ -239,7 +237,7 @@ void netting_agreement_repository::write(
     const context& ctx,
     const std::vector<domain::netting_agreement>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing netting agreements. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing netting agreements. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "netting_agreement_repository::write: one claim is needed for each row");
@@ -276,7 +274,7 @@ netting_agreement_repository::read_latest(const context& ctx) {
 
 std::vector<domain::netting_agreement>
 netting_agreement_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting agreement. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting agreement. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -294,8 +292,8 @@ netting_agreement_repository::read_latest(const context& ctx, const std::string&
 std::vector<domain::netting_agreement>
 netting_agreement_repository::read_latest_by_agreement_number(const context& ctx,
                                                               const std::string& agreement_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting agreement by agreement_number: "
-                               << agreement_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting agreement by agreement_number: "
+                              << agreement_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -340,8 +338,8 @@ netting_agreement_repository::read_latest_by_agreement_number(
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting agreements by agreement_number. Count: "
-                               << agreement_numbers.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting agreements by agreement_number. Count: "
+                              << agreement_numbers.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -364,8 +362,8 @@ netting_agreement_repository::read_latest_by_agreement_number(
 std::vector<domain::netting_agreement>
 netting_agreement_repository::read_any_by_agreement_number(const context& ctx,
                                                            const std::string& agreement_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any netting agreement by agreement_number: "
-                               << agreement_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading any netting agreement by agreement_number: "
+                              << agreement_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<netting_agreement_entity>> |
@@ -394,7 +392,7 @@ netting_agreement_repository::read_any_by_agreement_number(const context& ctx,
 
 std::vector<domain::netting_agreement>
 netting_agreement_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all netting agreement versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all netting agreement versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_agreement_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -410,8 +408,8 @@ netting_agreement_repository::read_all(const context& ctx, const std::string& id
 
 std::optional<domain::netting_agreement> netting_agreement_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading netting agreement at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading netting agreement at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<netting_agreement_entity>> |
@@ -439,8 +437,8 @@ std::vector<domain::netting_agreement> netting_agreement_repository::read_latest
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::netting_agreements_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting agreements. counterparty_id: "
-                               << counterparty_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting agreements. counterparty_id: "
+                              << counterparty_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -464,7 +462,7 @@ std::uint32_t netting_agreement_repository::get_total_netting_agreement_count_by
     const context& ctx,
     const std::string& counterparty_id,
     const std::optional<messaging::netting_agreements_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active netting agreements count. counterparty_id: " << counterparty_id;
     static constexpr auto max = db_timestamp::max();
 
@@ -485,7 +483,7 @@ std::uint32_t netting_agreement_repository::get_total_netting_agreement_count_by
 
 netting_agreement_repository::remove_status netting_agreement_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing netting agreement. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing netting agreement. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -524,8 +522,8 @@ std::vector<domain::netting_agreement> netting_agreement_repository::read_latest
     const ores::utility::domain::order& order,
     const std::optional<messaging::netting_agreements_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting agreements with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting agreements with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_agreement_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -547,7 +545,7 @@ std::uint32_t netting_agreement_repository::get_total_netting_agreement_count(
     const context& ctx,
     const std::optional<messaging::netting_agreements_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active netting agreement count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active netting agreement count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_agreement_entity>> |

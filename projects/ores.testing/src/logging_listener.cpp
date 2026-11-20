@@ -19,8 +19,8 @@
  */
 #include "ores.testing/logging_listener.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.logging/logging_options.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.telemetry.core/domain/resource.hpp"
 #include "ores.telemetry.core/log/lifecycle_manager.hpp"
@@ -201,14 +201,14 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
     current_test_context.logger.emplace(make_logger(component_name));
 
     auto& lg = current_test_context.logger.value();
-    BOOST_LOG_SEV(lg, info) << "Test case starting: " << testInfo.name;
+    ORES_LOG_SEV(lg, info) << "Test case starting: " << testInfo.name;
     if (!testInfo.tags.empty()) {
         std::ostringstream tags;
         tags << "  Tags: ";
         for (const auto& tag : testInfo.tags)
             tags << tag.original << " ";
 
-        BOOST_LOG_SEV(lg, debug) << tags.str();
+        ORES_LOG_SEV(lg, debug) << tags.str();
     }
 }
 
@@ -220,18 +220,18 @@ void logging_listener::testCaseEnded(Catch::TestCaseStats const& testCaseStats) 
 
     auto log_level = totals.assertions.allOk() ? info : error;
     auto& lg = current_test_context.logger.value();
-    BOOST_LOG_SEV(lg, log_level) << "Test case ended: " << testCaseStats.testInfo->name << " - "
-                                 << (totals.assertions.allOk() ? "PASSED" : "FAILED");
+    ORES_LOG_SEV(lg, log_level) << "Test case ended: " << testCaseStats.testInfo->name << " - "
+                                << (totals.assertions.allOk() ? "PASSED" : "FAILED");
 
-    BOOST_LOG_SEV(lg, info) << "  Assertions: " << totals.assertions.passed << " passed, "
-                            << totals.assertions.failed << " failed, " << totals.assertions.total()
-                            << " total";
+    ORES_LOG_SEV(lg, info) << "  Assertions: " << totals.assertions.passed << " passed, "
+                           << totals.assertions.failed << " failed, " << totals.assertions.total()
+                           << " total";
 
     if (testCaseStats.stdOut.size() > 0)
-        BOOST_LOG_SEV(lg, debug) << "  Standard output:\n" << testCaseStats.stdOut;
+        ORES_LOG_SEV(lg, debug) << "  Standard output:\n" << testCaseStats.stdOut;
 
     if (testCaseStats.stdErr.size() > 0)
-        BOOST_LOG_SEV(lg, debug) << "  Standard error:\n" << testCaseStats.stdErr;
+        ORES_LOG_SEV(lg, debug) << "  Standard error:\n" << testCaseStats.stdErr;
 
     current_test_context.logger.reset();
     current_test_context.lifecycle_mgr.reset();
@@ -245,16 +245,16 @@ void logging_listener::assertionEnded(Catch::AssertionStats const& assertionStat
     auto& lg = current_test_context.logger.value();
 
     if (result.isOk())
-        BOOST_LOG_SEV(lg, trace) << "Assertion passed: " << result.getExpression();
+        ORES_LOG_SEV(lg, trace) << "Assertion passed: " << result.getExpression();
     else {
-        BOOST_LOG_SEV(lg, error) << "Assertion failed: " << result.getExpression() << " at "
-                                 << result.getSourceInfo().file << ":"
-                                 << result.getSourceInfo().line;
+        ORES_LOG_SEV(lg, error) << "Assertion failed: " << result.getExpression() << " at "
+                                << result.getSourceInfo().file << ":"
+                                << result.getSourceInfo().line;
         if (result.hasMessage())
-            BOOST_LOG_SEV(lg, error) << "  Message: " << result.getMessage();
+            ORES_LOG_SEV(lg, error) << "  Message: " << result.getMessage();
 
         if (result.hasExpandedExpression())
-            BOOST_LOG_SEV(lg, error) << "  Expanded: " << result.getExpandedExpression();
+            ORES_LOG_SEV(lg, error) << "  Expanded: " << result.getExpandedExpression();
     }
 }
 
@@ -263,7 +263,7 @@ void logging_listener::sectionStarting(Catch::SectionInfo const& sectionInfo) {
         return;
 
     auto& lg = current_test_context.logger.value();
-    BOOST_LOG_SEV(lg, debug) << "Section starting: " << sectionInfo.name;
+    ORES_LOG_SEV(lg, debug) << "Section starting: " << sectionInfo.name;
 }
 
 void logging_listener::sectionEnded(Catch::SectionStats const& sectionStats) {
@@ -271,8 +271,8 @@ void logging_listener::sectionEnded(Catch::SectionStats const& sectionStats) {
         return;
 
     auto& lg = current_test_context.logger.value();
-    BOOST_LOG_SEV(lg, debug) << "Section ended: " << sectionStats.sectionInfo.name
-                             << " (assertions: " << sectionStats.assertions.total() << ")";
+    ORES_LOG_SEV(lg, debug) << "Section ended: " << sectionStats.sectionInfo.name
+                            << " (assertions: " << sectionStats.assertions.total() << ")";
 }
 
 }

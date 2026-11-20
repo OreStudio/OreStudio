@@ -24,11 +24,9 @@
  */
 #include "ores.refdata.core/repository/sub_periods_coupon_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/sub_periods_coupon_type.hpp"
 #include "ores.refdata.api/domain/sub_periods_coupon_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/sub_periods_coupon_type_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -38,7 +36,7 @@ using namespace ores::database::repository;
 
 domain::sub_periods_coupon_type
 sub_periods_coupon_type_mapper::map(const sub_periods_coupon_type_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::sub_periods_coupon_type r;
     r.version = v.version;
@@ -53,13 +51,13 @@ sub_periods_coupon_type_mapper::map(const sub_periods_coupon_type_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 sub_periods_coupon_type_entity
 sub_periods_coupon_type_mapper::map(const domain::sub_periods_coupon_type& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     sub_periods_coupon_type_entity r;
     r.code = v.code;
@@ -73,7 +71,7 @@ sub_periods_coupon_type_mapper::map(const domain::sub_periods_coupon_type& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

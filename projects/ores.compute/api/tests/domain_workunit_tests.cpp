@@ -20,7 +20,7 @@
 #include "ores.compute.api/domain/workunit.hpp"
 #include "ores.compute.api/domain/workunit_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/workunit_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -46,7 +46,7 @@ TEST_CASE("create_workunit_with_valid_fields", "[domain]") {
     sut.priority = 10;
     sut.target_redundancy = 2;
 
-    BOOST_LOG_SEV(lg, info) << "Workunit: " << sut;
+    ORES_LOG_SEV(lg, info) << "Workunit: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "scheduler");
@@ -70,7 +70,7 @@ TEST_CASE("create_high_priority_workunit", "[domain]") {
     sut.priority = 100;
     sut.target_redundancy = 3;
 
-    BOOST_LOG_SEV(lg, info) << "Workunit: " << sut;
+    ORES_LOG_SEV(lg, info) << "Workunit: " << sut;
 
     CHECK(sut.priority == 100);
     CHECK(sut.target_redundancy == 3);
@@ -93,7 +93,7 @@ TEST_CASE("create_workunit_with_specific_uuid", "[domain]") {
     sut.priority = 5;
     sut.target_redundancy = 1;
 
-    BOOST_LOG_SEV(lg, info) << "Workunit: " << sut;
+    ORES_LOG_SEV(lg, info) << "Workunit: " << sut;
 
     CHECK(sut.version == 2);
     CHECK(sut.priority == 5);
@@ -117,7 +117,7 @@ TEST_CASE("workunit_insertion_operator", "[domain]") {
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "Workunit JSON: " << json_output;
+    ORES_LOG_SEV(lg, info) << "Workunit JSON: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("serialization-test") != std::string::npos);
@@ -140,7 +140,7 @@ TEST_CASE("workunit_convert_single_to_table", "[domain]") {
     std::vector<workunit> workunits = {wu};
     auto table = convert_to_table(workunits);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
 }
@@ -165,7 +165,7 @@ TEST_CASE("workunit_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(workunits);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
 }
@@ -176,7 +176,7 @@ TEST_CASE("workunit_convert_empty_vector_to_table", "[domain]") {
     std::vector<workunit> workunits;
     auto table = convert_to_table(workunits);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     // The header row survives an empty result set.
     CHECK(!table.empty());
@@ -196,7 +196,7 @@ TEST_CASE("create_workunit_with_faker", "[domain]") {
     sut.priority = faker::number::integer(1, 100);
     sut.target_redundancy = faker::number::integer(1, 5);
 
-    BOOST_LOG_SEV(lg, info) << "Workunit: " << sut;
+    ORES_LOG_SEV(lg, info) << "Workunit: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(sut.version <= 10);

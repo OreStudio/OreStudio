@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/netting_set_identifier.hpp"
 #include "ores.refdata.api/messaging/netting_set_identifier_protocol.hpp"
 #include "ores.refdata.core/repository/netting_set_identifier_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -545,12 +543,12 @@ ores::utility::domain::result netting_set_identifier_service::prepare_change(
 std::vector<domain::netting_set_identifier>
 netting_set_identifier_service::list_netting_set_identifiers(std::uint32_t offset,
                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all netting set identifiers";
+    ORES_LOG_SEV(lg(), debug) << "Listing all netting set identifiers";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t netting_set_identifier_service::count_netting_set_identifiers() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total netting set identifiers count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total netting set identifiers count";
     return repo_.get_total_netting_set_identifier_count(ctx_);
 }
 
@@ -558,31 +556,31 @@ std::uint32_t netting_set_identifier_service::count_netting_set_identifiers() {
 std::vector<domain::netting_set_identifier>
 netting_set_identifier_service::list_netting_set_identifiers_by_netting_set_id(
     const std::string& netting_set_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing netting set identifiers by netting_set_id: "
-                               << netting_set_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing netting set identifiers by netting_set_id: "
+                              << netting_set_id;
     return repo_.read_latest_by_netting_set_id(ctx_, netting_set_id, offset, limit);
 }
 
 std::uint32_t netting_set_identifier_service::count_netting_set_identifiers_by_netting_set_id(
     const std::string& netting_set_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total netting set identifiers count by netting_set_id: "
-                               << netting_set_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total netting set identifiers count by netting_set_id: "
+                              << netting_set_id;
     return repo_.get_total_netting_set_identifier_count_by_netting_set_id(ctx_, netting_set_id);
 }
 
 std::vector<domain::netting_set_identifier>
 netting_set_identifier_service::list_netting_set_identifiers_by_netting_set_id(
     const boost::uuids::uuid& netting_set_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing netting set identifiers by netting_set_id: "
-                               << netting_set_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing netting set identifiers by netting_set_id: "
+                              << netting_set_id;
     return repo_.read_latest_by_netting_set_id(
         ctx_, boost::uuids::to_string(netting_set_id), offset, limit);
 }
 
 std::uint32_t netting_set_identifier_service::count_netting_set_identifiers_by_netting_set_id(
     const boost::uuids::uuid& netting_set_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total netting set identifiers count by netting_set_id: "
-                               << netting_set_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total netting set identifiers count by netting_set_id: "
+                              << netting_set_id;
     return repo_.get_total_netting_set_identifier_count_by_netting_set_id(
         ctx_, boost::uuids::to_string(netting_set_id));
 }
@@ -591,14 +589,14 @@ std::uint32_t netting_set_identifier_service::count_netting_set_identifiers_by_n
 std::optional<domain::netting_set_identifier>
 netting_set_identifier_service::get_netting_set_identifier_at_version(const boost::uuids::uuid& id,
                                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting netting set identifier at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting netting set identifier at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::netting_set_identifier>
 netting_set_identifier_service::get_netting_set_identifier(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting netting set identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting netting set identifier. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -608,7 +606,7 @@ netting_set_identifier_service::get_netting_set_identifier(const boost::uuids::u
 std::optional<domain::netting_set_identifier>
 netting_set_identifier_service::get_netting_set_identifier_by_id_value(
     const std::string& id_value) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting netting set identifier by id_value: " << id_value;
+    ORES_LOG_SEV(lg(), debug) << "Getting netting set identifier by id_value: " << id_value;
     messaging::netting_set_identifier_key k;
     k.id_value = id_value;
     auto found = netting_set_identifier_read_one(repo_, ctx_, k);
@@ -619,7 +617,7 @@ netting_set_identifier_service::get_netting_set_identifier_by_id_value(
 
 std::optional<domain::netting_set_identifier>
 netting_set_identifier_service::find_netting_set_identifier(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding netting set identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding netting set identifier. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -629,8 +627,8 @@ netting_set_identifier_service::find_netting_set_identifier(const boost::uuids::
 std::optional<domain::netting_set_identifier>
 netting_set_identifier_service::find_netting_set_identifier_by_code(
     const boost::uuids::uuid& netting_set_id, const std::string& id_scheme) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding netting set identifier by netting_set_id/id_scheme: "
-                               << netting_set_id << "/" << id_scheme;
+    ORES_LOG_SEV(lg(), debug) << "Finding netting set identifier by netting_set_id/id_scheme: "
+                              << netting_set_id << "/" << id_scheme;
     auto results =
         repo_.read_latest_by_code(ctx_, boost::uuids::to_string(netting_set_id), id_scheme);
     if (results.empty())
@@ -647,11 +645,11 @@ void netting_set_identifier_service::save_netting_set_identifier(
     const domain::netting_set_identifier& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Netting Set Identifier id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving netting set identifier. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving netting set identifier. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved netting set identifier. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved netting set identifier. " << "id: " << v.id;
 }
 
 void netting_set_identifier_service::save_netting_set_identifiers(
@@ -660,8 +658,8 @@ void netting_set_identifier_service::save_netting_set_identifiers(
         if (e.id.is_nil())
             throw std::invalid_argument("Netting Set Identifier id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << netting_set_identifiers.size()
-                               << " netting set identifiers";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << netting_set_identifiers.size()
+                              << " netting set identifiers";
     auto ts = netting_set_identifiers;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -670,15 +668,15 @@ void netting_set_identifier_service::save_netting_set_identifiers(
 }
 
 void netting_set_identifier_service::delete_netting_set_identifier(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing netting set identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing netting set identifier. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed netting set identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed netting set identifier. " << "id: " << id;
 }
 
 void netting_set_identifier_service::remove_netting_set_identifier(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing netting set identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing netting set identifier. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed netting set identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed netting set identifier. " << "id: " << id;
 }
 
 void netting_set_identifier_service::delete_netting_set_identifiers(
@@ -688,7 +686,7 @@ void netting_set_identifier_service::delete_netting_set_identifiers(
 
 std::vector<domain::netting_set_identifier>
 netting_set_identifier_service::get_netting_set_identifier_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for netting set identifier. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for netting set identifier. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -710,7 +708,7 @@ netting_set_identifier_service::get_netting_set_identifier_history(const std::st
 
 std::vector<domain::netting_set_identifier>
 netting_set_identifier_service::get_netting_set_identifier_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for netting set identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for netting set identifier. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

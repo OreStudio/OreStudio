@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/bond_issue.hpp"
 #include "ores.trading.api/domain/bond_issue_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/bond_issue_protocol.hpp"
 #include "ores.trading.core/repository/bond_issue_entity.hpp"
 #include "ores.trading.core/repository/bond_issue_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -209,7 +207,7 @@ void bond_issue_repository::write(const context& ctx, const std::vector<domain::
 void bond_issue_repository::write(const context& ctx,
                                   const domain::bond_issue& v,
                                   const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond issue. " << "issue_id: " << v.issue_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing bond issue. " << "issue_id: " << v.issue_id;
     const auto t =
         bond_issue_apply_claim(v,
                                claim,
@@ -223,7 +221,7 @@ void bond_issue_repository::write(const context& ctx,
 void bond_issue_repository::write(const context& ctx,
                                   const std::vector<domain::bond_issue>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond issues. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing bond issues. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "bond_issue_repository::write: one claim is needed for each row");
@@ -258,7 +256,7 @@ std::vector<domain::bond_issue> bond_issue_repository::read_latest(const context
 
 std::vector<domain::bond_issue> bond_issue_repository::read_latest(const context& ctx,
                                                                    const std::string& issue_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond issue. " << "issue_id: " << issue_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond issue. " << "issue_id: " << issue_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_entity>> |
@@ -276,7 +274,7 @@ std::vector<domain::bond_issue> bond_issue_repository::read_latest(const context
 
 std::vector<domain::bond_issue> bond_issue_repository::read_all(const context& ctx,
                                                                 const std::string& issue_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all bond issue versions. " << "issue_id: " << issue_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all bond issue versions. " << "issue_id: " << issue_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_entity>> |
                        query_builder::where("tenant_id"_c == tid && "issue_id"_c == issue_id) |
@@ -292,8 +290,8 @@ std::vector<domain::bond_issue> bond_issue_repository::read_all(const context& c
 
 std::optional<domain::bond_issue> bond_issue_repository::read_at_version(
     const context& ctx, const std::string& issue_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading bond issue at version. " << "issue_id: " << issue_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading bond issue at version. " << "issue_id: " << issue_id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_entity>> |
                        query_builder::where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
@@ -315,7 +313,7 @@ std::optional<domain::bond_issue> bond_issue_repository::read_at_version(
 
 bond_issue_repository::remove_status bond_issue_repository::remove(
     const context& ctx, const std::string& issue_id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond issue. " << "issue_id: " << issue_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond issue. " << "issue_id: " << issue_id;
     const auto current = read_latest(ctx, issue_id);
     if (current.empty())
         return remove_status::missing;
@@ -353,8 +351,8 @@ bond_issue_repository::read_latest(const context& ctx,
                                    const ores::utility::domain::order& order,
                                    const std::optional<messaging::bond_issues_filter>& filter,
                                    const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond issues with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond issues with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -375,7 +373,7 @@ std::uint32_t bond_issue_repository::get_total_issue_count(
     const context& ctx,
     const std::optional<messaging::bond_issues_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond issue count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active bond issue count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_entity>> |

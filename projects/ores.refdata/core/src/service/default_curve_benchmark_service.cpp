@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/default_curve_benchmark.hpp"
 #include "ores.refdata.api/messaging/default_curve_benchmark_protocol.hpp"
 #include "ores.refdata.core/repository/default_curve_benchmark_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -470,12 +468,12 @@ ores::utility::domain::result default_curve_benchmark_service::prepare_change(
 
 std::vector<domain::default_curve_benchmark>
 default_curve_benchmark_service::list_benchmarks(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all default curve benchmarks";
+    ORES_LOG_SEV(lg(), debug) << "Listing all default curve benchmarks";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t default_curve_benchmark_service::count_benchmarks() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total default curve benchmarks count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total default curve benchmarks count";
     return repo_.get_total_benchmark_count(ctx_);
 }
 
@@ -483,14 +481,14 @@ std::uint32_t default_curve_benchmark_service::count_benchmarks() {
 std::optional<domain::default_curve_benchmark>
 default_curve_benchmark_service::get_benchmark_at_version(const boost::uuids::uuid& id,
                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting default curve benchmark at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting default curve benchmark at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::default_curve_benchmark>
 default_curve_benchmark_service::get_benchmark(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting default curve benchmark. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting default curve benchmark. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -505,11 +503,11 @@ default_curve_benchmark_service::get_benchmarks(const std::vector<std::string>& 
 void default_curve_benchmark_service::save_benchmark(const domain::default_curve_benchmark& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Default Curve Benchmark id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving default curve benchmark. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving default curve benchmark. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved default curve benchmark. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved default curve benchmark. " << "id: " << v.id;
 }
 
 void default_curve_benchmark_service::save_benchmarks(
@@ -518,7 +516,7 @@ void default_curve_benchmark_service::save_benchmarks(
         if (e.id.is_nil())
             throw std::invalid_argument("Default Curve Benchmark id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << benchmarks.size() << " default curve benchmarks";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << benchmarks.size() << " default curve benchmarks";
     auto ts = benchmarks;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -527,9 +525,9 @@ void default_curve_benchmark_service::save_benchmarks(
 }
 
 void default_curve_benchmark_service::delete_benchmark(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing default curve benchmark. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing default curve benchmark. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed default curve benchmark. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed default curve benchmark. " << "id: " << id;
 }
 
 void default_curve_benchmark_service::delete_benchmarks(const std::vector<std::string>& ids) {
@@ -538,7 +536,7 @@ void default_curve_benchmark_service::delete_benchmarks(const std::vector<std::s
 
 std::vector<domain::default_curve_benchmark>
 default_curve_benchmark_service::get_benchmark_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for default curve benchmark. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for default curve benchmark. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

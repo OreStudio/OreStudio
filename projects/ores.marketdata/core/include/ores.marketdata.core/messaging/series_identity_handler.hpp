@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_SERIES_IDENTITY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.marketdata.core/service/series_identity_lister.hpp"
@@ -72,7 +72,7 @@ public:
         , verifier_(verifier) {}
 
     void resolve(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_identity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_identity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -86,8 +86,7 @@ public:
 
         auto req = decode<resolve_series_identity_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_identity_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(series_identity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -99,22 +98,22 @@ public:
         } catch (const std::invalid_argument& e) {
             // The identity the caller stated is not one the codec can spell, so
             // it is the request that is wrong rather than the read.
-            BOOST_LOG_SEV(series_identity_handler_lg(), warn)
+            ORES_LOG_SEV(series_identity_handler_lg(), warn)
                 << msg.subject << " rejected: " << e.what();
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(series_identity_handler_lg(), error)
+            ORES_LOG_SEV(series_identity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
         }
-        BOOST_LOG_SEV(series_identity_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(series_identity_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_identity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_identity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -128,8 +127,7 @@ public:
 
         auto req = decode<list_series_identities_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_identity_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(series_identity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -139,17 +137,17 @@ public:
             resp = service::series_identity_lister::list(req_ctx, *req);
         } catch (const std::invalid_argument& e) {
             // The party the caller named is not a UUID, so the request is wrong.
-            BOOST_LOG_SEV(series_identity_handler_lg(), warn)
+            ORES_LOG_SEV(series_identity_handler_lg(), warn)
                 << msg.subject << " rejected: " << e.what();
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(series_identity_handler_lg(), error)
+            ORES_LOG_SEV(series_identity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
         }
-        BOOST_LOG_SEV(series_identity_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(series_identity_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 

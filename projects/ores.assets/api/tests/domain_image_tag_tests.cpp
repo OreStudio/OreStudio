@@ -19,7 +19,7 @@
  */
 #include "ores.assets.api/domain/image_tag.hpp"
 #include "ores.assets.api/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -34,7 +34,7 @@ TEST_CASE("default_constructed_image_tag_has_empty_fields", "[domain][image_tag]
     auto lg(make_logger(test_suite));
 
     const image_tag sut;
-    BOOST_LOG_SEV(lg, info) << "Default image_tag assigned_by: " << sut.assigned_by;
+    ORES_LOG_SEV(lg, info) << "Default image_tag assigned_by: " << sut.assigned_by;
 
     CHECK(sut.version == 0);
     CHECK(sut.tenant_id.empty());
@@ -56,7 +56,7 @@ TEST_CASE("image_tag_assigned_by_can_be_set", "[domain][image_tag]") {
     sut.tag_id = tag_id;
     sut.assigned_by = "admin";
     sut.assigned_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "image_tag assigned_by: " << sut.assigned_by;
+    ORES_LOG_SEV(lg, info) << "image_tag assigned_by: " << sut.assigned_by;
 
     CHECK(sut.image_id == image_id);
     CHECK(sut.tag_id == tag_id);
@@ -80,7 +80,7 @@ TEST_CASE("image_tag_json_output_contains_keys_and_actor", "[domain][image_tag]"
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
+    ORES_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("\"assigned_by\":\"admin\"") != std::string::npos);

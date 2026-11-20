@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/fx_vol_contributor.hpp"
 #include "ores.synthetic.api/messaging/fx_vol_contributor_protocol.hpp"
 #include "ores.synthetic.core/repository/fx_vol_contributor_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -466,12 +464,12 @@ fx_vol_contributor_service::prepare_change(const messaging::fx_vol_contributor_c
 
 std::vector<domain::fx_vol_contributor>
 fx_vol_contributor_service::list_fx_vol_contributors(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all FX volatility contributors";
+    ORES_LOG_SEV(lg(), debug) << "Listing all FX volatility contributors";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t fx_vol_contributor_service::count_fx_vol_contributors() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total FX volatility contributors count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total FX volatility contributors count";
     return repo_.get_total_fx_vol_contributor_count(ctx_);
 }
 
@@ -479,14 +477,14 @@ std::uint32_t fx_vol_contributor_service::count_fx_vol_contributors() {
 std::optional<domain::fx_vol_contributor>
 fx_vol_contributor_service::get_fx_vol_contributor_at_version(const boost::uuids::uuid& id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX volatility contributor at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX volatility contributor at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::fx_vol_contributor>
 fx_vol_contributor_service::get_fx_vol_contributor(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX volatility contributor. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX volatility contributor. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -501,11 +499,11 @@ fx_vol_contributor_service::get_fx_vol_contributors(const std::vector<std::strin
 void fx_vol_contributor_service::save_fx_vol_contributor(const domain::fx_vol_contributor& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("FX Volatility Contributor id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving FX volatility contributor. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving FX volatility contributor. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved FX volatility contributor. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved FX volatility contributor. " << "id: " << v.id;
 }
 
 void fx_vol_contributor_service::save_fx_vol_contributors(
@@ -514,8 +512,8 @@ void fx_vol_contributor_service::save_fx_vol_contributors(
         if (e.id.is_nil())
             throw std::invalid_argument("FX Volatility Contributor id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_vol_contributors.size()
-                               << " FX volatility contributors";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << fx_vol_contributors.size()
+                              << " FX volatility contributors";
     auto ts = fx_vol_contributors;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -524,9 +522,9 @@ void fx_vol_contributor_service::save_fx_vol_contributors(
 }
 
 void fx_vol_contributor_service::delete_fx_vol_contributor(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX volatility contributor. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing FX volatility contributor. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed FX volatility contributor. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed FX volatility contributor. " << "id: " << id;
 }
 
 void fx_vol_contributor_service::delete_fx_vol_contributors(const std::vector<std::string>& ids) {
@@ -535,7 +533,7 @@ void fx_vol_contributor_service::delete_fx_vol_contributors(const std::vector<st
 
 std::vector<domain::fx_vol_contributor>
 fx_vol_contributor_service::get_fx_vol_contributor_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for FX volatility contributor. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for FX volatility contributor. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

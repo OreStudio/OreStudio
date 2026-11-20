@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/delivery_count.hpp"
 #include "ores.marketdata.api/messaging/delivery_count_protocol.hpp"
 #include "ores.marketdata.core/repository/delivery_count_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -506,12 +504,12 @@ delivery_count_service::prepare_change(const messaging::delivery_count_change& c
 
 std::vector<domain::delivery_count>
 delivery_count_service::list_delivery_counts(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all delivery counts";
+    ORES_LOG_SEV(lg(), debug) << "Listing all delivery counts";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t delivery_count_service::count_delivery_counts() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total delivery counts count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total delivery counts count";
     return repo_.get_total_delivery_count_count(ctx_);
 }
 
@@ -519,14 +517,14 @@ std::uint32_t delivery_count_service::count_delivery_counts() {
 std::optional<domain::delivery_count>
 delivery_count_service::get_delivery_count_at_version(const boost::uuids::uuid& id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting delivery count at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting delivery count at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::delivery_count>
 delivery_count_service::get_delivery_count(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting delivery count. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting delivery count. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -535,7 +533,7 @@ delivery_count_service::get_delivery_count(const boost::uuids::uuid& id) {
 
 std::optional<domain::delivery_count>
 delivery_count_service::get_delivery_count_by_oresmd_uri(const std::string& oresmd_uri) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting delivery count by oresmd_uri: " << oresmd_uri;
+    ORES_LOG_SEV(lg(), debug) << "Getting delivery count by oresmd_uri: " << oresmd_uri;
     messaging::delivery_count_key k;
     k.oresmd_uri = oresmd_uri;
     auto found = delivery_count_read_one(repo_, ctx_, k);
@@ -552,11 +550,11 @@ delivery_count_service::get_delivery_counts(const std::vector<std::string>& ids)
 void delivery_count_service::save_delivery_count(const domain::delivery_count& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Delivery Count id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving delivery count. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving delivery count. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved delivery count. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved delivery count. " << "id: " << v.id;
 }
 
 void delivery_count_service::save_delivery_counts(
@@ -565,7 +563,7 @@ void delivery_count_service::save_delivery_counts(
         if (e.id.is_nil())
             throw std::invalid_argument("Delivery Count id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << delivery_counts.size() << " delivery counts";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << delivery_counts.size() << " delivery counts";
     auto ts = delivery_counts;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -574,9 +572,9 @@ void delivery_count_service::save_delivery_counts(
 }
 
 void delivery_count_service::delete_delivery_count(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing delivery count. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing delivery count. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed delivery count. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed delivery count. " << "id: " << id;
 }
 
 void delivery_count_service::delete_delivery_counts(const std::vector<std::string>& ids) {
@@ -585,7 +583,7 @@ void delivery_count_service::delete_delivery_counts(const std::vector<std::strin
 
 std::vector<domain::delivery_count>
 delivery_count_service::get_delivery_count_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for delivery count. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for delivery count. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

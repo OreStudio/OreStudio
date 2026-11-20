@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/fx_spot_fixing_item.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_fixing_item_protocol.hpp"
 #include "ores.synthetic.core/repository/fx_spot_fixing_item_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -470,12 +468,12 @@ fx_spot_fixing_item_service::prepare_change(const messaging::fx_spot_fixing_item
 
 std::vector<domain::fx_spot_fixing_item>
 fx_spot_fixing_item_service::list_fx_spot_fixing_items(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all FX spot fixing items";
+    ORES_LOG_SEV(lg(), debug) << "Listing all FX spot fixing items";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t fx_spot_fixing_item_service::count_fx_spot_fixing_items() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total FX spot fixing items count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total FX spot fixing items count";
     return repo_.get_total_fx_spot_fixing_item_count(ctx_);
 }
 
@@ -483,14 +481,14 @@ std::uint32_t fx_spot_fixing_item_service::count_fx_spot_fixing_items() {
 std::optional<domain::fx_spot_fixing_item>
 fx_spot_fixing_item_service::get_fx_spot_fixing_item_at_version(const boost::uuids::uuid& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX spot fixing item at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX spot fixing item at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::fx_spot_fixing_item>
 fx_spot_fixing_item_service::get_fx_spot_fixing_item(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX spot fixing item. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX spot fixing item. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -505,11 +503,11 @@ fx_spot_fixing_item_service::get_fx_spot_fixing_items(const std::vector<std::str
 void fx_spot_fixing_item_service::save_fx_spot_fixing_item(const domain::fx_spot_fixing_item& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("FX Spot Fixing Item id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving FX spot fixing item. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving FX spot fixing item. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved FX spot fixing item. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved FX spot fixing item. " << "id: " << v.id;
 }
 
 void fx_spot_fixing_item_service::save_fx_spot_fixing_items(
@@ -518,8 +516,8 @@ void fx_spot_fixing_item_service::save_fx_spot_fixing_items(
         if (e.id.is_nil())
             throw std::invalid_argument("FX Spot Fixing Item id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_spot_fixing_items.size()
-                               << " FX spot fixing items";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << fx_spot_fixing_items.size()
+                              << " FX spot fixing items";
     auto ts = fx_spot_fixing_items;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -528,9 +526,9 @@ void fx_spot_fixing_item_service::save_fx_spot_fixing_items(
 }
 
 void fx_spot_fixing_item_service::delete_fx_spot_fixing_item(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX spot fixing item. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing FX spot fixing item. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed FX spot fixing item. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed FX spot fixing item. " << "id: " << id;
 }
 
 void fx_spot_fixing_item_service::delete_fx_spot_fixing_items(const std::vector<std::string>& ids) {
@@ -539,7 +537,7 @@ void fx_spot_fixing_item_service::delete_fx_spot_fixing_items(const std::vector<
 
 std::vector<domain::fx_spot_fixing_item>
 fx_spot_fixing_item_service::get_fx_spot_fixing_item_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for FX spot fixing item. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for FX spot fixing item. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

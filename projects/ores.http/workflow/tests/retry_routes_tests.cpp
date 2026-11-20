@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -51,7 +51,7 @@ bool retry_holds(const std::string& body, const std::string& part) {
 
 TEST_CASE("a_retry_is_named_by_the_run_it_resumes", "[workflow_retry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier a retry names";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier a retry names";
 
     const auto refused = answer_at<workflow_routes>(
         http_method::post, "/api/workflow/not-a-run/retry", http_request{}, retry_pattern);
@@ -61,7 +61,7 @@ TEST_CASE("a_retry_is_named_by_the_run_it_resumes", "[workflow_retry]") {
 
 TEST_CASE("a_retry_with_no_service_behind_it_reaches_the_service", "[workflow_retry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a retry with no body and no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a retry with no body and no service behind it";
 
     CHECK(answer_at<workflow_routes>(http_method::post, a_run, http_request{}, retry_pattern)
               .status == http_status::bad_gateway);
@@ -80,7 +80,7 @@ TEST_CASE("a_retry_with_no_service_behind_it_reaches_the_service", "[workflow_re
 
 TEST_CASE("a_retry_names_a_step_and_nothing_else", "[workflow_retry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the body a retry takes";
+    ORES_LOG_SEV(lg, info) << "Testing the body a retry takes";
 
     const std::vector<std::string> bodies = {R"({"step":"load"})",
                                              R"({"stepName":"load","force":true})"};
@@ -96,7 +96,7 @@ TEST_CASE("a_retry_names_a_step_and_nothing_else", "[workflow_retry]") {
 
 TEST_CASE("a_retry_refuses_a_parameter_it_does_not_take", "[workflow_retry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter a retry does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter a retry does not name";
 
     http_request req;
     req.query_params["from"] = "the beginning";

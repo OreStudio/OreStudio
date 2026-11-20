@@ -28,7 +28,7 @@
 #include "ores.dq.api/domain/artefact_type.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/artefact_type_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::dq::repository {
 

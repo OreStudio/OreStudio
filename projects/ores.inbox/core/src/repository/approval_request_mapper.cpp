@@ -27,10 +27,8 @@
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.api/domain/approval_request_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/approval_request_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -44,7 +42,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::approval_request approval_request_mapper::map(const approval_request_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::approval_request r;
     r.version = v.version;
@@ -63,12 +61,12 @@ domain::approval_request approval_request_mapper::map(const approval_request_ent
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 approval_request_entity approval_request_mapper::map(const domain::approval_request& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     approval_request_entity r;
     r.id = v.id;
@@ -86,7 +84,7 @@ approval_request_entity approval_request_mapper::map(const domain::approval_requ
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

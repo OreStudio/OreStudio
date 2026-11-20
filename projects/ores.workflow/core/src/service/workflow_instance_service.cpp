@@ -26,7 +26,6 @@
 #include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.api/messaging/workflow_instance_protocol.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -468,12 +466,12 @@ workflow_instance_service::prepare_change(const messaging::workflow_instance_cha
 
 std::vector<domain::workflow_instance>
 workflow_instance_service::list_instances(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all workflow instances";
+    ORES_LOG_SEV(lg(), debug) << "Listing all workflow instances";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t workflow_instance_service::count_instances() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total workflow instances count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total workflow instances count";
     return repo_.get_total_instance_count(ctx_);
 }
 
@@ -481,14 +479,14 @@ std::uint32_t workflow_instance_service::count_instances() {
 std::optional<domain::workflow_instance>
 workflow_instance_service::get_instance_at_version(const boost::uuids::uuid& id,
                                                    std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting workflow instance at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting workflow instance at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::workflow_instance>
 workflow_instance_service::get_instance(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting workflow instance. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting workflow instance. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -503,11 +501,11 @@ workflow_instance_service::get_instances(const std::vector<std::string>& ids) {
 void workflow_instance_service::save_instance(const domain::workflow_instance& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Workflow Instance id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving workflow instance. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving workflow instance. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved workflow instance. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved workflow instance. " << "id: " << v.id;
 }
 
 void workflow_instance_service::save_instances(
@@ -516,7 +514,7 @@ void workflow_instance_service::save_instances(
         if (e.id.is_nil())
             throw std::invalid_argument("Workflow Instance id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << instances.size() << " workflow instances";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << instances.size() << " workflow instances";
     auto ts = instances;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -525,9 +523,9 @@ void workflow_instance_service::save_instances(
 }
 
 void workflow_instance_service::delete_instance(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing workflow instance. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing workflow instance. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed workflow instance. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed workflow instance. " << "id: " << id;
 }
 
 void workflow_instance_service::delete_instances(const std::vector<std::string>& ids) {
@@ -536,7 +534,7 @@ void workflow_instance_service::delete_instances(const std::vector<std::string>&
 
 std::vector<domain::workflow_instance>
 workflow_instance_service::get_instance_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for workflow instance. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for workflow instance. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

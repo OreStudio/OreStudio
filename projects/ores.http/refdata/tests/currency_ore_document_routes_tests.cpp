@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/refdata/currency_ore_document_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -54,7 +54,7 @@ std::string import_of(const std::string& choices, const std::string& reason) {
 
 TEST_CASE("currency_ore_import_refuses_a_malformed_request", "[currency_ore_document]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the ORE currency preview and import refusals";
+    ORES_LOG_SEV(lg, info) << "Testing the ORE currency preview and import refusals";
 
     CHECK(posted(preview_path, R"({"content":""})").status == http_status::bad_request);
     CHECK(posted(preview_path, "{}").status == http_status::bad_request);
@@ -78,7 +78,7 @@ TEST_CASE("currency_ore_import_refuses_a_malformed_request", "[currency_ore_docu
 
 TEST_CASE("currency_ore_document_forwards_a_well_formed_request", "[currency_ore_document]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the ORE currency routes reach the service";
+    ORES_LOG_SEV(lg, info) << "Testing that the ORE currency routes reach the service";
 
     // The client is not connected, so an accepted request fails at the forward step.
     http_request none;

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/domain/party_scope.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.platform/filesystem/file.hpp"
@@ -60,7 +60,7 @@ std::set<std::string> ids_of(const std::vector<ores::refdata::domain::deposit_co
 
 TEST_CASE("two parties each hold conventions with the same ids", "[refdata][conventions][party]") {
     auto lg(ores::logging::make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "two parties each hold conventions with the same ids";
+    ORES_LOG_SEV(lg, info) << "two parties each hold conventions with the same ids";
     ores::testing::scoped_database_helper h;
     auto parties = ores::testing::make_two_parties(h);
 

@@ -24,12 +24,10 @@
  */
 #include "ores.trading.core/repository/scripted_parameter_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/scripted_parameter.hpp"
 #include "ores.trading.api/domain/scripted_parameter_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/scripted_parameter_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <string>
@@ -41,7 +39,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::scripted_parameter scripted_parameter_mapper::map(const scripted_parameter_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::scripted_parameter r;
     r.version = v.version;
@@ -68,12 +66,12 @@ domain::scripted_parameter scripted_parameter_mapper::map(const scripted_paramet
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 scripted_parameter_entity scripted_parameter_mapper::map(const domain::scripted_parameter& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     scripted_parameter_entity r;
     r.trade_id = v.trade_id;
@@ -99,7 +97,7 @@ scripted_parameter_entity scripted_parameter_mapper::map(const domain::scripted_
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

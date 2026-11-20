@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/amortization_type.hpp"
 #include "ores.trading.api/messaging/amortization_type_protocol.hpp"
 #include "ores.trading.core/repository/amortization_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -449,12 +447,12 @@ amortization_type_service::prepare_change(const messaging::amortization_type_cha
 
 std::vector<domain::amortization_type>
 amortization_type_service::list_amortization_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all amortization types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all amortization types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t amortization_type_service::count_amortization_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total amortization types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total amortization types count";
     return repo_.get_total_amortization_type_count(ctx_);
 }
 
@@ -462,14 +460,14 @@ std::uint32_t amortization_type_service::count_amortization_types() {
 std::optional<domain::amortization_type>
 amortization_type_service::get_amortization_type_at_version(const std::string& code,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting amortization type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting amortization type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::amortization_type>
 amortization_type_service::get_amortization_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting amortization type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting amortization type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -484,11 +482,11 @@ amortization_type_service::get_amortization_types(const std::vector<std::string>
 void amortization_type_service::save_amortization_type(const domain::amortization_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Amortization Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving amortization type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving amortization type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved amortization type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved amortization type. " << "code: " << v.code;
 }
 
 void amortization_type_service::save_amortization_types(
@@ -497,7 +495,7 @@ void amortization_type_service::save_amortization_types(
         if (e.code.empty())
             throw std::invalid_argument("Amortization Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << amortization_types.size() << " amortization types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << amortization_types.size() << " amortization types";
     auto ts = amortization_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -506,9 +504,9 @@ void amortization_type_service::save_amortization_types(
 }
 
 void amortization_type_service::delete_amortization_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing amortization type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing amortization type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed amortization type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed amortization type. " << "code: " << code;
 }
 
 void amortization_type_service::delete_amortization_types(const std::vector<std::string>& codes) {
@@ -517,7 +515,7 @@ void amortization_type_service::delete_amortization_types(const std::vector<std:
 
 std::vector<domain::amortization_type>
 amortization_type_service::get_amortization_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for amortization type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for amortization type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

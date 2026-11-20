@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/domain/country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.core/repository/country_entity.hpp"
 #include "ores.refdata.core/repository/country_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -225,7 +223,7 @@ void country_repository::write(const context& ctx, const std::vector<domain::cou
 void country_repository::write(const context& ctx,
                                const domain::country& v,
                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing country. " << "alpha2_code: " << v.alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing country. " << "alpha2_code: " << v.alpha2_code;
     const auto t =
         country_apply_claim(v,
                             claim,
@@ -239,7 +237,7 @@ void country_repository::write(const context& ctx,
 void country_repository::write(const context& ctx,
                                const std::vector<domain::country>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing countries. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing countries. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("country_repository::write: one claim is needed for each row");
     std::vector<domain::country> to_read;
@@ -275,7 +273,7 @@ std::vector<domain::country> country_repository::read_latest(const context& ctx)
 
 std::vector<domain::country> country_repository::read_latest(const context& ctx,
                                                              const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest country. " << "alpha2_code: " << alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest country. " << "alpha2_code: " << alpha2_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -294,8 +292,7 @@ std::vector<domain::country> country_repository::read_latest(const context& ctx,
 
 std::vector<domain::country> country_repository::read_all(const context& ctx,
                                                           const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all country versions. "
-                               << "alpha2_code: " << alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all country versions. " << "alpha2_code: " << alpha2_code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<country_entity>> |
@@ -314,8 +311,8 @@ std::vector<domain::country> country_repository::read_all(const context& ctx,
 std::optional<domain::country> country_repository::read_at_version(const context& ctx,
                                                                    const std::string& alpha2_code,
                                                                    std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading country at version. " << "alpha2_code: " << alpha2_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading country at version. " << "alpha2_code: " << alpha2_code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -339,7 +336,7 @@ std::optional<domain::country> country_repository::read_at_version(const context
 country_repository::remove_status country_repository::remove(const context& ctx,
                                                              const std::string& alpha2_code,
                                                              std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing country. " << "alpha2_code: " << alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing country. " << "alpha2_code: " << alpha2_code;
     const auto current = read_latest(ctx, alpha2_code);
     if (current.empty())
         return remove_status::missing;
@@ -378,8 +375,8 @@ country_repository::read_latest(const context& ctx,
                                 const ores::utility::domain::order& order,
                                 const std::optional<messaging::countries_filter>& filter,
                                 const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest countries with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest countries with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<country_entity>> |
@@ -400,7 +397,7 @@ std::uint32_t country_repository::get_total_country_count(
     const context& ctx,
     const std::optional<messaging::countries_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active country count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active country count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -471,7 +468,7 @@ void country_repository::remove(const context& ctx, const std::vector<std::strin
 
 
 std::vector<domain::country> country_repository::read_all(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all country versions.";
+    ORES_LOG_SEV(lg(), debug) << "Reading all country versions.";
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<country_entity>> |
                        query_builder::where("tenant_id"_c == tid) |

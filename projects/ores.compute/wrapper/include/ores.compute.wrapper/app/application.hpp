@@ -21,7 +21,7 @@
 #define ORES_COMPUTE_WRAPPER_APP_APPLICATION_HPP
 
 #include "ores.compute.wrapper/config/options.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/asio/awaitable.hpp>
 
 namespace ores::compute::wrapper::app {

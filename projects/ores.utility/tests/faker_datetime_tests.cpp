@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/faker/datetime.hpp"
 #include "test_suite.hpp"
@@ -33,7 +33,7 @@ TEST_CASE("make_timepoint_places_the_parts_in_utc", "[faker]") {
 
     const auto tp = datetime::make_timepoint(2024, 3, 15, 13, 45, 30);
 
-    BOOST_LOG_SEV(lg, info) << "Time point: " << ores::platform::time::datetime::to_iso8601_utc(tp);
+    ORES_LOG_SEV(lg, info) << "Time point: " << ores::platform::time::datetime::to_iso8601_utc(tp);
 
     CHECK(ores::platform::time::datetime::to_iso8601_utc(tp) == "2024-03-15 13:45:30.000000Z");
 }
@@ -69,7 +69,7 @@ TEST_CASE("past_string_is_a_database_timestamp_between_1970_and_2038", "[faker]"
     for (int i = 0; i < 20; ++i) {
         const auto s = datetime::past_string();
 
-        BOOST_LOG_SEV(lg, info) << "Timestamp: " << s;
+        ORES_LOG_SEV(lg, info) << "Timestamp: " << s;
 
         CHECK(std::regex_match(s, shape));
         CHECK(s.substr(0, 4) >= "1970");

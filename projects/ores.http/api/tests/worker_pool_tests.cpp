@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.api/net/worker_pool.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
@@ -59,7 +59,7 @@ auto run_on_pool(boost::asio::io_context& io, worker_pool& pool, Invoke invoke) 
 
 TEST_CASE("worker_pool_runs_the_call_off_the_calling_thread", "[worker_pool]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a call runs on a worker thread";
+    ORES_LOG_SEV(lg, info) << "Testing that a call runs on a worker thread";
 
     worker_pool pool(2, 16);
     boost::asio::io_context io;
@@ -79,7 +79,7 @@ TEST_CASE("worker_pool_runs_the_call_off_the_calling_thread", "[worker_pool]") {
 
 TEST_CASE("worker_pool_serves_a_second_call_while_the_first_blocks", "[worker_pool]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that one blocked call does not starve another";
+    ORES_LOG_SEV(lg, info) << "Testing that one blocked call does not starve another";
 
     worker_pool pool(2, 16);
     boost::asio::io_context io;
@@ -99,7 +99,7 @@ TEST_CASE("worker_pool_serves_a_second_call_while_the_first_blocks", "[worker_po
 
 TEST_CASE("worker_pool_reports_saturation_at_its_cap", "[worker_pool]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the pool reports its in-flight cap";
+    ORES_LOG_SEV(lg, info) << "Testing that the pool reports its in-flight cap";
 
     worker_pool pool(1, 1);
     REQUIRE_FALSE(pool.saturated());

@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/trading/trading_view_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -45,7 +45,7 @@ bool has_header(const ores::http::domain::http_response& answer, const std::stri
 
 TEST_CASE("trading_views_keep_the_book_tree_for_a_minute", "[trading_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the book tree's cache policy";
+    ORES_LOG_SEV(lg, info) << "Testing the book tree's cache policy";
 
     http_request req;
     const auto first = trading_view_routes::tree_answer(req, tree_body);
@@ -74,7 +74,7 @@ TEST_CASE("trading_views_keep_the_book_tree_for_a_minute", "[trading_view]") {
 
 TEST_CASE("trading_views_keep_the_blotter_for_half_a_minute", "[trading_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the blotter's cache policy";
+    ORES_LOG_SEV(lg, info) << "Testing the blotter's cache policy";
 
     const std::string blotter_body = R"({"tree":[],"rows":[],"total":0})";
     http_request req;
@@ -92,7 +92,7 @@ TEST_CASE("trading_views_keep_the_blotter_for_half_a_minute", "[trading_view]") 
 
 TEST_CASE("trading_views_refuse_a_page_the_query_malforms", "[trading_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the blotter's query checks";
+    ORES_LOG_SEV(lg, info) << "Testing the blotter's query checks";
 
     const auto status_of = [](const std::string& name, const std::string& value) {
         http_request req;
@@ -112,7 +112,7 @@ TEST_CASE("trading_views_refuse_a_page_the_query_malforms", "[trading_view]") {
 
 TEST_CASE("trading_views_refuse_a_view_without_a_service", "[trading_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the book tree's refusal when the services do not answer";
+    ORES_LOG_SEV(lg, info) << "Testing the book tree's refusal when the services do not answer";
 
     CHECK(answer_at<trading_view_routes>(
               http_method::get, "/api/books/tree", http_request{}, "/api/books/tree")

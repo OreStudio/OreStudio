@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/business_process.hpp"
 #include "ores.refdata.api/messaging/business_process_protocol.hpp"
 #include "ores.refdata.core/repository/business_process_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -455,29 +453,29 @@ business_process_service::prepare_change(const messaging::business_process_chang
 
 std::vector<domain::business_process>
 business_process_service::list_processes(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all business processes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all business processes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t business_process_service::count_processes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total business processes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total business processes count";
     return repo_.get_total_process_count(ctx_);
 }
 
 
 std::optional<domain::business_process> business_process_service::get_process_at_version(
     const std::string& code, const std::string& coding_scheme_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business process at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting business process at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::business_process>
 business_process_service::get_process(const std::string& code,
                                       const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business process. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting business process. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -495,13 +493,13 @@ void business_process_service::save_process(const domain::business_process& v) {
         throw std::invalid_argument("Business Process code cannot be empty.");
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument("Business Process coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving business process. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving business process. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved business process. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved business process. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void business_process_service::save_processes(
@@ -512,7 +510,7 @@ void business_process_service::save_processes(
         if (e.coding_scheme_code.empty())
             throw std::invalid_argument("Business Process coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << processes.size() << " business processes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << processes.size() << " business processes";
     auto ts = processes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -522,11 +520,11 @@ void business_process_service::save_processes(
 
 void business_process_service::delete_process(const std::string& code,
                                               const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing business process. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed business process. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing business process. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed business process. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void business_process_service::delete_processes(
@@ -537,8 +535,8 @@ void business_process_service::delete_processes(
 std::vector<domain::business_process>
 business_process_service::get_process_history(const std::string& code,
                                               const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for business process. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for business process. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

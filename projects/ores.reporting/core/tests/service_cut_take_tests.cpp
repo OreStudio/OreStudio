@@ -21,7 +21,7 @@
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/generators/business_centre_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"

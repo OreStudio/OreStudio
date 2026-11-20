@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/regulatory_corporate_sector.hpp"
 #include "ores.refdata.api/messaging/regulatory_corporate_sector_protocol.hpp"
 #include "ores.refdata.core/repository/regulatory_corporate_sector_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -470,12 +468,12 @@ ores::utility::domain::result regulatory_corporate_sector_service::prepare_chang
 
 std::vector<domain::regulatory_corporate_sector>
 regulatory_corporate_sector_service::list_sectors(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all regulatory corporate sectors";
+    ORES_LOG_SEV(lg(), debug) << "Listing all regulatory corporate sectors";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t regulatory_corporate_sector_service::count_sectors() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total regulatory corporate sectors count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total regulatory corporate sectors count";
     return repo_.get_total_sector_count(ctx_);
 }
 
@@ -484,17 +482,17 @@ std::optional<domain::regulatory_corporate_sector>
 regulatory_corporate_sector_service::get_sector_at_version(const std::string& code,
                                                            const std::string& coding_scheme_code,
                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting regulatory corporate sector at version. "
-                               << "code: " << code << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting regulatory corporate sector at version. "
+                              << "code: " << code << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::regulatory_corporate_sector>
 regulatory_corporate_sector_service::get_sector(const std::string& code,
                                                 const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting regulatory corporate sector. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting regulatory corporate sector. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -513,13 +511,13 @@ void regulatory_corporate_sector_service::save_sector(
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument(
             "Regulatory Corporate Sector coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving regulatory corporate sector. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving regulatory corporate sector. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved regulatory corporate sector. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved regulatory corporate sector. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void regulatory_corporate_sector_service::save_sectors(
@@ -531,7 +529,7 @@ void regulatory_corporate_sector_service::save_sectors(
             throw std::invalid_argument(
                 "Regulatory Corporate Sector coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << sectors.size() << " regulatory corporate sectors";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << sectors.size() << " regulatory corporate sectors";
     auto ts = sectors;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -541,11 +539,11 @@ void regulatory_corporate_sector_service::save_sectors(
 
 void regulatory_corporate_sector_service::delete_sector(const std::string& code,
                                                         const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing regulatory corporate sector. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed regulatory corporate sector. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing regulatory corporate sector. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed regulatory corporate sector. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void regulatory_corporate_sector_service::delete_sectors(
@@ -556,8 +554,8 @@ void regulatory_corporate_sector_service::delete_sectors(
 std::vector<domain::regulatory_corporate_sector>
 regulatory_corporate_sector_service::get_sector_history(const std::string& code,
                                                         const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for regulatory corporate sector. "
-                               << "code: " << code << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for regulatory corporate sector. "
+                              << "code: " << code << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

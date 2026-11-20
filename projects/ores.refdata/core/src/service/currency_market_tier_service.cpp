@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata.core/repository/currency_market_tier_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -455,26 +453,26 @@ ores::utility::domain::result currency_market_tier_service::prepare_change(
 
 std::vector<domain::currency_market_tier>
 currency_market_tier_service::list_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all currency market tiers";
+    ORES_LOG_SEV(lg(), debug) << "Listing all currency market tiers";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t currency_market_tier_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total currency market tiers count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total currency market tiers count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::currency_market_tier>
 currency_market_tier_service::get_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting currency market tier at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting currency market tier at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::currency_market_tier>
 currency_market_tier_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting currency market tier. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting currency market tier. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -489,11 +487,11 @@ currency_market_tier_service::get_types(const std::vector<std::string>& codes) {
 void currency_market_tier_service::save_type(const domain::currency_market_tier& v) {
     if (v.code.empty())
         throw std::invalid_argument("Currency Market Tier code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving currency market tier. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving currency market tier. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved currency market tier. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved currency market tier. " << "code: " << v.code;
 }
 
 void currency_market_tier_service::save_types(
@@ -502,7 +500,7 @@ void currency_market_tier_service::save_types(
         if (e.code.empty())
             throw std::invalid_argument("Currency Market Tier code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " currency market tiers";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " currency market tiers";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -511,9 +509,9 @@ void currency_market_tier_service::save_types(
 }
 
 void currency_market_tier_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency market tier. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing currency market tier. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed currency market tier. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed currency market tier. " << "code: " << code;
 }
 
 void currency_market_tier_service::delete_types(const std::vector<std::string>& codes) {
@@ -522,7 +520,7 @@ void currency_market_tier_service::delete_types(const std::vector<std::string>& 
 
 std::vector<domain::currency_market_tier>
 currency_market_tier_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for currency market tier. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for currency market tier. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

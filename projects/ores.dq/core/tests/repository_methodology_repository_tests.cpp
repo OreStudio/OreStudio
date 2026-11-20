@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/methodology_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/methodology_generator.hpp"
 #include "ores.dq.core/repository/methodology_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -48,12 +48,12 @@ TEST_CASE("write_single_methodology", "[repository]") {
     methodology.tenant_id = h.tenant_id();
     methodology.name = methodology.name + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Methodology: " << methodology;
+    ORES_LOG_SEV(lg, debug) << "Methodology: " << methodology;
     repo.write(h.context(), methodology);
 
     const auto methodology_id = boost::uuids::to_string(methodology.id);
     auto read_methodologies = repo.read_latest(h.context(), methodology_id);
-    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+    ORES_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
 
     REQUIRE(read_methodologies.size() == 1);
     CHECK(read_methodologies[0].id == methodology.id);
@@ -72,11 +72,11 @@ TEST_CASE("write_multiple_methodologies", "[repository]") {
         m.tenant_id = h.tenant_id();
         m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Methodologies: " << methodologies;
+    ORES_LOG_SEV(lg, debug) << "Methodologies: " << methodologies;
     repo.write(h.context(), methodologies);
 
     auto read_methodologies = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+    ORES_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
 
     for (const auto& written : methodologies) {
         bool found = false;
@@ -102,12 +102,12 @@ TEST_CASE("read_latest_methodologies", "[repository]") {
         m.tenant_id = h.tenant_id();
         m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Written methodologies: " << written_methodologies;
+    ORES_LOG_SEV(lg, debug) << "Written methodologies: " << written_methodologies;
 
     repo.write(h.context(), written_methodologies);
 
     auto read_methodologies = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+    ORES_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
 
     for (const auto& written : written_methodologies) {
         bool found = false;
@@ -135,13 +135,13 @@ TEST_CASE("read_latest_methodology_by_id", "[repository]") {
     }
 
     const auto target = methodologies.front();
-    BOOST_LOG_SEV(lg, debug) << "Write methodologies: " << methodologies;
+    ORES_LOG_SEV(lg, debug) << "Write methodologies: " << methodologies;
     repo.write(h.context(), methodologies);
 
-    BOOST_LOG_SEV(lg, debug) << "Target methodology: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target methodology: " << target;
 
     auto read_methodologies = repo.read_latest(h.context(), boost::uuids::to_string(target.id));
-    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+    ORES_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
 
     REQUIRE(read_methodologies.size() == 1);
     CHECK(read_methodologies[0].id == target.id);
@@ -160,24 +160,24 @@ TEST_CASE("read_nonexistent_methodology_by_id", "[repository]") {
     methodology.tenant_id = h.tenant_id();
     methodology.name = methodology.name + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Methodology: " << methodology;
+    ORES_LOG_SEV(lg, debug) << "Methodology: " << methodology;
 
     // Seed a real row, so a miss below proves the key was respected.
     repo.write(h.context(), methodology);
 
     const auto methodology_id = boost::uuids::to_string(methodology.id);
     auto read_methodologies = repo.read_latest(h.context(), methodology_id);
-    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+    ORES_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
 
     REQUIRE(read_methodologies.size() == 1);
     CHECK(read_methodologies[0].id == methodology.id);
     CHECK(read_methodologies[0].name == methodology.name);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_missing = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read by non-existent ID: " << read_missing;
+    ORES_LOG_SEV(lg, debug) << "Read by non-existent ID: " << read_missing;
 
     CHECK(read_missing.size() == 0);
 }

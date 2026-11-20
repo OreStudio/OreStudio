@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_TENOR_UNIT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/tenor_unit.hpp"
 #include "ores.refdata.api/messaging/tenor_unit_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

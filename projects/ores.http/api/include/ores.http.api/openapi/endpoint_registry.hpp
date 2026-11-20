@@ -22,7 +22,7 @@
 
 #include "ores.http.api/domain/route.hpp"
 #include "ores.http.api/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <string>
 #include <vector>
 

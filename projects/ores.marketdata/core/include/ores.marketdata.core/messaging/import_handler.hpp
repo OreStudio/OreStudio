@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_IMPORT_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
@@ -74,7 +74,7 @@ public:
         }
         auto req = decode<import_market_data_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(import_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(import_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         // Currency-pair reference data (for FX quote convention checking)
@@ -84,12 +84,12 @@ public:
         service::import_service svc(ctx, delegated_nats);
         try {
             auto resp = svc.import(*req);
-            BOOST_LOG_SEV(import_handler_lg(), debug)
+            ORES_LOG_SEV(import_handler_lg(), debug)
                 << "Completed " << msg.subject << ": series=" << resp.series_count
                 << " obs=" << resp.observation_count << " fixings=" << resp.fixing_count;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(import_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(import_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, import_market_data_response{.success = false, .message = e.what()});
         }
     }

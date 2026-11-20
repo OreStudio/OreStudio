@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/treatment_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/treatment_dimension_generator.hpp"
 #include "ores.dq.core/repository/treatment_dimension_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -49,11 +49,11 @@ TEST_CASE("write_single_treatment_dimension", "[repository]") {
     treatment_dimension.code =
         treatment_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Treatment dimension: " << treatment_dimension;
+    ORES_LOG_SEV(lg, debug) << "Treatment dimension: " << treatment_dimension;
     repo.write(h.context(), treatment_dimension);
 
     auto read_treatment_dimensions = repo.read_latest(h.context(), treatment_dimension.code);
-    BOOST_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
 
     REQUIRE(read_treatment_dimensions.size() == 1);
     CHECK(read_treatment_dimensions[0].code == treatment_dimension.code);
@@ -72,11 +72,11 @@ TEST_CASE("write_multiple_treatment_dimensions", "[repository]") {
         t.tenant_id = h.tenant_id();
         t.code = t.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Treatment dimensions: " << treatment_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Treatment dimensions: " << treatment_dimensions;
     repo.write(h.context(), treatment_dimensions);
 
     auto read_treatment_dimensions = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
 
     for (const auto& written : treatment_dimensions) {
         bool found = false;
@@ -102,12 +102,12 @@ TEST_CASE("read_latest_treatment_dimensions", "[repository]") {
         t.tenant_id = h.tenant_id();
         t.code = t.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Written treatment dimensions: " << written_treatment_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Written treatment dimensions: " << written_treatment_dimensions;
 
     repo.write(h.context(), written_treatment_dimensions);
 
     auto read_treatment_dimensions = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
 
     for (const auto& written : written_treatment_dimensions) {
         bool found = false;
@@ -135,13 +135,13 @@ TEST_CASE("read_latest_treatment_dimension_by_code", "[repository]") {
     }
 
     const auto target = treatment_dimensions.front();
-    BOOST_LOG_SEV(lg, debug) << "Write treatment dimensions: " << treatment_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Write treatment dimensions: " << treatment_dimensions;
     repo.write(h.context(), treatment_dimensions);
 
-    BOOST_LOG_SEV(lg, debug) << "Target treatment dimension: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target treatment dimension: " << target;
 
     auto read_treatment_dimensions = repo.read_latest(h.context(), target.code);
-    BOOST_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
 
     REQUIRE(read_treatment_dimensions.size() == 1);
     CHECK(read_treatment_dimensions[0].code == target.code);

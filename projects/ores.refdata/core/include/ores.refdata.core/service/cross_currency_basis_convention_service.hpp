@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CROSS_CURRENCY_BASIS_CONVENTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_flat_leg.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_spread_leg.hpp"

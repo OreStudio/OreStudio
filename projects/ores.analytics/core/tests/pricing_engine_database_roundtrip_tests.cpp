@@ -20,7 +20,7 @@
 #include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
 #include "ores.analytics.core/service/pricing_engines_document_service.hpp"
 #include "ores.database/domain/party_scope.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/xml/generated/pricing_engines.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
@@ -55,7 +55,7 @@ using namespace ores::logging;
 TEST_CASE("pricing_engines_roundtrip_through_the_database",
           "[pricingengines][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "pricing_engines_roundtrip_through_the_database";
+    ORES_LOG_SEV(lg, info) << "pricing_engines_roundtrip_through_the_database";
     scoped_database_helper h;
 
     // The largest document in the corpus, so the path carries eighty products,
@@ -103,7 +103,7 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database",
 TEST_CASE("a party sees only its own pricing engine configuration",
           "[pricingengines][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "a party sees only its own pricing engine configuration";
+    ORES_LOG_SEV(lg, info) << "a party sees only its own pricing engine configuration";
     scoped_database_helper h;
     auto parties = ores::testing::make_two_parties(h);
     const auto original = pricing_engine_projection::read(file::read_content(

@@ -66,7 +66,7 @@ void write_factors(const std::string& s, record_writer factors) {
 
 refdata::domain::intraday_power_load_convention
 conventions_mapper::map_intraday_power_load(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping intraday power load convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping intraday power load convention: " << text_of(v, "Id");
 
     refdata::domain::intraday_power_load_convention r;
     r.id = text_of(v, "Id");

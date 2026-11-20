@@ -125,8 +125,8 @@ void bundles_commands::process_publish(std::ostream& out,
     if (has_params)
         req.params_json = dq::messaging::build_params_json(params);
 
-    BOOST_LOG_SEV(lg(), info) << "Publishing bundle: " << code << " (params: " << req.params_json
-                              << ")";
+    ORES_LOG_SEV(lg(), info) << "Publishing bundle: " << code << " (params: " << req.params_json
+                             << ")";
     out << "Publishing bundle '" << code << "'..." << std::endl;
 
     auto result = do_auth_request<dq::messaging::publish_bundle_response>(
@@ -141,8 +141,8 @@ void bundles_commands::process_publish(std::ostream& out,
 
     out << "✓ Dispatched " << result->datasets_dispatched
         << " dataset(s); workflow instance: " << result->instance_id << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Bundle " << code << " dispatched; instance "
-                              << result->instance_id;
+    ORES_LOG_SEV(lg(), info) << "Bundle " << code << " dispatched; instance "
+                             << result->instance_id;
 
     if (!wait_timeout) {
         out << "Follow progress with: workflow wait " << result->instance_id << std::endl;

@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/cut.hpp"
 #include "ores.reporting.api/domain/cut_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/cut_protocol.hpp"
 #include "ores.reporting.core/repository/cut_entity.hpp"
 #include "ores.reporting.core/repository/cut_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -241,7 +239,7 @@ void cut_repository::write(const context& ctx, const std::vector<domain::cut>& v
 void cut_repository::write(const context& ctx,
                            const domain::cut& v,
                            const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing cut. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing cut. " << "id: " << v.id;
     const auto t = cut_apply_claim(v,
                                    claim,
                                    cut_claim_reads_current(claim) ?
@@ -253,7 +251,7 @@ void cut_repository::write(const context& ctx,
 void cut_repository::write(const context& ctx,
                            const std::vector<domain::cut>& v,
                            const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing cuts. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing cuts. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("cut_repository::write: one claim is needed for each row");
     std::vector<domain::cut> to_read;
@@ -286,7 +284,7 @@ std::vector<domain::cut> cut_repository::read_latest(const context& ctx) {
 }
 
 std::vector<domain::cut> cut_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest cut. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest cut. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -303,7 +301,7 @@ std::vector<domain::cut> cut_repository::read_latest(const context& ctx, const s
 
 
 std::vector<domain::cut> cut_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all cut versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all cut versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cut_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -319,8 +317,8 @@ std::vector<domain::cut> cut_repository::read_all(const context& ctx, const std:
 
 std::optional<domain::cut>
 cut_repository::read_at_version(const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading cut at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading cut at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<cut_entity>> |
@@ -346,8 +344,8 @@ cut_repository::read_latest_by_kind_code(const context& ctx,
                                          std::uint32_t limit,
                                          const ores::utility::domain::order& order,
                                          const std::optional<messaging::cuts_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest cuts. kind_code: " << kind_code
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest cuts. kind_code: " << kind_code
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cut_entity>> |
@@ -369,7 +367,7 @@ std::uint32_t cut_repository::get_total_cut_count_by_kind_code(
     const context& ctx,
     const std::string& kind_code,
     const std::optional<messaging::cuts_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active cuts count. kind_code: " << kind_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active cuts count. kind_code: " << kind_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -385,7 +383,7 @@ std::uint32_t cut_repository::get_total_cut_count_by_kind_code(
 cut_repository::remove_status cut_repository::remove(const context& ctx,
                                                      const std::string& id,
                                                      std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cut. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing cut. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -423,8 +421,8 @@ cut_repository::read_latest(const context& ctx,
                             const ores::utility::domain::order& order,
                             const std::optional<messaging::cuts_filter>& filter,
                             const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest cuts with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest cuts with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cut_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -444,7 +442,7 @@ std::uint32_t
 cut_repository::get_total_cut_count(const context& ctx,
                                     const std::optional<messaging::cuts_filter>& filter,
                                     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active cut count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active cut count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -515,7 +513,7 @@ cut_repository::read_for_party_in_window(const context& ctx,
                                          const std::string& kind_code,
                                          std::chrono::system_clock::time_point from,
                                          std::chrono::system_clock::time_point to) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading cuts of a party in a window.";
+    ORES_LOG_SEV(lg(), debug) << "Reading cuts of a party in a window.";
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto party = boost::uuids::to_string(party_id);
@@ -556,8 +554,8 @@ cut_repository::read_for_occasion_in_window(const context& ctx,
                                             const std::string& business_centre_code,
                                             std::chrono::system_clock::time_point from,
                                             std::chrono::system_clock::time_point to) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the cuts of one occasion: " << kind_code << " "
-                               << scope_code << " " << business_centre_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading the cuts of one occasion: " << kind_code << " "
+                              << scope_code << " " << business_centre_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto party = boost::uuids::to_string(party_id);
@@ -583,7 +581,7 @@ cut_repository::read_for_scope_in_window(const context& ctx,
                                          const std::string& business_centre_code,
                                          std::chrono::system_clock::time_point from,
                                          std::chrono::system_clock::time_point to) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading cuts of scope: " << scope_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading cuts of scope: " << scope_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -603,7 +601,7 @@ cut_repository::read_for_scope_in_window(const context& ctx,
 
 std::optional<domain::cut> cut_repository::read_latest_by_request(const context& ctx,
                                                                   const std::string& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the cut of request: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading the cut of request: " << request_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

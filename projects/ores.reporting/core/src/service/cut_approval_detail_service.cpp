@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/cut_approval_detail.hpp"
 #include "ores.reporting.api/messaging/cut_approval_detail_protocol.hpp"
 #include "ores.reporting.core/repository/cut_approval_detail_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -358,38 +356,38 @@ cut_approval_detail_service::get_cut_approval_detail_version(
 
 std::vector<domain::cut_approval_detail>
 cut_approval_detail_service::list_details(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all cut approval details";
+    ORES_LOG_SEV(lg(), debug) << "Listing all cut approval details";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cut_approval_detail_service::count_details() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cut approval details count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total cut approval details count";
     return repo_.get_total_detail_count(ctx_);
 }
 
 
 std::vector<domain::cut_approval_detail> cut_approval_detail_service::list_details_by_request_id(
     const std::string& request_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing cut approval details by request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing cut approval details by request_id: " << request_id;
     return repo_.read_latest_by_request_id(ctx_, request_id, offset, limit);
 }
 
 std::uint32_t
 cut_approval_detail_service::count_details_by_request_id(const std::string& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cut approval details count by request_id: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total cut approval details count by request_id: "
+                              << request_id;
     return repo_.get_total_detail_count_by_request_id(ctx_, request_id);
 }
 
 
 std::vector<domain::cut_approval_detail> cut_approval_detail_service::list_details_by_cut_id(
     const std::string& cut_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing cut approval details by cut_id: " << cut_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing cut approval details by cut_id: " << cut_id;
     return repo_.read_latest_by_cut_id(ctx_, cut_id, offset, limit);
 }
 
 std::uint32_t cut_approval_detail_service::count_details_by_cut_id(const std::string& cut_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cut approval details count by cut_id: " << cut_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total cut approval details count by cut_id: " << cut_id;
     return repo_.get_total_detail_count_by_cut_id(ctx_, cut_id);
 }
 
@@ -397,14 +395,14 @@ std::uint32_t cut_approval_detail_service::count_details_by_cut_id(const std::st
 std::optional<domain::cut_approval_detail>
 cut_approval_detail_service::get_detail_at_version(const boost::uuids::uuid& id,
                                                    std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cut approval detail at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting cut approval detail at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::cut_approval_detail>
 cut_approval_detail_service::get_detail(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cut approval detail. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting cut approval detail. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -419,11 +417,11 @@ cut_approval_detail_service::get_details(const std::vector<std::string>& ids) {
 void cut_approval_detail_service::save_detail(const domain::cut_approval_detail& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Cut Approval Detail id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving cut approval detail. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving cut approval detail. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved cut approval detail. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved cut approval detail. " << "id: " << v.id;
 }
 
 void cut_approval_detail_service::save_details(
@@ -432,7 +430,7 @@ void cut_approval_detail_service::save_details(
         if (e.id.is_nil())
             throw std::invalid_argument("Cut Approval Detail id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << details.size() << " cut approval details";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << details.size() << " cut approval details";
     auto ts = details;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -441,9 +439,9 @@ void cut_approval_detail_service::save_details(
 }
 
 void cut_approval_detail_service::delete_detail(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cut approval detail. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing cut approval detail. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed cut approval detail. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed cut approval detail. " << "id: " << id;
 }
 
 void cut_approval_detail_service::delete_details(const std::vector<std::string>& ids) {
@@ -452,7 +450,7 @@ void cut_approval_detail_service::delete_details(const std::vector<std::string>&
 
 std::vector<domain::cut_approval_detail>
 cut_approval_detail_service::get_detail_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for cut approval detail. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for cut approval detail. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

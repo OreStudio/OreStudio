@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_DEFAULT_CURVE_YIELD_REINTERPRETATION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/default_curve_yield_reinterpretation.hpp"
 #include "ores.refdata.api/messaging/default_curve_yield_reinterpretation_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

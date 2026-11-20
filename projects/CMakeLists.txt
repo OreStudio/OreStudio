@@ -153,3 +153,34 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.analytics)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.sql)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.web)
+
+#
+# CDash subprojects.
+#
+# CDash groups test results by subproject, and a test joins the subproject
+# its label names. Each test is labelled with its component, the test name
+# without its .tests or .typecheck suffix, and configure writes the
+# components to cdash_subprojects.txt, which CTest.cmake declares to CDash.
+# The case entries expand_catch2_cases.py makes from a suite keep its labels.
+# Labelling here, by walking the directories, needs no line in any test's
+# CMakeLists.txt.
+function(ores_label_tests_by_component directory)
+    get_property(tests DIRECTORY ${directory} PROPERTY TESTS)
+    foreach(test IN LISTS tests)
+        string(REGEX REPLACE "\\.(tests|typecheck)$" "" component ${test})
+        set_property(TEST ${test} DIRECTORY ${directory}
+            APPEND PROPERTY LABELS ${component})
+        set_property(GLOBAL APPEND PROPERTY ORES_TEST_COMPONENTS ${component})
+    endforeach()
+    get_property(subdirectories DIRECTORY ${directory} PROPERTY SUBDIRECTORIES)
+    foreach(subdirectory IN LISTS subdirectories)
+        ores_label_tests_by_component(${subdirectory})
+    endforeach()
+endfunction()
+
+ores_label_tests_by_component(${CMAKE_CURRENT_SOURCE_DIR})
+get_property(test_components GLOBAL PROPERTY ORES_TEST_COMPONENTS)
+list(REMOVE_DUPLICATES test_components)
+list(SORT test_components)
+list(JOIN test_components "\n" test_components)
+file(WRITE ${CMAKE_BINARY_DIR}/cdash_subprojects.txt "${test_components}\n")

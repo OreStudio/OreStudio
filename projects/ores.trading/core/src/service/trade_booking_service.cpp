@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.trading.api/messaging/trade_booking_protocol.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -45,7 +44,6 @@
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/range_bound.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -502,12 +500,12 @@ trade_booking_service::prepare_change(const messaging::trade_booking_change& cha
 
 std::vector<domain::trade_booking> trade_booking_service::list_trade_bookings(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade bookings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade bookings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_booking_service::count_trade_bookings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade bookings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade bookings count";
     return repo_.get_total_trade_booking_count(ctx_);
 }
 
@@ -515,14 +513,14 @@ std::uint32_t trade_booking_service::count_trade_bookings() {
 std::optional<domain::trade_booking>
 trade_booking_service::get_trade_booking_at_version(const boost::uuids::uuid& trade_id,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade booking at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade booking at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::trade_booking>
 trade_booking_service::get_trade_booking(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade booking. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade booking. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -537,11 +535,11 @@ trade_booking_service::get_trade_bookings(const std::vector<std::string>& trade_
 void trade_booking_service::save_trade_booking(const domain::trade_booking& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Trade Booking trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade booking. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade booking. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade booking. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved trade booking. " << "trade_id: " << v.trade_id;
 }
 
 void trade_booking_service::save_trade_bookings(
@@ -550,7 +548,7 @@ void trade_booking_service::save_trade_bookings(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Trade Booking trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << trade_bookings.size() << " trade bookings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << trade_bookings.size() << " trade bookings";
     auto ts = trade_bookings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -559,9 +557,9 @@ void trade_booking_service::save_trade_bookings(
 }
 
 void trade_booking_service::delete_trade_booking(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade booking. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing trade booking. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade booking. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed trade booking. " << "trade_id: " << trade_id;
 }
 
 void trade_booking_service::delete_trade_bookings(const std::vector<std::string>& trade_ids) {
@@ -570,7 +568,7 @@ void trade_booking_service::delete_trade_bookings(const std::vector<std::string>
 
 std::vector<domain::trade_booking>
 trade_booking_service::get_trade_booking_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade booking. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade booking. " << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

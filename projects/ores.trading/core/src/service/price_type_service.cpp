@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/price_type.hpp"
 #include "ores.trading.api/messaging/price_type_protocol.hpp"
 #include "ores.trading.core/repository/price_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -438,25 +436,25 @@ price_type_service::prepare_change(const messaging::price_type_change& change,
 
 std::vector<domain::price_type> price_type_service::list_price_types(std::uint32_t offset,
                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all price types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all price types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t price_type_service::count_price_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total price types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total price types count";
     return repo_.get_total_price_type_count(ctx_);
 }
 
 
 std::optional<domain::price_type>
 price_type_service::get_price_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting price type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting price type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::price_type> price_type_service::get_price_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting price type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting price type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -471,11 +469,11 @@ price_type_service::get_price_types(const std::vector<std::string>& codes) {
 void price_type_service::save_price_type(const domain::price_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Price Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving price type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving price type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved price type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved price type. " << "code: " << v.code;
 }
 
 void price_type_service::save_price_types(const std::vector<domain::price_type>& price_types) {
@@ -483,7 +481,7 @@ void price_type_service::save_price_types(const std::vector<domain::price_type>&
         if (e.code.empty())
             throw std::invalid_argument("Price Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << price_types.size() << " price types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << price_types.size() << " price types";
     auto ts = price_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -492,9 +490,9 @@ void price_type_service::save_price_types(const std::vector<domain::price_type>&
 }
 
 void price_type_service::delete_price_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing price type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing price type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed price type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed price type. " << "code: " << code;
 }
 
 void price_type_service::delete_price_types(const std::vector<std::string>& codes) {
@@ -503,7 +501,7 @@ void price_type_service::delete_price_types(const std::vector<std::string>& code
 
 std::vector<domain::price_type>
 price_type_service::get_price_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for price type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for price type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

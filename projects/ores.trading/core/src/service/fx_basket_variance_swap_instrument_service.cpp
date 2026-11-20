@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/fx_basket_variance_swap_instrument.hpp"
 #include "ores.trading.api/messaging/fx_basket_variance_swap_instrument_protocol.hpp"
 #include "ores.trading.core/repository/fx_basket_variance_swap_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -499,13 +497,13 @@ ores::utility::domain::result fx_basket_variance_swap_instrument_service::prepar
 std::vector<domain::fx_basket_variance_swap_instrument>
 fx_basket_variance_swap_instrument_service::list_fx_basket_variance_swap_instruments(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all fx basket variance swap instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all fx basket variance swap instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t
 fx_basket_variance_swap_instrument_service::count_fx_basket_variance_swap_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total fx basket variance swap instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total fx basket variance swap instruments count";
     return repo_.get_total_fx_basket_variance_swap_instrument_count(ctx_);
 }
 
@@ -513,16 +511,16 @@ fx_basket_variance_swap_instrument_service::count_fx_basket_variance_swap_instru
 std::optional<domain::fx_basket_variance_swap_instrument>
 fx_basket_variance_swap_instrument_service::get_fx_basket_variance_swap_instrument_at_version(
     const boost::uuids::uuid& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting fx basket variance swap instrument at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting fx basket variance swap instrument at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::fx_basket_variance_swap_instrument>
 fx_basket_variance_swap_instrument_service::get_fx_basket_variance_swap_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting fx basket variance swap instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting fx basket variance swap instrument. "
+                              << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -539,13 +537,13 @@ void fx_basket_variance_swap_instrument_service::save_fx_basket_variance_swap_in
     const domain::fx_basket_variance_swap_instrument& v) {
     if (v.identity.trade_id.is_nil())
         throw std::invalid_argument("FX Basket Variance Swap Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving fx basket variance swap instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving fx basket variance swap instrument. "
+                              << "trade_id: " << v.identity.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved fx basket variance swap instrument. "
-                              << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved fx basket variance swap instrument. "
+                             << "trade_id: " << v.identity.trade_id;
 }
 
 void fx_basket_variance_swap_instrument_service::save_fx_basket_variance_swap_instruments(
@@ -556,8 +554,8 @@ void fx_basket_variance_swap_instrument_service::save_fx_basket_variance_swap_in
             throw std::invalid_argument(
                 "FX Basket Variance Swap Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_basket_variance_swap_instruments.size()
-                               << " fx basket variance swap instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << fx_basket_variance_swap_instruments.size()
+                              << " fx basket variance swap instruments";
     auto ts = fx_basket_variance_swap_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -567,11 +565,11 @@ void fx_basket_variance_swap_instrument_service::save_fx_basket_variance_swap_in
 
 void fx_basket_variance_swap_instrument_service::delete_fx_basket_variance_swap_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing fx basket variance swap instrument. "
-                               << "trade_id: " << trade_id;
-    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed fx basket variance swap instrument. "
+    ORES_LOG_SEV(lg(), debug) << "Removing fx basket variance swap instrument. "
                               << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    ORES_LOG_SEV(lg(), info) << "Removed fx basket variance swap instrument. "
+                             << "trade_id: " << trade_id;
 }
 
 void fx_basket_variance_swap_instrument_service::delete_fx_basket_variance_swap_instruments(
@@ -582,8 +580,8 @@ void fx_basket_variance_swap_instrument_service::delete_fx_basket_variance_swap_
 std::vector<domain::fx_basket_variance_swap_instrument>
 fx_basket_variance_swap_instrument_service::get_fx_basket_variance_swap_instrument_history(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for fx basket variance swap instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for fx basket variance swap instrument. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

@@ -31,7 +31,7 @@
 #include "ores.iam.core/service/login_info_service.hpp"
 #include "ores.iam.core/service/tenant_code_check.hpp"
 #include "ores.iam.core/service/tenant_hostname_check.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
@@ -178,7 +178,7 @@ public:
 
         const auto& tenant_id = *rows[0][0];
         const auto& system_party_id = *rows[0][1];
-        BOOST_LOG_SEV(lg(), ores::logging::info)
+        ORES_LOG_SEV(lg(), ores::logging::info)
             << "Provisioned tenant " << code << " (id: " << tenant_id
             << ", system party: " << system_party_id << ")";
 
@@ -199,10 +199,10 @@ public:
                 auto marked = *record;
                 marked.password_reset_required = true;
                 logins.save_login_info(marked);
-                BOOST_LOG_SEV(lg(), ores::logging::info) << "Administrator " << admin_username
-                                                         << " must set a password at first sign-in";
+                ORES_LOG_SEV(lg(), ores::logging::info) << "Administrator " << admin_username
+                                                        << " must set a password at first sign-in";
             } else {
-                BOOST_LOG_SEV(lg(), ores::logging::warn)
+                ORES_LOG_SEV(lg(), ores::logging::warn)
                     << "No login record for " << admin_username
                     << ", so the forced password change was not recorded";
             }
@@ -218,16 +218,16 @@ public:
         link.change_commentary = "Provision tenant: associate admin with system party";
         account_party_service parties(tenant_ctx);
         parties.save_account_party(link);
-        BOOST_LOG_SEV(lg(), ores::logging::info)
+        ORES_LOG_SEV(lg(), ores::logging::info)
             << "Associated " << admin_username << " with system party " << system_party_id;
 
         authorization_service authorization(tenant_ctx);
         if (auto role = authorization.find_role_by_name(std::string(tenant_admin_role))) {
             authorization.assign_role(account.id, role->id, ctx_.service_account());
-            BOOST_LOG_SEV(lg(), ores::logging::info)
+            ORES_LOG_SEV(lg(), ores::logging::info)
                 << "Assigned " << tenant_admin_role << " to " << admin_username;
         } else {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Tenant " << code << " has no " << tenant_admin_role << " role, so "
                 << admin_username << " was created without one and holds no permissions";
         }

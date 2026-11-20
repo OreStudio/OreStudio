@@ -18,8 +18,7 @@
  *
  */
 #include "ores.synthetic.core/service/trade_population_service.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -53,12 +52,12 @@ trade_population_run trade_population_service::run(
     using namespace ores::logging;
     const auto started = std::chrono::steady_clock::now();
     const auto config = boost::uuids::to_string(config_id);
-    BOOST_LOG_SEV(population_lg(), info)
+    ORES_LOG_SEV(population_lg(), info)
         << "Trade population of config " << config << ": resolving its scope";
     const auto scope = writer_.resolve_scope(config_id);
     auto plan = planner_for(scope.asset_class_code).plan(scope);
     group_into_structures(plan, scope.structures_per_book);
-    BOOST_LOG_SEV(population_lg(), info)
+    ORES_LOG_SEV(population_lg(), info)
         << "Trade population of config " << config << " (" << scope.asset_class_code
         << "): " << plan.slots.size() << " trade(s) in " << plan.structures.size()
         << " structure(s), planned in " << seconds_since(started) << "s";
@@ -98,7 +97,7 @@ trade_population_run trade_population_service::run(
             if (slot.structure_id)
                 writer_.write_structure_member(*slot.structure_id, slot);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(population_lg(), error)
+            ORES_LOG_SEV(population_lg(), error)
                 << "Trade population of config " << config << " stopped at trade "
                 << slot.internal_identifier << " (" << slot.trade_type_code << ", "
                 << run.written + run.already_present + 1 << " of " << run.planned << ") after "
@@ -108,7 +107,7 @@ trade_population_run trade_population_service::run(
 
         ++run.written;
         if ((run.written + run.already_present) % progress_every == 0)
-            BOOST_LOG_SEV(population_lg(), info)
+            ORES_LOG_SEV(population_lg(), info)
                 << "Trade population of config " << config << ": "
                 << run.written + run.already_present << " of " << run.planned << " done ("
                 << run.written << " written, " << run.already_present << " present) after "
@@ -124,7 +123,7 @@ trade_population_run trade_population_service::run(
             on_progress(run.written + run.already_present, run.planned);
     }
 
-    BOOST_LOG_SEV(population_lg(), info)
+    ORES_LOG_SEV(population_lg(), info)
         << "Trade population of config " << config << " finished: " << run.written << " written, "
         << run.already_present << " already present, of " << run.planned << ", in "
         << seconds_since(started) << "s";

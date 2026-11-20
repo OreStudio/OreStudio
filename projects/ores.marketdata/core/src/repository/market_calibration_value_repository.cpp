@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_calibration_value.hpp"
 #include "ores.marketdata.api/domain/market_calibration_value_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/messaging/market_calibration_value_protocol.hpp"
 #include "ores.marketdata.core/repository/market_calibration_value_entity.hpp"
 #include "ores.marketdata.core/repository/market_calibration_value_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -226,7 +224,7 @@ void market_calibration_value_repository::write(const context& ctx,
 
 void market_calibration_value_repository::insert(const context& ctx,
                                                  const domain::market_calibration_value& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market calibration value. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Inserting market calibration value. " << "id: " << v.id;
     query_builder::execute_write_query(ctx,
                                        market_calibration_value_mapper::map(v),
                                        lg(),
@@ -235,7 +233,7 @@ void market_calibration_value_repository::insert(const context& ctx,
 
 void market_calibration_value_repository::insert(
     const context& ctx, const std::vector<domain::market_calibration_value>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market calibration values. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Inserting market calibration values. Count: " << v.size();
     query_builder::execute_write_query(ctx,
                                        market_calibration_value_mapper::map(v),
                                        lg(),
@@ -256,7 +254,7 @@ void market_calibration_value_repository::write(
 void market_calibration_value_repository::write(const context& ctx,
                                                 const domain::market_calibration_value& v,
                                                 const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market calibration value. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing market calibration value. " << "id: " << v.id;
     const auto t =
         market_calibration_value_apply_claim(v,
                                              claim,
@@ -273,7 +271,7 @@ void market_calibration_value_repository::write(
     const context& ctx,
     const std::vector<domain::market_calibration_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market calibration values. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing market calibration values. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "market_calibration_value_repository::write: one claim is needed for each row");
@@ -313,7 +311,7 @@ market_calibration_value_repository::read_latest(const context& ctx) {
 
 std::vector<domain::market_calibration_value>
 market_calibration_value_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market calibration value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market calibration value. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -332,7 +330,7 @@ market_calibration_value_repository::read_latest(const context& ctx, const std::
 
 std::vector<domain::market_calibration_value>
 market_calibration_value_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all market calibration value versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all market calibration value versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_calibration_value_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -350,7 +348,7 @@ market_calibration_value_repository::read_all(const context& ctx, const std::str
 
 market_calibration_value_repository::remove_status market_calibration_value_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market calibration value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market calibration value. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -380,8 +378,8 @@ std::vector<domain::market_calibration_value> market_calibration_value_repositor
     const ores::utility::domain::order& order,
     const std::optional<messaging::market_calibration_values_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market calibration values with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market calibration values with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_calibration_value_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -403,7 +401,7 @@ std::uint32_t market_calibration_value_repository::get_total_value_count(
     const context& ctx,
     const std::optional<messaging::market_calibration_values_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market calibration value count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active market calibration value count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_calibration_value_entity>> |

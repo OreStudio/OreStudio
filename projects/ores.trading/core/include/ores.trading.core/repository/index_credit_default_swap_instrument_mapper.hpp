@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_INDEX_CREDIT_DEFAULT_SWAP_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_INDEX_CREDIT_DEFAULT_SWAP_INSTRUMENT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_instrument_entity.hpp"

@@ -189,7 +189,7 @@ void cap_floor_instrument_commands::register_commands(cli::Menu& root_menu, nats
 void cap_floor_instrument_commands::process_list(std::ostream& out,
                                                  nats_client& session,
                                                  const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list request.";
 
     using request_type = messaging::list_cap_floor_instruments_request;
     if constexpr (request_type::requires_session) {
@@ -239,7 +239,7 @@ void cap_floor_instrument_commands::process_list(std::ostream& out,
 void cap_floor_instrument_commands::process_get(std::ostream& out,
                                                 nats_client& session,
                                                 const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get request.";
 
     using request_type = messaging::get_cap_floor_instrument_request;
     if constexpr (request_type::requires_session) {
@@ -284,7 +284,7 @@ void cap_floor_instrument_commands::process_get(std::ostream& out,
 void cap_floor_instrument_commands::process_get_many(std::ostream& out,
                                                      nats_client& session,
                                                      const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
     using request_type = messaging::get_many_cap_floor_instruments_request;
     if constexpr (request_type::requires_session) {
@@ -333,7 +333,7 @@ void cap_floor_instrument_commands::process_get_many(std::ostream& out,
 void cap_floor_instrument_commands::process_add(std::ostream& out,
                                                 nats_client& session,
                                                 const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating add request.";
 
     using request_type = messaging::put_cap_floor_instrument_request;
     if constexpr (request_type::requires_session) {
@@ -386,7 +386,7 @@ void cap_floor_instrument_commands::process_add(std::ostream& out,
 void cap_floor_instrument_commands::process_set(std::ostream& out,
                                                 nats_client& session,
                                                 const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating set request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating set request.";
 
     using request_type = messaging::put_cap_floor_instrument_request;
     if constexpr (request_type::requires_session) {
@@ -447,7 +447,7 @@ void cap_floor_instrument_commands::process_set(std::ostream& out,
 void cap_floor_instrument_commands::process_put_many(std::ostream& out,
                                                      nats_client& session,
                                                      const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating put-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating put-many request.";
 
     using request_type = messaging::put_many_cap_floor_instruments_request;
     if constexpr (request_type::requires_session) {
@@ -512,7 +512,7 @@ void cap_floor_instrument_commands::process_put_many(std::ostream& out,
 void cap_floor_instrument_commands::process_delete(std::ostream& out,
                                                    nats_client& session,
                                                    const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete request.";
 
     using request_type = messaging::delete_cap_floor_instrument_request;
     if constexpr (request_type::requires_session) {
@@ -568,7 +568,7 @@ void cap_floor_instrument_commands::process_delete(std::ostream& out,
 void cap_floor_instrument_commands::process_delete_many(std::ostream& out,
                                                         nats_client& session,
                                                         const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
 
     using request_type = messaging::delete_many_cap_floor_instruments_request;
     if constexpr (request_type::requires_session) {
@@ -621,7 +621,7 @@ void cap_floor_instrument_commands::process_delete_many(std::ostream& out,
 void cap_floor_instrument_commands::process_versions(std::ostream& out,
                                                      nats_client& session,
                                                      const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating versions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating versions request.";
 
     using request_type = messaging::list_cap_floor_instrument_versions_request;
     if constexpr (request_type::requires_session) {
@@ -672,7 +672,7 @@ void cap_floor_instrument_commands::process_versions(std::ostream& out,
 void cap_floor_instrument_commands::process_version(std::ostream& out,
                                                     nats_client& session,
                                                     const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating version request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating version request.";
 
     using request_type = messaging::get_cap_floor_instrument_version_request;
     if constexpr (request_type::requires_session) {

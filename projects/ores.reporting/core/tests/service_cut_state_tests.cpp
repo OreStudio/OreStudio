@@ -17,13 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.core/service/cut_state.hpp"
 #include "ores.reporting.core/service/cut_take_plan.hpp"
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
@@ -254,8 +252,8 @@ TEST_CASE("a take copies the kind's indicative mark and never the caller's", "[s
     const auto official = kind("SOD", "start_of_day", std::nullopt, 25);
 
     const auto live = plan_take(plan, indicative, boost::uuids::uuid{}, 1);
-    BOOST_LOG_SEV(lg, info) << "A take of kind " << live.kind_code << " records the mark "
-                            << live.output_is_indicative;
+    ORES_LOG_SEV(lg, info) << "A take of kind " << live.kind_code << " records the mark "
+                           << live.output_is_indicative;
     CHECK(live.output_is_indicative);
     CHECK_FALSE(live.requires_authorisation);
 

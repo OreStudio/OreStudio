@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/origin_type.hpp"
 #include "ores.trading.api/messaging/origin_type_protocol.hpp"
 #include "ores.trading.core/repository/origin_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -440,25 +438,25 @@ origin_type_service::prepare_change(const messaging::origin_type_change& change,
 
 std::vector<domain::origin_type> origin_type_service::list_origin_types(std::uint32_t offset,
                                                                         std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all origin types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all origin types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t origin_type_service::count_origin_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total origin types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total origin types count";
     return repo_.get_total_origin_type_count(ctx_);
 }
 
 
 std::optional<domain::origin_type>
 origin_type_service::get_origin_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting origin type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting origin type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::origin_type> origin_type_service::get_origin_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting origin type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting origin type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -473,11 +471,11 @@ origin_type_service::get_origin_types(const std::vector<std::string>& codes) {
 void origin_type_service::save_origin_type(const domain::origin_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Origin Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving origin type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving origin type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved origin type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved origin type. " << "code: " << v.code;
 }
 
 void origin_type_service::save_origin_types(const std::vector<domain::origin_type>& origin_types) {
@@ -485,7 +483,7 @@ void origin_type_service::save_origin_types(const std::vector<domain::origin_typ
         if (e.code.empty())
             throw std::invalid_argument("Origin Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << origin_types.size() << " origin types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << origin_types.size() << " origin types";
     auto ts = origin_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -494,9 +492,9 @@ void origin_type_service::save_origin_types(const std::vector<domain::origin_typ
 }
 
 void origin_type_service::delete_origin_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing origin type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing origin type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed origin type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed origin type. " << "code: " << code;
 }
 
 void origin_type_service::delete_origin_types(const std::vector<std::string>& codes) {
@@ -505,7 +503,7 @@ void origin_type_service::delete_origin_types(const std::vector<std::string>& co
 
 std::vector<domain::origin_type>
 origin_type_service::get_origin_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for origin type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for origin type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

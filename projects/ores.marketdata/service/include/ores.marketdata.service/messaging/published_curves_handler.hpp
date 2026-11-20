@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_MESSAGING_PUBLISHED_CURVES_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
 #include "ores.marketdata.service/app/published_curve_reader.hpp"
@@ -81,7 +81,7 @@ public:
             return;
         auto req = decode<list_published_curves_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(published_curves_handler_lg(), warn)
+            ORES_LOG_SEV(published_curves_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -90,7 +90,7 @@ public:
         try {
             resp = service::app::list_published_curves(*req_ctx, *req);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(published_curves_handler_lg(), error)
+            ORES_LOG_SEV(published_curves_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
@@ -106,7 +106,7 @@ public:
             return;
         auto req = decode<get_published_curve_sets_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(published_curves_handler_lg(), warn)
+            ORES_LOG_SEV(published_curves_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -115,7 +115,7 @@ public:
         try {
             resp = service::app::get_published_curve_sets(*req_ctx, *req);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(published_curves_handler_lg(), error)
+            ORES_LOG_SEV(published_curves_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
@@ -134,7 +134,7 @@ public:
             return;
         auto req = decode<withdraw_curve_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(published_curves_handler_lg(), warn)
+            ORES_LOG_SEV(published_curves_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -143,7 +143,7 @@ public:
         try {
             resp = service::app::withdraw_curve(*req_ctx, *req);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(published_curves_handler_lg(), error)
+            ORES_LOG_SEV(published_curves_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();

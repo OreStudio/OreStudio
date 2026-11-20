@@ -27,7 +27,7 @@
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -102,7 +102,7 @@ private:
             return;
         }
         if (!registry_.permits_all_configs(*ctx) || !feed_kind_registry::permits_run(*ctx)) {
-            BOOST_LOG_SEV(feed_selection_handler_lg(), warn)
+            ORES_LOG_SEV(feed_selection_handler_lg(), warn)
                 << "Rejecting " << msg.subject
                 << ": missing a feed config read permission or the run permission.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
@@ -163,11 +163,11 @@ private:
                                std::to_string(resp.skipped) + " skipped";
             }
             resp.success = true;
-            BOOST_LOG_SEV(feed_selection_handler_lg(), info)
+            ORES_LOG_SEV(feed_selection_handler_lg(), info)
                 << msg.subject << " (" << label << ") — " << resp.message;
         } catch (const std::exception& e) {
             resp.message = "The request failed. The service log says why.";
-            BOOST_LOG_SEV(feed_selection_handler_lg(), error)
+            ORES_LOG_SEV(feed_selection_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
         }
         reply(nats_, msg, resp);

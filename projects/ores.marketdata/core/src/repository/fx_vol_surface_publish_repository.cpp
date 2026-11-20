@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/fx_vol_surface_publish.hpp"
 #include "ores.marketdata.api/domain/fx_vol_surface_publish_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/messaging/fx_vol_surface_publish_protocol.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_publish_entity.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_publish_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -248,7 +246,7 @@ void fx_vol_surface_publish_repository::write(
 void fx_vol_surface_publish_repository::write(const context& ctx,
                                               const domain::fx_vol_surface_publish& v,
                                               const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility surface publish. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing FX volatility surface publish. " << "id: " << v.id;
     const auto t =
         fx_vol_surface_publish_apply_claim(v,
                                            claim,
@@ -265,7 +263,7 @@ void fx_vol_surface_publish_repository::write(
     const context& ctx,
     const std::vector<domain::fx_vol_surface_publish>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility surface publishes. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing FX volatility surface publishes. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "fx_vol_surface_publish_repository::write: one claim is needed for each row");
@@ -305,7 +303,7 @@ fx_vol_surface_publish_repository::read_latest(const context& ctx) {
 
 std::vector<domain::fx_vol_surface_publish>
 fx_vol_surface_publish_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest FX volatility surface publish. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest FX volatility surface publish. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -324,8 +322,8 @@ fx_vol_surface_publish_repository::read_latest(const context& ctx, const std::st
 
 std::vector<domain::fx_vol_surface_publish>
 fx_vol_surface_publish_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all FX volatility surface publish versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all FX volatility surface publish versions. "
+                              << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -342,8 +340,8 @@ fx_vol_surface_publish_repository::read_all(const context& ctx, const std::strin
 
 std::optional<domain::fx_vol_surface_publish> fx_vol_surface_publish_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading FX volatility surface publish at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading FX volatility surface publish at version. "
+                              << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
@@ -371,8 +369,8 @@ fx_vol_surface_publish_repository::read_latest_by_request_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::fx_vol_surface_publishes_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest FX volatility surface publishes. request_id: "
-                               << request_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest FX volatility surface publishes. request_id: "
+                              << request_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
@@ -395,7 +393,7 @@ std::uint32_t fx_vol_surface_publish_repository::get_total_publish_count_by_requ
     const context& ctx,
     const std::string& request_id,
     const std::optional<messaging::fx_vol_surface_publishes_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active FX volatility surface publishes count. request_id: "
         << request_id;
     static constexpr auto max = db_timestamp::max();
@@ -416,7 +414,7 @@ std::uint32_t fx_vol_surface_publish_repository::get_total_publish_count_by_requ
 
 fx_vol_surface_publish_repository::remove_status fx_vol_surface_publish_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX volatility surface publish. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing FX volatility surface publish. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -455,8 +453,8 @@ std::vector<domain::fx_vol_surface_publish> fx_vol_surface_publish_repository::r
     const ores::utility::domain::order& order,
     const std::optional<messaging::fx_vol_surface_publishes_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest FX volatility surface publishes with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest FX volatility surface publishes with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -478,7 +476,7 @@ std::uint32_t fx_vol_surface_publish_repository::get_total_publish_count(
     const context& ctx,
     const std::optional<messaging::fx_vol_surface_publishes_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active FX volatility surface publish count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active FX volatility surface publish count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
@@ -572,7 +570,7 @@ fx_vol_surface_publish_repository::read_latest_by_request_and_blueprint(
 std::vector<domain::fx_vol_surface_publish>
 fx_vol_surface_publish_repository::read_live_for_series(const context& ctx,
                                                         const boost::uuids::uuid& series_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);

@@ -480,7 +480,7 @@ std::optional<domain::curve_publish> read_latest_by_request_and_config(
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::curve_publish> curve_publish_repository::read_latest_by_request_and_config(
     const context& ctx, const std::string& request_id, const std::string& bootstrap_config_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the publish record of request: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading the publish record of request: " << request_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_publish_entity>> |
@@ -523,7 +523,7 @@ read_latest_published_for_series(const context& ctx, const boost::uuids::uuid& s
 std::optional<domain::curve_publish>
 curve_publish_repository::read_latest_published_for_series(
     const context& ctx, const boost::uuids::uuid& series_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the published set of series: " << series_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading the published set of series: " << series_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
@@ -614,7 +614,7 @@ read_live_for_series(const context& ctx, const boost::uuids::uuid& series_id);
 std::vector<domain::curve_publish>
 curve_publish_repository::read_live_for_series(const context& ctx,
                                                const boost::uuids::uuid& series_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);

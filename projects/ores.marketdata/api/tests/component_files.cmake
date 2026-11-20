@@ -59,6 +59,7 @@ set(files
     "fx_forward_publish_protocol_codec_roundtrip_tests.cpp"
     "fx_forward_publish_spot_codec_roundtrip_tests.cpp"
     "fx_forward_publish_spot_protocol_codec_roundtrip_tests.cpp"
+    "fx_vol_quote_fit_operation_protocol_codec_roundtrip_tests.cpp"
     "fx_vol_surface_calibration_codec_roundtrip_tests.cpp"
     "fx_vol_surface_calibration_protocol_codec_roundtrip_tests.cpp"
     "fx_vol_surface_operation_protocol_codec_roundtrip_tests.cpp"

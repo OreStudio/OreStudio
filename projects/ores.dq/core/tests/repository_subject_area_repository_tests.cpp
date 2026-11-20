@@ -22,7 +22,7 @@
 #include "ores.dq.api/generators/subject_area_generator.hpp"
 #include "ores.dq.core/repository/data_domain_repository.hpp"
 #include "ores.dq.core/repository/subject_area_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -57,11 +57,11 @@ TEST_CASE("write_single_subject_area", "[repository]") {
     subject_area.name = subject_area.name + "_" + std::string(faker::string::alphanumeric(8));
     subject_area.domain_name = dd.name;
 
-    BOOST_LOG_SEV(lg, debug) << "Subject area: " << subject_area;
+    ORES_LOG_SEV(lg, debug) << "Subject area: " << subject_area;
     repo.write(h.context(), subject_area);
 
     auto read_subject_areas = repo.read_latest(h.context(), subject_area.name, dd.name);
-    BOOST_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
+    ORES_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
 
     REQUIRE(read_subject_areas.size() == 1);
     CHECK(read_subject_areas[0].name == subject_area.name);
@@ -88,11 +88,11 @@ TEST_CASE("write_multiple_subject_areas", "[repository]") {
         s.name = s.name + "_" + std::string(faker::string::alphanumeric(8));
         s.domain_name = dd.name;
     }
-    BOOST_LOG_SEV(lg, debug) << "Subject areas: " << subject_areas;
+    ORES_LOG_SEV(lg, debug) << "Subject areas: " << subject_areas;
     repo.write(h.context(), subject_areas);
 
     auto read_subject_areas = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
+    ORES_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
 
     for (const auto& written : subject_areas) {
         bool found = false;
@@ -125,12 +125,12 @@ TEST_CASE("read_latest_subject_areas", "[repository]") {
         s.name = s.name + "_" + std::string(faker::string::alphanumeric(8));
         s.domain_name = dd.name;
     }
-    BOOST_LOG_SEV(lg, debug) << "Written subject areas: " << written_subject_areas;
+    ORES_LOG_SEV(lg, debug) << "Written subject areas: " << written_subject_areas;
 
     repo.write(h.context(), written_subject_areas);
 
     auto read_subject_areas = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
+    ORES_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
 
     for (const auto& written : written_subject_areas) {
         bool found = false;
@@ -161,13 +161,13 @@ TEST_CASE("read_latest_subject_area_by_compound_key", "[repository]") {
     subject_area.tenant_id = h.tenant_id();
     subject_area.name = subject_area.name + "_" + std::string(faker::string::alphanumeric(8));
     subject_area.domain_name = dd.name;
-    BOOST_LOG_SEV(lg, debug) << "Write subject area: " << subject_area;
+    ORES_LOG_SEV(lg, debug) << "Write subject area: " << subject_area;
     repo.write(h.context(), subject_area);
 
-    BOOST_LOG_SEV(lg, debug) << "Target domain name: " << dd.name;
+    ORES_LOG_SEV(lg, debug) << "Target domain name: " << dd.name;
 
     auto read_subject_areas = repo.read_latest(h.context(), subject_area.name, dd.name);
-    BOOST_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
+    ORES_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
 
     REQUIRE(!read_subject_areas.empty());
     for (const auto& sa : read_subject_areas) {

@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_MESSAGING_INSTRUMENT_CATALOGUE_HANDLER_HPP
 #define ORES_MARKETDATA_SERVICE_MESSAGING_INSTRUMENT_CATALOGUE_HANDLER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.service/app/instrument_catalogue.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -72,7 +72,7 @@ public:
             return;
         auto req = decode<list_instruments_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(instrument_catalogue_handler_lg(), warn)
+            ORES_LOG_SEV(instrument_catalogue_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -81,7 +81,7 @@ public:
         try {
             resp = service::app::list_instruments(*req_ctx, *req);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(instrument_catalogue_handler_lg(), error)
+            ORES_LOG_SEV(instrument_catalogue_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();

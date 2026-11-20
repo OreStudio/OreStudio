@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_MESSAGING_CURVE_REPUBLISH_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -90,18 +90,17 @@ public:
                 if (!built)
                     resp.message = "Deferred. " + built.error().reason;
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(curve_republish_handler_lg(), error)
+                ORES_LOG_SEV(curve_republish_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }
         } else {
-            BOOST_LOG_SEV(curve_republish_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(curve_republish_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(curve_republish_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(curve_republish_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
@@ -136,18 +135,17 @@ public:
                     resp.success = true;
                 }
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(curve_republish_handler_lg(), error)
+                ORES_LOG_SEV(curve_republish_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }
         } else {
-            BOOST_LOG_SEV(curve_republish_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(curve_republish_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(curve_republish_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(curve_republish_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 

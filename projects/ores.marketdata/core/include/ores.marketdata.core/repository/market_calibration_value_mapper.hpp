@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_CALIBRATION_VALUE_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_CALIBRATION_VALUE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_calibration_value.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_calibration_value_entity.hpp"

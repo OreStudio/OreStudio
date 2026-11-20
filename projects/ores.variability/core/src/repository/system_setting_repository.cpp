@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/domain/system_setting_json_io.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/system_setting_protocol.hpp"
 #include "ores.variability.core/repository/system_setting_entity.hpp"
 #include "ores.variability.core/repository/system_setting_mapper.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -214,7 +212,7 @@ void system_setting_repository::write(const context& ctx,
 void system_setting_repository::write(const context& ctx,
                                       const domain::system_setting& v,
                                       const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing system setting. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing system setting. " << "id: " << v.id;
     const auto t = system_setting_apply_claim(v,
                                               claim,
                                               system_setting_claim_reads_current(claim) ?
@@ -228,7 +226,7 @@ void system_setting_repository::write(
     const context& ctx,
     const std::vector<domain::system_setting>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing system settings. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing system settings. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "system_setting_repository::write: one claim is needed for each row");
@@ -264,7 +262,7 @@ std::vector<domain::system_setting> system_setting_repository::read_latest(const
 
 std::vector<domain::system_setting> system_setting_repository::read_latest(const context& ctx,
                                                                            const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest system setting. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest system setting. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -281,7 +279,7 @@ std::vector<domain::system_setting> system_setting_repository::read_latest(const
 
 std::vector<domain::system_setting>
 system_setting_repository::read_latest_by_name(const context& ctx, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest system setting by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest system setting by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -322,7 +320,7 @@ system_setting_repository::read_latest_by_name(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest system settings by name. Count: " << names.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest system settings by name. Count: " << names.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -342,7 +340,7 @@ system_setting_repository::read_latest_by_name(const context& ctx,
 
 std::vector<domain::system_setting>
 system_setting_repository::read_any_by_name(const context& ctx, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any system setting by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading any system setting by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<system_setting_entity>> |
                        query_builder::where("tenant_id"_c == tid && "name"_c == name) |
@@ -369,7 +367,7 @@ system_setting_repository::read_any_by_name(const context& ctx, const std::strin
 
 std::vector<domain::system_setting> system_setting_repository::read_all(const context& ctx,
                                                                         const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all system setting versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all system setting versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<system_setting_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -385,8 +383,8 @@ std::vector<domain::system_setting> system_setting_repository::read_all(const co
 
 std::optional<domain::system_setting> system_setting_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading system setting at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading system setting at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<system_setting_entity>> |
@@ -408,7 +406,7 @@ std::optional<domain::system_setting> system_setting_repository::read_at_version
 
 system_setting_repository::remove_status system_setting_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing system setting. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing system setting. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -446,8 +444,8 @@ std::vector<domain::system_setting> system_setting_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::system_settings_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest system settings with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest system settings with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<system_setting_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -468,7 +466,7 @@ std::uint32_t system_setting_repository::get_total_setting_count(
     const context& ctx,
     const std::optional<messaging::system_settings_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active system setting count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active system setting count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<system_setting_entity>> |

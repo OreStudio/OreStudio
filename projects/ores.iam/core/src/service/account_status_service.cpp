@@ -29,10 +29,8 @@
 #include "ores.iam.api/domain/account_status.hpp"
 #include "ores.iam.api/messaging/account_status_protocol.hpp"
 #include "ores.iam.core/repository/account_status_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -447,26 +445,26 @@ account_status_service::prepare_change(const messaging::account_status_change& c
 
 std::vector<domain::account_status> account_status_service::list_statuses(std::uint32_t offset,
                                                                           std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all account statuses";
+    ORES_LOG_SEV(lg(), debug) << "Listing all account statuses";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t account_status_service::count_statuses() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total account statuses count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total account statuses count";
     return repo_.get_total_status_count(ctx_);
 }
 
 
 std::optional<domain::account_status>
 account_status_service::get_status_at_version(const std::string& status, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting account status at version. " << "status: " << status
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting account status at version. " << "status: " << status
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, status, version);
 }
 
 std::optional<domain::account_status>
 account_status_service::find_status(const std::string& status) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding account status. " << "status: " << status;
+    ORES_LOG_SEV(lg(), debug) << "Finding account status. " << "status: " << status;
     auto results = repo_.read_latest(ctx_, status);
     if (results.empty())
         return std::nullopt;
@@ -481,11 +479,11 @@ account_status_service::get_statuses(const std::vector<std::string>& statuss) {
 void account_status_service::save_status(const domain::account_status& v) {
     if (v.status.empty())
         throw std::invalid_argument("Account Status status cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving account status. " << "status: " << v.status;
+    ORES_LOG_SEV(lg(), debug) << "Saving account status. " << "status: " << v.status;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved account status. " << "status: " << v.status;
+    ORES_LOG_SEV(lg(), info) << "Saved account status. " << "status: " << v.status;
 }
 
 void account_status_service::save_statuses(const std::vector<domain::account_status>& statuses) {
@@ -493,7 +491,7 @@ void account_status_service::save_statuses(const std::vector<domain::account_sta
         if (e.status.empty())
             throw std::invalid_argument("Account Status status cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " account statuses";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " account statuses";
     auto ts = statuses;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -502,9 +500,9 @@ void account_status_service::save_statuses(const std::vector<domain::account_sta
 }
 
 void account_status_service::delete_status(const std::string& status) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account status. " << "status: " << status;
+    ORES_LOG_SEV(lg(), debug) << "Removing account status. " << "status: " << status;
     repo_.remove(ctx_, status);
-    BOOST_LOG_SEV(lg(), info) << "Removed account status. " << "status: " << status;
+    ORES_LOG_SEV(lg(), info) << "Removed account status. " << "status: " << status;
 }
 
 void account_status_service::delete_statuses(const std::vector<std::string>& statuss) {
@@ -513,7 +511,7 @@ void account_status_service::delete_statuses(const std::vector<std::string>& sta
 
 std::vector<domain::account_status>
 account_status_service::get_status_history(const std::string& status) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for account status. " << "status: " << status;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for account status. " << "status: " << status;
     return repo_.read_all(ctx_, status);
 }
 

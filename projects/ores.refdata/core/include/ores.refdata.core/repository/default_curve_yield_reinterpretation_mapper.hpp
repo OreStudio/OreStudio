@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_DEFAULT_CURVE_YIELD_REINTERPRETATION_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_DEFAULT_CURVE_YIELD_REINTERPRETATION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/default_curve_yield_reinterpretation.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/default_curve_yield_reinterpretation_entity.hpp"

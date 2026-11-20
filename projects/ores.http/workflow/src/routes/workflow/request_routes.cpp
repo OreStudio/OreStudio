@@ -30,7 +30,7 @@
 #include "ores.inbox.api/messaging/approval_decision_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_request_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/messaging/trade_authorisation_request_protocol.hpp"
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -260,7 +260,7 @@ void request_routes::register_routes(
                     if (reply.result.outcome == ores::utility::domain::outcome::missing)
                         rr::refuse(http_status::not_found, "not-found", "No such request.");
                     if (!reply.request) {
-                        BOOST_LOG_SEV(request_lg(), ores::logging::warn)
+                        ORES_LOG_SEV(request_lg(), ores::logging::warn)
                             << "The inbox answered request " << id << " without a row.";
                         rr::refuse(http_status::not_found, "not-found", "No such request.");
                     }

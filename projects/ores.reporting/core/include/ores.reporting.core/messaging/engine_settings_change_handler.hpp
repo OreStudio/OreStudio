@@ -26,7 +26,7 @@
 #define ORES_REPORTING_CORE_MESSAGING_ENGINE_SETTINGS_CHANGE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/engine_settings_change_protocol.hpp"
@@ -74,7 +74,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_engine_settings_changes(ores::nats::message msg) {
-        BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,7 +89,7 @@ public:
         }
         auto req = decode<list_engine_settings_changes_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), warn)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -97,14 +97,13 @@ public:
         service::engine_settings_change_service svc(req_ctx);
         try {
             auto response = svc.list_engine_settings_changes(*req);
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), error)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_engine_settings_changes_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -124,7 +123,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_engine_settings_change(ores::nats::message msg) {
-        BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -139,7 +138,7 @@ public:
         }
         auto req = decode<get_engine_settings_change_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), warn)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -147,14 +146,13 @@ public:
         service::engine_settings_change_service svc(req_ctx);
         try {
             auto response = svc.get_engine_settings_change(*req);
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), error)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_engine_settings_change_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -174,7 +172,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_engine_settings_changes(ores::nats::message msg) {
-        BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -189,7 +187,7 @@ public:
         }
         auto req = decode<get_many_engine_settings_changes_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), warn)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -197,14 +195,13 @@ public:
         service::engine_settings_change_service svc(req_ctx);
         try {
             auto response = svc.get_many_engine_settings_changes(*req);
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), error)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_engine_settings_changes_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -224,7 +221,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_by_request_id_engine_settings_changes(ores::nats::message msg) {
-        BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -239,7 +236,7 @@ public:
         }
         auto req = decode<list_by_request_id_engine_settings_changes_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), warn)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -247,14 +244,13 @@ public:
         service::engine_settings_change_service svc(req_ctx);
         try {
             auto response = svc.list_by_request_id_engine_settings_changes(*req);
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), error)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_request_id_engine_settings_changes_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -274,7 +270,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_by_engine_settings_id_engine_settings_changes(ores::nats::message msg) {
-        BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -289,7 +285,7 @@ public:
         }
         auto req = decode<list_by_engine_settings_id_engine_settings_changes_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), warn)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -297,14 +293,13 @@ public:
         service::engine_settings_change_service svc(req_ctx);
         try {
             auto response = svc.list_by_engine_settings_id_engine_settings_changes(*req);
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), error)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_engine_settings_id_engine_settings_changes_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -324,7 +319,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_engine_settings_change_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -339,7 +334,7 @@ public:
         }
         auto req = decode<list_engine_settings_change_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), warn)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -347,14 +342,13 @@ public:
         service::engine_settings_change_service svc(req_ctx);
         try {
             auto response = svc.list_engine_settings_change_versions(*req);
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), error)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_engine_settings_change_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -374,7 +368,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_engine_settings_change_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -389,7 +383,7 @@ public:
         }
         auto req = decode<get_engine_settings_change_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), warn)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -397,14 +391,13 @@ public:
         service::engine_settings_change_service svc(req_ctx);
         try {
             auto response = svc.get_engine_settings_change_version(*req);
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(engine_settings_change_handler_lg(), error)
+            ORES_LOG_SEV(engine_settings_change_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_engine_settings_change_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

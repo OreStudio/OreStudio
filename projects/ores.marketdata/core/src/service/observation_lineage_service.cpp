@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
 #include "ores.marketdata.api/messaging/observation_lineage_protocol.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -467,12 +465,12 @@ observation_lineage_service::prepare_change(const messaging::observation_lineage
 
 std::vector<domain::observation_lineage>
 observation_lineage_service::list_observation_lineages(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all observation lineages";
+    ORES_LOG_SEV(lg(), debug) << "Listing all observation lineages";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t observation_lineage_service::count_observation_lineages() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total observation lineages count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total observation lineages count";
     return repo_.get_total_observation_lineage_count(ctx_);
 }
 
@@ -480,14 +478,14 @@ std::uint32_t observation_lineage_service::count_observation_lineages() {
 std::optional<domain::observation_lineage>
 observation_lineage_service::get_observation_lineage_at_version(const boost::uuids::uuid& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting observation lineage at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting observation lineage at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::observation_lineage>
 observation_lineage_service::get_observation_lineage(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting observation lineage. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting observation lineage. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -502,11 +500,11 @@ observation_lineage_service::get_observation_lineages(const std::vector<std::str
 void observation_lineage_service::save_observation_lineage(const domain::observation_lineage& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Observation Lineage id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving observation lineage. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving observation lineage. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved observation lineage. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved observation lineage. " << "id: " << v.id;
 }
 
 void observation_lineage_service::save_observation_lineages(
@@ -515,8 +513,8 @@ void observation_lineage_service::save_observation_lineages(
         if (e.id.is_nil())
             throw std::invalid_argument("Observation Lineage id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << observation_lineages.size()
-                               << " observation lineages";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << observation_lineages.size()
+                              << " observation lineages";
     auto ts = observation_lineages;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -525,9 +523,9 @@ void observation_lineage_service::save_observation_lineages(
 }
 
 void observation_lineage_service::delete_observation_lineage(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing observation lineage. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing observation lineage. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed observation lineage. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed observation lineage. " << "id: " << id;
 }
 
 void observation_lineage_service::delete_observation_lineages(const std::vector<std::string>& ids) {
@@ -536,7 +534,7 @@ void observation_lineage_service::delete_observation_lineages(const std::vector<
 
 std::vector<domain::observation_lineage>
 observation_lineage_service::get_observation_lineage_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for observation lineage. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for observation lineage. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

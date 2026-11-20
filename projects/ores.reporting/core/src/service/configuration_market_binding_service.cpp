@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/configuration_market_binding.hpp"
 #include "ores.reporting.api/messaging/configuration_market_binding_protocol.hpp"
 #include "ores.reporting.core/repository/configuration_market_binding_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -518,12 +516,12 @@ ores::utility::domain::result configuration_market_binding_service::prepare_chan
 
 std::vector<domain::configuration_market_binding>
 configuration_market_binding_service::list_bindings(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all configuration market bindings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all configuration market bindings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t configuration_market_binding_service::count_bindings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total configuration market bindings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total configuration market bindings count";
     return repo_.get_total_binding_count(ctx_);
 }
 
@@ -531,14 +529,14 @@ std::uint32_t configuration_market_binding_service::count_bindings() {
 std::vector<domain::configuration_market_binding>
 configuration_market_binding_service::list_bindings_by_configuration_id(
     const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing configuration market bindings by configuration_id: "
-                               << configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing configuration market bindings by configuration_id: "
+                              << configuration_id;
     return repo_.read_latest_by_configuration_id(ctx_, configuration_id, offset, limit);
 }
 
 std::uint32_t configuration_market_binding_service::count_bindings_by_configuration_id(
     const std::string& configuration_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total configuration market bindings count by configuration_id: "
         << configuration_id;
     return repo_.get_total_binding_count_by_configuration_id(ctx_, configuration_id);
@@ -548,14 +546,14 @@ std::uint32_t configuration_market_binding_service::count_bindings_by_configurat
 std::optional<domain::configuration_market_binding>
 configuration_market_binding_service::get_binding_at_version(const boost::uuids::uuid& id,
                                                              std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting configuration market binding at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting configuration market binding at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::configuration_market_binding>
 configuration_market_binding_service::get_binding(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting configuration market binding. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting configuration market binding. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -571,11 +569,11 @@ void configuration_market_binding_service::save_binding(
     const domain::configuration_market_binding& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Configuration Market Binding id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving configuration market binding. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving configuration market binding. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved configuration market binding. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved configuration market binding. " << "id: " << v.id;
 }
 
 void configuration_market_binding_service::save_bindings(
@@ -584,7 +582,7 @@ void configuration_market_binding_service::save_bindings(
         if (e.id.is_nil())
             throw std::invalid_argument("Configuration Market Binding id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << bindings.size() << " configuration market bindings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << bindings.size() << " configuration market bindings";
     auto ts = bindings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -593,9 +591,9 @@ void configuration_market_binding_service::save_bindings(
 }
 
 void configuration_market_binding_service::delete_binding(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing configuration market binding. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing configuration market binding. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed configuration market binding. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed configuration market binding. " << "id: " << id;
 }
 
 void configuration_market_binding_service::delete_bindings(const std::vector<std::string>& ids) {
@@ -604,8 +602,8 @@ void configuration_market_binding_service::delete_bindings(const std::vector<std
 
 std::vector<domain::configuration_market_binding>
 configuration_market_binding_service::get_binding_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for configuration market binding. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for configuration market binding. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

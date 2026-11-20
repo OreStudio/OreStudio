@@ -22,7 +22,7 @@
  * Template: cpp_shell_operation_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/dq/report_definition_template_operations_commands.hpp"
@@ -63,7 +63,7 @@ TEST_CASE("report_definition_template_operations_registers_every_declared_comman
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 1 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 1 command(s).";
 }
 
 TEST_CASE("report_definition_template_operations_process_list_dq_report_definition_templates_"
@@ -78,7 +78,7 @@ TEST_CASE("report_definition_template_operations_process_list_dq_report_definiti
     report_definition_template_operations_commands::process_list_dq_report_definition_templates(
         out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -99,7 +99,7 @@ TEST_CASE("report_definition_template_operations_process_list_dq_report_definiti
     report_definition_template_operations_commands::process_list_dq_report_definition_templates(
         out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);

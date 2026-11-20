@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/curve_segment_type.hpp"
 #include "ores.refdata.api/messaging/curve_segment_type_protocol.hpp"
 #include "ores.refdata.core/repository/curve_segment_type_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -452,12 +450,12 @@ curve_segment_type_service::prepare_change(const messaging::curve_segment_type_c
 
 std::vector<domain::curve_segment_type>
 curve_segment_type_service::list_segment_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve segment types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve segment types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_segment_type_service::count_segment_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve segment types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve segment types count";
     return repo_.get_total_segment_type_count(ctx_);
 }
 
@@ -465,14 +463,14 @@ std::uint32_t curve_segment_type_service::count_segment_types() {
 std::optional<domain::curve_segment_type>
 curve_segment_type_service::get_segment_type_at_version(const std::string& code,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::curve_segment_type>
 curve_segment_type_service::get_segment_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -487,11 +485,11 @@ curve_segment_type_service::get_segment_types(const std::vector<std::string>& co
 void curve_segment_type_service::save_segment_type(const domain::curve_segment_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Curve Segment Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve segment type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve segment type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve segment type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved curve segment type. " << "code: " << v.code;
 }
 
 void curve_segment_type_service::save_segment_types(
@@ -500,7 +498,7 @@ void curve_segment_type_service::save_segment_types(
         if (e.code.empty())
             throw std::invalid_argument("Curve Segment Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << segment_types.size() << " curve segment types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << segment_types.size() << " curve segment types";
     auto ts = segment_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -509,9 +507,9 @@ void curve_segment_type_service::save_segment_types(
 }
 
 void curve_segment_type_service::delete_segment_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve segment type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve segment type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed curve segment type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed curve segment type. " << "code: " << code;
 }
 
 void curve_segment_type_service::delete_segment_types(const std::vector<std::string>& codes) {
@@ -520,7 +518,7 @@ void curve_segment_type_service::delete_segment_types(const std::vector<std::str
 
 std::vector<domain::curve_segment_type>
 curve_segment_type_service::get_segment_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve segment type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve segment type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

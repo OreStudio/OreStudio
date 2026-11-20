@@ -108,6 +108,19 @@ public:
     virtual std::optional<feed_start> start_source() const;
 
     /**
+     * @brief The vendor subjects this feed's ticks land on, for a screen to watch.
+     *
+     * A feed that publishes through a provider's adapter reaches the market as that
+     * provider's ticks, after the adapter and the ingest, on the provider's feed
+     * subjects; these name its series on every feed of the provider, so a watcher
+     * also hears another source of the provider that quotes the same series. A feed
+     * with no adapter reaches no vendor subject, and answers nothing; every run the
+     * synthetic service starts has one, because a start refuses a feed whose
+     * provider the catalogue serves with no simulated source.
+     */
+    virtual std::vector<std::string> vendor_watch_subjects() const;
+
+    /**
      * @brief The factory kind string this producer registers under (the
      * asset-class discriminator of the factory seam, e.g. "fx_spot",
      * "ir_curve"). Control-plane code scopes running-feed listings by kind;

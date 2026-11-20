@@ -90,7 +90,7 @@ void bootstrap_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering bootstrap routes";
+    ORES_LOG_SEV(lg(), info) << "Registering bootstrap routes";
 
     auto bootstrap_status_route =
         router->post("/api/v1/iam/ops/bootstrap_status")
@@ -123,7 +123,7 @@ void bootstrap_routes::register_routes(
     router->add_route(create_initial_admin_built);
     registry->register_route(create_initial_admin_built);
 
-    BOOST_LOG_SEV(lg(), info) << "bootstrap routes registered: " << 2 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "bootstrap routes registered: " << 2 << " endpoint(s)";
 }
 
 }

@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/messaging/inflation_cap_floor_volatility_config_protocol.hpp"
 #include "ores.refdata.core/repository/inflation_cap_floor_volatility_config_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -496,13 +494,13 @@ ores::utility::domain::result inflation_cap_floor_volatility_config_service::pre
 std::vector<domain::inflation_cap_floor_volatility_config>
 inflation_cap_floor_volatility_config_service::list_inflation_cap_floor_volatility_configs(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all inflation cap floor volatility configs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all inflation cap floor volatility configs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t
 inflation_cap_floor_volatility_config_service::count_inflation_cap_floor_volatility_configs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total inflation cap floor volatility configs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total inflation cap floor volatility configs count";
     return repo_.get_total_inflation_cap_floor_volatility_config_count(ctx_);
 }
 
@@ -510,15 +508,15 @@ inflation_cap_floor_volatility_config_service::count_inflation_cap_floor_volatil
 std::optional<domain::inflation_cap_floor_volatility_config>
 inflation_cap_floor_volatility_config_service::get_inflation_cap_floor_volatility_config_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting inflation cap floor volatility config at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting inflation cap floor volatility config at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::inflation_cap_floor_volatility_config>
 inflation_cap_floor_volatility_config_service::get_inflation_cap_floor_volatility_config(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting inflation cap floor volatility config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting inflation cap floor volatility config. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -535,12 +533,11 @@ void inflation_cap_floor_volatility_config_service::save_inflation_cap_floor_vol
     const domain::inflation_cap_floor_volatility_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Inflation Cap Floor Volatility Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving inflation cap floor volatility config. "
-                               << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving inflation cap floor volatility config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved inflation cap floor volatility config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved inflation cap floor volatility config. " << "id: " << v.id;
 }
 
 void inflation_cap_floor_volatility_config_service::save_inflation_cap_floor_volatility_configs(
@@ -551,8 +548,8 @@ void inflation_cap_floor_volatility_config_service::save_inflation_cap_floor_vol
             throw std::invalid_argument(
                 "Inflation Cap Floor Volatility Config id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << inflation_cap_floor_volatility_configs.size()
-                               << " inflation cap floor volatility configs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << inflation_cap_floor_volatility_configs.size()
+                              << " inflation cap floor volatility configs";
     auto ts = inflation_cap_floor_volatility_configs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -562,10 +559,9 @@ void inflation_cap_floor_volatility_config_service::save_inflation_cap_floor_vol
 
 void inflation_cap_floor_volatility_config_service::delete_inflation_cap_floor_volatility_config(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing inflation cap floor volatility config. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing inflation cap floor volatility config. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed inflation cap floor volatility config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed inflation cap floor volatility config. " << "id: " << id;
 }
 
 void inflation_cap_floor_volatility_config_service::delete_inflation_cap_floor_volatility_configs(
@@ -576,8 +572,8 @@ void inflation_cap_floor_volatility_config_service::delete_inflation_cap_floor_v
 std::vector<domain::inflation_cap_floor_volatility_config>
 inflation_cap_floor_volatility_config_service::get_inflation_cap_floor_volatility_config_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for inflation cap floor volatility config. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for inflation cap floor volatility config. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

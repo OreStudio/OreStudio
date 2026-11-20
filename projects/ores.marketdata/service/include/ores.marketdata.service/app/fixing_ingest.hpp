@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_APP_FIXING_INGEST_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.marketdata.service/export.hpp"

@@ -199,7 +199,7 @@ void authorization_operations_commands::register_commands(cli::Menu& root_menu,
 void authorization_operations_commands::process_assign_role(std::ostream& out,
                                                             nats_client& session,
                                                             const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating assign-role request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating assign-role request.";
 
     using request_type = ores::iam::messaging::assign_role_request;
 
@@ -256,7 +256,7 @@ void authorization_operations_commands::process_assign_role(std::ostream& out,
 
 void authorization_operations_commands::process_assign_role_by_name(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating assign-role-by-name request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating assign-role-by-name request.";
 
     using request_type = ores::iam::messaging::assign_role_by_name_request;
 
@@ -312,7 +312,7 @@ void authorization_operations_commands::process_assign_role_by_name(
 void authorization_operations_commands::process_revoke_role(std::ostream& out,
                                                             nats_client& session,
                                                             const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating revoke-role request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating revoke-role request.";
 
     using request_type = ores::iam::messaging::revoke_role_request;
 
@@ -367,7 +367,7 @@ void authorization_operations_commands::process_revoke_role(std::ostream& out,
 
 void authorization_operations_commands::process_revoke_role_by_name(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating revoke-role-by-name request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating revoke-role-by-name request.";
 
     using request_type = ores::iam::messaging::revoke_role_by_name_request;
 
@@ -422,7 +422,7 @@ void authorization_operations_commands::process_revoke_role_by_name(
 
 void authorization_operations_commands::process_get_account_roles(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-account-roles request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-account-roles request.";
 
     using request_type = ores::iam::messaging::get_account_roles_request;
 
@@ -477,7 +477,7 @@ void authorization_operations_commands::process_get_account_roles(
 void authorization_operations_commands::process_get_my_roles(std::ostream& out,
                                                              nats_client& session,
                                                              const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-my-roles request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-my-roles request.";
 
     using request_type = ores::iam::messaging::get_my_roles_request;
 
@@ -529,7 +529,7 @@ void authorization_operations_commands::process_get_my_roles(std::ostream& out,
 
 void authorization_operations_commands::process_list_account_permissions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-account-permissions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-account-permissions request.";
 
     using request_type = ores::iam::messaging::list_account_permissions_request;
 
@@ -594,7 +594,7 @@ void authorization_operations_commands::process_list_account_permissions(
 
 void authorization_operations_commands::process_list_my_permissions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-my-permissions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-my-permissions request.";
 
     using request_type = ores::iam::messaging::list_my_permissions_request;
 
@@ -658,7 +658,7 @@ void authorization_operations_commands::process_list_my_permissions(
 
 void authorization_operations_commands::process_list_role_permissions_page(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-role-permissions-page request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-role-permissions-page request.";
 
     using request_type = ores::iam::messaging::list_role_permissions_page_request;
 
@@ -731,7 +731,7 @@ void authorization_operations_commands::process_list_role_permissions_page(
 
 void authorization_operations_commands::process_list_roles_page(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-roles-page request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-roles-page request.";
 
     using request_type = ores::iam::messaging::list_roles_page_request;
 
@@ -804,7 +804,7 @@ void authorization_operations_commands::process_list_roles_page(
 
 void authorization_operations_commands::process_list_role_holders(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-role-holders request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-role-holders request.";
 
     using request_type = ores::iam::messaging::list_role_holders_request;
 
@@ -867,7 +867,7 @@ void authorization_operations_commands::process_list_role_holders(
 
 void authorization_operations_commands::process_get_role_permissions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-role-permissions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-role-permissions request.";
 
     using request_type = ores::iam::messaging::get_role_permissions_request;
 
@@ -921,7 +921,7 @@ void authorization_operations_commands::process_get_role_permissions(
 
 void authorization_operations_commands::process_put_role_permissions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating put-role-permissions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating put-role-permissions request.";
 
     using request_type = ores::iam::messaging::put_role_permissions_request;
 
@@ -978,7 +978,7 @@ void authorization_operations_commands::process_put_role_permissions(
 
 void authorization_operations_commands::process_suggest_role_commands(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating suggest-role-commands request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating suggest-role-commands request.";
 
     using request_type = ores::iam::messaging::suggest_role_commands_request;
 

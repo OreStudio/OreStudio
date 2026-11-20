@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.api/messaging/series_classification_rule_protocol.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -483,12 +481,12 @@ ores::utility::domain::result series_classification_rule_service::prepare_change
 
 std::vector<domain::series_classification_rule>
 series_classification_rule_service::list_rules(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all series classification rules";
+    ORES_LOG_SEV(lg(), debug) << "Listing all series classification rules";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t series_classification_rule_service::count_rules() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total series classification rules count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total series classification rules count";
     return repo_.get_total_rule_count(ctx_);
 }
 
@@ -498,17 +496,17 @@ series_classification_rule_service::get_rule_at_version(const std::string& instr
                                                         const std::string& quote,
                                                         const std::string& key_kind,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting series classification rule at version. "
-                               << "instrument: " << instrument << " quote: " << quote
-                               << " key_kind: " << key_kind << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting series classification rule at version. "
+                              << "instrument: " << instrument << " quote: " << quote
+                              << " key_kind: " << key_kind << " version: " << version;
     return repo_.read_at_version(ctx_, instrument, quote, key_kind, version);
 }
 
 std::optional<domain::series_classification_rule> series_classification_rule_service::get_rule(
     const std::string& instrument, const std::string& quote, const std::string& key_kind) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting series classification rule. "
-                               << "instrument: " << instrument << " quote: " << quote
-                               << " key_kind: " << key_kind;
+    ORES_LOG_SEV(lg(), debug) << "Getting series classification rule. "
+                              << "instrument: " << instrument << " quote: " << quote
+                              << " key_kind: " << key_kind;
     auto results = repo_.read_latest(ctx_, instrument, quote, key_kind);
     if (results.empty())
         return std::nullopt;
@@ -529,15 +527,15 @@ void series_classification_rule_service::save_rule(const domain::series_classifi
         throw std::invalid_argument("Series Classification Rule quote cannot be empty.");
     if (v.key_kind.empty())
         throw std::invalid_argument("Series Classification Rule key_kind cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving series classification rule. "
-                               << "instrument: " << v.instrument << " quote: " << v.quote
-                               << " key_kind: " << v.key_kind;
+    ORES_LOG_SEV(lg(), debug) << "Saving series classification rule. "
+                              << "instrument: " << v.instrument << " quote: " << v.quote
+                              << " key_kind: " << v.key_kind;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved series classification rule. "
-                              << "instrument: " << v.instrument << " quote: " << v.quote
-                              << " key_kind: " << v.key_kind;
+    ORES_LOG_SEV(lg(), info) << "Saved series classification rule. "
+                             << "instrument: " << v.instrument << " quote: " << v.quote
+                             << " key_kind: " << v.key_kind;
 }
 
 void series_classification_rule_service::save_rules(
@@ -550,7 +548,7 @@ void series_classification_rule_service::save_rules(
         if (e.key_kind.empty())
             throw std::invalid_argument("Series Classification Rule key_kind cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << rules.size() << " series classification rules";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << rules.size() << " series classification rules";
     auto ts = rules;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -561,13 +559,13 @@ void series_classification_rule_service::save_rules(
 void series_classification_rule_service::delete_rule(const std::string& instrument,
                                                      const std::string& quote,
                                                      const std::string& key_kind) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing series classification rule. "
-                               << "instrument: " << instrument << " quote: " << quote
-                               << " key_kind: " << key_kind;
-    repo_.remove(ctx_, instrument, quote, key_kind);
-    BOOST_LOG_SEV(lg(), info) << "Removed series classification rule. "
+    ORES_LOG_SEV(lg(), debug) << "Removing series classification rule. "
                               << "instrument: " << instrument << " quote: " << quote
                               << " key_kind: " << key_kind;
+    repo_.remove(ctx_, instrument, quote, key_kind);
+    ORES_LOG_SEV(lg(), info) << "Removed series classification rule. "
+                             << "instrument: " << instrument << " quote: " << quote
+                             << " key_kind: " << key_kind;
 }
 
 void series_classification_rule_service::delete_rules(const std::vector<std::string>& instruments,
@@ -580,9 +578,9 @@ std::vector<domain::series_classification_rule>
 series_classification_rule_service::get_rule_history(const std::string& instrument,
                                                      const std::string& quote,
                                                      const std::string& key_kind) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for series classification rule. "
-                               << "instrument: " << instrument << " quote: " << quote
-                               << " key_kind: " << key_kind;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for series classification rule. "
+                              << "instrument: " << instrument << " quote: " << quote
+                              << " key_kind: " << key_kind;
     return repo_.read_all(ctx_, instrument, quote, key_kind);
 }
 

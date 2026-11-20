@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/ore_file_category.hpp"
 #include "ores.reporting.api/messaging/ore_file_category_protocol.hpp"
 #include "ores.reporting.core/repository/ore_file_category_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -452,26 +450,26 @@ ore_file_category_service::prepare_change(const messaging::ore_file_category_cha
 
 std::vector<domain::ore_file_category>
 ore_file_category_service::list_categories(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all ORE file categories";
+    ORES_LOG_SEV(lg(), debug) << "Listing all ORE file categories";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ore_file_category_service::count_categories() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ORE file categories count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total ORE file categories count";
     return repo_.get_total_category_count(ctx_);
 }
 
 
 std::optional<domain::ore_file_category>
 ore_file_category_service::get_category_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ORE file category at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting ORE file category at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::ore_file_category>
 ore_file_category_service::get_category(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ORE file category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting ORE file category. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -486,11 +484,11 @@ ore_file_category_service::get_categories(const std::vector<std::string>& codes)
 void ore_file_category_service::save_category(const domain::ore_file_category& v) {
     if (v.code.empty())
         throw std::invalid_argument("ORE File Category code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving ORE file category. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving ORE file category. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved ORE file category. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved ORE file category. " << "code: " << v.code;
 }
 
 void ore_file_category_service::save_categories(
@@ -499,7 +497,7 @@ void ore_file_category_service::save_categories(
         if (e.code.empty())
             throw std::invalid_argument("ORE File Category code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << categories.size() << " ORE file categories";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << categories.size() << " ORE file categories";
     auto ts = categories;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -508,9 +506,9 @@ void ore_file_category_service::save_categories(
 }
 
 void ore_file_category_service::delete_category(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ORE file category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing ORE file category. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed ORE file category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed ORE file category. " << "code: " << code;
 }
 
 void ore_file_category_service::delete_categories(const std::vector<std::string>& codes) {
@@ -519,7 +517,7 @@ void ore_file_category_service::delete_categories(const std::vector<std::string>
 
 std::vector<domain::ore_file_category>
 ore_file_category_service::get_category_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for ORE file category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for ORE file category. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

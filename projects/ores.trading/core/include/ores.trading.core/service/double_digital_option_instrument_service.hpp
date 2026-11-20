@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_DOUBLE_DIGITAL_OPTION_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/double_digital_option_instrument.hpp"
 #include "ores.trading.api/messaging/double_digital_option_instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"

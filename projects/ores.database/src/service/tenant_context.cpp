@@ -19,7 +19,7 @@
  */
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <stdexcept>
 
 namespace ores::database::service {
@@ -45,7 +45,7 @@ utility::uuid::tenant_id tenant_context::lookup_by_code(const context& ctx,
                                                         const std::string& code) {
     using namespace ores::logging;
 
-    BOOST_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant by code: " << code;
+    ORES_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant by code: " << code;
 
     const auto results = ores::database::query_builder::execute_parameterized_string_query(
         ctx,
@@ -58,7 +58,7 @@ utility::uuid::tenant_id tenant_context::lookup_by_code(const context& ctx,
         throw std::runtime_error("No active tenant found with code: " + code);
     }
 
-    BOOST_LOG_SEV(tenant_context_lg(), debug)
+    ORES_LOG_SEV(tenant_context_lg(), debug)
         << "Resolved tenant code '" << code << "' to ID: " << results[0];
 
     auto result = utility::uuid::tenant_id::from_string(results[0]);
@@ -72,7 +72,7 @@ utility::uuid::tenant_id tenant_context::lookup_by_hostname(const context& ctx,
                                                             const std::string& hostname) {
     using namespace ores::logging;
 
-    BOOST_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant by hostname: " << hostname;
+    ORES_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant by hostname: " << hostname;
 
     const auto results = ores::database::query_builder::execute_parameterized_string_query(
         ctx,
@@ -85,7 +85,7 @@ utility::uuid::tenant_id tenant_context::lookup_by_hostname(const context& ctx,
         throw std::runtime_error("No active tenant found with hostname: " + hostname);
     }
 
-    BOOST_LOG_SEV(tenant_context_lg(), debug)
+    ORES_LOG_SEV(tenant_context_lg(), debug)
         << "Resolved tenant hostname '" << hostname << "' to ID: " << results[0];
 
     auto result = utility::uuid::tenant_id::from_string(results[0]);
@@ -100,7 +100,7 @@ std::string tenant_context::lookup_name(const context& ctx,
     using namespace ores::logging;
 
     const auto tenant_id_str = tenant_id.to_string();
-    BOOST_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant name by ID: " << tenant_id_str;
+    ORES_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant name by ID: " << tenant_id_str;
 
     const auto results = ores::database::query_builder::execute_parameterized_string_query(
         ctx,
@@ -113,7 +113,7 @@ std::string tenant_context::lookup_name(const context& ctx,
         throw std::runtime_error("No active tenant found with ID: " + tenant_id_str);
     }
 
-    BOOST_LOG_SEV(tenant_context_lg(), debug)
+    ORES_LOG_SEV(tenant_context_lg(), debug)
         << "Resolved tenant ID '" << tenant_id_str << "' to name: " << results[0];
     return results[0];
 }
@@ -143,9 +143,9 @@ utility::uuid::tenant_id resolve_tenant_id(const context& ctx, const std::string
         }
 
         if (name.empty()) {
-            BOOST_LOG_SEV(tenant_context_lg(), debug) << "Using tenant ID directly: " << tenant;
+            ORES_LOG_SEV(tenant_context_lg(), debug) << "Using tenant ID directly: " << tenant;
         } else {
-            BOOST_LOG_SEV(tenant_context_lg(), debug)
+            ORES_LOG_SEV(tenant_context_lg(), debug)
                 << "Using tenant ID directly: " << tenant << " [" << name << "]";
         }
         return *result;
@@ -161,11 +161,10 @@ void verify_tenant_context(const context& ctx, const utility::uuid::tenant_id& t
     try {
         (void)ctx.pq_pool().acquire();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(tenant_context_lg(), error)
-            << "Failed to verify tenant context: " << e.what();
+        ORES_LOG_SEV(tenant_context_lg(), error) << "Failed to verify tenant context: " << e.what();
         throw std::runtime_error("Failed to set tenant context: " + std::string(e.what()));
     }
-    BOOST_LOG_SEV(tenant_context_lg(), info) << "Tenant context set to: " << tenant_id.to_string();
+    ORES_LOG_SEV(tenant_context_lg(), info) << "Tenant context set to: " << tenant_id.to_string();
 }
 
 } // anonymous namespace
@@ -173,7 +172,7 @@ void verify_tenant_context(const context& ctx, const utility::uuid::tenant_id& t
 context tenant_context::with_tenant(const context& ctx, const std::string& tenant) {
     using namespace ores::logging;
 
-    BOOST_LOG_SEV(tenant_context_lg(), debug) << "Creating context with tenant: " << tenant;
+    ORES_LOG_SEV(tenant_context_lg(), debug) << "Creating context with tenant: " << tenant;
 
     // Resolve tenant code to tenant_id
     const auto tenant_id = resolve_tenant_id(ctx, tenant);

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
@@ -66,7 +66,7 @@ TEST_CASE("build_single_flat_file_produces_one_book", "[ore][hierarchy][hierarch
     ore_hierarchy_builder builder(files, root);
     const auto nodes = builder.build();
 
-    BOOST_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
+    ORES_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
 
     REQUIRE(nodes.size() == 1);
     CHECK(nodes[0].name == "portfolio");
@@ -87,7 +87,7 @@ TEST_CASE("build_multiple_flat_files_produce_multiple_books",
     ore_hierarchy_builder builder(files, root);
     const auto nodes = builder.build();
 
-    BOOST_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
+    ORES_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
 
     REQUIRE(nodes.size() == 2);
 
@@ -113,7 +113,7 @@ TEST_CASE("build_one_level_subdirectory_creates_portfolio_and_book",
     ore_hierarchy_builder builder(files, root);
     const auto nodes = builder.build();
 
-    BOOST_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
+    ORES_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
 
     REQUIRE(nodes.size() == 2);
 
@@ -138,7 +138,7 @@ TEST_CASE("build_two_level_subdirectory_creates_nested_portfolios",
     ore_hierarchy_builder builder(files, root);
     const auto nodes = builder.build();
 
-    BOOST_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
+    ORES_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
 
     REQUIRE(nodes.size() == 3);
 
@@ -173,7 +173,7 @@ TEST_CASE("build_deduplicates_shared_portfolio_parent", "[ore][hierarchy][hierar
     ore_hierarchy_builder builder(files, root);
     const auto nodes = builder.build();
 
-    BOOST_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
+    ORES_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
 
     // 1 portfolio (Rates) + 2 books
     REQUIRE(nodes.size() == 3);
@@ -200,7 +200,7 @@ TEST_CASE("build_strips_excluded_path_components", "[ore][hierarchy][hierarchy_b
     ore_hierarchy_builder builder(files, root, {"Input"});
     const auto nodes = builder.build();
 
-    BOOST_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
+    ORES_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
 
     // "Input" excluded → no intermediate portfolio → just a flat book
     REQUIRE(nodes.size() == 1);
@@ -219,7 +219,7 @@ TEST_CASE("build_strips_excluded_intermediate_segment", "[ore][hierarchy][hierar
     ore_hierarchy_builder builder(files, root, {"Input"});
     const auto nodes = builder.build();
 
-    BOOST_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
+    ORES_LOG_SEV(lg, debug) << "Nodes: " << nodes.size();
 
     // "Input" stripped → Rates portfolio + book
     REQUIRE(nodes.size() == 2);

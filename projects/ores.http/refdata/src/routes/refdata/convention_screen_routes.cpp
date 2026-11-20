@@ -964,10 +964,10 @@ void convention_screen_routes::register_routes(
                                  &messaging::list_convention_kinds_response::kinds))
                             asset_class_of[kind.code] = kind.asset_class;
                     } catch (const rr::refusal& r) {
-                        BOOST_LOG_SEV(lg(), ores::logging::warn)
+                        ORES_LOG_SEV(lg(), ores::logging::warn)
                             << "The convention kinds could not be read: " << r.message;
                     } catch (const std::exception& e) {
-                        BOOST_LOG_SEV(lg(), ores::logging::warn)
+                        ORES_LOG_SEV(lg(), ores::logging::warn)
                             << "The convention kinds could not be read: " << e.what();
                     }
 

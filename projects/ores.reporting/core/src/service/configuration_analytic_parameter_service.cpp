@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/configuration_analytic_parameter.hpp"
 #include "ores.reporting.api/messaging/configuration_analytic_parameter_protocol.hpp"
 #include "ores.reporting.core/repository/configuration_analytic_parameter_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -584,12 +582,12 @@ ores::utility::domain::result configuration_analytic_parameter_service::prepare_
 std::vector<domain::configuration_analytic_parameter>
 configuration_analytic_parameter_service::list_parameter_values(std::uint32_t offset,
                                                                 std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all analytic parameters";
+    ORES_LOG_SEV(lg(), debug) << "Listing all analytic parameters";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t configuration_analytic_parameter_service::count_parameter_values() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total analytic parameters count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total analytic parameters count";
     return repo_.get_total_parameter_value_count(ctx_);
 }
 
@@ -597,8 +595,8 @@ std::uint32_t configuration_analytic_parameter_service::count_parameter_values()
 std::vector<domain::configuration_analytic_parameter>
 configuration_analytic_parameter_service::list_parameter_values_by_configuration_analytic_id(
     const std::string& configuration_analytic_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing analytic parameters by configuration_analytic_id: "
-                               << configuration_analytic_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing analytic parameters by configuration_analytic_id: "
+                              << configuration_analytic_id;
     return repo_.read_latest_by_configuration_analytic_id(
         ctx_, configuration_analytic_id, offset, limit);
 }
@@ -606,7 +604,7 @@ configuration_analytic_parameter_service::list_parameter_values_by_configuration
 std::uint32_t
 configuration_analytic_parameter_service::count_parameter_values_by_configuration_analytic_id(
     const std::string& configuration_analytic_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total analytic parameters count by configuration_analytic_id: "
         << configuration_analytic_id;
     return repo_.get_total_parameter_value_count_by_configuration_analytic_id(
@@ -617,15 +615,15 @@ configuration_analytic_parameter_service::count_parameter_values_by_configuratio
 std::vector<domain::configuration_analytic_parameter>
 configuration_analytic_parameter_service::list_parameter_values_by_ore_parameter_id(
     const std::string& ore_parameter_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing analytic parameters by ore_parameter_id: "
-                               << ore_parameter_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing analytic parameters by ore_parameter_id: "
+                              << ore_parameter_id;
     return repo_.read_latest_by_ore_parameter_id(ctx_, ore_parameter_id, offset, limit);
 }
 
 std::uint32_t configuration_analytic_parameter_service::count_parameter_values_by_ore_parameter_id(
     const std::string& ore_parameter_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total analytic parameters count by ore_parameter_id: "
-                               << ore_parameter_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total analytic parameters count by ore_parameter_id: "
+                              << ore_parameter_id;
     return repo_.get_total_parameter_value_count_by_ore_parameter_id(ctx_, ore_parameter_id);
 }
 
@@ -633,14 +631,14 @@ std::uint32_t configuration_analytic_parameter_service::count_parameter_values_b
 std::optional<domain::configuration_analytic_parameter>
 configuration_analytic_parameter_service::get_parameter_value_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting analytic parameter at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting analytic parameter at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::configuration_analytic_parameter>
 configuration_analytic_parameter_service::get_parameter_value(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting analytic parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting analytic parameter. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -657,11 +655,11 @@ void configuration_analytic_parameter_service::save_parameter_value(
     const domain::configuration_analytic_parameter& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Configuration Analytic Parameter id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving analytic parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving analytic parameter. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved analytic parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved analytic parameter. " << "id: " << v.id;
 }
 
 void configuration_analytic_parameter_service::save_parameter_values(
@@ -670,7 +668,7 @@ void configuration_analytic_parameter_service::save_parameter_values(
         if (e.id.is_nil())
             throw std::invalid_argument("Configuration Analytic Parameter id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << parameter_values.size() << " analytic parameters";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << parameter_values.size() << " analytic parameters";
     auto ts = parameter_values;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -680,9 +678,9 @@ void configuration_analytic_parameter_service::save_parameter_values(
 
 void configuration_analytic_parameter_service::delete_parameter_value(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing analytic parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing analytic parameter. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed analytic parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed analytic parameter. " << "id: " << id;
 }
 
 void configuration_analytic_parameter_service::delete_parameter_values(
@@ -692,7 +690,7 @@ void configuration_analytic_parameter_service::delete_parameter_values(
 
 std::vector<domain::configuration_analytic_parameter>
 configuration_analytic_parameter_service::get_parameter_value_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for analytic parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for analytic parameter. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

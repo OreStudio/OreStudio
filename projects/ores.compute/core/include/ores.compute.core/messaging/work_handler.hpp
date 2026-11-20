@@ -29,7 +29,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.dq.api/domain/change_reason_codes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/lexical_cast.hpp>
@@ -103,7 +103,7 @@ public:
         : ctx_(ctx) {}
 
     void heartbeat(ores::nats::message msg) {
-        BOOST_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
         // Heartbeats are unauthenticated fire-and-forget publishes from wrapper
         // nodes — use the service context directly (no JWT required).
         //
@@ -129,25 +129,25 @@ public:
                                 ctx_, host, result, std::chrono::seconds{300})) {
                             // The host no longer holds the job, for example because a claim of
                             // it timed out and the entry went back to the queue.
-                            BOOST_LOG_SEV(work_handler_lg(), debug)
+                            ORES_LOG_SEV(work_handler_lg(), debug)
                                 << "Host " << req->host_id << " does not hold job "
                                 << req->result_id << "; its lease was not extended";
                         }
                     } catch (const boost::bad_lexical_cast&) {
-                        BOOST_LOG_SEV(work_handler_lg(), warn)
+                        ORES_LOG_SEV(work_handler_lg(), warn)
                             << "Heartbeat of host " << req->host_id << " names a malformed job id";
                     }
                 }
                 service::host_service svc(ctx_);
                 auto existing = svc.get_host(boost::lexical_cast<boost::uuids::uuid>(req->host_id));
                 if (!existing) {
-                    BOOST_LOG_SEV(work_handler_lg(), info)
+                    ORES_LOG_SEV(work_handler_lg(), info)
                         << "Auto-registering new host from heartbeat: " << req->host_id;
                     domain::host h;
                     try {
                         h.id = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
                     } catch (const boost::bad_lexical_cast& e) {
-                        BOOST_LOG_SEV(work_handler_lg(), warn)
+                        ORES_LOG_SEV(work_handler_lg(), warn)
                             << "Invalid host_id in heartbeat: " << req->host_id << " (" << e.what()
                             << ")";
                         return;
@@ -158,7 +158,7 @@ public:
                     h.ram_mb = req->ram_mb;
                     h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                     h.change_commentary = "Auto-registered on first heartbeat";
-                    BOOST_LOG_SEV(work_handler_lg(), info)
+                    ORES_LOG_SEV(work_handler_lg(), info)
                         << "Assigned display name: " << h.display_name;
                     stamp(h, ctx_);
                     svc.save_host(h);
@@ -176,17 +176,17 @@ public:
                     svc.save_host(h);
                 }
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(work_handler_lg(), error)
+                ORES_LOG_SEV(work_handler_lg(), error)
                     << "Heartbeat error for host " << req->host_id << ": " << e.what();
             }
         } else {
-            BOOST_LOG_SEV(work_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(work_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(work_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(work_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void reap(ores::nats::message msg) {
-        BOOST_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
         // Reaper runs with service context (no per-request JWT needed).
         static constexpr auto stale_threshold = std::chrono::minutes(5);
         try {
@@ -220,15 +220,15 @@ public:
                 stamp(r, ctx_);
                 result_svc.save_result(r);
                 ++reaped;
-                BOOST_LOG_SEV(work_handler_lg(), info)
+                ORES_LOG_SEV(work_handler_lg(), info)
                     << "Reaped result " << boost::uuids::to_string(r.id) << " from stale host "
                     << host_id_str;
             }
 
-            BOOST_LOG_SEV(work_handler_lg(), info)
+            ORES_LOG_SEV(work_handler_lg(), info)
                 << "Reap complete. Reaped " << reaped << " results.";
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(work_handler_lg(), error) << "Reap error: " << e.what();
+            ORES_LOG_SEV(work_handler_lg(), error) << "Reap error: " << e.what();
         }
     }
 

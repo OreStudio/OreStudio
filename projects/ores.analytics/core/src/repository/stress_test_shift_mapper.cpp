@@ -27,9 +27,7 @@
 #include "ores.analytics.api/domain/stress_test_shift_json_io.hpp" // IWYU pragma: keep.
 #include "ores.analytics.core/repository/stress_test_shift_entity.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -40,7 +38,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::stress_test_shift stress_test_shift_mapper::map(const stress_test_shift_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::stress_test_shift r;
     r.version = v.version;
@@ -62,12 +60,12 @@ domain::stress_test_shift stress_test_shift_mapper::map(const stress_test_shift_
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 stress_test_shift_entity stress_test_shift_mapper::map(const domain::stress_test_shift& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     stress_test_shift_entity r;
     r.id = v.id;
@@ -88,7 +86,7 @@ stress_test_shift_entity stress_test_shift_mapper::map(const domain::stress_test
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

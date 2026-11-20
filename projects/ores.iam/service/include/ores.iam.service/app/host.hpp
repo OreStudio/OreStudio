@@ -21,7 +21,7 @@
 #define ORES_IAM_SERVICE_APP_HOST_HPP
 
 #include "ores.iam.service/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <ostream>
 #include <string>

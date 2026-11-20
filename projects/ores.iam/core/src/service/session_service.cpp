@@ -27,7 +27,6 @@
 #include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -42,7 +41,6 @@
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -409,20 +407,20 @@ session_service::prepare_change(const messaging::session_change& change,
 
 std::vector<domain::session> session_service::list_sessions(std::uint32_t offset,
                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all sessions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all sessions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t session_service::count_sessions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total sessions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total sessions count";
     return repo_.get_total_session_count(ctx_);
 }
 
 
 std::optional<domain::session> session_service::get_session(const std::string& id,
                                                             const std::string& start_time) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting session. " << "id: " << id
-                               << " start_time: " << start_time;
+    ORES_LOG_SEV(lg(), debug) << "Getting session. " << "id: " << id
+                              << " start_time: " << start_time;
     auto results = repo_.read_latest(ctx_, id, start_time);
     if (results.empty())
         return std::nullopt;
@@ -430,7 +428,7 @@ std::optional<domain::session> session_service::get_session(const std::string& i
 }
 
 std::optional<domain::session> session_service::get_session_by_id(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting session by id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting session by id: " << id;
     messaging::session_key k;
     k.id = boost::lexical_cast<boost::uuids::uuid>(id);
     auto found = session_read_one(repo_, ctx_, k);
@@ -448,13 +446,13 @@ session_service::get_sessions(const std::vector<std::string>& ids,
 void session_service::save_session(const domain::session& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Session id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving session. " << "id: " << v.id
-                               << " start_time: " << v.start_time;
+    ORES_LOG_SEV(lg(), debug) << "Saving session. " << "id: " << v.id
+                              << " start_time: " << v.start_time;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved session. " << "id: " << v.id
-                              << " start_time: " << v.start_time;
+    ORES_LOG_SEV(lg(), info) << "Saved session. " << "id: " << v.id
+                             << " start_time: " << v.start_time;
 }
 
 void session_service::save_sessions(const std::vector<domain::session>& sessions) {
@@ -462,7 +460,7 @@ void session_service::save_sessions(const std::vector<domain::session>& sessions
         if (e.id.is_nil())
             throw std::invalid_argument("Session id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << sessions.size() << " sessions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << sessions.size() << " sessions";
     auto ts = sessions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -471,11 +469,11 @@ void session_service::save_sessions(const std::vector<domain::session>& sessions
 }
 
 void session_service::delete_session(const std::string& id, const std::string& start_time) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing session. " << "id: " << id
-                               << " start_time: " << start_time;
-    repo_.remove(ctx_, id, start_time);
-    BOOST_LOG_SEV(lg(), info) << "Removed session. " << "id: " << id
+    ORES_LOG_SEV(lg(), debug) << "Removing session. " << "id: " << id
                               << " start_time: " << start_time;
+    repo_.remove(ctx_, id, start_time);
+    ORES_LOG_SEV(lg(), info) << "Removed session. " << "id: " << id
+                             << " start_time: " << start_time;
 }
 
 void session_service::delete_sessions(const std::vector<std::string>& ids,

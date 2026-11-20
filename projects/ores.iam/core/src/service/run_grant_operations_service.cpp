@@ -23,7 +23,7 @@
 #include "ores.iam.core/repository/run_token_issue_log.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/run_grant_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/authorization/grants.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -244,7 +244,7 @@ run_grant_operations_service::create_run_grant(const messaging::create_run_grant
         auto winner = grant_for(svc, *grantor, *party, request.resource);
         if (!winner)
             throw;
-        BOOST_LOG_SEV(run_grant_operations_service_lg(), info)
+        ORES_LOG_SEV(run_grant_operations_service_lg(), info)
             << "Run grant for " << request.resource << " was created concurrently: " << e.what();
         response r;
         r.success = true;
@@ -253,7 +253,7 @@ run_grant_operations_service::create_run_grant(const messaging::create_run_grant
         return r;
     }
 
-    BOOST_LOG_SEV(run_grant_operations_service_lg(), info)
+    ORES_LOG_SEV(run_grant_operations_service_lg(), info)
         << "Run grant " << grant.id << " for " << grant.resource << " granted by " << ctx_.actor()
         << ": " << (existing ? grant.change_commentary : "new");
     response r;
@@ -308,7 +308,7 @@ run_grant_operations_service::revoke_run_grant(const messaging::revoke_run_grant
         ctx_.with_party(ctx_.tenant_id(), grant->party_id, ctx_.visible_party_ids(), ctx_.actor()))
         .save_grant(*grant);
 
-    BOOST_LOG_SEV(run_grant_operations_service_lg(), info)
+    ORES_LOG_SEV(run_grant_operations_service_lg(), info)
         << "Run grant " << grant->id << " revoked by " << grant->revoked_by << ": "
         << grant->revoke_reason;
     return r;
@@ -473,7 +473,7 @@ void run_grant_operations_service::log_refusal(const std::string& tenant_id,
     } catch (const std::exception& e) {
         // The refusal is the answer; a log that cannot be written must not
         // replace it with a failure.
-        BOOST_LOG_SEV(run_grant_operations_service_lg(), warn)
+        ORES_LOG_SEV(run_grant_operations_service_lg(), warn)
             << "Could not record the refusal of run " << request.run_id << " for grant "
             << request.grant_id << ": " << e.what();
     }
@@ -508,7 +508,7 @@ run_grant_operations_service::issue(const domain::run_grant& grant,
                                                  std::string(issued_outcome),
                                                  "");
 
-    BOOST_LOG_SEV(run_grant_operations_service_lg(), info)
+    ORES_LOG_SEV(run_grant_operations_service_lg(), info)
         << "Issued a run token for grant " << grant.id << " run " << run_id << " to "
         << service_name << " as " << boost::uuids::to_string(grant.grantor_account_id);
 
@@ -651,7 +651,7 @@ messaging::exchange_run_grant_response run_grant_operations_service::exchange_ru
                     service_name,
                     grantor ? boost::uuids::to_string(grantor->id) : "",
                     exchange_refusal_reason(reason));
-        BOOST_LOG_SEV(run_grant_operations_service_lg(), info)
+        ORES_LOG_SEV(run_grant_operations_service_lg(), info)
             << "Refused a run token for grant " << request.grant_id << " run " << request.run_id
             << " to " << service_name << ": " << exchange_refusal_reason(reason);
         std::string detail =

@@ -20,7 +20,7 @@
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -40,7 +40,7 @@ TEST_CASE("create_account_with_valid_fields", "[domain]") {
     sut.id = boost::uuids::random_generator()();
     sut.username = "john.doe";
     sut.email = "john.doe@example.com";
-    BOOST_LOG_SEV(lg, info) << "Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "admin");
@@ -52,7 +52,7 @@ TEST_CASE("default_constructed_account_has_no_image_id", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const account sut;
-    BOOST_LOG_SEV(lg, info) << "Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(!sut.image_id.has_value());
 }
@@ -62,7 +62,7 @@ TEST_CASE("account_image_id_can_be_set", "[domain]") {
 
     account sut;
     sut.image_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, info) << "Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.image_id.has_value());
 }
@@ -77,7 +77,7 @@ TEST_CASE("create_admin_account", "[domain]") {
     sut.id = boost::uuids::random_generator()();
     sut.username = "admin";
     sut.email = "admin@example.com";
-    BOOST_LOG_SEV(lg, info) << "Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "system");
@@ -97,7 +97,7 @@ TEST_CASE("account_with_specific_uuid", "[domain]") {
     sut.id = specific_id;
     sut.username = "test.user";
     sut.email = "test@example.com";
-    BOOST_LOG_SEV(lg, info) << "Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.version == 2);
     CHECK(sut.username == "test.user");
@@ -112,7 +112,7 @@ TEST_CASE("account_insertion_operator", "[domain]") {
     sut.id = boost::uuids::random_generator()();
     sut.username = "serialization.test";
     sut.email = "serialize@test.com";
-    BOOST_LOG_SEV(lg, info) << "Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "Account: " << sut;
 
     std::ostringstream os;
     os << sut;
@@ -133,7 +133,7 @@ TEST_CASE("create_account_with_faker", "[domain]") {
     sut.username = std::string(faker::internet::username());
     sut.email = std::string(faker::internet::email());
 
-    BOOST_LOG_SEV(lg, info) << "Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(sut.version <= 10);
@@ -153,7 +153,7 @@ TEST_CASE("create_multiple_random_accounts", "[domain]") {
         sut.id = boost::uuids::random_generator()();
         sut.username = std::string(faker::internet::username());
         sut.email = std::string(faker::internet::email());
-        BOOST_LOG_SEV(lg, info) << "Account " << i << ":" << sut;
+        ORES_LOG_SEV(lg, info) << "Account " << i << ":" << sut;
 
         CHECK(sut.version >= 1);
         CHECK(!sut.username.empty());
@@ -174,7 +174,7 @@ TEST_CASE("account_convert_single_to_table", "[domain]") {
     std::vector<account> accounts = {acc};
     auto table = convert_to_table(accounts);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("john.doe") != std::string::npos);
@@ -197,7 +197,7 @@ TEST_CASE("account_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(accounts);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("user0") != std::string::npos);
@@ -222,7 +222,7 @@ TEST_CASE("account_convert_single_to_json", "[domain]") {
     os << acc;
     const auto json = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "JSON: " << json;
+    ORES_LOG_SEV(lg, info) << "JSON: " << json;
 
     CHECK(!json.empty());
     CHECK(json.find("john.doe") != std::string::npos);
@@ -248,7 +248,7 @@ TEST_CASE("account_convert_multiple_to_json", "[domain]") {
         os << acc;
         const auto json = os.str();
 
-        BOOST_LOG_SEV(lg, info) << "JSON: " << json;
+        ORES_LOG_SEV(lg, info) << "JSON: " << json;
 
         CHECK(!json.empty());
         CHECK(json.find(acc.username) != std::string::npos);
@@ -262,7 +262,7 @@ TEST_CASE("account_convert_empty_vector_to_table", "[domain]") {
     std::vector<account> accounts;
     auto table = convert_to_table(accounts);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     // Even with no rows the table still has headers.
     CHECK(!table.empty());
@@ -284,7 +284,7 @@ TEST_CASE("account_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(accounts);
 
-    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
     // Verify all usernames appear in table

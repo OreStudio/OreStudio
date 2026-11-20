@@ -18,7 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/portfolio_projection.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
@@ -215,7 +215,7 @@ auto map_trade(const xml::record_reader& trade,
         }
     } catch (const std::exception& e) {
         const auto where = origin.empty() ? std::string("the document") : std::string(origin);
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
+        ORES_LOG_SEV(lg(), ores::logging::warn)
             << "Failed to map trade " << item.ore_id << " of type " << item.anchor.trade_type
             << " from " << where << ": " << e.what();
     }
@@ -535,7 +535,7 @@ portfolio_projection::reverse(const std::vector<trading::messaging::trade_export
                 *trade_type, "TradeType", item.anchor.trade_type)) {
             // The schema has no such trade type, so there is no document to
             // write. Naming the trade keeps the loss visible to the operator.
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
+            ORES_LOG_SEV(lg(), ores::logging::warn)
                 << "Dropping trade " << item.ore_id << " of type " << item.anchor.trade_type
                 << ": the schema names no such trade type";
             continue;

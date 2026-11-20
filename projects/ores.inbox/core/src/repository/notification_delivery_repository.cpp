@@ -31,9 +31,7 @@
 #include "ores.inbox.api/messaging/notification_delivery_protocol.hpp"
 #include "ores.inbox.core/repository/notification_delivery_entity.hpp"
 #include "ores.inbox.core/repository/notification_delivery_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -228,7 +226,7 @@ void notification_delivery_repository::write(const context& ctx,
 void notification_delivery_repository::write(const context& ctx,
                                              const domain::notification_delivery& v,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing notification delivery. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing notification delivery. " << "id: " << v.id;
     const auto t =
         notification_delivery_apply_claim(v,
                                           claim,
@@ -245,7 +243,7 @@ void notification_delivery_repository::write(
     const context& ctx,
     const std::vector<domain::notification_delivery>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing notification deliveries. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing notification deliveries. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "notification_delivery_repository::write: one claim is needed for each row");
@@ -285,7 +283,7 @@ notification_delivery_repository::read_latest(const context& ctx) {
 
 std::vector<domain::notification_delivery>
 notification_delivery_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification delivery. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification delivery. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -304,7 +302,7 @@ notification_delivery_repository::read_latest(const context& ctx, const std::str
 
 std::vector<domain::notification_delivery>
 notification_delivery_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all notification delivery versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all notification delivery versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_delivery_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -321,8 +319,8 @@ notification_delivery_repository::read_all(const context& ctx, const std::string
 
 std::optional<domain::notification_delivery> notification_delivery_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading notification delivery at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading notification delivery at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_delivery_entity>> |
@@ -350,8 +348,8 @@ notification_delivery_repository::read_latest_by_notification_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::notification_deliveries_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification deliveries. notification_id: "
-                               << notification_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification deliveries. notification_id: "
+                              << notification_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -375,7 +373,7 @@ std::uint32_t notification_delivery_repository::get_total_delivery_count_by_noti
     const context& ctx,
     const std::string& notification_id,
     const std::optional<messaging::notification_deliveries_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active notification deliveries count. notification_id: "
         << notification_id;
     static constexpr auto max = db_timestamp::max();
@@ -397,7 +395,7 @@ std::uint32_t notification_delivery_repository::get_total_delivery_count_by_noti
 
 notification_delivery_repository::remove_status notification_delivery_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing notification delivery. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing notification delivery. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -436,8 +434,8 @@ std::vector<domain::notification_delivery> notification_delivery_repository::rea
     const ores::utility::domain::order& order,
     const std::optional<messaging::notification_deliveries_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification deliveries with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification deliveries with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_delivery_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -459,7 +457,7 @@ std::uint32_t notification_delivery_repository::get_total_delivery_count(
     const context& ctx,
     const std::optional<messaging::notification_deliveries_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification delivery count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active notification delivery count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_delivery_entity>> |

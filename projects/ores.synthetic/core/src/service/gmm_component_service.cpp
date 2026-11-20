@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -458,12 +456,12 @@ gmm_component_service::prepare_change(const messaging::gmm_component_change& cha
 
 std::vector<domain::gmm_component> gmm_component_service::list_gmm_components(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all GMM components";
+    ORES_LOG_SEV(lg(), debug) << "Listing all GMM components";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t gmm_component_service::count_gmm_components() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total GMM components count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total GMM components count";
     return repo_.get_total_gmm_component_count(ctx_);
 }
 
@@ -471,14 +469,14 @@ std::uint32_t gmm_component_service::count_gmm_components() {
 std::optional<domain::gmm_component>
 gmm_component_service::get_gmm_component_at_version(const boost::uuids::uuid& id,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting GMM component at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting GMM component at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::gmm_component>
 gmm_component_service::get_gmm_component(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting GMM component. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting GMM component. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -493,11 +491,11 @@ gmm_component_service::get_gmm_components(const std::vector<std::string>& ids) {
 void gmm_component_service::save_gmm_component(const domain::gmm_component& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("GMM Component id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving GMM component. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving GMM component. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved GMM component. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved GMM component. " << "id: " << v.id;
 }
 
 void gmm_component_service::save_gmm_components(
@@ -506,7 +504,7 @@ void gmm_component_service::save_gmm_components(
         if (e.id.is_nil())
             throw std::invalid_argument("GMM Component id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << gmm_components.size() << " GMM components";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << gmm_components.size() << " GMM components";
     auto ts = gmm_components;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -515,9 +513,9 @@ void gmm_component_service::save_gmm_components(
 }
 
 void gmm_component_service::delete_gmm_component(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing GMM component. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing GMM component. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed GMM component. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed GMM component. " << "id: " << id;
 }
 
 void gmm_component_service::delete_gmm_components(const std::vector<std::string>& ids) {
@@ -526,7 +524,7 @@ void gmm_component_service::delete_gmm_components(const std::vector<std::string>
 
 std::vector<domain::gmm_component>
 gmm_component_service::get_gmm_component_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for GMM component. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for GMM component. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

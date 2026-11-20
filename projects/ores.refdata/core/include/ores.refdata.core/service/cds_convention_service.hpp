@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CDS_CONVENTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

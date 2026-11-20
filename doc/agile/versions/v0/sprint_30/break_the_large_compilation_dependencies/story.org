@@ -25,12 +25,12 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The header analysis is written.        |
+| Now           | Complete: all nine tasks are done. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the codec headers.               |
-| Last touched  | 2026-11-12                               |
+| Next          | Nothing; the follow-ups live in their own tasks. |
+| Last touched  | 2026-11-20                               |
 
 * Acceptance
 
@@ -54,7 +54,8 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 | [[id:AE2E77E7-5E09-436A-817E-66FB7064BA28][Delete the unused includes the analysis found]] | DONE | 2026-11-14 | 2026-11-14 | Remove the dead includes and the two inline functions that force them: the string generator in tenant_id.hpp, and the two magic_enum users in error_code.hpp. |
 | [[id:F185ECD2-FFD9-416E-9179-10E96BE8F634][Stop the pool and statement headers reaching the connection header]] | DONE | 2026-11-14 | 2026-11-15 | Cut the second path into pq/connection.hpp so the split of the context header is not undone by the other includers. |
 | [[id:9C9D7D89-1114-4111-9A0B-DAFDF59E19F2][Split the unit of work header]] | DONE | 2026-11-16 | 2026-11-16 | Separate pq::transaction from pq::session_context so unit_of_work.hpp takes the declaration and the forward-declaration check reaches zero. |
-| [[id:1CCAE6BF-99D4-4CEB-84BF-D115152DC664][Split the logger typedef out of make_logger.hpp]] | BACKLOG | | | Hold the logger behind a small handle so the typedef does not pull Boost.Log's sources into 565 objects. |
+| [[id:1CCAE6BF-99D4-4CEB-84BF-D115152DC664][Split the logger typedef out of make_logger.hpp]] | DONE | 2026-11-17 | 2026-11-20 | Hold the logger behind a small handle so the typedef does not pull Boost.Log's sources into 565 objects. |
+| [[id:4324373F-2D26-4041-A4D1-95FA2D826BA1][Give every log record a timestamp]] | DONE | 2026-11-20 | 2026-11-20 | The lifecycle manager writes one record before it adds the TimeStamp global attribute, so the Replica index line of every service log carries no timestamp and does not look like the rest. |
 
 * Decisions
 
@@ -117,6 +118,11 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
   looked like the fix reached none of them.
 - The rest of the header cost is parse time, in three shapes: the codec chain,
   =<chrono>=, and Boost.Log. It is real and it is a different task's leverage.
+- A macro is the seam that makes a heavy header removable. The logging macro
+  named Boost.Log's logger type in 57911 places, so the type could not leave the
+  header until the macro belonged to the logging library; once it did, Boost.Log's
+  logger header went from 604 objects to one, and the sites kept the shape they
+  had.
 - A header's parse cost has a floor in the types its own API names, and no
   split goes below it: =context.hpp= costs what =boost::uuids::uuid= costs,
   because its accessors return a =std::optional= of one. Measure that floor
@@ -138,3 +144,37 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 * Out of scope
 
 -
+
+* Result
+
+The build no longer pays for headers it does not use. Nine tasks, each merged
+with its own measurement and its own gate where one applied:
+
+| Change | What it moved |
+|--------+---------------|
+| The context by reference behind a declaration | =context.hpp= 6.60 s to 2.85 s, and later to 1.75 s; 87 hand-written headers take the declaration, then 539 generated ones and 556 registrar headers |
+| libpq out of the pool and statement headers | =pq/connection.hpp= 279 to 2 objects; =libpq-fe.h= out of 94 objects |
+| The unused includes | =tenant_id.hpp= loses the string generator: 0.69 s over 837 objects |
+| The codec text forms, out of line | =text_form.hpp= 3.68 s to 1.75 s, =protocol_codec.hpp= 3.45 s to 0.45 s |
+| The unit of work header | the session context has its own header, and the forward-declaration check reaches zero offenders |
+| The context split | the connection and the request identity are two types; the header is 2.29 s to 2.08 s and a narrowing copy is a shared pointer increment |
+| The logger handle | Boost.Log's logger header goes from 604 objects to 1, =boost_severity.hpp= from 2166 files to 125 objects, the header 1.93 s to 1.10 s |
+
+The gate is the part that outlives the work. =check_forward_declarable_includes.py=
+fails when a header includes the definition of a type it only names, and it ran
+with an empty baseline from the unit-of-work task onward; the codec, the context
+and the logger each kept the rule while moving their own types.
+
+Two things the arc learned to say out loud, because the first five tasks ran on
+an analysis whose numbers aged:
+
+- A header's parse cost has a floor in the types its own API names. =context.hpp=
+  costs what =boost::uuids::uuid= costs, so a split that hides its members but
+  keeps that accessor buys the design and not the build.
+- A macro is the seam that removes a heavy type. The logging type could not
+  leave the header until the macro that named it belonged to the logging
+  library, and then 57911 sites kept the shape they had.
+
+What is left is in the tasks that follow this one, not in this story: the decimal
+behind =tenant_id.hpp=, the pool and statement headers' remaining edges, and
+whatever the next analysis measures.

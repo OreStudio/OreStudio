@@ -142,7 +142,7 @@ repl::repl(ores::nats::service::nats_client& session,
            nats::config::nats_options connection_template)
     : session_(session)
     , connection_template_(std::move(connection_template)) {
-    BOOST_LOG_SEV(lg(), info) << "REPL created.";
+    ORES_LOG_SEV(lg(), info) << "REPL created.";
 }
 
 void repl::run() {
@@ -150,7 +150,7 @@ void repl::run() {
 }
 
 void repl::run(std::istream& in, std::ostream& out) {
-    BOOST_LOG_SEV(lg(), info) << "REPL session started.";
+    ORES_LOG_SEV(lg(), info) << "REPL session started.";
     display_welcome(out);
     auto cli_instance = setup_menus();
     cli::CliFileSession session(*cli_instance, in, out);
@@ -158,7 +158,7 @@ void repl::run(std::istream& in, std::ostream& out) {
     session.Start();
     active_session_ = nullptr;
     cleanup();
-    BOOST_LOG_SEV(lg(), info) << "REPL session ended.";
+    ORES_LOG_SEV(lg(), info) << "REPL session ended.";
 }
 
 std::unique_ptr<cli::Cli> repl::setup_menus() {
@@ -302,23 +302,23 @@ void repl::display_welcome(std::ostream& out) const {
 
 void repl::cleanup() {
     if (!session_.is_connected()) {
-        BOOST_LOG_SEV(lg(), debug) << "Not connected, skipping cleanup.";
+        ORES_LOG_SEV(lg(), debug) << "Not connected, skipping cleanup.";
         return;
     }
     if (session_.is_logged_in()) {
-        BOOST_LOG_SEV(lg(), debug) << "Sending logout request before exit.";
+        ORES_LOG_SEV(lg(), debug) << "Sending logout request before exit.";
         try {
             std::ignore = session_.authenticated_request(
                 iam::messaging::logout_request::nats_subject,
                 ores::nats::default_wire_codec().encode(iam::messaging::logout_request{}),
                 std::chrono::seconds(30));
-            BOOST_LOG_SEV(lg(), info) << "Logged out successfully.";
+            ORES_LOG_SEV(lg(), info) << "Logged out successfully.";
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Logout request failed during cleanup: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Logout request failed during cleanup: " << e.what();
         }
         session_.clear_auth();
     }
-    BOOST_LOG_SEV(lg(), debug) << "Disconnecting from server.";
+    ORES_LOG_SEV(lg(), debug) << "Disconnecting from server.";
     session_.disconnect();
 }
 

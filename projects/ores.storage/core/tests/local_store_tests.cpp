@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.storage.core/filesystem/local_store.hpp"
 #include "test_suite.hpp"
@@ -40,7 +40,7 @@ TEST_CASE("a local store keeps the bytes it is given", "[filesystem]") {
     const std::string payload("the exact bytes, byte for byte");
     store.put("ores", "ore/imports/instance/trades.msgpack", payload);
 
-    BOOST_LOG_SEV(lg, debug) << "Stored " << payload.size() << " bytes";
+    ORES_LOG_SEV(lg, debug) << "Stored " << payload.size() << " bytes";
 
     CHECK(store.get("ores", "ore/imports/instance/trades.msgpack") == payload);
     CHECK(store.exists("ores", "ore/imports/instance/trades.msgpack"));
@@ -58,7 +58,7 @@ TEST_CASE("a local store reports an absent object distinctly", "[filesystem]") {
     CHECK_FALSE(store.size("ores", "ore/imports/nothing/here").has_value());
     CHECK_FALSE(store.remove("ores", "ore/imports/nothing/here"));
 
-    BOOST_LOG_SEV(lg, debug) << "Absent object reported as absent";
+    ORES_LOG_SEV(lg, debug) << "Absent object reported as absent";
 }
 
 TEST_CASE("a local store refuses a key that would leave its bucket", "[filesystem]") {
@@ -77,7 +77,7 @@ TEST_CASE("a local store refuses a key that would leave its bucket", "[filesyste
     CHECK_FALSE(local_store::is_valid_bucket(""));
     CHECK(local_store::is_valid_bucket("ores"));
 
-    BOOST_LOG_SEV(lg, debug) << "Traversal refused";
+    ORES_LOG_SEV(lg, debug) << "Traversal refused";
 }
 
 TEST_CASE("a local store lists a bucket by prefix", "[filesystem]") {
@@ -107,12 +107,12 @@ TEST_CASE("a local store lists a bucket by prefix", "[filesystem]") {
 
     CHECK(store.list("never-written", "").empty());
 
-    BOOST_LOG_SEV(lg, debug) << "Listed " << all.size() << " objects";
+    ORES_LOG_SEV(lg, debug) << "Listed " << all.size() << " objects";
 }
 
 TEST_CASE("a part file is named for one caller and published by its own hand", "[filesystem]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the part-file protocol the streamed upload uses";
+    ORES_LOG_SEV(lg, info) << "Testing the part-file protocol the streamed upload uses";
 
     scoped_temp_directory root;
     local_store store(root.path());

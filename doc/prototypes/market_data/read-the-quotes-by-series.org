@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 4A9A4369-D6C1-4FF6-B9BF-47B8D87FE0DB
+:END:
+#+title: Read the quotes by series prototype
+#+description: The second round of the quotes view: a vendor is a column, not a row, and a series opens in its own shape, as a spot's vendors over time, a curve's tenor strip or a surface's grid. Three variants of how the series are listed.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+
+| Item          | Where                                                       |
+|---------------+-------------------------------------------------------------|
+| Prototype     | [[file:read-the-quotes-by-series/][the prototype]]                                 |
+| Round before  | [[id:E351A753-69AD-4D45-9C7C-77208CB434CA][Watch the vendors' quotes prototype]]                  |
+| Journey       | [[id:E01E9FB6-AB3D-44A4-B852-6A0CB23775F3][Watch the vendors' quotes]]                            |
+| Gemini review | none                                                        |
+| Group         | [[file:index.org][Market data prototypes]]                               |
+
+* Summary
+
+The first round settled how a person chooses the vendors: the source rail.
+Built, the screen had one row for each vendor's quote of each point. A vol
+surface of 65 points quoted by four vendors became 260 rows, and the board of
+UK plc held 4,373 rows, most of them a derived surface an hour old. This round
+asks how the screen shows a series.
+
+* Detail
+
+** What was wrong with the built screen
+
+A review of the built screen on 2026-11-19 found these, with the screenshots of
+the live screen as the evidence:
+
+- The points sort as text: 1M, 1W, 1Y, 2M. The term structure is lost.
+- A surface's point is one text cell, "1M 10BF", so the smile and the term
+  structure cannot be read.
+- The by-series group mixes the vendors' rows, and its closed row shows the
+  first point, not the newest, with no vendor.
+- Opening a group adds its 65 rows to a page of 50.
+- The order puts the stale derived surfaces first; the ticking spots are pages
+  away, and finding "EUR USD" shows 260 option rows before the spot.
+- Values have no unit: a vol is 0.0592, a risk reversal 0.0000002144968.
+  The change has its own precision and no pips, bp or vol points.
+- The comparison chart's x axis counts samples, not time, so vendors that tick
+  at different rates do not line up; its low label is cut; two vendors at
+  different levels flatten each other.
+- The mid trusts every vendor: the demo feed's EUR/USD at 0.8668 against
+  bloomberg's 1.1062 gives a mid of 0.986.
+- The left column headers sit right of their data, and the layout toggle's first
+  button is named "Layout By series".
+
+** The rules every variant shares
+
+- A vendor is a column, not a row. More vendors widen a row; they never
+  multiply the rows.
+- Points sort by tenor: 1W, 1M, 2M, 3M, 6M, 9M, 1Y, 18M, 2Y.
+- Each quote type has its unit. FX spot shows the pair's decimals and changes
+  in pips; rates show % and changes in bp; vols show vol points.
+- A quote is measured against the median of three or more live vendors, or,
+  with fewer, against the highest-ranked vendor by the providers' precedence,
+  the rule the FX forward sets already use. A quote far from it (50 pips, 25
+  bp, 0.4 vol points) is flagged, left out of the mid and left off the chart's
+  axis. A stale vendor is dimmed and left out of the mid.
+- The rail includes or excludes a vendor, with a tick box, instead of picking
+  one. Leaving one out removes it from every row, mid and chart.
+- The order is live first, with A–Z as the other choice.
+- A spot's chart is the last five minutes on a time axis, as a level or as the
+  distance to the mid.
+
+** The variants
+
+Switch with the bar at the foot, or =?variant=.
+
+| Variant | Name                          | The idiom |
+|---------+-------------------------------+-----------|
+| =a=     | Series list and detail        | One row for each series. A spot row shows each vendor's value; a curve or surface row shows how much of it each vendor quotes, how fresh, and how many of its quotes are outliers, with the widest spread on any point. The picked series opens above the list in its own shape: a spot's all-quotes table and chart, a curve's tenor strip beside the curve drawn by tenor, a surface's tenor by strategy grid that shows the mid, one vendor or the spread as a heat map. |
+| =b=     | Datum rows, series headings   | The closest to the built screen. Each point is one row with a column for each vendor, under a heading for its series. A curve opens as its tenor rows; a surface opens as its grid, not its 65 rows. The picked row opens the all-quotes panel above. |
+| =c=     | Boards by asset class         | Tabs, each with the board its desk reads. FX spot is a board of pairs by vendor beside the picked pair's quotes. Rates puts every curve side by side, tenors down, for the mid or one vendor. FX vols is a surface list beside the picked surface's grid. |
+
+** Comparing two sources of a surface
+
+A surface's /Compare/ mode answers "where and how do two vendors' surfaces
+differ", the question the single-source grid cannot. It follows how the
+terminals and the consensus services do it, from memory and not checked: the
+terminals overlay one source's smile and term structure on another's, and the
+consensus services show a contributor's surface against the consensus as a
+grid of differences.
+
+- Two pickers, A and B, each a vendor or the consensus, with a swap. The
+  consensus leaves out the vendor it is compared with, so a vendor is never
+  measured against itself.
+- A difference grid, tenor down: each cell is A − B in vol points, blue where A
+  is above B and red where below, bold with ⚠ over 0.4. A line above it gives
+  the mean ATM difference, the widest cell and the count over the limit.
+- /Vol by delta/ (10P, 25P, ATM, 25C, 10C) or /As quoted/ (ATM, RR, BF). A
+  risk reversal difference is a skew difference, not a level, so the default
+  reads the surface by delta.
+- The smile of the picked tenor and the term structure of a chosen measure,
+  every source drawn, A and B strong, the consensus dashed.
+- A picked cell lists every source's value of it and its distance to B.
+
+The vols by delta must come from the server. The conversion depends on the
+pair's delta convention (spot or forward delta, premium-adjusted or not, which
+ATM) and on a fitted smile; the prototype stands in with the simple strangle
+approximation, 25C = ATM + 25BF + 25RR/2, and labels the view as the server's.
+The built view reads them from the market data service's =fit_fx_vol_quotes=,
+an SSVI fit in the pair's convention (2026-11-20).
+
+=?pick=<series id>= opens a series, such as =spot-EURUSD=, =swap-USD-1D= or
+=vol-EUR/USD=; =?tab== chooses variant c's tab; =?surface=compare= opens a surface in compare
+mode.
+
+** What is fake
+
+Every value, time and age is mock, from a seeded random walk. The pairs,
+curves and surfaces echo the board of UK plc on 2026-11-19: the spots of
+bloomberg and demo, the swap curves of bloomberg and tradeweb, the 13 by 5 FX
+vol surfaces of bloomberg, ice, tradeweb and the derived source. The demo
+feed's wrong EUR/USD and USD/CHF are copied from the live board. The curve and
+surface names ("USD swaps · SOFR") are what the screen would derive from the
+series; the raw series name ("USD 0D 1D") stays as the subtitle.
+
+** Where the code lives
+
+=doc/prototypes/market_data/read-the-quotes-by-series/index.html=,
+self-contained.
+
+** The verdict
+
+Variant C, boards by asset class, chosen by the product owner on 2026-11-19 and
+built in the task that builds the quotes view. Its compare mode reads the surface
+as quoted until the server serves vols by delta.
+
+* See also
+
+- [[id:E351A753-69AD-4D45-9C7C-77208CB434CA][Watch the vendors' quotes prototype]] — the first round, the source rail.
+- [[file:index.org][Market data prototypes]] — the group page.

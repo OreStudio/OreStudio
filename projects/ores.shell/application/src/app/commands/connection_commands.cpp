@@ -19,7 +19,7 @@
  */
 #include "ores.shell/app/commands/connection_commands.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/command_args.hpp"
@@ -55,16 +55,16 @@ void check_bootstrap_status(nats_client& session, std::ostream& out) {
         if (!result)
             return;
         if (result->is_in_bootstrap_mode) {
-            BOOST_LOG_SEV(anon_lg(), warn) << "System is in bootstrap mode: " << result->message;
+            ORES_LOG_SEV(anon_lg(), warn) << "System is in bootstrap mode: " << result->message;
             out << std::endl;
             out << "WARNING: System is in BOOTSTRAP MODE" << std::endl;
             out << "  " << result->message << std::endl;
             out << std::endl;
         } else {
-            BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status: not in bootstrap mode";
+            ORES_LOG_SEV(anon_lg(), debug) << "Bootstrap status: not in bootstrap mode";
         }
     } catch (...) {
-        BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status check failed";
+        ORES_LOG_SEV(anon_lg(), debug) << "Bootstrap status check failed";
     }
 }
 

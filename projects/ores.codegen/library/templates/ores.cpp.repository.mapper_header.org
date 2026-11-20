@@ -31,7 +31,7 @@ The full template source. Edit here and re-tangle with
 
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 #include "ores.{{component_core}}/repository/{{entity_singular}}_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.{{component_core}}/export.hpp"
 
 namespace ores::{{component}}::repository {
@@ -69,7 +69,7 @@ public:
 
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 #include "ores.{{component_core}}/repository/{{name_singular}}_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.{{component_core}}/export.hpp"
 
 namespace ores::{{component}}::repository {

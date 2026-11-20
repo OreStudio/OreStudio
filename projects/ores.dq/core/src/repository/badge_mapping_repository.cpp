@@ -30,9 +30,7 @@
 #include "ores.dq.api/domain/badge_mapping_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/badge_mapping_entity.hpp"
 #include "ores.dq.core/repository/badge_mapping_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -186,8 +184,8 @@ void badge_mapping_repository::write(const std::vector<domain::badge_mapping>& m
 
 void badge_mapping_repository::write(const domain::badge_mapping& mapping,
                                      const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing badge mapping to database: " << mapping.code_domain_code
-                               << "/" << mapping.entity_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing badge mapping to database: " << mapping.code_domain_code
+                              << "/" << mapping.entity_code;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(mapping.code_domain_code, mapping.entity_code) :
                              std::vector<domain::badge_mapping>{};
@@ -199,7 +197,7 @@ void badge_mapping_repository::write(const domain::badge_mapping& mapping,
 void badge_mapping_repository::write(
     const std::vector<domain::badge_mapping>& mappings,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing badge mappings to database. Count: " << mappings.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing badge mappings to database. Count: " << mappings.size();
     if (claims.size() != mappings.size())
         throw std::invalid_argument(
             "badge_mapping_repository::write: one claim is needed for each row");
@@ -235,8 +233,8 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest() {
 
 std::vector<domain::badge_mapping> badge_mapping_repository::read_latest(std::uint32_t offset,
                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mappings with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest badge mappings with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
@@ -255,8 +253,8 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest(std::ui
 std::vector<domain::badge_mapping>
 badge_mapping_repository::read_latest(const std::string& code_domain_code,
                                       const std::string& entity_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mapping. " << code_domain_code << "/"
-                               << entity_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest badge mapping. " << code_domain_code << "/"
+                              << entity_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto code_domain_code_str = code_domain_code;
@@ -276,7 +274,7 @@ badge_mapping_repository::read_latest(const std::string& code_domain_code,
 }
 
 std::uint32_t badge_mapping_repository::get_total_mapping_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -285,14 +283,13 @@ std::uint32_t badge_mapping_repository::get_total_mapping_count() {
 
     const auto count = query_builder::execute_count_query<badge_mapping_entity>(
         ctx_, query, std::nullopt, lg(), "Counting badge mappings");
-    BOOST_LOG_SEV(lg(), debug) << "Total active badge mappings count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active badge mappings count: " << count;
     return count;
 }
 
 std::vector<domain::badge_mapping>
 badge_mapping_repository::read_latest_by_code_domain(const std::string& code_domain_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mappings. Code Domain: "
-                               << code_domain_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest badge mappings. Code Domain: " << code_domain_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -314,7 +311,7 @@ badge_mapping_repository::read_latest_by_code_domain(const std::string& code_dom
 
 std::vector<domain::badge_mapping>
 badge_mapping_repository::read_latest_by_entity(const std::string& entity_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mappings. Entity Code: " << entity_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest badge mappings. Entity Code: " << entity_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -335,8 +332,8 @@ badge_mapping_repository::read_latest_by_entity(const std::string& entity_code) 
 
 std::vector<domain::badge_mapping> badge_mapping_repository::read_latest_by_code_domain(
     const std::string& code_domain_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mappings. Code Domain: " << code_domain_code
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest badge mappings. Code Domain: " << code_domain_code
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -359,8 +356,8 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest_by_code
 
 std::uint32_t badge_mapping_repository::get_total_mapping_count_by_code_domain(
     const std::string& code_domain_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count. Code Domain: "
-                               << code_domain_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count. Code Domain: "
+                              << code_domain_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -371,14 +368,14 @@ std::uint32_t badge_mapping_repository::get_total_mapping_count_by_code_domain(
 
     const auto count = query_builder::execute_count_query<badge_mapping_entity>(
         ctx_, query, std::nullopt, lg(), "Counting badge mappings");
-    BOOST_LOG_SEV(lg(), debug) << "Total active badge mappings count by code_domain: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active badge mappings count by code_domain: " << count;
     return count;
 }
 
 std::uint32_t
 badge_mapping_repository::get_total_mapping_count_by_entity(const std::string& entity_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count. Entity Code: "
-                               << entity_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count. Entity Code: "
+                              << entity_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -388,14 +385,14 @@ badge_mapping_repository::get_total_mapping_count_by_entity(const std::string& e
 
     const auto count = query_builder::execute_count_query<badge_mapping_entity>(
         ctx_, query, std::nullopt, lg(), "Counting badge mappings");
-    BOOST_LOG_SEV(lg(), debug) << "Total active badge mappings count by entity: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active badge mappings count by entity: " << count;
     return count;
 }
 
 std::vector<badge_mapping_history_row>
 badge_mapping_repository::read_all_by_code_domain(const std::string& code_domain_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the badge mappings. Code Domain: "
-                               << code_domain_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the badge mappings. Code Domain: "
+                              << code_domain_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
@@ -445,8 +442,8 @@ badge_mapping_repository::remove_status
 badge_mapping_repository::remove(const std::string& code_domain_code,
                                  const std::string& entity_code,
                                  std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing badge mapping from database: " << code_domain_code
-                               << "/" << entity_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing badge mapping from database: " << code_domain_code << "/"
+                              << entity_code;
 
     const auto current = read_latest(code_domain_code, entity_code);
     if (current.empty())
@@ -492,7 +489,7 @@ void badge_mapping_repository::remove(const std::vector<std::string>& code_domai
 }
 
 void badge_mapping_repository::remove_by_code_domain(const std::string& code_domain_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all badge mappings from database: " << code_domain_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing all badge mappings from database: " << code_domain_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =

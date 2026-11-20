@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/workflow/progress_routes.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -60,7 +60,7 @@ bool progress_holds(const std::string& body, const std::string& part) {
 
 TEST_CASE("a_run_is_named_by_its_identifier", "[workflow_progress]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier a run's progress names";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier a run's progress names";
 
     const auto refused = answer_at<workflow_routes>(
         http_method::get, "/api/workflow/not-a-run", http_request{}, progress_pattern);
@@ -70,7 +70,7 @@ TEST_CASE("a_run_is_named_by_its_identifier", "[workflow_progress]") {
 
 TEST_CASE("a_run_with_no_service_behind_it_is_refused_as_upstream", "[workflow_progress]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a run with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a run with no service behind it";
 
     CHECK(answer_at<workflow_routes>(
               http_method::get, a_progress_run, http_request{}, progress_pattern)
@@ -79,7 +79,7 @@ TEST_CASE("a_run_with_no_service_behind_it_is_refused_as_upstream", "[workflow_p
 
 TEST_CASE("a_run_refuses_a_parameter_it_does_not_take", "[workflow_progress]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter a run's progress does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter a run's progress does not name";
 
     http_request req;
     req.query_params["steps"] = "all";
@@ -91,7 +91,7 @@ TEST_CASE("a_run_refuses_a_parameter_it_does_not_take", "[workflow_progress]") {
 
 TEST_CASE("a_runs_progress_is_kept_privately_for_five_seconds", "[workflow_progress]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the cache policy a run's progress carries";
+    ORES_LOG_SEV(lg, info) << "Testing the cache policy a run's progress carries";
 
     http_request req;
     const auto first = progress_routes::progress_answer(req, a_run_body);

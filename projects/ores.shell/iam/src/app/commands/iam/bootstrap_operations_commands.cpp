@@ -68,7 +68,7 @@ void bootstrap_operations_commands::register_commands(cli::Menu& root_menu, nats
 void bootstrap_operations_commands::process_status(std::ostream& out,
                                                    nats_client& session,
                                                    const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating status request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating status request.";
 
     using request_type = ores::iam::messaging::bootstrap_status_request;
 
@@ -120,7 +120,7 @@ void bootstrap_operations_commands::process_status(std::ostream& out,
 
 void bootstrap_operations_commands::process_create_initial_admin(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating create-initial-admin request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating create-initial-admin request.";
 
     using request_type = ores::iam::messaging::create_initial_admin_request;
 

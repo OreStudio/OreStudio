@@ -22,7 +22,7 @@
 #include "ores.dq.api/generators/change_reason_generator.hpp"
 #include "ores.dq.core/repository/change_reason_category_repository.hpp"
 #include "ores.dq.core/repository/change_reason_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -57,11 +57,11 @@ TEST_CASE("write_single_change_reason", "[repository]") {
     change_reason.code = change_reason.code + "_" + std::string(faker::string::alphanumeric(8));
     change_reason.category_code = cat.code;
 
-    BOOST_LOG_SEV(lg, debug) << "Change reason: " << change_reason;
+    ORES_LOG_SEV(lg, debug) << "Change reason: " << change_reason;
     repo.write(h.context(), change_reason);
 
     auto read_change_reasons = repo.read_latest(h.context(), change_reason.code);
-    BOOST_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
+    ORES_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
 
     REQUIRE(read_change_reasons.size() == 1);
     CHECK(read_change_reasons[0].code == change_reason.code);
@@ -87,12 +87,12 @@ TEST_CASE("write_multiple_change_reasons", "[repository]") {
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
         c.category_code = cat.code;
     }
-    BOOST_LOG_SEV(lg, debug) << "Change reasons: " << change_reasons;
+    ORES_LOG_SEV(lg, debug) << "Change reasons: " << change_reasons;
 
     repo.write(h.context(), change_reasons);
 
     auto read_change_reasons = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
+    ORES_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
 
     for (const auto& written : change_reasons) {
         bool found = false;
@@ -125,12 +125,12 @@ TEST_CASE("read_latest_change_reasons", "[repository]") {
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
         c.category_code = cat.code;
     }
-    BOOST_LOG_SEV(lg, debug) << "Written change reasons: " << written_change_reasons;
+    ORES_LOG_SEV(lg, debug) << "Written change reasons: " << written_change_reasons;
 
     repo.write(h.context(), written_change_reasons);
 
     auto read_change_reasons = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
+    ORES_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
 
     for (const auto& written : written_change_reasons) {
         bool found = false;
@@ -165,13 +165,13 @@ TEST_CASE("read_latest_change_reason_by_code", "[repository]") {
     }
 
     const auto target = change_reasons.front();
-    BOOST_LOG_SEV(lg, debug) << "Write change reasons: " << change_reasons;
+    ORES_LOG_SEV(lg, debug) << "Write change reasons: " << change_reasons;
     repo.write(h.context(), change_reasons);
 
-    BOOST_LOG_SEV(lg, debug) << "Target change reason: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target change reason: " << target;
 
     auto read_change_reasons = repo.read_latest(h.context(), target.code);
-    BOOST_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
+    ORES_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
 
     REQUIRE(read_change_reasons.size() == 1);
     CHECK(read_change_reasons[0].code == target.code);

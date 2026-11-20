@@ -22,7 +22,7 @@
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.api/workflow/ore_import_workflow.hpp"
 #include "ores.ore.api/workflow/run_configuration_import_workflow.hpp"
 #include "ores.refdata.api/workflow/book_apply_workflow.hpp"
@@ -222,7 +222,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 ores::nats::default_wire_codec()
                     .decode<telemetry::messaging::service_heartbeat_message>(msg.data);
             if (!decoded) {
-                BOOST_LOG_SEV(registrar_lg(), warn)
+                ORES_LOG_SEV(registrar_lg(), warn)
                     << "Failed to decode a service heartbeat: " << decoded.error().what();
                 return;
             }
@@ -235,14 +235,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     try {
         engine->recover_in_progress();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(registrar_lg(), error) << "Workflow recovery failed: " << e.what();
+        ORES_LOG_SEV(registrar_lg(), error) << "Workflow recovery failed: " << e.what();
     }
 
     // Recovery re-dispatches what silence left behind; the watch is what stops
     // the next silence from lasting for ever.
     engine->start_deadline_watch();
 
-    BOOST_LOG_SEV(registrar_lg(), debug)
+    ORES_LOG_SEV(registrar_lg(), debug)
         << "Registered " << subs.size() << " workflow message handlers.";
     return subs;
 }

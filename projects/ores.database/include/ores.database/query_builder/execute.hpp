@@ -27,7 +27,7 @@
 #include "ores.database/repository/entity_write_observer.hpp"
 #include "ores.database/repository/repository_exception.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/exception/exception.hpp>
 #include <boost/throw_exception.hpp>
 #include <chrono>
@@ -286,7 +286,7 @@ std::vector<Domain> execute_read_query(const context& ctx,
                                        logging::logger_t& lg,
                                        const std::string& operation_desc) {
     using namespace ores::logging;
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
+    ORES_LOG_SEV(lg, debug) << operation_desc << ".";
     const auto began = std::chrono::steady_clock::now();
     try {
         const auto rows = detail::select<Entity>(
@@ -308,7 +308,7 @@ std::vector<Domain> execute_ordered_read_query(const context& ctx,
                                                logging::logger_t& lg,
                                                const std::string& operation_desc) {
     using namespace ores::logging;
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
+    ORES_LOG_SEV(lg, debug) << operation_desc << ".";
     const auto began = std::chrono::steady_clock::now();
     std::optional<condition> where = query.filter;
     if (filter)
@@ -332,7 +332,7 @@ std::uint32_t execute_count_query(const context& ctx,
                                   logging::logger_t& lg,
                                   const std::string& operation_desc) {
     using namespace ores::logging;
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
+    ORES_LOG_SEV(lg, debug) << operation_desc << ".";
     std::optional<condition> where = query.filter;
     if (filter)
         where = where ? std::move(*where) && std::move(*filter) : std::move(*filter);
@@ -357,7 +357,7 @@ void execute_write_op(const context& ctx,
                       logging::logger_t& lg,
                       const std::string& operation_desc) {
     using namespace ores::logging;
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
+    ORES_LOG_SEV(lg, debug) << operation_desc << ".";
     if (query.rows.empty())
         return;
     try {
@@ -371,7 +371,7 @@ void execute_write_op(const context& ctx,
     } catch (const pq::store_error& e) {
         detail::refused(e, lg);
     }
-    BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
+    ORES_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
 
 /**
@@ -420,7 +420,7 @@ void execute_delete_query(const context& ctx,
                           logging::logger_t& lg,
                           const std::string& operation_desc) {
     using namespace ores::logging;
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
+    ORES_LOG_SEV(lg, debug) << operation_desc << ".";
     condition statement{"delete from " + detail::table<Entity>(), {}};
     if (query.filter) {
         statement.sql += " where " + query.filter->sql;
@@ -434,7 +434,7 @@ void execute_delete_query(const context& ctx,
     } catch (const pq::store_error& e) {
         detail::refused(e, lg);
     }
-    BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
+    ORES_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
 
 }

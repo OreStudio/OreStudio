@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.core/routes/ore_value_sets.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -88,7 +88,7 @@ sentence_of(const value_set_reader& sut, std::string_view scope, std::string_vie
 
 TEST_CASE("a_boolean_value_set_offers_the_built_in_pair", "[ore_value_sets]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a boolean value set";
+    ORES_LOG_SEV(lg, info) << "Testing a boolean value set";
 
     value_set_reader sut(
         tables_of(set_of("setup.flag", "boolean"), link_of("Setup", "nThreads", "setup.flag")), {});
@@ -105,7 +105,7 @@ TEST_CASE("a_boolean_value_set_offers_the_built_in_pair", "[ore_value_sets]") {
 
 TEST_CASE("an_enumerated_value_set_offers_its_rows_in_order", "[ore_value_sets]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing an enumerated value set";
+    ORES_LOG_SEV(lg, info) << "Testing an enumerated value set";
 
     auto tables = tables_of(set_of("setup.observation_model", "enumerated"),
                             link_of("Setup", "observationModel", "setup.observation_model"));
@@ -124,7 +124,7 @@ TEST_CASE("an_enumerated_value_set_offers_its_rows_in_order", "[ore_value_sets]"
 
 TEST_CASE("a_catalogue_relation_is_read_once_however_many_sets_name_it", "[ore_value_sets]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a catalogue relation read once";
+    ORES_LOG_SEV(lg, info) << "Testing a catalogue relation read once";
 
     std::vector<std::string> asked;
     value_set_tables tables;
@@ -150,7 +150,7 @@ TEST_CASE("a_catalogue_relation_is_read_once_however_many_sets_name_it", "[ore_v
 
 TEST_CASE("a_scope_shorthand_finds_the_word_the_link_table_states", "[ore_value_sets]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a scope shorthand";
+    ORES_LOG_SEV(lg, info) << "Testing a scope shorthand";
 
     value_set_reader sut(tables_of(set_of("convention.period", "regex"),
                                    link_of("ModelParameters", "Tenor", "convention.period")),
@@ -162,7 +162,7 @@ TEST_CASE("a_scope_shorthand_finds_the_word_the_link_table_states", "[ore_value_
 
 TEST_CASE("a_setting_the_model_holds_no_set_for_states_no_kind", "[ore_value_sets]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a setting with no value set";
+    ORES_LOG_SEV(lg, info) << "Testing a setting with no value set";
 
     value_set_reader sut(
         tables_of(set_of("setup.flag", "boolean"), link_of("Setup", "nThreads", "setup.flag")), {});
@@ -176,7 +176,7 @@ TEST_CASE("a_setting_the_model_holds_no_set_for_states_no_kind", "[ore_value_set
 
 TEST_CASE("a_source_kind_this_build_does_not_know_is_refused_by_name", "[ore_value_sets]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a kind this build does not know";
+    ORES_LOG_SEV(lg, info) << "Testing a kind this build does not know";
 
     value_set_reader sut(
         tables_of(set_of("setup.mask", "magnitude"), link_of("Setup", "logMask", "setup.mask")),
@@ -190,7 +190,7 @@ TEST_CASE("a_source_kind_this_build_does_not_know_is_refused_by_name", "[ore_val
 
 TEST_CASE("a_catalogue_set_whose_row_is_missing_is_refused", "[ore_value_sets]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a catalogue that no row holds";
+    ORES_LOG_SEV(lg, info) << "Testing a catalogue that no row holds";
 
     value_set_reader sut(tables_of(set_of("setup.tenor", "catalogue", "refdata.tenor"),
                                    link_of("Setup", "Tenor", "setup.tenor")),
@@ -203,7 +203,7 @@ TEST_CASE("a_catalogue_set_whose_row_is_missing_is_refused", "[ore_value_sets]")
 
 TEST_CASE("the_kinds_a_value_set_states_are_the_eight_the_table_uses", "[ore_value_sets]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the kinds";
+    ORES_LOG_SEV(lg, info) << "Testing the kinds";
 
     CHECK(source_kinds().size() == 8);
     CHECK(source_kinds().front() == "text");

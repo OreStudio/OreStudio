@@ -27,8 +27,6 @@
 #include "ores.inbox.api/domain/delivery_outcome_type.hpp"
 #include "ores.inbox.api/domain/delivery_outcome_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/delivery_outcome_type_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::inbox::repository {
@@ -38,25 +36,25 @@ using namespace ores::database::repository;
 
 domain::delivery_outcome_type
 delivery_outcome_type_mapper::map(const delivery_outcome_type_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::delivery_outcome_type r;
     r.code = v.code;
     r.description = v.description;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 delivery_outcome_type_entity
 delivery_outcome_type_mapper::map(const domain::delivery_outcome_type& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     delivery_outcome_type_entity r;
     r.code = v.code;
     r.description = v.description;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

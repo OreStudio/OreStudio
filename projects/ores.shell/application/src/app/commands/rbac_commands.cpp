@@ -64,7 +64,7 @@ void rbac_commands::process_suggest_role_commands(std::ostream& out,
                                                   nats_client& session,
                                                   std::string username,
                                                   std::string identifier) {
-    BOOST_LOG_SEV(lg(), debug) << "Generating role commands for: " << username << "@" << identifier;
+    ORES_LOG_SEV(lg(), debug) << "Generating role commands for: " << username << "@" << identifier;
 
     iam::messaging::suggest_role_commands_request req;
     req.username = username;
@@ -84,7 +84,7 @@ void rbac_commands::process_suggest_role_commands(std::ostream& out,
     if (!result)
         return;
 
-    BOOST_LOG_SEV(lg(), info) << "Generated " << result->commands.size() << " role commands.";
+    ORES_LOG_SEV(lg(), info) << "Generated " << result->commands.size() << " role commands.";
 
     for (const auto& command : result->commands) {
         out << command << std::endl;

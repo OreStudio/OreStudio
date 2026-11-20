@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/counterparty_proposal_operations_protocol.hpp"
@@ -93,7 +93,7 @@ public:
                                                       .lines = to_outcomes(previewed),
                                                       .part_codes = previewed.part_codes});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Error previewing counterparty changes: " << e.what();
             ores::service::messaging::reply(
                 nats_,
@@ -139,7 +139,7 @@ public:
             }
             ores::service::messaging::reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Error raising counterparty changes: " << e.what();
             ores::service::messaging::reply(
                 nats_,
@@ -187,9 +187,8 @@ public:
                     .changes = to_deltas(
                         service::counterparty_proposal_service(*ctx).deltas(req->request_id))});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
-                << "Error reading the counterparty changes of " << req->request_id << ": "
-                << e.what();
+            ORES_LOG_SEV(lg(), ores::logging::error) << "Error reading the counterparty changes of "
+                                                     << req->request_id << ": " << e.what();
             ores::service::messaging::reply(
                 nats_,
                 msg,
@@ -234,7 +233,7 @@ public:
                                                       .lines = to_outcomes(checked),
                                                       .part_codes = checked.part_codes});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Error rechecking the counterparty changes of " << req->request_id << ": "
                 << e.what();
             ores::service::messaging::reply(
@@ -320,7 +319,7 @@ private:
     }
 
     std::optional<ores::database::context> context_for(const ores::nats::message& msg) {
-        BOOST_LOG_SEV(lg(), ores::logging::debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(lg(), ores::logging::debug) << "Handling " << msg.subject;
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
             ores::service::messaging::error_reply(nats_, msg, ctx.error());

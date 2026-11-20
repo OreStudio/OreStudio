@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_FOLDER_MAPPER_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_FOLDER_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/folder.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/folder_entity.hpp"

@@ -40,12 +40,12 @@ postgres_listener_service::postgres_listener_service(const context& ctx,
                         std::to_string(ores::platform::process::current_pid()) + "." +
                         std::to_string(instance_counter_.fetch_add(1)))
     , running_(false) {
-    BOOST_LOG_SEV(lg(), debug) << "Listener service created.";
+    ORES_LOG_SEV(lg(), debug) << "Listener service created.";
 }
 
 postgres_listener_service::~postgres_listener_service() {
     stop();
-    BOOST_LOG_SEV(lg(), debug) << "Listener service destroyed.";
+    ORES_LOG_SEV(lg(), debug) << "Listener service destroyed.";
 }
 
 namespace {
@@ -124,61 +124,61 @@ bool postgres_listener_service::open_connection() {
     std::lock_guard lock(mutex_);
 
     if (connection_) {
-        BOOST_LOG_SEV(lg(), debug) << "Connection already open.";
+        ORES_LOG_SEV(lg(), debug) << "Connection already open.";
         return true;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Opening dedicated listener connection.";
+    ORES_LOG_SEV(lg(), debug) << "Opening dedicated listener connection.";
 
     try {
         connection_ = connect_utc(ctx_.connection_options(), application_name_);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to connect to database: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Failed to connect to database: " << e.what();
         return false;
     }
-    BOOST_LOG_SEV(lg(), info) << "Dedicated listener connection established.";
+    ORES_LOG_SEV(lg(), info) << "Dedicated listener connection established.";
     return true;
 }
 
 void postgres_listener_service::issue_pending_listens() {
     // Note: Called from listen_loop with mutex held
     if (!connection_) {
-        BOOST_LOG_SEV(lg(), error) << "Cannot issue listens: no connection.";
+        ORES_LOG_SEV(lg(), error) << "Cannot issue listens: no connection.";
         return;
     }
 
     for (const auto& channel : subscribed_channels_) {
         std::string problem;
         if (!listen_on(*connection_, channel, problem)) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Failed to LISTEN on channel '" << channel << "': " << problem;
         } else {
-            BOOST_LOG_SEV(lg(), info) << "Listening on channel: " << channel;
+            ORES_LOG_SEV(lg(), info) << "Listening on channel: " << channel;
         }
     }
 }
 
 void postgres_listener_service::start() {
     if (running_.exchange(true)) {
-        BOOST_LOG_SEV(lg(), warn) << "Listener already running.";
+        ORES_LOG_SEV(lg(), warn) << "Listener already running.";
         return;
     }
 
     if (!open_connection()) {
         running_ = false;
-        BOOST_LOG_SEV(lg(), error) << "Cannot start listener: connection failed.";
+        ORES_LOG_SEV(lg(), error) << "Cannot start listener: connection failed.";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Starting listener thread.";
+    ORES_LOG_SEV(lg(), info) << "Starting listener thread.";
     listener_thread_ = std::thread(&postgres_listener_service::listen_loop, this);
 }
 
 void postgres_listener_service::stop() {
     if (running_.exchange(false)) {
-        BOOST_LOG_SEV(lg(), info) << "Stopping listener thread.";
+        ORES_LOG_SEV(lg(), info) << "Stopping listener thread.";
     } else {
-        BOOST_LOG_SEV(lg(), debug) << "Listener not running or already stopped.";
+        ORES_LOG_SEV(lg(), debug) << "Listener not running or already stopped.";
     }
 
     // Always join if joinable, even if thread terminated on its own due to error
@@ -204,7 +204,7 @@ void postgres_listener_service::subscribe(const std::string& channel_name) {
     // Check if already subscribed
     if (std::find(subscribed_channels_.begin(), subscribed_channels_.end(), channel_name) !=
         subscribed_channels_.end()) {
-        BOOST_LOG_SEV(lg(), debug) << "Already subscribed to channel: " << channel_name;
+        ORES_LOG_SEV(lg(), debug) << "Already subscribed to channel: " << channel_name;
         return;
     }
 
@@ -214,14 +214,14 @@ void postgres_listener_service::subscribe(const std::string& channel_name) {
     if (connection_ && running_) {
         std::string problem;
         if (!listen_on(*connection_, channel_name, problem)) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Failed to LISTEN on channel '" << channel_name << "': " << problem;
         } else {
-            BOOST_LOG_SEV(lg(), info) << "Listening on channel: " << channel_name;
+            ORES_LOG_SEV(lg(), info) << "Listening on channel: " << channel_name;
         }
     } else {
-        BOOST_LOG_SEV(lg(), debug)
-            << "Subscription queued for channel: " << channel_name << " (will activate on start)";
+        ORES_LOG_SEV(lg(), debug) << "Subscription queued for channel: " << channel_name
+                                  << " (will activate on start)";
     }
 }
 
@@ -230,21 +230,21 @@ void postgres_listener_service::notify(const std::string& channel_name,
     std::lock_guard lock(mutex_);
 
     if (!connection_) {
-        BOOST_LOG_SEV(lg(), error) << "Cannot notify: no connection.";
+        ORES_LOG_SEV(lg(), error) << "Cannot notify: no connection.";
         return;
     }
 
     std::string problem;
     if (!notify_on(*connection_, channel_name, payload, problem)) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Failed to NOTIFY on channel '" << channel_name << "': " << problem;
+        ORES_LOG_SEV(lg(), error) << "Failed to NOTIFY on channel '" << channel_name
+                                  << "': " << problem;
     } else {
-        BOOST_LOG_SEV(lg(), debug) << "Sent NOTIFY on channel: " << channel_name;
+        ORES_LOG_SEV(lg(), debug) << "Sent NOTIFY on channel: " << channel_name;
     }
 }
 
 void postgres_listener_service::listen_loop() {
-    BOOST_LOG_SEV(lg(), info) << "Listener thread started.";
+    ORES_LOG_SEV(lg(), info) << "Listener thread started.";
 
     // Issue LISTEN for all pre-subscribed channels
     {
@@ -277,12 +277,12 @@ void postgres_listener_service::listen_loop() {
             if (!connection_) {
                 connection_ok = false;
             } else if (PQconsumeInput(connection_->native()) != 1) {
-                BOOST_LOG_SEV(lg(), error) << "Connection error while consuming input.";
+                ORES_LOG_SEV(lg(), error) << "Connection error while consuming input.";
                 connection_.reset();
                 connection_ok = false;
                 ++connection_loss_count_;
                 loss_start_ = std::chrono::steady_clock::now();
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "Listener connection lost while listening on channels ["
                     << boost::algorithm::join(subscribed_channels_, ", ")
                     << "]; notifications in flight may be lost";
@@ -298,7 +298,7 @@ void postgres_listener_service::listen_loop() {
             if (!running_)
                 break;
 
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Listener connection lost. Reconnecting in " << backoff.count() << "s...";
             std::this_thread::sleep_for(backoff);
             backoff = std::min(backoff * 2, max_backoff);
@@ -310,16 +310,16 @@ void postgres_listener_service::listen_loop() {
             try {
                 connection_ = connect_utc(ctx_.connection_options(), application_name_);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error) << "Reconnect failed: " << e.what();
+                ORES_LOG_SEV(lg(), error) << "Reconnect failed: " << e.what();
                 continue;
             }
             const auto loss_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now() - loss_start_);
-            BOOST_LOG_SEV(lg(), error) << "Reconnected after " << loss_duration.count()
-                                       << "ms; notifications sent on channels ["
-                                       << boost::algorithm::join(subscribed_channels_, ", ")
-                                       << "] during the outage are lost (PostgreSQL has no replay)";
-            BOOST_LOG_SEV(lg(), info) << "Listener reconnected. Reissuing LISTENs.";
+            ORES_LOG_SEV(lg(), error) << "Reconnected after " << loss_duration.count()
+                                      << "ms; notifications sent on channels ["
+                                      << boost::algorithm::join(subscribed_channels_, ", ")
+                                      << "] during the outage are lost (PostgreSQL has no replay)";
+            ORES_LOG_SEV(lg(), info) << "Listener reconnected. Reissuing LISTENs.";
             issue_pending_listens();
             continue;
         }
@@ -334,19 +334,19 @@ void postgres_listener_service::listen_loop() {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Listener thread stopped.";
+    ORES_LOG_SEV(lg(), info) << "Listener thread stopped.";
 }
 
 void postgres_listener_service::handle_notification(const pg_notification& notification) {
     if (!notification_callback_) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Received notification but no callback registered for channel: "
-            << notification.channel << " with payload: " << notification.payload;
+        ORES_LOG_SEV(lg(), warn) << "Received notification but no callback registered for channel: "
+                                 << notification.channel
+                                 << " with payload: " << notification.payload;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Received notification on channel: " << notification.channel
-                               << " with payload: " << notification.payload;
+    ORES_LOG_SEV(lg(), debug) << "Received notification on channel: " << notification.channel
+                              << " with payload: " << notification.payload;
 
     notification_callback_(notification.channel, notification.payload);
 }

@@ -22,7 +22,7 @@
 #define ORES_ORE_CORE_XML_EXPORTER_HPP
 
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"

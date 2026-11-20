@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/run_result.hpp"
 #include "ores.reporting.api/messaging/run_result_protocol.hpp"
 #include "ores.reporting.core/repository/run_result_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -41,7 +40,6 @@
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -238,18 +236,18 @@ run_result_service::get_many_run_results(const messaging::get_many_run_results_r
 
 std::vector<domain::run_result> run_result_service::list_results(std::uint32_t offset,
                                                                  std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all run results";
+    ORES_LOG_SEV(lg(), debug) << "Listing all run results";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t run_result_service::count_results() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total run results count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total run results count";
     return repo_.get_total_result_count(ctx_);
 }
 
 
 std::optional<domain::run_result> run_result_service::get_result(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting run result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting run result. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -264,11 +262,11 @@ run_result_service::get_results(const std::vector<std::string>& ids) {
 void run_result_service::save_result(const domain::run_result& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Run Result id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving run result. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving run result. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved run result. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved run result. " << "id: " << v.id;
 }
 
 void run_result_service::save_results(const std::vector<domain::run_result>& results) {
@@ -276,7 +274,7 @@ void run_result_service::save_results(const std::vector<domain::run_result>& res
         if (e.id.is_nil())
             throw std::invalid_argument("Run Result id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << results.size() << " run results";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << results.size() << " run results";
     auto ts = results;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -285,9 +283,9 @@ void run_result_service::save_results(const std::vector<domain::run_result>& res
 }
 
 void run_result_service::delete_result(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing run result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing run result. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed run result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed run result. " << "id: " << id;
 }
 
 void run_result_service::delete_results(const std::vector<std::string>& ids) {

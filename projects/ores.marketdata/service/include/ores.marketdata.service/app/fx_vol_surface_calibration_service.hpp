@@ -20,6 +20,7 @@
 #define ORES_MARKETDATA_SERVICE_APP_FX_VOL_SURFACE_CALIBRATION_SERVICE_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
+#include "ores.marketdata.api/messaging/fx_vol_quote_fit_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
 #include "ores.marketdata.service/export.hpp"
@@ -97,6 +98,17 @@ public:
     [[nodiscard]] static ores::marketdata::messaging::calibrate_fx_vol_surface_response
     calibrate(const ores::database::context& ctx,
               const ores::marketdata::messaging::calibrate_fx_vol_surface_request& request);
+
+    /**
+     * @brief Reads each source's quotes as a smile by delta, and writes nothing.
+     *
+     * The convention is the pair's own, read from reference data, and the market is the party's
+     * published forward set at the as-of, read once for every source. Each source is fitted on its
+     * own, so one that cannot be fitted is answered with why and the others still are.
+     */
+    [[nodiscard]] static ores::marketdata::messaging::fit_fx_vol_quotes_response
+    fit_quotes(const ores::database::context& ctx,
+               const ores::marketdata::messaging::fit_fx_vol_quotes_request& request);
 };
 
 }

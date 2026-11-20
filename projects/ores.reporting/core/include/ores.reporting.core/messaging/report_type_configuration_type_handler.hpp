@@ -26,7 +26,7 @@
 #define ORES_REPORTING_CORE_MESSAGING_REPORT_TYPE_CONFIGURATION_TYPE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/report_type_configuration_type_protocol.hpp"
@@ -75,7 +75,7 @@ public:
      * @brief Serves reporting.v1.report_type_configuration_types.list.
      */
     void list_report_type_configuration_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+        ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -91,7 +91,7 @@ public:
         }
         auto req = decode<list_report_type_configuration_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -99,14 +99,14 @@ public:
         service::report_type_configuration_type_service svc(req_ctx);
         try {
             auto response = svc.list_report_type_configuration_types(*req);
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), error)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_report_type_configuration_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -120,7 +120,7 @@ public:
      * @brief Serves reporting.v1.report_type_configuration_types.get.
      */
     void get_report_type_configuration_type(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+        ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -136,7 +136,7 @@ public:
         }
         auto req = decode<get_report_type_configuration_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -144,14 +144,14 @@ public:
         service::report_type_configuration_type_service svc(req_ctx);
         try {
             auto response = svc.get_report_type_configuration_type(*req);
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), error)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_report_type_configuration_type_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -165,7 +165,7 @@ public:
      * @brief Serves reporting.v1.report_type_configuration_types.get_many.
      */
     void get_many_report_type_configuration_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+        ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -181,7 +181,7 @@ public:
         }
         auto req = decode<get_many_report_type_configuration_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -189,14 +189,14 @@ public:
         service::report_type_configuration_type_service svc(req_ctx);
         try {
             auto response = svc.get_many_report_type_configuration_types(*req);
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), error)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_report_type_configuration_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -210,7 +210,7 @@ public:
      * @brief Serves reporting.v1.report_type_configuration_types.put.
      */
     void put_report_type_configuration_type(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+        ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -226,7 +226,7 @@ public:
         }
         auto req = decode<put_report_type_configuration_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -234,14 +234,14 @@ public:
         service::report_type_configuration_type_service svc(req_ctx);
         try {
             auto response = svc.put_report_type_configuration_type(*req);
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), error)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_report_type_configuration_type_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -255,7 +255,7 @@ public:
      * @brief Serves reporting.v1.report_type_configuration_types.put_many.
      */
     void put_many_report_type_configuration_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+        ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -271,7 +271,7 @@ public:
         }
         auto req = decode<put_many_report_type_configuration_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -279,14 +279,14 @@ public:
         service::report_type_configuration_type_service svc(req_ctx);
         try {
             auto response = svc.put_many_report_type_configuration_types(*req);
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), error)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_report_type_configuration_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -300,7 +300,7 @@ public:
      * @brief Serves reporting.v1.report_type_configuration_types.delete.
      */
     void delete_report_type_configuration_type(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+        ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -316,7 +316,7 @@ public:
         }
         auto req = decode<delete_report_type_configuration_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -324,14 +324,14 @@ public:
         service::report_type_configuration_type_service svc(req_ctx);
         try {
             auto response = svc.delete_report_type_configuration_type(*req);
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), error)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_report_type_configuration_type_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -345,7 +345,7 @@ public:
      * @brief Serves reporting.v1.report_type_configuration_types.delete_many.
      */
     void delete_many_report_type_configuration_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+        ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -361,7 +361,7 @@ public:
         }
         auto req = decode<delete_many_report_type_configuration_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -369,14 +369,14 @@ public:
         service::report_type_configuration_type_service svc(req_ctx);
         try {
             auto response = svc.delete_many_report_type_configuration_types(*req);
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), error)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_report_type_configuration_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -390,7 +390,7 @@ public:
      * @brief Serves reporting.v1.report_type_configuration_types.list_by_report_type_code.
      */
     void list_by_report_type_code_report_type_configuration_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+        ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -406,7 +406,7 @@ public:
         }
         auto req = decode<list_by_report_type_code_report_type_configuration_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -414,14 +414,14 @@ public:
         service::report_type_configuration_type_service svc(req_ctx);
         try {
             auto response = svc.list_by_report_type_code_report_type_configuration_types(*req);
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_type_configuration_type_handler_lg(), error)
+            ORES_LOG_SEV(report_type_configuration_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_report_type_code_report_type_configuration_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

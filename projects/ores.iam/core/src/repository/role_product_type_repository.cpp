@@ -30,9 +30,7 @@
 #include "ores.iam.api/domain/role_product_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/role_product_type_entity.hpp"
 #include "ores.iam.core/repository/role_product_type_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -192,9 +190,9 @@ void role_product_type_repository::write(
 
 void role_product_type_repository::write(const domain::role_product_type& role_product_type,
                                          const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing permitted product type to database: "
-                               << role_product_type.role_id << "/"
-                               << role_product_type.product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing permitted product type to database: "
+                              << role_product_type.role_id << "/"
+                              << role_product_type.product_type_code;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(role_product_type.role_id, role_product_type.product_type_code) :
@@ -207,8 +205,8 @@ void role_product_type_repository::write(const domain::role_product_type& role_p
 void role_product_type_repository::write(
     const std::vector<domain::role_product_type>& role_product_types,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing permitted product types to database. Count: "
-                               << role_product_types.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing permitted product types to database. Count: "
+                              << role_product_types.size();
     if (claims.size() != role_product_types.size())
         throw std::invalid_argument(
             "role_product_type_repository::write: one claim is needed for each row");
@@ -248,8 +246,8 @@ std::vector<domain::role_product_type> role_product_type_repository::read_latest
 
 std::vector<domain::role_product_type>
 role_product_type_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest permitted product types with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest permitted product types with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_product_type_entity>> |
@@ -268,8 +266,8 @@ role_product_type_repository::read_latest(std::uint32_t offset, std::uint32_t li
 std::vector<domain::role_product_type>
 role_product_type_repository::read_latest(const boost::uuids::uuid& role_id,
                                           const std::string& product_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest permitted product type. " << role_id << "/"
-                               << product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest permitted product type. " << role_id << "/"
+                              << product_type_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto role_id_str = boost::uuids::to_string(role_id);
@@ -289,7 +287,7 @@ role_product_type_repository::read_latest(const boost::uuids::uuid& role_id,
 }
 
 std::uint32_t role_product_type_repository::get_total_role_product_type_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active permitted product types count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active permitted product types count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -298,13 +296,13 @@ std::uint32_t role_product_type_repository::get_total_role_product_type_count() 
 
     const auto count = query_builder::execute_count_query<role_product_type_entity>(
         ctx_, query, std::nullopt, lg(), "Counting permitted product types");
-    BOOST_LOG_SEV(lg(), debug) << "Total active permitted product types count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active permitted product types count: " << count;
     return count;
 }
 
 std::vector<domain::role_product_type>
 role_product_type_repository::read_latest_by_role(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest permitted product types. Role: " << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest permitted product types. Role: " << role_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto role_id_str = boost::uuids::to_string(role_id);
@@ -327,8 +325,8 @@ role_product_type_repository::read_latest_by_role(const boost::uuids::uuid& role
 
 std::vector<domain::role_product_type>
 role_product_type_repository::read_latest_by_product_type(const std::string& product_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest permitted product types. Product Type: "
-                               << product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest permitted product types. Product Type: "
+                              << product_type_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -352,8 +350,8 @@ role_product_type_repository::read_latest_by_product_type(const std::string& pro
 std::vector<domain::role_product_type> role_product_type_repository::read_latest_by_role(
     const boost::uuids::uuid& role_id, std::uint32_t offset, std::uint32_t limit) {
     const auto role_id_str = boost::uuids::to_string(role_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest permitted product types. Role: " << role_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest permitted product types. Role: " << role_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -377,8 +375,8 @@ std::vector<domain::role_product_type> role_product_type_repository::read_latest
 std::uint32_t role_product_type_repository::get_total_role_product_type_count_by_role(
     const boost::uuids::uuid& role_id) {
     const auto role_id_str = boost::uuids::to_string(role_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active permitted product types count. Role: "
-                               << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active permitted product types count. Role: "
+                              << role_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -388,14 +386,14 @@ std::uint32_t role_product_type_repository::get_total_role_product_type_count_by
 
     const auto count = query_builder::execute_count_query<role_product_type_entity>(
         ctx_, query, std::nullopt, lg(), "Counting permitted product types");
-    BOOST_LOG_SEV(lg(), debug) << "Total active permitted product types count by role: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active permitted product types count by role: " << count;
     return count;
 }
 
 std::vector<domain::role_product_type> role_product_type_repository::read_latest_by_product_type(
     const std::string& product_type_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest permitted product types. Product Type: "
-                               << product_type_code << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest permitted product types. Product Type: "
+                              << product_type_code << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -419,7 +417,7 @@ std::vector<domain::role_product_type> role_product_type_repository::read_latest
 
 std::uint32_t role_product_type_repository::get_total_role_product_type_count_by_product_type(
     const std::string& product_type_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active permitted product types count. Product Type: "
         << product_type_code;
     static constexpr auto max = db_timestamp::max();
@@ -432,15 +430,15 @@ std::uint32_t role_product_type_repository::get_total_role_product_type_count_by
 
     const auto count = query_builder::execute_count_query<role_product_type_entity>(
         ctx_, query, std::nullopt, lg(), "Counting permitted product types");
-    BOOST_LOG_SEV(lg(), debug) << "Total active permitted product types count by product_type: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active permitted product types count by product_type: "
+                              << count;
     return count;
 }
 
 std::vector<role_product_type_history_row>
 role_product_type_repository::read_all_by_role(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the permitted product types. Role: "
-                               << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the permitted product types. Role: "
+                              << role_id;
 
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -492,8 +490,8 @@ role_product_type_repository::remove_status
 role_product_type_repository::remove(const boost::uuids::uuid& role_id,
                                      const std::string& product_type_code,
                                      std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing permitted product type from database: " << role_id
-                               << "/" << product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing permitted product type from database: " << role_id << "/"
+                              << product_type_code;
 
     const auto current = read_latest(role_id, product_type_code);
     if (current.empty())
@@ -539,7 +537,7 @@ void role_product_type_repository::remove(const std::vector<boost::uuids::uuid>&
 }
 
 void role_product_type_repository::remove_by_role(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all permitted product types from database: " << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all permitted product types from database: " << role_id;
 
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();

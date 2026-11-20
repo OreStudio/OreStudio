@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/portfolio_right.hpp"
 #include "ores.refdata.api/domain/portfolio_right_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/portfolio_right_protocol.hpp"
 #include "ores.refdata.core/repository/portfolio_right_entity.hpp"
 #include "ores.refdata.core/repository/portfolio_right_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -232,7 +230,7 @@ void portfolio_right_repository::write(const context& ctx,
 void portfolio_right_repository::write(const context& ctx,
                                        const domain::portfolio_right& v,
                                        const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing portfolio right. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing portfolio right. " << "id: " << v.id;
     const auto t = portfolio_right_apply_claim(v,
                                                claim,
                                                portfolio_right_claim_reads_current(claim) ?
@@ -246,7 +244,7 @@ void portfolio_right_repository::write(
     const context& ctx,
     const std::vector<domain::portfolio_right>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing portfolio rights. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing portfolio rights. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "portfolio_right_repository::write: one claim is needed for each row");
@@ -282,7 +280,7 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest(con
 
 std::vector<domain::portfolio_right>
 portfolio_right_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio right. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest portfolio right. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -300,7 +298,7 @@ portfolio_right_repository::read_latest(const context& ctx, const std::string& i
 std::vector<domain::portfolio_right>
 portfolio_right_repository::read_latest_by_right_code(const context& ctx,
                                                       const std::string& right_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio right by right_code: " << right_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest portfolio right by right_code: " << right_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_right_entity>> |
@@ -336,8 +334,8 @@ portfolio_right_repository::read_latest_by_right_code(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio rights by right_code. Count: "
-                               << right_codes.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest portfolio rights by right_code. Count: "
+                              << right_codes.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_right_entity>> |
@@ -355,7 +353,7 @@ portfolio_right_repository::read_latest_by_right_code(const context& ctx,
 std::vector<domain::portfolio_right>
 portfolio_right_repository::read_any_by_right_code(const context& ctx,
                                                    const std::string& right_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any portfolio right by right_code: " << right_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading any portfolio right by right_code: " << right_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_right_entity>> |
                        query_builder::where("tenant_id"_c == tid && "right_code"_c == right_code) |
@@ -372,7 +370,7 @@ portfolio_right_repository::read_any_by_right_code(const context& ctx,
 
 std::vector<domain::portfolio_right> portfolio_right_repository::read_all(const context& ctx,
                                                                           const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all portfolio right versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all portfolio right versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_right_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -388,8 +386,8 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_all(const 
 
 std::optional<domain::portfolio_right> portfolio_right_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading portfolio right at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading portfolio right at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<portfolio_right_entity>> |
@@ -416,8 +414,8 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::portfolio_rights_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio rights. account_id: " << account_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest portfolio rights. account_id: " << account_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_right_entity>> |
@@ -440,8 +438,8 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count_by_acc
     const context& ctx,
     const std::string& account_id,
     const std::optional<messaging::portfolio_rights_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active portfolio rights count. account_id: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active portfolio rights count. account_id: "
+                              << account_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -465,8 +463,8 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::portfolio_rights_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio rights. portfolio_id: " << portfolio_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest portfolio rights. portfolio_id: " << portfolio_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -490,8 +488,8 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count_by_por
     const context& ctx,
     const std::string& portfolio_id,
     const std::optional<messaging::portfolio_rights_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active portfolio rights count. portfolio_id: "
-                               << portfolio_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active portfolio rights count. portfolio_id: "
+                              << portfolio_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -511,7 +509,7 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count_by_por
 
 portfolio_right_repository::remove_status portfolio_right_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing portfolio right. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing portfolio right. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -550,8 +548,8 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::portfolio_rights_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio rights with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest portfolio rights with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_right_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -573,7 +571,7 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count(
     const context& ctx,
     const std::optional<messaging::portfolio_rights_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active portfolio right count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active portfolio right count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_right_entity>> |

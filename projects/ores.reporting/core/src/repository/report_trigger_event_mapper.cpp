@@ -24,13 +24,11 @@
  */
 #include "ores.reporting.core/repository/report_trigger_event_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/domain/report_trigger_event.hpp"
 #include "ores.reporting.api/domain/report_trigger_event_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/report_trigger_event_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -45,7 +43,7 @@ using namespace ores::database::repository;
 
 domain::report_trigger_event
 report_trigger_event_mapper::map(const report_trigger_event_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::report_trigger_event r;
     r.tenant_id = v.tenant_id;
@@ -58,13 +56,13 @@ report_trigger_event_mapper::map(const report_trigger_event_entity& v) {
     r.triggered_at = v.triggered_at;
     r.party_id = v.party_id;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 report_trigger_event_entity
 report_trigger_event_mapper::map(const domain::report_trigger_event& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     report_trigger_event_entity r;
     r.id = v.id;
@@ -77,7 +75,7 @@ report_trigger_event_mapper::map(const domain::report_trigger_event& v) {
     r.triggered_at = v.triggered_at;
     r.party_id = v.party_id;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

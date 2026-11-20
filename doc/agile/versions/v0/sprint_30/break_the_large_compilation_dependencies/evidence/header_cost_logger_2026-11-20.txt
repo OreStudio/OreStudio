@@ -1,0 +1,21 @@
+compiler : /usr/bin/clang++
+flags    : 121 include and define flags (union over the build)
+
+ wall_s  trace_s  header
+   1.93  1912.09  /home/marco/Development/OreStudio/ores_dev_festive_dijkstra/build/output/probes/logger_before.hpp
+   1.10  1076.23  ores.logging/logger.hpp
+
+== where each probe spends its trace time (top 5 per header)
+/home/marco/Development/OreStudio/ores_dev_festive_dijkstra/build/output/probes/logger_before.hpp (1.93s wall)
+       147.8 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/format
+       112.9 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/chrono
+        89.0 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/chrono_io.h
+        49.3 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/stl_bvector.h
+        46.2 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/basic_string.h
+ores.logging/logger.hpp (1.10s wall)
+       146.7 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/format
+        45.5 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/basic_string.h
+        28.9 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/unicode.h
+        22.5 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/charconv
+        19.2 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/locale_facets_nonio.tcc
+

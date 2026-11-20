@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_SUB_PERIODS_COUPON_TYPE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_SUB_PERIODS_COUPON_TYPE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/sub_periods_coupon_type.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/sub_periods_coupon_type_entity.hpp"

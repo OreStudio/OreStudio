@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <stdexcept>
 #include <string>
 #include <vector>

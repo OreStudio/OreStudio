@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ores.refdata.core/repository/book_status_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -441,25 +439,25 @@ book_status_service::prepare_change(const messaging::book_status_change& change,
 
 std::vector<domain::book_status> book_status_service::list_statuses(std::uint32_t offset,
                                                                     std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all book statuses";
+    ORES_LOG_SEV(lg(), debug) << "Listing all book statuses";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t book_status_service::count_statuses() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total book statuses count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total book statuses count";
     return repo_.get_total_status_count(ctx_);
 }
 
 
 std::optional<domain::book_status>
 book_status_service::get_status_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting book status at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting book status at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::book_status> book_status_service::get_status(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting book status. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting book status. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -474,11 +472,11 @@ book_status_service::get_statuses(const std::vector<std::string>& codes) {
 void book_status_service::save_status(const domain::book_status& v) {
     if (v.code.empty())
         throw std::invalid_argument("Book Status code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving book status. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving book status. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved book status. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved book status. " << "code: " << v.code;
 }
 
 void book_status_service::save_statuses(const std::vector<domain::book_status>& statuses) {
@@ -486,7 +484,7 @@ void book_status_service::save_statuses(const std::vector<domain::book_status>& 
         if (e.code.empty())
             throw std::invalid_argument("Book Status code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " book statuses";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " book statuses";
     auto ts = statuses;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -495,9 +493,9 @@ void book_status_service::save_statuses(const std::vector<domain::book_status>& 
 }
 
 void book_status_service::delete_status(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing book status. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing book status. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed book status. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed book status. " << "code: " << code;
 }
 
 void book_status_service::delete_statuses(const std::vector<std::string>& codes) {
@@ -505,7 +503,7 @@ void book_status_service::delete_statuses(const std::vector<std::string>& codes)
 }
 
 std::vector<domain::book_status> book_status_service::get_status_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for book status. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for book status. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -303,8 +303,7 @@ std::size_t workflow_run_commands::print_run_warnings(std::ostream& out,
             if (step.status == "completed_with_warnings")
                 warned.push_back(step);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "The latest " << run_type << " run was not read: " << e.what();
+        ORES_LOG_SEV(lg(), debug) << "The latest " << run_type << " run was not read: " << e.what();
         return 0;
     }
     if (warned.empty())
@@ -398,8 +397,8 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                                               std::chrono::seconds timeout,
                                               std::size_t expected_steps,
                                               const std::string& expected_state) {
-    BOOST_LOG_SEV(lg(), info) << "Waiting for workflow instance: " << instance_id
-                              << " (timeout: " << timeout.count() << "s)";
+    ORES_LOG_SEV(lg(), info) << "Waiting for workflow instance: " << instance_id
+                             << " (timeout: " << timeout.count() << "s)";
 
     const auto deadline = std::chrono::steady_clock::now() + timeout;
     std::map<int, std::string> last_status;
@@ -414,16 +413,16 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
             // succeed, an earlier mark would still abort a load script.
             const auto reason = !result ? result.error() : result->message;
             if (result)
-                BOOST_LOG_SEV(lg(), info)
+                ORES_LOG_SEV(lg(), info)
                     << "Treating unsuccessful steps reply as transient: " << reason;
             ++consecutive_failures;
             if (report_poll_failure(consecutive_failures, result.has_value())) {
                 out << "⚠ Poll failed (" << consecutive_failures << "/"
                     << max_consecutive_poll_failures << "): " << reason << std::endl;
-                BOOST_LOG_SEV(lg(), warn) << "Poll " << consecutive_failures << " failed for "
-                                          << instance_id << ": " << reason;
+                ORES_LOG_SEV(lg(), warn) << "Poll " << consecutive_failures << " failed for "
+                                         << instance_id << ": " << reason;
             } else {
-                BOOST_LOG_SEV(lg(), info)
+                ORES_LOG_SEV(lg(), info)
                     << "First poll refused instance " << instance_id << "; retrying.";
             }
             if (consecutive_failures >= max_consecutive_poll_failures) {
@@ -482,7 +481,7 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                         continue;
                     fail(out) << "Workflow failed at step " << (step.step_index + 1) << " of "
                               << total << ": " << step.error << std::endl;
-                    BOOST_LOG_SEV(lg(), error)
+                    ORES_LOG_SEV(lg(), error)
                         << "Workflow instance " << instance_id << " failed at step "
                         << step.step_index << ": " << step.error;
                     return false;
@@ -492,7 +491,7 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                     if (!result->error.empty())
                         out << ": " << result->error;
                     out << std::endl;
-                    BOOST_LOG_SEV(lg(), error)
+                    ORES_LOG_SEV(lg(), error)
                         << "Workflow instance " << instance_id << " " << result->status;
                     return false;
                 }
@@ -513,7 +512,7 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                         }
                         out << "." << std::endl;
                     }
-                    BOOST_LOG_SEV(lg(), info)
+                    ORES_LOG_SEV(lg(), info)
                         << "Workflow instance " << instance_id << " completed.";
                     return true;
                 }
@@ -524,7 +523,7 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                 const auto owed = steps_expected(*result, expected_steps);
                 if (total < owed &&
                     std::ranges::all_of(result->steps, &workflow_run_commands::is_step_complete))
-                    BOOST_LOG_SEV(lg(), debug)
+                    ORES_LOG_SEV(lg(), debug)
                         << "Every visible step is complete but the run owes more: " << total << "/"
                         << owed;
             }
@@ -534,7 +533,7 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
             fail(out) << "Timed out after " << timeout.count() << "s waiting for workflow instance "
                       << instance_id << ". Check progress with: workflow_steps by-workflow-id "
                       << instance_id << std::endl;
-            BOOST_LOG_SEV(lg(), error) << "Timed out waiting for workflow instance " << instance_id;
+            ORES_LOG_SEV(lg(), error) << "Timed out waiting for workflow instance " << instance_id;
             return false;
         }
         std::this_thread::sleep_for(poll_interval);
@@ -773,7 +772,7 @@ void workflow_run_commands::process_start(std::ostream& out,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Starting workflow of type: " << type;
+    ORES_LOG_SEV(lg(), info) << "Starting workflow of type: " << type;
 
     workflow::messaging::start_workflow_message msg;
     msg.type = type;

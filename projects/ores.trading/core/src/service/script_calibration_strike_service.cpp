@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/script_calibration_strike.hpp"
 #include "ores.trading.api/messaging/script_calibration_strike_protocol.hpp"
 #include "ores.trading.core/repository/script_calibration_strike_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -507,12 +505,12 @@ ores::utility::domain::result script_calibration_strike_service::prepare_change(
 
 std::vector<domain::script_calibration_strike>
 script_calibration_strike_service::list_strikes(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all script calibration strikes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all script calibration strikes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t script_calibration_strike_service::count_strikes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total script calibration strikes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total script calibration strikes count";
     return repo_.get_total_strike_count(ctx_);
 }
 
@@ -523,11 +521,10 @@ script_calibration_strike_service::get_strike_at_version(const std::string& scri
                                                          const std::string& calibration_number,
                                                          const std::string& sequence_number,
                                                          std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script calibration strike at version. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " calibration_number: " << calibration_number
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting script calibration strike at version. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " calibration_number: " << calibration_number
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(
         ctx_, script_name, purpose, calibration_number, sequence_number, version);
 }
@@ -537,10 +534,10 @@ script_calibration_strike_service::get_strike(const std::string& script_name,
                                               const std::string& purpose,
                                               const std::string& calibration_number,
                                               const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script calibration strike. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " calibration_number: " << calibration_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting script calibration strike. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " calibration_number: " << calibration_number
+                              << " sequence_number: " << sequence_number;
     auto results =
         repo_.read_latest(ctx_, script_name, purpose, calibration_number, sequence_number);
     if (results.empty())
@@ -561,17 +558,17 @@ void script_calibration_strike_service::save_strike(const domain::script_calibra
         throw std::invalid_argument("Script Calibration Strike script_name cannot be empty.");
     if (v.purpose.empty())
         throw std::invalid_argument("Script Calibration Strike purpose cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving script calibration strike. "
-                               << "script_name: " << v.script_name << " purpose: " << v.purpose
-                               << " calibration_number: " << v.calibration_number
-                               << " sequence_number: " << v.sequence_number;
-    auto t = v;
-    stamp(t, ctx_);
-    repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved script calibration strike. "
+    ORES_LOG_SEV(lg(), debug) << "Saving script calibration strike. "
                               << "script_name: " << v.script_name << " purpose: " << v.purpose
                               << " calibration_number: " << v.calibration_number
                               << " sequence_number: " << v.sequence_number;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    ORES_LOG_SEV(lg(), info) << "Saved script calibration strike. "
+                             << "script_name: " << v.script_name << " purpose: " << v.purpose
+                             << " calibration_number: " << v.calibration_number
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void script_calibration_strike_service::save_strikes(
@@ -582,7 +579,7 @@ void script_calibration_strike_service::save_strikes(
         if (e.purpose.empty())
             throw std::invalid_argument("Script Calibration Strike purpose cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << strikes.size() << " script calibration strikes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << strikes.size() << " script calibration strikes";
     auto ts = strikes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -594,15 +591,15 @@ void script_calibration_strike_service::delete_strike(const std::string& script_
                                                       const std::string& purpose,
                                                       const std::string& calibration_number,
                                                       const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing script calibration strike. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " calibration_number: " << calibration_number
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, script_name, purpose, calibration_number, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed script calibration strike. "
+    ORES_LOG_SEV(lg(), debug) << "Removing script calibration strike. "
                               << "script_name: " << script_name << " purpose: " << purpose
                               << " calibration_number: " << calibration_number
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, script_name, purpose, calibration_number, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed script calibration strike. "
+                             << "script_name: " << script_name << " purpose: " << purpose
+                             << " calibration_number: " << calibration_number
+                             << " sequence_number: " << sequence_number;
 }
 
 void script_calibration_strike_service::delete_strikes(
@@ -618,10 +615,10 @@ script_calibration_strike_service::get_strike_history(const std::string& script_
                                                       const std::string& purpose,
                                                       const std::string& calibration_number,
                                                       const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for script calibration strike. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " calibration_number: " << calibration_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for script calibration strike. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " calibration_number: " << calibration_number
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, script_name, purpose, calibration_number, sequence_number);
 }
 

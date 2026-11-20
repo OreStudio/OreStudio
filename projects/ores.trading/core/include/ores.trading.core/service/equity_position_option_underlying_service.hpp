@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_EQUITY_POSITION_OPTION_UNDERLYING_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/messaging/equity_position_option_underlying_protocol.hpp"
 #include "ores.trading.core/export.hpp"

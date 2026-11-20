@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.reporting.api/domain/report_instance_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
@@ -34,7 +33,6 @@
 #include "ores.reporting.core/repository/report_instance_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -244,7 +242,7 @@ void report_instance_repository::write(const context& ctx,
 void report_instance_repository::write(const context& ctx,
                                        const domain::report_instance& v,
                                        const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report instance. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing report instance. " << "id: " << v.id;
     const auto t = report_instance_apply_claim(v,
                                                claim,
                                                report_instance_claim_reads_current(claim) ?
@@ -258,7 +256,7 @@ void report_instance_repository::write(
     const context& ctx,
     const std::vector<domain::report_instance>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report instances. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing report instances. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "report_instance_repository::write: one claim is needed for each row");
@@ -294,7 +292,7 @@ std::vector<domain::report_instance> report_instance_repository::read_latest(con
 
 std::vector<domain::report_instance>
 report_instance_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report instance. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report instance. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -311,7 +309,7 @@ report_instance_repository::read_latest(const context& ctx, const std::string& i
 
 std::vector<domain::report_instance>
 report_instance_repository::read_latest_by_name(const context& ctx, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report instance by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report instance by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -352,8 +350,7 @@ report_instance_repository::read_latest_by_name(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report instances by name. Count: "
-                               << names.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report instances by name. Count: " << names.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -373,7 +370,7 @@ report_instance_repository::read_latest_by_name(const context& ctx,
 
 std::vector<domain::report_instance>
 report_instance_repository::read_any_by_name(const context& ctx, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any report instance by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading any report instance by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_instance_entity>> |
                        query_builder::where("tenant_id"_c == tid && "name"_c == name) |
@@ -400,7 +397,7 @@ report_instance_repository::read_any_by_name(const context& ctx, const std::stri
 
 std::vector<domain::report_instance> report_instance_repository::read_all(const context& ctx,
                                                                           const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all report instance versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all report instance versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_instance_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -416,8 +413,8 @@ std::vector<domain::report_instance> report_instance_repository::read_all(const 
 
 std::optional<domain::report_instance> report_instance_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading report instance at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading report instance at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<report_instance_entity>> |
@@ -440,7 +437,7 @@ std::optional<domain::report_instance> report_instance_repository::read_at_versi
 
 report_instance_repository::remove_status report_instance_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report instance. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing report instance. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -479,8 +476,8 @@ std::vector<domain::report_instance> report_instance_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::report_instances_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report instances with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report instances with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_instance_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -502,7 +499,7 @@ std::uint32_t report_instance_repository::get_total_instance_count(
     const context& ctx,
     const std::optional<messaging::report_instances_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report instance count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active report instance count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_instance_entity>> |
@@ -574,8 +571,8 @@ std::vector<domain::report_instance> report_instance_repository::read_latest_by_
     if (definition_ids.empty())
         return {};
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading the latest instance of " << definition_ids.size()
-                               << " definition(s).";
+    ORES_LOG_SEV(lg(), debug) << "Reading the latest instance of " << definition_ids.size()
+                              << " definition(s).";
 
     // One bound array rather than one parameter per id, so a party with a
     // hundred definitions is still one statement.
@@ -615,8 +612,8 @@ report_instance_repository::read_health_facts_by_instance_ids(
     if (instance_ids.empty())
         return {};
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading the health facts of " << instance_ids.size()
-                               << " run(s).";
+    ORES_LOG_SEV(lg(), debug) << "Reading the health facts of " << instance_ids.size()
+                              << " run(s).";
 
     std::string id_array("{");
     for (std::size_t i = 0; i < instance_ids.size(); ++i) {

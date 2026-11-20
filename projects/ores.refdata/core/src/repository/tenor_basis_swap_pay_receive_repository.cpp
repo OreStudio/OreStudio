@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_json_io.hpp" // IWYU pragma: keep.
@@ -34,7 +33,6 @@
 #include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_entity.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -234,8 +232,8 @@ void tenor_basis_swap_pay_receive_repository::write(
     const context& ctx,
     const domain::tenor_basis_swap_pay_receive& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor basis swap pay receive. "
-                               << "id: " << v.identity.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing tenor basis swap pay receive. "
+                              << "id: " << v.identity.id;
     const auto t = tenor_basis_swap_pay_receive_apply_claim(
         v,
         claim,
@@ -252,7 +250,7 @@ void tenor_basis_swap_pay_receive_repository::write(
     const context& ctx,
     const std::vector<domain::tenor_basis_swap_pay_receive>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor basis swap pay receives. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing tenor basis swap pay receives. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "tenor_basis_swap_pay_receive_repository::write: one claim is needed for each row");
@@ -292,7 +290,7 @@ tenor_basis_swap_pay_receive_repository::read_latest(const context& ctx) {
 
 std::vector<domain::tenor_basis_swap_pay_receive>
 tenor_basis_swap_pay_receive_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor basis swap pay receive. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor basis swap pay receive. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -327,8 +325,8 @@ tenor_basis_swap_pay_receive_repository::read_latest(const context& ctx, const s
 
 std::vector<domain::tenor_basis_swap_pay_receive>
 tenor_basis_swap_pay_receive_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor basis swap pay receive versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all tenor basis swap pay receive versions. "
+                              << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_basis_swap_pay_receive_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -347,8 +345,8 @@ std::optional<domain::tenor_basis_swap_pay_receive>
 tenor_basis_swap_pay_receive_repository::read_at_version(const context& ctx,
                                                          const std::string& id,
                                                          std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading tenor basis swap pay receive at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading tenor basis swap pay receive at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<tenor_basis_swap_pay_receive_entity>> |
@@ -376,8 +374,8 @@ tenor_basis_swap_pay_receive_repository::read_latest_by_convention_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::tenor_basis_swap_pay_receives_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor basis swap pay receives. convention_id: "
-                               << convention_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor basis swap pay receives. convention_id: "
+                              << convention_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -402,7 +400,7 @@ std::uint32_t tenor_basis_swap_pay_receive_repository::
         const context& ctx,
         const std::string& convention_id,
         const std::optional<messaging::tenor_basis_swap_pay_receives_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active tenor basis swap pay receives count. convention_id: "
         << convention_id;
     static constexpr auto max = db_timestamp::max();
@@ -428,7 +426,7 @@ tenor_basis_swap_pay_receive_repository::read_by_convention_id_as_of(
     const std::string& convention_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading tenor basis swap pay receives as of window. convention_id: " << convention_id;
 
     const auto vf(valid_from_bound);
@@ -453,7 +451,7 @@ tenor_basis_swap_pay_receive_repository::remove_status
 tenor_basis_swap_pay_receive_repository::remove(const context& ctx,
                                                 const std::string& id,
                                                 std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor basis swap pay receive. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing tenor basis swap pay receive. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -502,8 +500,8 @@ tenor_basis_swap_pay_receive_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::tenor_basis_swap_pay_receives_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor basis swap pay receives with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor basis swap pay receives with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_basis_swap_pay_receive_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -525,7 +523,7 @@ std::uint32_t tenor_basis_swap_pay_receive_repository::get_total_tenor_basis_swa
     const context& ctx,
     const std::optional<messaging::tenor_basis_swap_pay_receives_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor basis swap pay receive count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active tenor basis swap pay receive count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_basis_swap_pay_receive_entity>> |

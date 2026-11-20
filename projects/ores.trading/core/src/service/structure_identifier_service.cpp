@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/structure_identifier.hpp"
 #include "ores.trading.api/messaging/structure_identifier_protocol.hpp"
 #include "ores.trading.core/repository/structure_identifier_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -506,12 +504,12 @@ ores::utility::domain::result structure_identifier_service::prepare_change(
 
 std::vector<domain::structure_identifier>
 structure_identifier_service::list_identifiers(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all structure identifiers";
+    ORES_LOG_SEV(lg(), debug) << "Listing all structure identifiers";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t structure_identifier_service::count_identifiers() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total structure identifiers count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total structure identifiers count";
     return repo_.get_total_identifier_count(ctx_);
 }
 
@@ -520,31 +518,31 @@ std::vector<domain::structure_identifier>
 structure_identifier_service::list_identifiers_by_structure_id(const std::string& structure_id,
                                                                std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing structure identifiers by structure_id: " << structure_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing structure identifiers by structure_id: " << structure_id;
     return repo_.read_latest_by_structure_id(ctx_, structure_id, offset, limit);
 }
 
 std::uint32_t
 structure_identifier_service::count_identifiers_by_structure_id(const std::string& structure_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total structure identifiers count by structure_id: "
-                               << structure_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total structure identifiers count by structure_id: "
+                              << structure_id;
     return repo_.get_total_identifier_count_by_structure_id(ctx_, structure_id);
 }
 
 
 std::optional<domain::structure_identifier> structure_identifier_service::get_identifier_at_version(
     const std::string& structure_id, const std::string& id_type, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting structure identifier at version. "
-                               << "structure_id: " << structure_id << " id_type: " << id_type
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting structure identifier at version. "
+                              << "structure_id: " << structure_id << " id_type: " << id_type
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, structure_id, id_type, version);
 }
 
 std::optional<domain::structure_identifier>
 structure_identifier_service::get_identifier(const std::string& structure_id,
                                              const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting structure identifier. "
-                               << "structure_id: " << structure_id << " id_type: " << id_type;
+    ORES_LOG_SEV(lg(), debug) << "Getting structure identifier. "
+                              << "structure_id: " << structure_id << " id_type: " << id_type;
     auto results = repo_.read_latest(ctx_, structure_id, id_type);
     if (results.empty())
         return std::nullopt;
@@ -562,13 +560,13 @@ void structure_identifier_service::save_identifier(const domain::structure_ident
         throw std::invalid_argument("Structure Identifier structure_id cannot be empty.");
     if (v.id_type.empty())
         throw std::invalid_argument("Structure Identifier id_type cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving structure identifier. "
-                               << "structure_id: " << v.structure_id << " id_type: " << v.id_type;
+    ORES_LOG_SEV(lg(), debug) << "Saving structure identifier. "
+                              << "structure_id: " << v.structure_id << " id_type: " << v.id_type;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved structure identifier. "
-                              << "structure_id: " << v.structure_id << " id_type: " << v.id_type;
+    ORES_LOG_SEV(lg(), info) << "Saved structure identifier. " << "structure_id: " << v.structure_id
+                             << " id_type: " << v.id_type;
 }
 
 void structure_identifier_service::save_identifiers(
@@ -579,7 +577,7 @@ void structure_identifier_service::save_identifiers(
         if (e.id_type.empty())
             throw std::invalid_argument("Structure Identifier id_type cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << identifiers.size() << " structure identifiers";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << identifiers.size() << " structure identifiers";
     auto ts = identifiers;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -589,11 +587,11 @@ void structure_identifier_service::save_identifiers(
 
 void structure_identifier_service::delete_identifier(const std::string& structure_id,
                                                      const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing structure identifier. "
-                               << "structure_id: " << structure_id << " id_type: " << id_type;
-    repo_.remove(ctx_, structure_id, id_type);
-    BOOST_LOG_SEV(lg(), info) << "Removed structure identifier. "
+    ORES_LOG_SEV(lg(), debug) << "Removing structure identifier. "
                               << "structure_id: " << structure_id << " id_type: " << id_type;
+    repo_.remove(ctx_, structure_id, id_type);
+    ORES_LOG_SEV(lg(), info) << "Removed structure identifier. " << "structure_id: " << structure_id
+                             << " id_type: " << id_type;
 }
 
 void structure_identifier_service::delete_identifiers(const std::vector<std::string>& structure_ids,
@@ -604,8 +602,8 @@ void structure_identifier_service::delete_identifiers(const std::vector<std::str
 std::vector<domain::structure_identifier>
 structure_identifier_service::get_identifier_history(const std::string& structure_id,
                                                      const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for structure identifier. "
-                               << "structure_id: " << structure_id << " id_type: " << id_type;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for structure identifier. "
+                              << "structure_id: " << structure_id << " id_type: " << id_type;
     return repo_.read_all(ctx_, structure_id, id_type);
 }
 

@@ -338,7 +338,7 @@ void currency_group_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering currency_groups routes";
+    ORES_LOG_SEV(lg(), info) << "Registering currency_groups routes";
 
     auto list_route =
         router->get("/api/v1/reference-data/currency_groups")
@@ -484,7 +484,7 @@ void currency_group_routes::register_routes(
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "currency_groups routes registered: " << 10 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "currency_groups routes registered: " << 10 << " endpoint(s)";
 }
 
 }

@@ -28,7 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/nature_dimension_protocol.hpp"
 #include "ores.dq.core/service/nature_dimension_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -73,7 +73,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_nature_dimensions(ores::nats::message msg) {
-        BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -88,7 +88,7 @@ public:
         }
         auto req = decode<list_nature_dimensions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -96,13 +96,13 @@ public:
         service::nature_dimension_service svc(req_ctx);
         try {
             auto response = svc.list_nature_dimensions(*req);
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), error)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_nature_dimensions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -122,7 +122,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_nature_dimension(ores::nats::message msg) {
-        BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -137,7 +137,7 @@ public:
         }
         auto req = decode<get_nature_dimension_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -145,13 +145,13 @@ public:
         service::nature_dimension_service svc(req_ctx);
         try {
             auto response = svc.get_nature_dimension(*req);
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), error)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_nature_dimension_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -171,7 +171,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_nature_dimensions(ores::nats::message msg) {
-        BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -186,7 +186,7 @@ public:
         }
         auto req = decode<get_many_nature_dimensions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -194,13 +194,13 @@ public:
         service::nature_dimension_service svc(req_ctx);
         try {
             auto response = svc.get_many_nature_dimensions(*req);
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), error)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_nature_dimensions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -220,7 +220,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_nature_dimension(ores::nats::message msg) {
-        BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -235,7 +235,7 @@ public:
         }
         auto req = decode<put_nature_dimension_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -243,13 +243,13 @@ public:
         service::nature_dimension_service svc(req_ctx);
         try {
             auto response = svc.put_nature_dimension(*req);
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), error)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_nature_dimension_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -269,7 +269,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_nature_dimensions(ores::nats::message msg) {
-        BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -284,7 +284,7 @@ public:
         }
         auto req = decode<put_many_nature_dimensions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -292,13 +292,13 @@ public:
         service::nature_dimension_service svc(req_ctx);
         try {
             auto response = svc.put_many_nature_dimensions(*req);
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), error)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_nature_dimensions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -318,7 +318,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_nature_dimension(ores::nats::message msg) {
-        BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -333,7 +333,7 @@ public:
         }
         auto req = decode<delete_nature_dimension_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -341,13 +341,13 @@ public:
         service::nature_dimension_service svc(req_ctx);
         try {
             auto response = svc.delete_nature_dimension(*req);
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), error)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_nature_dimension_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -367,7 +367,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_nature_dimensions(ores::nats::message msg) {
-        BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -382,7 +382,7 @@ public:
         }
         auto req = decode<delete_many_nature_dimensions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -390,13 +390,13 @@ public:
         service::nature_dimension_service svc(req_ctx);
         try {
             auto response = svc.delete_many_nature_dimensions(*req);
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), error)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_nature_dimensions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -416,7 +416,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_nature_dimension_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -431,7 +431,7 @@ public:
         }
         auto req = decode<list_nature_dimension_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -439,13 +439,13 @@ public:
         service::nature_dimension_service svc(req_ctx);
         try {
             auto response = svc.list_nature_dimension_versions(*req);
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), error)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_nature_dimension_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -465,7 +465,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_nature_dimension_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -480,7 +480,7 @@ public:
         }
         auto req = decode<get_nature_dimension_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -488,13 +488,13 @@ public:
         service::nature_dimension_service svc(req_ctx);
         try {
             auto response = svc.get_nature_dimension_version(*req);
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(nature_dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(nature_dimension_handler_lg(), error)
+            ORES_LOG_SEV(nature_dimension_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_nature_dimension_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

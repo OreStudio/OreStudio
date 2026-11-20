@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -475,25 +473,25 @@ trade_service::prepare_change(const messaging::trade_change& change,
 
 
 std::vector<domain::trade> trade_service::list_trades(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trades";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trades";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_service::count_trades() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trades count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trades count";
     return repo_.get_total_trade_count(ctx_);
 }
 
 
 std::optional<domain::trade> trade_service::get_trade_at_version(const boost::uuids::uuid& id,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::trade> trade_service::get_trade(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -507,11 +505,11 @@ std::vector<domain::trade> trade_service::get_trades(const std::vector<std::stri
 void trade_service::save_trade(const domain::trade& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Trade id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved trade. " << "id: " << v.id;
 }
 
 void trade_service::save_trades(const std::vector<domain::trade>& trades) {
@@ -519,7 +517,7 @@ void trade_service::save_trades(const std::vector<domain::trade>& trades) {
         if (e.id.is_nil())
             throw std::invalid_argument("Trade id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << trades.size() << " trades";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << trades.size() << " trades";
     auto ts = trades;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -528,9 +526,9 @@ void trade_service::save_trades(const std::vector<domain::trade>& trades) {
 }
 
 void trade_service::delete_trade(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing trade. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed trade. " << "id: " << id;
 }
 
 void trade_service::delete_trades(const std::vector<std::string>& ids) {
@@ -538,7 +536,7 @@ void trade_service::delete_trades(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::trade> trade_service::get_trade_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

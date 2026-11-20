@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.iam.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <mutex>
 
 namespace ores::iam::service {

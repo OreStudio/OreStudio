@@ -26,7 +26,7 @@
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/account_role_repository.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -63,8 +63,8 @@ TEST_CASE("write_single_account_role", "[repository]") {
     ar.account_id = acc.id;
     ar.role_id = r.id;
 
-    BOOST_LOG_SEV(lg, debug) << "Account role - account_id: " << ar.account_id
-                             << " role_id: " << ar.role_id;
+    ORES_LOG_SEV(lg, debug) << "Account role - account_id: " << ar.account_id
+                            << " role_id: " << ar.role_id;
     CHECK_NOTHROW(repo.write(ar));
 }
 
@@ -89,7 +89,7 @@ TEST_CASE("read_latest_account_roles", "[repository]") {
     repo.write(ar);
 
     auto read_ars = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read account roles count: " << read_ars.size();
+    ORES_LOG_SEV(lg, debug) << "Read account roles count: " << read_ars.size();
 
     CHECK(!read_ars.empty());
 }
@@ -123,8 +123,8 @@ TEST_CASE("read_latest_account_roles_by_account", "[repository]") {
     repo.write(ar2);
 
     auto read_ars = repo.read_latest_by_account(acc.id);
-    BOOST_LOG_SEV(lg, debug) << "Read account roles for account " << acc.id
-                             << " count: " << read_ars.size();
+    ORES_LOG_SEV(lg, debug) << "Read account roles for account " << acc.id
+                            << " count: " << read_ars.size();
 
     CHECK(read_ars.size() >= 2);
     for (const auto& ar : read_ars) {

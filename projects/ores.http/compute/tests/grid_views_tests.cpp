@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http/routes/compute/grid_views.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -67,7 +67,7 @@ bool states(const std::string& json, const std::string& member) {
 
 TEST_CASE("a_batch_names_the_run_that_made_it_and_the_party_that_owns_it", "[grid_views]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the run and the party a batch names";
+    ORES_LOG_SEV(lg, info) << "Testing the run and the party a batch names";
 
     auto row = a_batch();
     row.party_id = uuid_of(party_id);
@@ -83,7 +83,7 @@ TEST_CASE("a_batch_names_the_run_that_made_it_and_the_party_that_owns_it", "[gri
 
 TEST_CASE("a_batch_names_its_run_whatever_the_case_of_the_reference", "[grid_views]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the case a reference is read by";
+    ORES_LOG_SEV(lg, info) << "Testing the case a reference is read by";
 
     auto row = a_batch();
     row.external_ref = "AAAA2222-2222-2222-2222-222222222222";
@@ -94,7 +94,7 @@ TEST_CASE("a_batch_names_its_run_whatever_the_case_of_the_reference", "[grid_vie
 
 TEST_CASE("a_batch_that_names_no_run_and_no_party_states_neither", "[grid_views]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a batch with nothing to name";
+    ORES_LOG_SEV(lg, info) << "Testing a batch with nothing to name";
 
     auto row = a_batch();
     row.external_ref = "adhoc";
@@ -106,7 +106,7 @@ TEST_CASE("a_batch_that_names_no_run_and_no_party_states_neither", "[grid_views]
 
 TEST_CASE("an_identifier_that_is_the_nil_uuid_is_stated_as_none", "[grid_views]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the nil identifier";
+    ORES_LOG_SEV(lg, info) << "Testing the nil identifier";
 
     CHECK_FALSE(stated_id(boost::uuids::nil_uuid()).has_value());
     CHECK_FALSE(stated_id(std::optional<boost::uuids::uuid>(boost::uuids::nil_uuid())).has_value());
@@ -116,7 +116,7 @@ TEST_CASE("an_identifier_that_is_the_nil_uuid_is_stated_as_none", "[grid_views]"
 
 TEST_CASE("a_work_unit_states_an_unset_config_and_canonical_run_as_none", "[grid_views]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the parts of a work unit a screen reads as unknown";
+    ORES_LOG_SEV(lg, info) << "Testing the parts of a work unit a screen reads as unknown";
 
     workunit row;
     row.id = uuid_of("55555555-5555-5555-5555-555555555555");
@@ -144,7 +144,7 @@ TEST_CASE("a_work_unit_states_an_unset_config_and_canonical_run_as_none", "[grid
 
 TEST_CASE("a_run_hides_the_node_from_a_reader_that_may_not_see_it", "[grid_views]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the node a reader may not read";
+    ORES_LOG_SEV(lg, info) << "Testing the node a reader may not read";
 
     result row;
     row.id = uuid_of("88888888-8888-8888-8888-888888888888");
@@ -167,7 +167,7 @@ TEST_CASE("a_run_hides_the_node_from_a_reader_that_may_not_see_it", "[grid_views
 
 TEST_CASE("a_run_that_has_no_node_and_has_not_started_states_none_of_them", "[grid_views]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a run in flight";
+    ORES_LOG_SEV(lg, info) << "Testing a run in flight";
 
     result row;
     row.id = uuid_of("88888888-8888-8888-8888-888888888888");
@@ -185,7 +185,7 @@ TEST_CASE("a_run_that_has_no_node_and_has_not_started_states_none_of_them", "[gr
 
 TEST_CASE("a_page_states_the_page_it_holds_and_the_count_it_matches", "[grid_views]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the answer a page of rows states";
+    ORES_LOG_SEV(lg, info) << "Testing the answer a page of rows states";
 
     page asked;
     asked.offset = 50;
@@ -200,7 +200,7 @@ TEST_CASE("a_page_states_the_page_it_holds_and_the_count_it_matches", "[grid_vie
 
 TEST_CASE("a_page_states_the_default_page_when_the_caller_states_none", "[grid_views]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the default page a list answers with";
+    ORES_LOG_SEV(lg, info) << "Testing the default page a list answers with";
 
     ores::http::domain::http_request req;
     const auto asked = ores::http::routes::compute::grid::page_of(

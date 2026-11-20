@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/configuration_type.hpp"
 #include "ores.reporting.api/messaging/configuration_type_protocol.hpp"
 #include "ores.reporting.core/repository/configuration_type_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -454,26 +452,26 @@ configuration_type_service::prepare_change(const messaging::configuration_type_c
 
 std::vector<domain::configuration_type>
 configuration_type_service::list_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all configuration types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all configuration types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t configuration_type_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total configuration types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total configuration types count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::configuration_type>
 configuration_type_service::get_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting configuration type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting configuration type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::configuration_type>
 configuration_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting configuration type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting configuration type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -488,11 +486,11 @@ configuration_type_service::get_types(const std::vector<std::string>& codes) {
 void configuration_type_service::save_type(const domain::configuration_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Configuration Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving configuration type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving configuration type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved configuration type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved configuration type. " << "code: " << v.code;
 }
 
 void configuration_type_service::save_types(const std::vector<domain::configuration_type>& types) {
@@ -500,7 +498,7 @@ void configuration_type_service::save_types(const std::vector<domain::configurat
         if (e.code.empty())
             throw std::invalid_argument("Configuration Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " configuration types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " configuration types";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -509,9 +507,9 @@ void configuration_type_service::save_types(const std::vector<domain::configurat
 }
 
 void configuration_type_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing configuration type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing configuration type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed configuration type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed configuration type. " << "code: " << code;
 }
 
 void configuration_type_service::delete_types(const std::vector<std::string>& codes) {
@@ -520,7 +518,7 @@ void configuration_type_service::delete_types(const std::vector<std::string>& co
 
 std::vector<domain::configuration_type>
 configuration_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for configuration type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for configuration type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

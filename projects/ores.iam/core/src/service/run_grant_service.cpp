@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/run_grant.hpp"
 #include "ores.iam.api/messaging/run_grant_protocol.hpp"
 #include "ores.iam.core/repository/run_grant_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -286,40 +284,39 @@ run_grant_service::get_run_grant_version(const messaging::get_run_grant_version_
 
 std::vector<domain::run_grant> run_grant_service::list_grants(std::uint32_t offset,
                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all run grants";
+    ORES_LOG_SEV(lg(), debug) << "Listing all run grants";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t run_grant_service::count_grants() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total run grants count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total run grants count";
     return repo_.get_total_grant_count(ctx_);
 }
 
 
 std::vector<domain::run_grant> run_grant_service::list_grants_by_grantor_account_id(
     const std::string& grantor_account_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing run grants by grantor_account_id: "
-                               << grantor_account_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing run grants by grantor_account_id: " << grantor_account_id;
     return repo_.read_latest_by_grantor_account_id(ctx_, grantor_account_id, offset, limit);
 }
 
 std::uint32_t
 run_grant_service::count_grants_by_grantor_account_id(const std::string& grantor_account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total run grants count by grantor_account_id: "
-                               << grantor_account_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total run grants count by grantor_account_id: "
+                              << grantor_account_id;
     return repo_.get_total_grant_count_by_grantor_account_id(ctx_, grantor_account_id);
 }
 
 
 std::optional<domain::run_grant>
 run_grant_service::get_grant_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting run grant at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting run grant at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::run_grant> run_grant_service::get_grant(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting run grant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting run grant. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -328,7 +325,7 @@ std::optional<domain::run_grant> run_grant_service::get_grant(const boost::uuids
 
 std::optional<domain::run_grant>
 run_grant_service::get_grant_by_resource(const std::string& resource) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting run grant by resource: " << resource;
+    ORES_LOG_SEV(lg(), debug) << "Getting run grant by resource: " << resource;
     messaging::run_grant_key k;
     k.resource = resource;
     auto found = run_grant_read_one(repo_, ctx_, k);
@@ -338,7 +335,7 @@ run_grant_service::get_grant_by_resource(const std::string& resource) {
 }
 
 std::optional<domain::run_grant> run_grant_service::find_grant(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding run grant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding run grant. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -352,11 +349,11 @@ std::vector<domain::run_grant> run_grant_service::get_grants(const std::vector<s
 void run_grant_service::save_grant(const domain::run_grant& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Run Grant id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving run grant. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving run grant. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved run grant. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved run grant. " << "id: " << v.id;
 }
 
 void run_grant_service::save_grants(const std::vector<domain::run_grant>& grants) {
@@ -364,7 +361,7 @@ void run_grant_service::save_grants(const std::vector<domain::run_grant>& grants
         if (e.id.is_nil())
             throw std::invalid_argument("Run Grant id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << grants.size() << " run grants";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << grants.size() << " run grants";
     auto ts = grants;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -373,15 +370,15 @@ void run_grant_service::save_grants(const std::vector<domain::run_grant>& grants
 }
 
 void run_grant_service::delete_grant(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing run grant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing run grant. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed run grant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed run grant. " << "id: " << id;
 }
 
 void run_grant_service::remove_grant(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing run grant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing run grant. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed run grant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed run grant. " << "id: " << id;
 }
 
 void run_grant_service::delete_grants(const std::vector<std::string>& ids) {
@@ -389,7 +386,7 @@ void run_grant_service::delete_grants(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::run_grant> run_grant_service::get_grant_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for run grant. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for run grant. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -410,7 +407,7 @@ std::vector<domain::run_grant> run_grant_service::get_grant_history(const std::s
 }
 
 std::vector<domain::run_grant> run_grant_service::get_grant_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for run grant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for run grant. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

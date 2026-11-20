@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_PORTFOLIO_RIGHT_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/portfolio_right.hpp"
 #include "ores.refdata.api/messaging/portfolio_right_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

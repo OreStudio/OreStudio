@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.http.core/routes/storage_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
@@ -270,7 +270,7 @@ fs::path write_file(const fs::path& path, std::uint64_t size, char filler) {
 
 TEST_CASE("an_upload_through_the_gateway_round_trips", "[storage_upload][end_to_end]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the upload end to end, through the real gateway";
+    ORES_LOG_SEV(lg, info) << "Testing the upload end to end, through the real gateway";
 
     scratch_dir objects("ores-e2e-objects-");
     scratch_dir files("ores-e2e-files-");
@@ -302,7 +302,7 @@ TEST_CASE("an_upload_through_the_gateway_round_trips", "[storage_upload][end_to_
 
 TEST_CASE("a_streamed_body_reaches_the_session_counter", "[storage_upload][end_to_end]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a streamed body is counted for its session";
+    ORES_LOG_SEV(lg, info) << "Testing that a streamed body is counted for its session";
 
     scratch_dir objects("ores-e2e-objects-");
     scratch_dir files("ores-e2e-files-");
@@ -331,7 +331,7 @@ TEST_CASE("a_streamed_body_reaches_the_session_counter", "[storage_upload][end_t
 TEST_CASE("a_download_through_the_gateway_returns_the_stored_bytes",
           "[storage_upload][end_to_end]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the round trip back through the gateway";
+    ORES_LOG_SEV(lg, info) << "Testing the round trip back through the gateway";
 
     scratch_dir objects("ores-e2e-objects-");
     scratch_dir files("ores-e2e-files-");
@@ -355,7 +355,7 @@ TEST_CASE("a_download_through_the_gateway_returns_the_stored_bytes",
 TEST_CASE("an_upload_outside_the_capability_is_refused_and_leaves_nothing",
           "[storage_upload][end_to_end]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a capability is the whole of what a caller may touch";
+    ORES_LOG_SEV(lg, info) << "Testing that a capability is the whole of what a caller may touch";
 
     scratch_dir objects("ores-e2e-objects-");
     scratch_dir files("ores-e2e-files-");
@@ -377,7 +377,7 @@ TEST_CASE("an_upload_outside_the_capability_is_refused_and_leaves_nothing",
 TEST_CASE("one_file_inside_a_package_is_served_without_the_package",
           "[storage_upload][end_to_end]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a caller reads one file out of a package";
+    ORES_LOG_SEV(lg, info) << "Testing that a caller reads one file out of a package";
 
     scratch_dir objects("ores-e2e-objects-");
     scratch_dir files("ores-e2e-files-");

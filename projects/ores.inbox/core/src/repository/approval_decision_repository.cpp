@@ -31,9 +31,7 @@
 #include "ores.inbox.api/messaging/approval_decision_protocol.hpp"
 #include "ores.inbox.core/repository/approval_decision_entity.hpp"
 #include "ores.inbox.core/repository/approval_decision_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -224,7 +222,7 @@ void approval_decision_repository::write(const context& ctx,
 void approval_decision_repository::write(const context& ctx,
                                          const domain::approval_decision& v,
                                          const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing approval decision. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing approval decision. " << "id: " << v.id;
     const auto t =
         approval_decision_apply_claim(v,
                                       claim,
@@ -239,7 +237,7 @@ void approval_decision_repository::write(
     const context& ctx,
     const std::vector<domain::approval_decision>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing approval decisions. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing approval decisions. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "approval_decision_repository::write: one claim is needed for each row");
@@ -276,7 +274,7 @@ approval_decision_repository::read_latest(const context& ctx) {
 
 std::vector<domain::approval_decision>
 approval_decision_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval decision. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval decision. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -294,7 +292,7 @@ approval_decision_repository::read_latest(const context& ctx, const std::string&
 
 std::vector<domain::approval_decision>
 approval_decision_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all approval decision versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all approval decision versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_decision_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -310,8 +308,8 @@ approval_decision_repository::read_all(const context& ctx, const std::string& id
 
 std::optional<domain::approval_decision> approval_decision_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading approval decision at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading approval decision at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<approval_decision_entity>> |
@@ -338,8 +336,8 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::approval_decisions_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval decisions. request_id: " << request_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval decisions. request_id: " << request_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_decision_entity>> |
@@ -362,8 +360,8 @@ std::uint32_t approval_decision_repository::get_total_decision_count_by_request_
     const context& ctx,
     const std::string& request_id,
     const std::optional<messaging::approval_decisions_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval decisions count. request_id: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active approval decisions count. request_id: "
+                              << request_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -382,7 +380,7 @@ std::uint32_t approval_decision_repository::get_total_decision_count_by_request_
 
 approval_decision_repository::remove_status approval_decision_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing approval decision. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing approval decision. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -421,8 +419,8 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
     const ores::utility::domain::order& order,
     const std::optional<messaging::approval_decisions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval decisions with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval decisions with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_decision_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -444,7 +442,7 @@ std::uint32_t approval_decision_repository::get_total_decision_count(
     const context& ctx,
     const std::optional<messaging::approval_decisions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval decision count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active approval decision count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_decision_entity>> |

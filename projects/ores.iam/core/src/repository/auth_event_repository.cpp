@@ -30,10 +30,8 @@
 #include "ores.iam.api/domain/auth_event_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/auth_event_entity.hpp"
 #include "ores.iam.core/repository/auth_event_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -191,8 +189,8 @@ void auth_event_repository::write(const context& ctx, const std::vector<domain::
 void auth_event_repository::write(const context& ctx,
                                   const domain::auth_event& v,
                                   const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing event. " << "id: " << v.id
-                               << " event_time: " << v.event_time;
+    ORES_LOG_SEV(lg(), debug) << "Writing event. " << "id: " << v.id
+                              << " event_time: " << v.event_time;
     const auto t = auth_event_apply_claim(
         v,
         claim,
@@ -208,7 +206,7 @@ void auth_event_repository::write(const context& ctx,
 void auth_event_repository::write(const context& ctx,
                                   const std::vector<domain::auth_event>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing auth events. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing auth events. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "auth_event_repository::write: one claim is needed for each row");
@@ -243,8 +241,8 @@ std::vector<domain::auth_event> auth_event_repository::read_latest(const context
 std::vector<domain::auth_event> auth_event_repository::read_latest(const context& ctx,
                                                                    const std::string& id,
                                                                    const std::string& event_time) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest event. " << "id: " << id
-                               << " event_time: " << event_time;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest event. " << "id: " << id
+                              << " event_time: " << event_time;
     const auto query = query_builder::read<std::vector<auth_event_entity>> |
                        query_builder::where("id"_c == id && "event_time"_c == event_time);
 
@@ -260,8 +258,8 @@ std::vector<domain::auth_event> auth_event_repository::read_latest(const context
 std::vector<domain::auth_event> auth_event_repository::read_all(const context& ctx,
                                                                 const std::string& id,
                                                                 const std::string& event_time) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all event versions. " << "id: " << id
-                               << " event_time: " << event_time;
+    ORES_LOG_SEV(lg(), debug) << "Reading all event versions. " << "id: " << id
+                              << " event_time: " << event_time;
     const auto query = query_builder::read<std::vector<auth_event_entity>> |
                        query_builder::where("id"_c == id && "event_time"_c == event_time) |
                        query_builder::order_by("id"_c, "event_time"_c);
@@ -280,8 +278,8 @@ auth_event_repository::remove(const context& ctx,
                               const std::string& id,
                               const std::string& event_time,
                               std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing event. " << "id: " << id
-                               << " event_time: " << event_time;
+    ORES_LOG_SEV(lg(), debug) << "Removing event. " << "id: " << id
+                              << " event_time: " << event_time;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -307,8 +305,8 @@ auth_event_repository::read_latest(const context& ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest auth events with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest auth events with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<auth_event_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -323,7 +321,7 @@ auth_event_repository::read_latest(const context& ctx,
 }
 
 std::uint32_t auth_event_repository::get_total__count(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active event count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active event count";
 
     const auto query = query_builder::read<std::vector<auth_event_entity>>;
 

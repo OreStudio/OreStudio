@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/ore_file_category.hpp"
 #include "ores.reporting.api/domain/ore_file_category_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/ore_file_category_protocol.hpp"
 #include "ores.reporting.core/repository/ore_file_category_entity.hpp"
 #include "ores.reporting.core/repository/ore_file_category_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -214,7 +212,7 @@ void ore_file_category_repository::write(const context& ctx,
 void ore_file_category_repository::write(const context& ctx,
                                          const domain::ore_file_category& v,
                                          const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing ORE file category. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing ORE file category. " << "code: " << v.code;
     const auto t = ore_file_category_apply_claim(v,
                                                  claim,
                                                  ore_file_category_claim_reads_current(claim) ?
@@ -228,7 +226,7 @@ void ore_file_category_repository::write(
     const context& ctx,
     const std::vector<domain::ore_file_category>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing ORE file categories. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing ORE file categories. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "ore_file_category_repository::write: one claim is needed for each row");
@@ -267,7 +265,7 @@ ore_file_category_repository::read_latest(const context& ctx) {
 
 std::vector<domain::ore_file_category>
 ore_file_category_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest ORE file category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest ORE file category. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -285,7 +283,7 @@ ore_file_category_repository::read_latest(const context& ctx, const std::string&
 
 std::vector<domain::ore_file_category>
 ore_file_category_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all ORE file category versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all ORE file category versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_file_category_entity>> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code) |
@@ -301,8 +299,8 @@ ore_file_category_repository::read_all(const context& ctx, const std::string& co
 
 std::optional<domain::ore_file_category> ore_file_category_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading ORE file category at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading ORE file category at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<ore_file_category_entity>> |
@@ -324,7 +322,7 @@ std::optional<domain::ore_file_category> ore_file_category_repository::read_at_v
 
 ore_file_category_repository::remove_status ore_file_category_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ORE file category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing ORE file category. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -363,8 +361,8 @@ std::vector<domain::ore_file_category> ore_file_category_repository::read_latest
     const ores::utility::domain::order& order,
     const std::optional<messaging::ore_file_categories_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest ORE file categories with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest ORE file categories with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_file_category_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -386,7 +384,7 @@ std::uint32_t ore_file_category_repository::get_total_category_count(
     const context& ctx,
     const std::optional<messaging::ore_file_categories_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ORE file category count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active ORE file category count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_file_category_entity>> |

@@ -22,7 +22,7 @@
 #include "ores.http/routes/synthetic/calibration_routes.hpp"
 #include "ores.http/routes/synthetic/feed_operation_routes.hpp"
 #include "ores.http/routes/synthetic/market_regime_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
@@ -73,7 +73,7 @@ bool states(const std::string& text, const std::string& member) {
 
 TEST_CASE("calibration_view_counts_the_coverage_of_the_class", "[synthetic_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the calibration view's coverage and shape";
+    ORES_LOG_SEV(lg, info) << "Testing the calibration view's coverage and shape";
 
     synthetic_messaging::calibrate_response resolved;
     resolved.success = true;
@@ -112,7 +112,7 @@ TEST_CASE("calibration_view_counts_the_coverage_of_the_class", "[synthetic_view]
 
 TEST_CASE("market_trace_view_names_each_member_as_the_screen_reads_it", "[synthetic_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the market trace view's shape";
+    ORES_LOG_SEV(lg, info) << "Testing the market trace view's shape";
 
     synthetic_messaging::get_market_trace_response reply;
     reply.success = true;
@@ -152,7 +152,7 @@ TEST_CASE("market_trace_view_names_each_member_as_the_screen_reads_it", "[synthe
 
 TEST_CASE("feed_folder_view_names_each_member_as_the_screen_reads_it", "[synthetic_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the folder tree view's shape";
+    ORES_LOG_SEV(lg, info) << "Testing the folder tree view's shape";
 
     synthetic_messaging::feed_folder folder;
     folder.id = "f1";
@@ -170,7 +170,7 @@ TEST_CASE("feed_folder_view_names_each_member_as_the_screen_reads_it", "[synthet
 
 TEST_CASE("synthetic_views_refuse_a_malformed_query", "[synthetic_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the views' refusals";
+    ORES_LOG_SEV(lg, info) << "Testing the views' refusals";
 
     const std::string calibration = "/api/synthetic/calibration/{assetClass}";
     CHECK(view_status<calibration_routes>("/api/synthetic/calibration/FX", calibration, {}) ==

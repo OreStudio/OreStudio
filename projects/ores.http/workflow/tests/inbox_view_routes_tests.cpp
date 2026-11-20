@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/workflow/inbox_view_routes.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -57,7 +57,7 @@ bool inbox_holds(const std::string& body, const std::string& part) {
 
 TEST_CASE("the_inbox_is_one_page_or_a_refusal", "[workflow_inbox]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the page the inbox takes";
+    ORES_LOG_SEV(lg, info) << "Testing the page the inbox takes";
 
     CHECK(answer_at<workflow_routes>(http_method::get, inbox_pattern, http_request{}, inbox_pattern)
               .status == http_status::bad_gateway);
@@ -76,7 +76,7 @@ TEST_CASE("the_inbox_is_one_page_or_a_refusal", "[workflow_inbox]") {
 
 TEST_CASE("the_inbox_refuses_a_parameter_it_does_not_take", "[workflow_inbox]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter the inbox does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter the inbox does not name";
 
     http_request req;
     req.query_params["kind"] = "iam.role_grant";
@@ -88,7 +88,7 @@ TEST_CASE("the_inbox_refuses_a_parameter_it_does_not_take", "[workflow_inbox]") 
 
 TEST_CASE("the_inbox_is_kept_privately_for_fifteen_seconds", "[workflow_inbox]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the cache policy the inbox carries";
+    ORES_LOG_SEV(lg, info) << "Testing the cache policy the inbox carries";
 
     http_request req;
     const auto first = inbox_view_routes::inbox_answer(req, an_inbox_body);
@@ -107,7 +107,7 @@ TEST_CASE("the_inbox_is_kept_privately_for_fifteen_seconds", "[workflow_inbox]")
 TEST_CASE("the_subject_a_publish_request_authorises_is_written_as_the_screen_reads_it",
           "[workflow_inbox]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the publish subject's members";
+    ORES_LOG_SEV(lg, info) << "Testing the publish subject's members";
 
     ores::marketdata::messaging::published_curve_set set;
     set.publish_id = "publish-1";
@@ -133,7 +133,7 @@ TEST_CASE("the_subject_a_publish_request_authorises_is_written_as_the_screen_rea
 TEST_CASE("the_subject_a_cut_request_authorises_is_written_as_the_screen_reads_it",
           "[workflow_inbox]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the cut subject's members";
+    ORES_LOG_SEV(lg, info) << "Testing the cut subject's members";
 
     ores::reporting::messaging::cut_authorisation_subject subject;
     subject.request_id = "66666666-6666-6666-6666-666666666666";

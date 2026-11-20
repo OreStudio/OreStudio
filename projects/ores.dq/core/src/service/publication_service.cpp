@@ -26,7 +26,6 @@
 #include "ores.dq.api/domain/publication.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.core/repository/publication_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -41,7 +40,6 @@
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -385,19 +383,19 @@ publication_service::prepare_change(const messaging::publication_change& change,
 
 std::vector<domain::publication> publication_service::list_publications(std::uint32_t offset,
                                                                         std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all publications";
+    ORES_LOG_SEV(lg(), debug) << "Listing all publications";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t publication_service::count_publications() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total publications count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total publications count";
     return repo_.get_total_publication_count(ctx_);
 }
 
 
 std::optional<domain::publication>
 publication_service::get_publication(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting publication. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting publication. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -412,11 +410,11 @@ publication_service::get_publications(const std::vector<std::string>& ids) {
 void publication_service::save_publication(const domain::publication& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Publication id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving publication. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving publication. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved publication. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved publication. " << "id: " << v.id;
 }
 
 void publication_service::save_publications(const std::vector<domain::publication>& publications) {
@@ -424,7 +422,7 @@ void publication_service::save_publications(const std::vector<domain::publicatio
         if (e.id.is_nil())
             throw std::invalid_argument("Publication id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << publications.size() << " publications";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << publications.size() << " publications";
     auto ts = publications;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -433,9 +431,9 @@ void publication_service::save_publications(const std::vector<domain::publicatio
 }
 
 void publication_service::delete_publication(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing publication. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing publication. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed publication. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed publication. " << "id: " << id;
 }
 
 void publication_service::delete_publications(const std::vector<std::string>& ids) {

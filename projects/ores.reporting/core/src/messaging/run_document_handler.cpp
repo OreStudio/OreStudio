@@ -94,7 +94,7 @@ void run_document_handler::save_run_document(ores::nats::message msg) {
         runs.save(definition, req->document);
         reply(nats_, msg, save_run_document_response{.success = true});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, save_run_document_response{.message = e.what()});
     }
 }
@@ -118,7 +118,7 @@ void run_document_handler::bind_configuration(ores::nats::message msg) {
               bind_configuration_response{.success = true,
                                           .configuration_id = boost::uuids::to_string(c.id)});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, bind_configuration_response{.message = e.what()});
     }
 }
@@ -150,7 +150,7 @@ void run_document_handler::get_run_document(ores::nats::message msg) {
                                         .bindings = runs.bindings(definition),
                                         .party_id = boost::uuids::to_string(*scope.party_id())});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, get_run_document_response{.message = e.what()});
     }
 }
@@ -171,7 +171,7 @@ void run_document_handler::delete_run_document(ores::nats::message msg) {
         runs.remove(definition);
         reply(nats_, msg, delete_run_document_response{.success = true});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, delete_run_document_response{.message = e.what()});
     }
 }

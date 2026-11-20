@@ -19,7 +19,7 @@
  */
 #include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.history.api/messaging/history_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include <algorithm>
@@ -49,7 +49,7 @@ void render_history_diff(std::ostream& out,
     using ores::history::messaging::get_entity_history_request;
     using ores::history::messaging::get_entity_history_response;
 
-    BOOST_LOG_SEV(lg(), debug) << "Initiating history diff for " << entity_type << " " << entity_id;
+    ORES_LOG_SEV(lg(), debug) << "Initiating history diff for " << entity_type << " " << entity_id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to get history." << std::endl;
@@ -66,7 +66,7 @@ void render_history_diff(std::ostream& out,
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get history: " << result->message;
+        ORES_LOG_SEV(lg(), warn) << "Failed to get history: " << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

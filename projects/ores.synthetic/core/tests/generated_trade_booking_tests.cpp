@@ -20,7 +20,7 @@
 #include "ore_example_conventions.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/generators/book_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
@@ -394,8 +394,8 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
 
     const auto asset_classes = planned_asset_classes();
     REQUIRE(!asset_classes.empty());
-    BOOST_LOG_SEV(lg, info) << "Booking one trade of every type, over " << asset_classes.size()
-                            << " asset classes.";
+    ORES_LOG_SEV(lg, info) << "Booking one trade of every type, over " << asset_classes.size()
+                           << " asset classes.";
 
     std::vector<std::pair<std::string, book_trade_request>> booked;
     for (const auto code : asset_classes) {
@@ -436,8 +436,8 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
         // refused is a type the population cannot book.
         INFO("asset class " << asset_class);
         CHECK(booked_types.size() == offered);
-        BOOST_LOG_SEV(lg, info) << "Booked " << booked_types.size() << " type(s) of " << asset_class
-                                << ".";
+        ORES_LOG_SEV(lg, info) << "Booked " << booked_types.size() << " type(s) of " << asset_class
+                               << ".";
     }
 
     // Every booked trade is read back through the export and compared row by
@@ -507,8 +507,8 @@ TEST_CASE("a_stress_run_of_bond_populations_writes_every_issue", tags) {
                                response.result.message);
         }
     }
-    BOOST_LOG_SEV(lg, info) << "Stress run wrote " << written << " bond issues; " << already
-                            << " were already stored.";
+    ORES_LOG_SEV(lg, info) << "Stress run wrote " << written << " bond issues; " << already
+                           << " were already stored.";
     INFO("written=" << written << " already=" << already);
     CHECK(written > 0);
     std::string listed;

@@ -23,7 +23,7 @@
 #include "ores.analytics.api/generators/pricing_model_product_generator.hpp"
 #include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -57,7 +57,7 @@ TEST_CASE("write_single_pricing_model_product", "[repository]") {
     for (auto& p : products)
         p.pricing_model_config_id = configs[0].id;
     REQUIRE(!products.empty());
-    BOOST_LOG_SEV(lg, debug) << "Pricing model product: " << products[0];
+    ORES_LOG_SEV(lg, debug) << "Pricing model product: " << products[0];
 
     pricing_model_product_repository repo;
     CHECK_NOTHROW(repo.write(h.context(), products[0]));
@@ -81,7 +81,7 @@ TEST_CASE("write_multiple_pricing_model_products", "[repository]") {
         p.pricing_model_config_id = configs[0].id;
     for (auto& p : products)
         p.pricing_model_config_id = configs[0].id;
-    BOOST_LOG_SEV(lg, debug) << "Pricing model products: " << products;
+    ORES_LOG_SEV(lg, debug) << "Pricing model products: " << products;
 
     pricing_model_product_repository repo;
     CHECK_NOTHROW(repo.write(h.context(), products));
@@ -105,7 +105,7 @@ TEST_CASE("read_latest_pricing_model_products_for_config", "[repository]") {
     repo.write(h.context(), written);
 
     auto read = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read products: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read products: " << read;
 
     CHECK(read.size() >= written.size());
 }
@@ -131,13 +131,13 @@ TEST_CASE("read_latest_pricing_model_product_by_id", "[repository]") {
     REQUIRE(!products.empty());
     auto p = products[0];
     const auto product_id_str = boost::uuids::to_string(p.id);
-    BOOST_LOG_SEV(lg, debug) << "Product id: " << product_id_str;
+    ORES_LOG_SEV(lg, debug) << "Product id: " << product_id_str;
 
     pricing_model_product_repository repo;
     repo.write(h.context(), p);
 
     auto read = repo.read_latest(h.context(), product_id_str);
-    BOOST_LOG_SEV(lg, debug) << "Read products: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read products: " << read;
 
     REQUIRE(read.size() == 1);
     CHECK(read[0].id == p.id);
@@ -164,7 +164,7 @@ TEST_CASE("read_all_pricing_model_product_history", "[repository]") {
     REQUIRE(!products.empty());
     auto p = products[0];
     const auto product_id_str = boost::uuids::to_string(p.id);
-    BOOST_LOG_SEV(lg, debug) << "Product: " << p;
+    ORES_LOG_SEV(lg, debug) << "Product: " << p;
 
     pricing_model_product_repository repo;
     repo.write(h.context(), p);
@@ -173,7 +173,7 @@ TEST_CASE("read_all_pricing_model_product_history", "[repository]") {
     repo.write(h.context(), p);
 
     auto history = repo.read_all(h.context(), product_id_str);
-    BOOST_LOG_SEV(lg, debug) << "History: " << history;
+    ORES_LOG_SEV(lg, debug) << "History: " << history;
 
     CHECK(history.size() >= 2);
 }

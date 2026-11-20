@@ -24,11 +24,9 @@
  */
 #include "ores.refdata.core/repository/tenor_convention_resolution_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/tenor_convention_resolution_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -38,7 +36,7 @@ using namespace ores::database::repository;
 
 domain::tenor_convention_resolution
 tenor_convention_resolution_mapper::map(const tenor_convention_resolution_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::tenor_convention_resolution r;
     r.version = v.version;
@@ -56,13 +54,13 @@ tenor_convention_resolution_mapper::map(const tenor_convention_resolution_entity
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 tenor_convention_resolution_entity
 tenor_convention_resolution_mapper::map(const domain::tenor_convention_resolution& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     tenor_convention_resolution_entity r;
     r.convention_code = v.convention_code;
@@ -79,7 +77,7 @@ tenor_convention_resolution_mapper::map(const domain::tenor_convention_resolutio
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

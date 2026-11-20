@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/billing_operation_protocol.hpp"
 #include "ores.marketdata.core/repository/delivery_count_repository.hpp"
 #include "ores.marketdata.core/repository/demand_interval_repository.hpp"
@@ -135,7 +135,7 @@ public:
             }
             resp.success = true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(bill_handler_lg(), ores::logging::error)
+            ORES_LOG_SEV(bill_handler_lg(), ores::logging::error)
                 << msg.subject << " failed: " << e.what();
             resp.message = e.what();
         }

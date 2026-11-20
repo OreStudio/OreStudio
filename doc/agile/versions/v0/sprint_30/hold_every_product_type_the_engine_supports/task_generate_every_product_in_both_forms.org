@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-every-product-in-both-forms
-#+pr: 4906
+#+pr: 4919
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -82,6 +82,41 @@ task and name that file in the Command column.
 
 * Notes
 
+** The generic barrier options and the FD variant of their script
+
+A recipe for EquityGenericBarrierOption and FxGenericBarrierOption was written
+and run, then held back. The engine run prices the =SingleAssetOptionBwd= tag
+with FD, so ORE runs the =FD= variant of the library's GenericBarrierOption
+script, and every twin failed there:
+
+- With barrier monitoring dates that start after the as-of date: "RandomVariable:
+  inconsistent times 0 and 0.558904 at L124 ... PAY( LongShort * BarrierRebate,
+  TODAY, SettlementDate, ...) - R_V". The backward loop rolls R_V back only to
+  the first monitoring date, not to today.
+- With an expiry on a holiday (2029-12-02, a Sunday) before the last adjusted
+  monitoring date: "AssetModel::npv(): can not roll back from t1= 4.81096 to
+  t0= 4.8137".
+
+The native trades price on the same engine, so ORE's own GenericBarrierOption
+class does not run this library code as the twin states it. With the engine set
+to MC for the tag, all four twins priced with no error, and each NPV equalled
+its native's exactly (for example -4772.758430 EUR and 19702.508881 USD), so
+the recipe itself was right. The open choice is how to book these twins under
+the FD engine: correct the FD variant of the script in the library seed, roll
+the twin's dates as ORE's native class does, or price the twins' tag by MC.
+
+** The pairwise variance swaps: a derived lag and an unlimited payoff
+
+The PairwiseVarianceSwap script reads a LaggedValuationSchedule and a positive
+PayoffLimit, and the native trade states neither. ORE's own class
+(=OREData/ored/portfolio/pairwisevarianceswap.cpp=) derives the lag as the
+valuation schedule shifted by =1D= on =NullCalendar=, =Unadjusted=, so the twin
+states that =DerivedSchedule=, unless the native states a lagged schedule of
+its own. ORE's engine reads a payoff limit of zero as no limit, and the script
+requires a positive one, so the twin states a limit of a million. The native
+trades have no pricing engine in the engine run, so the two forms cannot be
+compared by NPV; the four twins price with no error.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -97,6 +132,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4919][#4919]] | [synthetic] Twin the pairwise variance swaps |
+| [[https://github.com/OreStudio/OreStudio/pull/4912][#4912]] | [synthetic] Twin the window barrier options |
 | [[https://github.com/OreStudio/OreStudio/pull/4906][#4906]] | [synthetic] Twin the variance swaps, forward vol agreements and best entry options |
 | [[https://github.com/OreStudio/OreStudio/pull/4898][#4898]] | [synthetic] Book the basket and rainbow options as scripted twins |
 
@@ -121,6 +158,17 @@ via its "Verifies task" field.
 | 4906.5 | dates() hardcodes role and sequence | scripted_builders.cpp | Accepted | A comment says the owner number keys each event's rows. |
 | 4906.6 | A literal holding ' or ' in a fallback splits | generate_script_twins.py | Declined | The runtime splits the same way, so the two agree; no recipe states one. |
 | 4906.7 | No test of the refusal paths | tests | Accepted | A test covers a missing, derived, doubled and undated schedule and a schedule fallback. |
+| 4912.1 | The commit holds unrelated deletions | branch | Accepted | A squash by reset --soft onto a moved origin/main reverted main's new work; the commit is rebuilt from the diff against the true base, 11 files. |
+| 4912.2 | A changed CHECK needs a migration | trading_script_twin_inputs_create.sql | Declined | The database is recreated from the schema, as for every table in this story. |
+| 4912.3 | transformed() scans the table | scripted_twins.cpp | Declined | Eleven rows, read once per input. |
+| 4912.4 | The count of 16 is a magic number | tests | Declined | The count was already the test's; only twins are now excluded from it. |
+| 4912.5 | A stated premium is not exercised | tests | Accepted | A test injects a premium and checks its amount, currency and date on the twin. |
+| 4919.1 | The runtime does not check a derived base | scripted_twins.cpp | Accepted | The twin refuses a derived event whose base is no other Event input of its recipe. |
+| 4919.2 | A value after a resolved event is not checked | scripted_twins.cpp | Accepted | Every alternative of an event source is checked before any is resolved. |
+| 4919.3 | An alternative after a derived event is never read | scripted_twins.cpp | Accepted | The function's comment says so. |
+| 4919.4 | The payoff limit of a million is a magic number | catalogue | Declined | The catalogue's recipe prose and the task notes state why it is not 0. |
+| 4919.5 | The two forms are not compared by NPV | tests | Declined | The native swaps have no engine here; the task Compare the two forms covers it. |
+| 4919.6 | The table realignment hides the change | catalogue | Declined | The diff with whitespace ignored shows only the new rows and prose. |
 
 * Result
 

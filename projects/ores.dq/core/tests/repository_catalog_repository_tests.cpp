@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/catalog_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/catalog_generator.hpp"
 #include "ores.dq.core/repository/catalog_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -48,11 +48,11 @@ TEST_CASE("write_single_catalog", "[repository]") {
     catalog.tenant_id = h.tenant_id();
     catalog.name = catalog.name + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Catalog: " << catalog;
+    ORES_LOG_SEV(lg, debug) << "Catalog: " << catalog;
     repo.write(h.context(), catalog);
 
     auto read_catalogs = repo.read_latest(h.context(), catalog.name);
-    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
+    ORES_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     REQUIRE(read_catalogs.size() == 1);
     CHECK(read_catalogs[0].name == catalog.name);
@@ -71,12 +71,12 @@ TEST_CASE("write_multiple_catalogs", "[repository]") {
         c.tenant_id = h.tenant_id();
         c.name = c.name + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Catalogs: " << catalogs;
+    ORES_LOG_SEV(lg, debug) << "Catalogs: " << catalogs;
 
     repo.write(h.context(), catalogs);
 
     auto read_catalogs = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
+    ORES_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     for (const auto& written : catalogs) {
         bool found = false;
@@ -102,12 +102,12 @@ TEST_CASE("read_latest_catalogs", "[repository]") {
         c.tenant_id = h.tenant_id();
         c.name = c.name + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Written catalogs: " << written_catalogs;
+    ORES_LOG_SEV(lg, debug) << "Written catalogs: " << written_catalogs;
 
     repo.write(h.context(), written_catalogs);
 
     auto read_catalogs = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
+    ORES_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     for (const auto& written : written_catalogs) {
         bool found = false;
@@ -135,13 +135,13 @@ TEST_CASE("read_latest_catalog_by_name", "[repository]") {
     }
 
     const auto target = catalogs.front();
-    BOOST_LOG_SEV(lg, debug) << "Write catalogs: " << catalogs;
+    ORES_LOG_SEV(lg, debug) << "Write catalogs: " << catalogs;
     repo.write(h.context(), catalogs);
 
-    BOOST_LOG_SEV(lg, debug) << "Target catalog: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target catalog: " << target;
 
     auto read_catalogs = repo.read_latest(h.context(), target.name);
-    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
+    ORES_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     REQUIRE(read_catalogs.size() == 1);
     CHECK(read_catalogs[0].name == target.name);
@@ -160,18 +160,18 @@ TEST_CASE("read_all_catalog_versions", "[repository]") {
     cat1.tenant_id = h.tenant_id();
     cat1.name = cat1.name + "_" + std::string(faker::string::alphanumeric(8));
     const auto test_name = cat1.name;
-    BOOST_LOG_SEV(lg, debug) << "Catalog v1: " << cat1;
+    ORES_LOG_SEV(lg, debug) << "Catalog v1: " << cat1;
 
     auto cat2 = cat1;
     cat2.version = 0;
     cat2.description = "Updated description for version test";
-    BOOST_LOG_SEV(lg, debug) << "Catalog v2: " << cat2;
+    ORES_LOG_SEV(lg, debug) << "Catalog v2: " << cat2;
 
     repo.write(h.context(), cat1);
     repo.write(h.context(), cat2);
 
     auto read_catalogs = repo.read_all(h.context(), test_name);
-    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
+    ORES_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     REQUIRE(read_catalogs.size() >= 2);
 
@@ -201,15 +201,15 @@ TEST_CASE("read_nonexistent_catalog", "[repository]") {
     repo.write(h.context(), catalog);
 
     auto read_written = repo.read_latest(h.context(), catalog.name);
-    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_written;
+    ORES_LOG_SEV(lg, debug) << "Read catalogs: " << read_written;
     REQUIRE(read_written.size() == 1);
     CHECK(read_written[0].description == catalog.description);
 
     const std::string nonexistent_name = "nonexistent.catalog.12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent name: " << nonexistent_name;
+    ORES_LOG_SEV(lg, debug) << "Non-existent name: " << nonexistent_name;
 
     auto read_catalogs = repo.read_latest(h.context(), nonexistent_name);
-    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
+    ORES_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     CHECK(read_catalogs.size() == 0);
 }
@@ -225,13 +225,13 @@ TEST_CASE("write_and_read_catalog_roundtrip", "[repository]") {
     auto catalog = generate_synthetic_catalog(ctx);
     catalog.tenant_id = h.tenant_id();
     catalog.name = catalog.name + "_" + std::string(faker::string::alphanumeric(8));
-    BOOST_LOG_SEV(lg, debug) << "Catalog: " << catalog;
+    ORES_LOG_SEV(lg, debug) << "Catalog: " << catalog;
 
     const auto catalog_name = catalog.name;
     repo.write(h.context(), catalog);
 
     auto read_catalogs = repo.read_latest(h.context(), catalog_name);
-    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
+    ORES_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     REQUIRE(read_catalogs.size() == 1);
     CHECK(read_catalogs[0].name == catalog.name);

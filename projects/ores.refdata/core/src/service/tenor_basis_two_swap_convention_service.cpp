@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
 #include "ores.refdata.api/messaging/tenor_basis_two_swap_convention_protocol.hpp"
 #include "ores.refdata.core/repository/tenor_basis_two_swap_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -479,12 +477,12 @@ ores::utility::domain::result tenor_basis_two_swap_convention_service::prepare_c
 std::vector<domain::tenor_basis_two_swap_convention>
 tenor_basis_two_swap_convention_service::list_tenor_basis_two_swap_conventions(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all two-tenor basis swap conventions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all two-tenor basis swap conventions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t tenor_basis_two_swap_convention_service::count_tenor_basis_two_swap_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total two-tenor basis swap conventions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total two-tenor basis swap conventions count";
     return repo_.get_total_tenor_basis_two_swap_convention_count(ctx_);
 }
 
@@ -492,15 +490,15 @@ std::uint32_t tenor_basis_two_swap_convention_service::count_tenor_basis_two_swa
 std::optional<domain::tenor_basis_two_swap_convention>
 tenor_basis_two_swap_convention_service::get_tenor_basis_two_swap_convention_at_version(
     const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting two-tenor basis swap convention at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting two-tenor basis swap convention at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::tenor_basis_two_swap_convention>
 tenor_basis_two_swap_convention_service::get_tenor_basis_two_swap_convention(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting two-tenor basis swap convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting two-tenor basis swap convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -517,11 +515,11 @@ void tenor_basis_two_swap_convention_service::save_tenor_basis_two_swap_conventi
     const domain::tenor_basis_two_swap_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("Two-Tenor Basis Swap Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving two-tenor basis swap convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving two-tenor basis swap convention. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved two-tenor basis swap convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved two-tenor basis swap convention. " << "id: " << v.id;
 }
 
 void tenor_basis_two_swap_convention_service::save_tenor_basis_two_swap_conventions(
@@ -530,8 +528,8 @@ void tenor_basis_two_swap_convention_service::save_tenor_basis_two_swap_conventi
         if (e.id.empty())
             throw std::invalid_argument("Two-Tenor Basis Swap Convention id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << tenor_basis_two_swap_conventions.size()
-                               << " two-tenor basis swap conventions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << tenor_basis_two_swap_conventions.size()
+                              << " two-tenor basis swap conventions";
     auto ts = tenor_basis_two_swap_conventions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -541,9 +539,9 @@ void tenor_basis_two_swap_convention_service::save_tenor_basis_two_swap_conventi
 
 void tenor_basis_two_swap_convention_service::delete_tenor_basis_two_swap_convention(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing two-tenor basis swap convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing two-tenor basis swap convention. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed two-tenor basis swap convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed two-tenor basis swap convention. " << "id: " << id;
 }
 
 void tenor_basis_two_swap_convention_service::delete_tenor_basis_two_swap_conventions(
@@ -554,8 +552,8 @@ void tenor_basis_two_swap_convention_service::delete_tenor_basis_two_swap_conven
 std::vector<domain::tenor_basis_two_swap_convention>
 tenor_basis_two_swap_convention_service::get_tenor_basis_two_swap_convention_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for two-tenor basis swap convention. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for two-tenor basis swap convention. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

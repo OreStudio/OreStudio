@@ -50,13 +50,13 @@ std::uint64_t password_hasher::get_n_parameter() {
 
 std::string password_hasher::hash(const std::string& password) {
     if (password.empty()) {
-        BOOST_LOG_SEV(lg(), error) << "Password is empty";
+        ORES_LOG_SEV(lg(), error) << "Password is empty";
         throw std::invalid_argument("Password cannot be empty");
     }
 
     std::vector<unsigned char> salt(SALT_LEN);
     if (RAND_bytes(salt.data(), SALT_LEN) != 1) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to generate random salt";
+        ORES_LOG_SEV(lg(), error) << "Failed to generate random salt";
         throw std::runtime_error("Failed to generate random salt");
     }
 
@@ -72,7 +72,7 @@ std::string password_hasher::hash(const std::string& password) {
                        0,
                        hash.data(),
                        HASH_LEN) != 1) {
-        BOOST_LOG_SEV(lg(), error) << "scrypt hashing failed";
+        ORES_LOG_SEV(lg(), error) << "scrypt hashing failed";
         throw std::runtime_error("scrypt hashing failed");
     }
 
@@ -85,7 +85,7 @@ std::string password_hasher::hash(const std::string& password) {
 
 bool password_hasher::verify(const std::string& password, const std::string& hash_str) {
     if (password.empty() || hash_str.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Empty password or hash string";
+        ORES_LOG_SEV(lg(), warn) << "Empty password or hash string";
         return false;
     }
 
@@ -97,7 +97,7 @@ bool password_hasher::verify(const std::string& password, const std::string& has
     }
 
     if (segments.size() != 5 || segments[1] != "scrypt") {
-        BOOST_LOG_SEV(lg(), warn) << "Invalid hash format";
+        ORES_LOG_SEV(lg(), warn) << "Invalid hash format";
         return false;
     }
 
@@ -109,7 +109,7 @@ bool password_hasher::verify(const std::string& password, const std::string& has
     while (std::getline(params, param, ',')) {
         size_t eq_pos = param.find('=');
         if (eq_pos == std::string::npos) {
-            BOOST_LOG_SEV(lg(), warn) << "Invalid parameter format in hash";
+            ORES_LOG_SEV(lg(), warn) << "Invalid parameter format in hash";
             return false;
         }
         std::string key = param.substr(0, eq_pos);
@@ -118,7 +118,7 @@ bool password_hasher::verify(const std::string& password, const std::string& has
             if (key == "ln") {
                 int ln = std::stoi(value);
                 if (ln < 1 || ln > 31) {
-                    BOOST_LOG_SEV(lg(), warn) << "Invalid ln value: " << ln;
+                    ORES_LOG_SEV(lg(), warn) << "Invalid ln value: " << ln;
                     return false;
                 }
                 N = 1ULL << ln;
@@ -128,13 +128,13 @@ bool password_hasher::verify(const std::string& password, const std::string& has
                 p = std::stoul(value);
             }
         } catch (const std::exception&) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to parse parameter: " << param;
+            ORES_LOG_SEV(lg(), warn) << "Failed to parse parameter: " << param;
             return false;
         }
     }
 
     if (N == 0 || r == 0 || p == 0) {
-        BOOST_LOG_SEV(lg(), warn) << "Missing or invalid scrypt parameters";
+        ORES_LOG_SEV(lg(), warn) << "Missing or invalid scrypt parameters";
         return false;
     }
 
@@ -143,8 +143,8 @@ bool password_hasher::verify(const std::string& password, const std::string& has
     // stored hash turn verification into a cheap offline operation.
     const auto minimum_n = get_n_parameter();
     if (N < minimum_n) {
-        BOOST_LOG_SEV(lg(), warn) << "Refusing a downgraded scrypt cost: ln=" << std::log2(N)
-                                  << ", minimum ln=" << std::log2(minimum_n);
+        ORES_LOG_SEV(lg(), warn) << "Refusing a downgraded scrypt cost: ln=" << std::log2(N)
+                                 << ", minimum ln=" << std::log2(minimum_n);
         return false;
     }
 
@@ -153,12 +153,12 @@ bool password_hasher::verify(const std::string& password, const std::string& has
         salt = base64_converter::convert(segments[3]);
         expected_hash = base64_converter::convert(segments[4]);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Base64 decode failed: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Base64 decode failed: " << e.what();
         return false;
     }
 
     if (expected_hash.size() != HASH_LEN) {
-        BOOST_LOG_SEV(lg(), warn) << "Invalid hash length: " << expected_hash.size();
+        ORES_LOG_SEV(lg(), warn) << "Invalid hash length: " << expected_hash.size();
         return false;
     }
 
@@ -173,7 +173,7 @@ bool password_hasher::verify(const std::string& password, const std::string& has
                        0,
                        actual_hash.data(),
                        HASH_LEN) != 1) {
-        BOOST_LOG_SEV(lg(), warn) << "scrypt verification failed";
+        ORES_LOG_SEV(lg(), warn) << "scrypt verification failed";
         return false;
     }
 

@@ -22,7 +22,7 @@
  * Template: cpp_shell_command_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_process_parameter_value_commands.hpp"
@@ -90,7 +90,7 @@ TEST_CASE(
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 10 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 10 command(s).";
 }
 
 TEST_CASE(
@@ -105,7 +105,7 @@ TEST_CASE(
     ir_curve_generation_config_process_parameter_value_commands::process_list(
         out, session, ir_curve_generation_config_process_parameter_value_tokens(0));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -122,7 +122,7 @@ TEST_CASE(
     ir_curve_generation_config_process_parameter_value_commands::process_get(
         out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -139,7 +139,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_g
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_get(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -161,7 +161,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_g
     ir_curve_generation_config_process_parameter_value_commands::process_get_many(
         out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -178,7 +178,7 @@ TEST_CASE(
     ir_curve_generation_config_process_parameter_value_commands::process_add(
         out, session, ir_curve_generation_config_process_parameter_value_tokens(4));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -195,7 +195,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_a
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_add(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -217,7 +217,7 @@ TEST_CASE(
     ir_curve_generation_config_process_parameter_value_commands::process_set(
         out, session, ir_curve_generation_config_process_parameter_value_tokens(4));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -234,7 +234,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_s
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_set(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -256,7 +256,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_p
     ir_curve_generation_config_process_parameter_value_commands::process_put_many(
         out, session, ir_curve_generation_config_process_parameter_value_tokens(4));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -273,7 +273,7 @@ TEST_CASE(
     ir_curve_generation_config_process_parameter_value_commands::process_delete(
         out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -290,7 +290,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_d
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_delete(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -312,7 +312,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_d
     ir_curve_generation_config_process_parameter_value_commands::process_delete_many(
         out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -329,7 +329,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_v
     ir_curve_generation_config_process_parameter_value_commands::process_versions(
         out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -346,7 +346,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_v
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_versions(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -368,7 +368,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_v
     ir_curve_generation_config_process_parameter_value_commands::process_version(
         out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -385,7 +385,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_v
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_version(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received

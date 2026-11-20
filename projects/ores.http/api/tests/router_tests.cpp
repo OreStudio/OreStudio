@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/router.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
@@ -31,7 +31,7 @@ using namespace ores::logging;
 
 TEST_CASE("router_matches_simple_path", "[router]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing simple path matching";
+    ORES_LOG_SEV(lg, info) << "Testing simple path matching";
 
     router r;
     auto builder = r.get("/health")
@@ -52,7 +52,7 @@ TEST_CASE("router_matches_simple_path", "[router]") {
 
 TEST_CASE("router_matches_path_with_parameter", "[router]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing path parameter matching";
+    ORES_LOG_SEV(lg, info) << "Testing path parameter matching";
 
     router r;
     auto builder = r.get("/users/{id}")
@@ -74,7 +74,7 @@ TEST_CASE("router_matches_path_with_parameter", "[router]") {
 
 TEST_CASE("router_matches_path_with_multiple_parameters", "[router]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing multiple path parameters";
+    ORES_LOG_SEV(lg, info) << "Testing multiple path parameters";
 
     router r;
     auto builder = r.get("/users/{userId}/posts/{postId}")
@@ -96,7 +96,7 @@ TEST_CASE("router_matches_path_with_multiple_parameters", "[router]") {
 
 TEST_CASE("router_prefers_a_literal_segment_over_a_parameter", "[router]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the more specific pattern answers";
+    ORES_LOG_SEV(lg, info) << "Testing that the more specific pattern answers";
 
     const auto handler = [](const http_request&) -> boost::asio::awaitable<http_response> {
         co_return http_response::json("{}");
@@ -127,7 +127,7 @@ TEST_CASE("router_prefers_a_literal_segment_over_a_parameter", "[router]") {
 
 TEST_CASE("router_returns_empty_for_unmatched_path", "[router]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing unmatched path";
+    ORES_LOG_SEV(lg, info) << "Testing unmatched path";
 
     router r;
     auto builder = r.get("/health").auth_optional().handler(
@@ -144,7 +144,7 @@ TEST_CASE("router_returns_empty_for_unmatched_path", "[router]") {
 
 TEST_CASE("router_distinguishes_methods", "[router]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing method distinction";
+    ORES_LOG_SEV(lg, info) << "Testing method distinction";
 
     router r;
     r.add_route(r.get("/resource")
@@ -174,7 +174,7 @@ TEST_CASE("router_distinguishes_methods", "[router]") {
 
 TEST_CASE("route_build_refuses_a_route_with_no_auth_position", "[router]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an undeclared auth position is refused";
+    ORES_LOG_SEV(lg, info) << "Testing that an undeclared auth position is refused";
 
     router r;
     auto builder = r.delete_("/things/{id}")
@@ -195,7 +195,7 @@ TEST_CASE("route_build_refuses_a_route_with_no_auth_position", "[router]") {
 
 TEST_CASE("router_refuses_a_route_assembled_without_a_builder", "[router]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a hand-assembled route is refused";
+    ORES_LOG_SEV(lg, info) << "Testing that a hand-assembled route is refused";
 
     // domain::route's requires_auth defaults to false. A caller that skips the
     // builder must not be able to register that default as a public route.

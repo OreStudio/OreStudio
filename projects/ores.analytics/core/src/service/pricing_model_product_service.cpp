@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
 #include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -501,12 +499,12 @@ ores::utility::domain::result pricing_model_product_service::prepare_change(
 
 std::vector<domain::pricing_model_product>
 pricing_model_product_service::list_products(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all pricing model products";
+    ORES_LOG_SEV(lg(), debug) << "Listing all pricing model products";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t pricing_model_product_service::count_products() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total pricing model products count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total pricing model products count";
     return repo_.get_total_product_count(ctx_);
 }
 
@@ -514,14 +512,14 @@ std::uint32_t pricing_model_product_service::count_products() {
 std::optional<domain::pricing_model_product>
 pricing_model_product_service::get_product_at_version(const boost::uuids::uuid& id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting pricing model product at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting pricing model product at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::pricing_model_product>
 pricing_model_product_service::get_product(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting pricing model product. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting pricing model product. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -531,8 +529,8 @@ pricing_model_product_service::get_product(const boost::uuids::uuid& id) {
 std::optional<domain::pricing_model_product>
 pricing_model_product_service::get_product_by_pricing_engine_type_code(
     const std::string& pricing_engine_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting pricing model product by pricing_engine_type_code: "
-                               << pricing_engine_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting pricing model product by pricing_engine_type_code: "
+                              << pricing_engine_type_code;
     messaging::pricing_model_product_key k;
     k.pricing_engine_type_code = pricing_engine_type_code;
     auto found = pricing_model_product_read_one(repo_, ctx_, k);
@@ -543,7 +541,7 @@ pricing_model_product_service::get_product_by_pricing_engine_type_code(
 
 std::optional<domain::pricing_model_product>
 pricing_model_product_service::find_product(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding pricing model product. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding pricing model product. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -558,11 +556,11 @@ pricing_model_product_service::get_products(const std::vector<std::string>& ids)
 void pricing_model_product_service::save_product(const domain::pricing_model_product& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Pricing Model Product id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving pricing model product. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving pricing model product. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved pricing model product. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved pricing model product. " << "id: " << v.id;
 }
 
 void pricing_model_product_service::save_products(
@@ -571,7 +569,7 @@ void pricing_model_product_service::save_products(
         if (e.id.is_nil())
             throw std::invalid_argument("Pricing Model Product id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << products.size() << " pricing model products";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << products.size() << " pricing model products";
     auto ts = products;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -580,15 +578,15 @@ void pricing_model_product_service::save_products(
 }
 
 void pricing_model_product_service::delete_product(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model product. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing pricing model product. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed pricing model product. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed pricing model product. " << "id: " << id;
 }
 
 void pricing_model_product_service::remove_product(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model product. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing pricing model product. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed pricing model product. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed pricing model product. " << "id: " << id;
 }
 
 void pricing_model_product_service::delete_products(const std::vector<std::string>& ids) {
@@ -597,7 +595,7 @@ void pricing_model_product_service::delete_products(const std::vector<std::strin
 
 std::vector<domain::pricing_model_product>
 pricing_model_product_service::get_product_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing model product. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for pricing model product. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -619,7 +617,7 @@ pricing_model_product_service::get_product_history(const std::string& key) {
 
 std::vector<domain::pricing_model_product>
 pricing_model_product_service::get_product_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing model product. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for pricing model product. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

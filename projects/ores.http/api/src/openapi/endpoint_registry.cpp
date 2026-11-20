@@ -225,23 +225,23 @@ json_document process_schema(json_document schema) {
 } // anonymous namespace
 
 endpoint_registry::endpoint_registry() {
-    BOOST_LOG_SEV(lg(), debug) << "Endpoint registry created";
+    ORES_LOG_SEV(lg(), debug) << "Endpoint registry created";
 }
 
 void endpoint_registry::set_info(const api_info& info) {
     info_ = info;
-    BOOST_LOG_SEV(lg(), debug) << "API info set: " << info.title << " v" << info.version;
+    ORES_LOG_SEV(lg(), debug) << "API info set: " << info.title << " v" << info.version;
 }
 
 void endpoint_registry::add_server(const server_info& server) {
     servers_.push_back(server);
-    BOOST_LOG_SEV(lg(), debug) << "Server added: " << server.url;
+    ORES_LOG_SEV(lg(), debug) << "Server added: " << server.url;
 }
 
 void endpoint_registry::register_route(const domain::route& route) {
     routes_.push_back(route);
-    BOOST_LOG_SEV(lg(), debug) << "Route registered: " << method_to_string(route.method) << " "
-                               << route.pattern;
+    ORES_LOG_SEV(lg(), debug) << "Route registered: " << method_to_string(route.method) << " "
+                              << route.pattern;
 }
 
 std::string endpoint_registry::method_to_string(domain::http_method method) const {
@@ -266,8 +266,8 @@ std::string endpoint_registry::method_to_string(domain::http_method method) cons
 }
 
 std::string endpoint_registry::generate_openapi_json() const {
-    BOOST_LOG_SEV(lg(), debug) << "Generating OpenAPI JSON spec with " << routes_.size()
-                               << " routes";
+    ORES_LOG_SEV(lg(), debug) << "Generating OpenAPI JSON spec with " << routes_.size()
+                              << " routes";
 
     auto spec = json_document::make_object();
     auto root = spec.root();
@@ -375,7 +375,7 @@ std::string endpoint_registry::generate_openapi_json() const {
         const auto schema_from = [&](const std::string& json_schema, std::string_view what) {
             auto parsed = json_document::parse(json_schema);
             if (!parsed) {
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "Failed to parse " << what << " for route: " << route.pattern;
                 return json_document::make_object();
             }
@@ -442,12 +442,12 @@ std::string endpoint_registry::generate_openapi_json() const {
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "OpenAPI JSON spec generated";
+    ORES_LOG_SEV(lg(), debug) << "OpenAPI JSON spec generated";
     return spec.write();
 }
 
 std::string endpoint_registry::generate_swagger_ui_html(const std::string& spec_url) const {
-    BOOST_LOG_SEV(lg(), debug) << "Generating Swagger UI HTML";
+    ORES_LOG_SEV(lg(), debug) << "Generating Swagger UI HTML";
 
     std::ostringstream oss;
     oss << R"(<!DOCTYPE html>

@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/flexi_swap_instrument.hpp"
 #include "ores.trading.api/messaging/flexi_swap_instrument_protocol.hpp"
 #include "ores.trading.core/repository/flexi_swap_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -469,12 +467,12 @@ ores::utility::domain::result flexi_swap_instrument_service::prepare_change(
 std::vector<domain::flexi_swap_instrument>
 flexi_swap_instrument_service::list_flexi_swap_instruments(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all flexi swap instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all flexi swap instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t flexi_swap_instrument_service::count_flexi_swap_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total flexi swap instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total flexi swap instruments count";
     return repo_.get_total_flexi_swap_instrument_count(ctx_);
 }
 
@@ -482,14 +480,14 @@ std::uint32_t flexi_swap_instrument_service::count_flexi_swap_instruments() {
 std::optional<domain::flexi_swap_instrument>
 flexi_swap_instrument_service::get_flexi_swap_instrument_at_version(
     const boost::uuids::uuid& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting flexi swap instrument at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting flexi swap instrument at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::flexi_swap_instrument>
 flexi_swap_instrument_service::get_flexi_swap_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting flexi swap instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting flexi swap instrument. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -506,11 +504,11 @@ void flexi_swap_instrument_service::save_flexi_swap_instrument(
     const domain::flexi_swap_instrument& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Flexi Swap Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving flexi swap instrument. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving flexi swap instrument. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved flexi swap instrument. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved flexi swap instrument. " << "trade_id: " << v.trade_id;
 }
 
 void flexi_swap_instrument_service::save_flexi_swap_instruments(
@@ -519,8 +517,8 @@ void flexi_swap_instrument_service::save_flexi_swap_instruments(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Flexi Swap Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << flexi_swap_instruments.size()
-                               << " flexi swap instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << flexi_swap_instruments.size()
+                              << " flexi swap instruments";
     auto ts = flexi_swap_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -530,9 +528,9 @@ void flexi_swap_instrument_service::save_flexi_swap_instruments(
 
 void flexi_swap_instrument_service::delete_flexi_swap_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing flexi swap instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing flexi swap instrument. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed flexi swap instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed flexi swap instrument. " << "trade_id: " << trade_id;
 }
 
 void flexi_swap_instrument_service::delete_flexi_swap_instruments(
@@ -542,8 +540,8 @@ void flexi_swap_instrument_service::delete_flexi_swap_instruments(
 
 std::vector<domain::flexi_swap_instrument>
 flexi_swap_instrument_service::get_flexi_swap_instrument_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for flexi swap instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for flexi swap instrument. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

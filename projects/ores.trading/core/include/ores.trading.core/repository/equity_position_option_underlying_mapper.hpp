@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_EQUITY_POSITION_OPTION_UNDERLYING_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_EQUITY_POSITION_OPTION_UNDERLYING_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_entity.hpp"

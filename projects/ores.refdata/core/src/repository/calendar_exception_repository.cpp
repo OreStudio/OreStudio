@@ -27,7 +27,6 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/calendar_exception.hpp"
 #include "ores.refdata.api/domain/calendar_exception_json_io.hpp" // IWYU pragma: keep.
@@ -35,7 +34,6 @@
 #include "ores.refdata.core/repository/calendar_exception_entity.hpp"
 #include "ores.refdata.core/repository/calendar_exception_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -247,7 +245,7 @@ void calendar_exception_repository::write(const context& ctx,
 void calendar_exception_repository::write(const context& ctx,
                                           const domain::calendar_exception& v,
                                           const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing calendar exception. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing calendar exception. " << "id: " << v.id;
     const auto t = calendar_exception_apply_claim(
         v,
         claim,
@@ -262,7 +260,7 @@ void calendar_exception_repository::write(
     const context& ctx,
     const std::vector<domain::calendar_exception>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing calendar exceptions. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing calendar exceptions. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "calendar_exception_repository::write: one claim is needed for each row");
@@ -303,7 +301,7 @@ calendar_exception_repository::read_latest(const context& ctx) {
 
 std::vector<domain::calendar_exception>
 calendar_exception_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar exception. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar exception. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -322,7 +320,7 @@ calendar_exception_repository::read_latest(const context& ctx, const std::string
 
 std::vector<domain::calendar_exception>
 calendar_exception_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all calendar exception versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all calendar exception versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -340,8 +338,8 @@ calendar_exception_repository::read_all(const context& ctx, const std::string& i
 
 std::optional<domain::calendar_exception> calendar_exception_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading calendar exception at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading calendar exception at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
@@ -369,8 +367,8 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_late
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::calendar_exceptions_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar exceptions. calendar_code: "
-                               << calendar_code << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar exceptions. calendar_code: "
+                              << calendar_code << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -395,7 +393,7 @@ std::uint32_t calendar_exception_repository::get_total_calendar_exception_count_
     const context& ctx,
     const std::string& calendar_code,
     const std::optional<messaging::calendar_exceptions_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active calendar exceptions count. calendar_code: " << calendar_code;
     static constexpr auto max = db_timestamp::max();
 
@@ -420,8 +418,8 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_by_c
     const std::string& calendar_code,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading calendar exceptions as of window. calendar_code: "
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading calendar exceptions as of window. calendar_code: "
+                              << calendar_code;
 
     const auto vf(valid_from_bound);
     const auto vt(valid_to_bound);
@@ -443,7 +441,7 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_by_c
 
 calendar_exception_repository::remove_status calendar_exception_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar exception. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing calendar exception. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -482,8 +480,8 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_late
     const ores::utility::domain::order& order,
     const std::optional<messaging::calendar_exceptions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar exceptions with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar exceptions with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
@@ -506,7 +504,7 @@ std::uint32_t calendar_exception_repository::get_total_calendar_exception_count(
     const context& ctx,
     const std::optional<messaging::calendar_exceptions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar exception count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active calendar exception count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

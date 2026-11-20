@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/report_type.hpp"
 #include "ores.reporting.api/domain/report_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/generators/report_type_generator.hpp"
@@ -43,7 +43,7 @@ TEST_CASE("write_single_report_type", "[repository]") {
     report_type_repository repo;
     auto rt = generate_synthetic_report_type(ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Report type: " << rt;
+    ORES_LOG_SEV(lg, debug) << "Report type: " << rt;
     CHECK_NOTHROW(repo.write(h.context(), rt));
 }
 
@@ -55,7 +55,7 @@ TEST_CASE("write_multiple_report_types", "[repository]") {
 
     report_type_repository repo;
     auto report_types = generate_synthetic_report_types(5, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Report types: " << report_types;
+    ORES_LOG_SEV(lg, debug) << "Report types: " << report_types;
 
     CHECK_NOTHROW(repo.write(h.context(), report_types));
 }
@@ -68,11 +68,11 @@ TEST_CASE("read_latest_report_types", "[repository]") {
 
     report_type_repository repo;
     auto written = generate_synthetic_report_types(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Written report types: " << written;
+    ORES_LOG_SEV(lg, debug) << "Written report types: " << written;
     repo.write(h.context(), written);
 
     auto read = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read report types: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read report types: " << read;
 
     CHECK(!read.empty());
     CHECK(read.size() >= written.size());
@@ -87,11 +87,11 @@ TEST_CASE("read_latest_report_type_by_code", "[repository]") {
     report_type_repository repo;
     auto report_types = generate_synthetic_report_types(5, ctx);
     const auto target = report_types.front();
-    BOOST_LOG_SEV(lg, debug) << "Written report types: " << report_types;
+    ORES_LOG_SEV(lg, debug) << "Written report types: " << report_types;
     repo.write(h.context(), report_types);
 
     auto read = repo.read_latest(h.context(), target.code);
-    BOOST_LOG_SEV(lg, debug) << "Read report types: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read report types: " << read;
 
     REQUIRE(read.size() == 1);
     CHECK(read[0].code == target.code);
@@ -113,7 +113,7 @@ TEST_CASE("read_all_versions_of_report_type", "[repository]") {
     repo.write(h.context(), rt);
 
     auto all = repo.read_all(h.context(), rt.code);
-    BOOST_LOG_SEV(lg, debug) << "All versions: " << all;
+    ORES_LOG_SEV(lg, debug) << "All versions: " << all;
 
     CHECK(all.size() >= 2);
 }
@@ -134,7 +134,7 @@ TEST_CASE("remove_report_type", "[repository]") {
     CHECK_NOTHROW(repo.remove(h.context(), rt.code));
 
     auto after = repo.read_latest(h.context(), rt.code);
-    BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
+    ORES_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.empty());
 }
 
@@ -145,10 +145,10 @@ TEST_CASE("read_nonexistent_report_type", "[repository]") {
 
     report_type_repository repo;
     const std::string nonexistent = "NONEXISTENT_REPORT_TYPE_XYZ_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent;
 
     auto read = repo.read_latest(h.context(), nonexistent);
-    BOOST_LOG_SEV(lg, debug) << "Read report types: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read report types: " << read;
 
     CHECK(read.empty());
 }

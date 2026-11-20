@@ -30,7 +30,7 @@
 #include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_contact_information_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>

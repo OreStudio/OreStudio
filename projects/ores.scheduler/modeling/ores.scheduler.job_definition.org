@@ -238,7 +238,7 @@ by-column finder because it deliberately drops the tenant filter.
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::job_definition>
 job_definition_repository::read_all_active(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all active job definitions.";
+    ORES_LOG_SEV(lg(), debug) << "Reading all active job definitions.";
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<job_definition_entity>> |
                        query_builder::where("is_active"_c == true && "valid_to"_c == max);

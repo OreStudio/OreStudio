@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.core/stream/change_coalescer.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -41,7 +41,7 @@ change_event event(std::string party, std::string entity) {
 
 TEST_CASE("a_burst_of_rows_becomes_one_frame_per_collection", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a burst is coalesced into one frame";
+    ORES_LOG_SEV(lg, info) << "Testing that a burst is coalesced into one frame";
 
     change_coalescer coalescer;
     for (auto index = 0; index < 1000; ++index)
@@ -59,7 +59,7 @@ TEST_CASE("a_burst_of_rows_becomes_one_frame_per_collection", "[change_coalescer
 
 TEST_CASE("two_collections_in_one_window_become_two_frames", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that each collection gets its own frame";
+    ORES_LOG_SEV(lg, info) << "Testing that each collection gets its own frame";
 
     change_coalescer coalescer;
     coalescer.record(event("ops", "book"));
@@ -74,7 +74,7 @@ TEST_CASE("two_collections_in_one_window_become_two_frames", "[change_coalescer]
 
 TEST_CASE("a_change_is_never_folded_into_another_party", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that one party's change stays its own";
+    ORES_LOG_SEV(lg, info) << "Testing that one party's change stays its own";
 
     change_coalescer coalescer;
     coalescer.record(event("ops", "book"));
@@ -93,7 +93,7 @@ TEST_CASE("a_change_is_never_folded_into_another_party", "[change_coalescer]") {
 
 TEST_CASE("a_collection_name_is_the_component_s_own", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that two components may name one collection";
+    ORES_LOG_SEV(lg, info) << "Testing that two components may name one collection";
 
     change_coalescer coalescer;
     coalescer.record({.tenant = "acme", .party = "", .component = "iam", .entity = "orders"});
@@ -108,7 +108,7 @@ TEST_CASE("a_collection_name_is_the_component_s_own", "[change_coalescer]") {
 
 TEST_CASE("a_second_window_emits_only_what_changed_in_it", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a drained change is not repeated";
+    ORES_LOG_SEV(lg, info) << "Testing that a drained change is not repeated";
 
     change_coalescer coalescer;
     coalescer.record(event("ops", "book"));
@@ -125,7 +125,7 @@ TEST_CASE("a_second_window_emits_only_what_changed_in_it", "[change_coalescer]")
 
 TEST_CASE("the_same_collection_written_twice_is_one_frame", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a repeated change is one frame";
+    ORES_LOG_SEV(lg, info) << "Testing that a repeated change is one frame";
 
     change_coalescer coalescer;
     coalescer.record(event("ops", "book"));
@@ -138,7 +138,7 @@ TEST_CASE("the_same_collection_written_twice_is_one_frame", "[change_coalescer]"
 
 TEST_CASE("a_change_with_no_tenant_or_no_collection_is_not_queued", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a change nobody could be shown is refused";
+    ORES_LOG_SEV(lg, info) << "Testing that a change nobody could be shown is refused";
 
     change_coalescer coalescer;
     coalescer.record({.tenant = "", .party = "ops", .component = "iam", .entity = "book"});

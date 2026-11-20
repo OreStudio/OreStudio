@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.core/repository/currency_pair_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -449,25 +447,25 @@ currency_pair_service::prepare_change(const messaging::currency_pair_change& cha
 
 std::vector<domain::currency_pair> currency_pair_service::list_pairs(std::uint32_t offset,
                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all currency pairs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all currency pairs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t currency_pair_service::count_pairs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total currency pairs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total currency pairs count";
     return repo_.get_total_pair_count(ctx_);
 }
 
 
 std::optional<domain::currency_pair>
 currency_pair_service::get_pair_at_version(const std::string& pair_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting currency pair at version. " << "pair_code: " << pair_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting currency pair at version. " << "pair_code: " << pair_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, pair_code, version);
 }
 
 std::optional<domain::currency_pair> currency_pair_service::get_pair(const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting currency pair. " << "pair_code: " << pair_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting currency pair. " << "pair_code: " << pair_code;
     auto results = repo_.read_latest(ctx_, pair_code);
     if (results.empty())
         return std::nullopt;
@@ -482,11 +480,11 @@ currency_pair_service::get_pairs(const std::vector<std::string>& pair_codes) {
 void currency_pair_service::save_pair(const domain::currency_pair& v) {
     if (v.pair_code.empty())
         throw std::invalid_argument("Currency Pair pair_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving currency pair. " << "pair_code: " << v.pair_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving currency pair. " << "pair_code: " << v.pair_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved currency pair. " << "pair_code: " << v.pair_code;
+    ORES_LOG_SEV(lg(), info) << "Saved currency pair. " << "pair_code: " << v.pair_code;
 }
 
 void currency_pair_service::save_pairs(const std::vector<domain::currency_pair>& pairs) {
@@ -494,7 +492,7 @@ void currency_pair_service::save_pairs(const std::vector<domain::currency_pair>&
         if (e.pair_code.empty())
             throw std::invalid_argument("Currency Pair pair_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << pairs.size() << " currency pairs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << pairs.size() << " currency pairs";
     auto ts = pairs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -503,9 +501,9 @@ void currency_pair_service::save_pairs(const std::vector<domain::currency_pair>&
 }
 
 void currency_pair_service::delete_pair(const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair. " << "pair_code: " << pair_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing currency pair. " << "pair_code: " << pair_code;
     repo_.remove(ctx_, pair_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed currency pair. " << "pair_code: " << pair_code;
+    ORES_LOG_SEV(lg(), info) << "Removed currency pair. " << "pair_code: " << pair_code;
 }
 
 void currency_pair_service::delete_pairs(const std::vector<std::string>& pair_codes) {
@@ -514,8 +512,8 @@ void currency_pair_service::delete_pairs(const std::vector<std::string>& pair_co
 
 std::vector<domain::currency_pair>
 currency_pair_service::get_pair_history(const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for currency pair. "
-                               << "pair_code: " << pair_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for currency pair. "
+                              << "pair_code: " << pair_code;
     return repo_.read_all(ctx_, pair_code);
 }
 

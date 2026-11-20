@@ -119,8 +119,8 @@ raise_result notification_center::raise(const messaging::raise_notification_requ
         values.push_back(a.value);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Raising a " << req.kind_code << " notification for "
-                              << recipient_ids.size() << " recipient(s)";
+    ORES_LOG_SEV(lg(), info) << "Raising a " << req.kind_code << " notification for "
+                             << recipient_ids.size() << " recipient(s)";
     const auto id = ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "select ores_inbox_raise_notification_fn($1, $2, $3, $4, $5::uuid, $6, "

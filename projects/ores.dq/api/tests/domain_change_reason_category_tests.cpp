@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/change_reason_category_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -35,7 +35,7 @@ TEST_CASE("create_change_reason_category_with_valid_fields", "[domain]") {
     sut.code = "static_data";
     sut.description = "Static/reference data changes";
     sut.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "Change reason category: " << sut;
+    ORES_LOG_SEV(lg, info) << "Change reason category: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "static_data");
@@ -55,7 +55,7 @@ TEST_CASE("change_reason_category_convert_single_to_table", "[domain]") {
     std::vector<change_reason_category> categories = {cat};
     auto table = convert_to_table(categories);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Code"));

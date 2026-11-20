@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/csa.hpp"
 #include "ores.refdata.api/domain/csa_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/csa_protocol.hpp"
 #include "ores.refdata.core/repository/csa_entity.hpp"
 #include "ores.refdata.core/repository/csa_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -216,7 +214,7 @@ void csa_repository::write(const context& ctx, const std::vector<domain::csa>& v
 void csa_repository::write(const context& ctx,
                            const domain::csa& v,
                            const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing CSA. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing CSA. " << "id: " << v.id;
     const auto t = csa_apply_claim(v,
                                    claim,
                                    csa_claim_reads_current(claim) ?
@@ -228,7 +226,7 @@ void csa_repository::write(const context& ctx,
 void csa_repository::write(const context& ctx,
                            const std::vector<domain::csa>& v,
                            const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing CSAs. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing CSAs. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("csa_repository::write: one claim is needed for each row");
     std::vector<domain::csa> to_read;
@@ -261,7 +259,7 @@ std::vector<domain::csa> csa_repository::read_latest(const context& ctx) {
 }
 
 std::vector<domain::csa> csa_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest CSA. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest CSA. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -278,7 +276,7 @@ std::vector<domain::csa> csa_repository::read_latest(const context& ctx, const s
 
 
 std::vector<domain::csa> csa_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all CSA versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all CSA versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<csa_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -294,8 +292,8 @@ std::vector<domain::csa> csa_repository::read_all(const context& ctx, const std:
 
 std::optional<domain::csa>
 csa_repository::read_at_version(const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading CSA at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading CSA at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<csa_entity>> |
@@ -322,8 +320,8 @@ csa_repository::read_latest_by_netting_set_id(const context& ctx,
                                               std::uint32_t limit,
                                               const ores::utility::domain::order& order,
                                               const std::optional<messaging::csas_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest CSAs. netting_set_id: " << netting_set_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest CSAs. netting_set_id: " << netting_set_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -346,8 +344,8 @@ std::uint32_t csa_repository::get_total_csa_count_by_netting_set_id(
     const context& ctx,
     const std::string& netting_set_id,
     const std::optional<messaging::csas_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active CSAs count. netting_set_id: "
-                               << netting_set_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active CSAs count. netting_set_id: "
+                              << netting_set_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -364,7 +362,7 @@ std::uint32_t csa_repository::get_total_csa_count_by_netting_set_id(
 csa_repository::remove_status csa_repository::remove(const context& ctx,
                                                      const std::string& id,
                                                      std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CSA. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CSA. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -402,8 +400,8 @@ csa_repository::read_latest(const context& ctx,
                             const ores::utility::domain::order& order,
                             const std::optional<messaging::csas_filter>& filter,
                             const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest CSAs with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest CSAs with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<csa_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -423,7 +421,7 @@ std::uint32_t
 csa_repository::get_total_csa_count(const context& ctx,
                                     const std::optional<messaging::csas_filter>& filter,
                                     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active CSA count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active CSA count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

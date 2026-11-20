@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http/routes/iam/auth_session_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -72,7 +72,7 @@ domain::http_response run(asio::awaitable<domain::http_response> work) {
 
 TEST_CASE("the_session_door_registers_its_three_routes", "[auth_session]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the resources a browser signs in through";
+    ORES_LOG_SEV(lg, info) << "Testing the resources a browser signs in through";
 
     ores::nats::service::nats_client session;
     auto router = std::make_shared<net::router>();
@@ -107,7 +107,7 @@ TEST_CASE("the_session_door_registers_its_three_routes", "[auth_session]") {
 
 TEST_CASE("me_answers_the_principal_and_never_the_token", "[auth_session]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing what the browser is told about itself";
+    ORES_LOG_SEV(lg, info) << "Testing what the browser is told about itself";
 
     ores::nats::service::nats_client session;
     auto store = std::make_shared<domain::session_store>(std::chrono::hours(1));
@@ -135,7 +135,7 @@ TEST_CASE("me_answers_the_principal_and_never_the_token", "[auth_session]") {
 
 TEST_CASE("signing_out_closes_the_session_and_clears_the_cookie", "[auth_session]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that signing out ends the session it names";
+    ORES_LOG_SEV(lg, info) << "Testing that signing out ends the session it names";
 
     ores::nats::service::nats_client session;
     auto store = std::make_shared<domain::session_store>(std::chrono::hours(1));
@@ -162,7 +162,7 @@ TEST_CASE("signing_out_closes_the_session_and_clears_the_cookie", "[auth_session
 
 TEST_CASE("a_verifier_installed_after_the_door_is_built_is_the_one_it_uses", "[auth_session]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the door looks for the verifier it needs";
+    ORES_LOG_SEV(lg, info) << "Testing that the door looks for the verifier it needs";
 
     /*
      * The runner installs the verifier after the routes are built, so the door has to

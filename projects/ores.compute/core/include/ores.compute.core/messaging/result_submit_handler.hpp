@@ -30,7 +30,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/domain/change_reason_codes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -76,7 +76,7 @@ public:
         , ctx_(ctx) {}
 
     void submit(ores::nats::message msg) {
-        BOOST_LOG_SEV(result_submit_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(result_submit_handler_lg(), debug) << "Handling " << msg.subject;
         if (auto req = decode<submit_result_request>(msg)) {
             try {
                 // The result row is tenant-scoped and the service's own context
@@ -97,7 +97,7 @@ public:
 
                 switch (decide_submit(existing->server_state)) {
                     case submit_action::ignore_inactive:
-                        BOOST_LOG_SEV(result_submit_handler_lg(), info)
+                        ORES_LOG_SEV(result_submit_handler_lg(), info)
                             << "Ignoring the outcome of retired result " << req->result_id;
                         reply(nats_,
                               msg,
@@ -106,7 +106,7 @@ public:
                                   .message = "The result is inactive; the outcome was ignored."});
                         return;
                     case submit_action::ignore_final:
-                        BOOST_LOG_SEV(result_submit_handler_lg(), info)
+                        ORES_LOG_SEV(result_submit_handler_lg(), info)
                             << "Ignoring a second outcome for result " << req->result_id;
                         reply(nats_,
                               msg,
@@ -131,7 +131,7 @@ public:
                     submitter = std::nullopt;
                 }
                 if (claimed_by_another(ledger.holder(ctx_, result_uuid), submitter)) {
-                    BOOST_LOG_SEV(result_submit_handler_lg(), info)
+                    ORES_LOG_SEV(result_submit_handler_lg(), info)
                         << "Ignoring the outcome of result " << req->result_id
                         << " from a host that does not hold its claim";
                     reply(nats_,
@@ -157,7 +157,7 @@ public:
                     try {
                         r.host_id = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
                     } catch (const boost::bad_lexical_cast& e) {
-                        BOOST_LOG_SEV(result_submit_handler_lg(), warn)
+                        ORES_LOG_SEV(result_submit_handler_lg(), warn)
                             << "Invalid host_id in submit_result_request: " << req->host_id << " ("
                             << e.what() << ")";
                     }
@@ -188,7 +188,7 @@ public:
                         wu.change_commentary = "Canonical result accepted";
                         stamp(wu, tenant_ctx);
                         wu_svc.save_workunit(wu);
-                        BOOST_LOG_SEV(result_submit_handler_lg(), info)
+                        ORES_LOG_SEV(result_submit_handler_lg(), info)
                             << "Validator: canonical result set for workunit " << wu_id_str;
 
                         // Assimilator: close the batch once every workunit has
@@ -211,7 +211,7 @@ public:
                                 batch.change_commentary = "All workunits complete";
                                 stamp(batch, tenant_ctx);
                                 batch_svc.save_batch(batch);
-                                BOOST_LOG_SEV(result_submit_handler_lg(), info)
+                                ORES_LOG_SEV(result_submit_handler_lg(), info)
                                     << "Assimilator: batch " << batch_id_str << " closed";
                             }
                         }
@@ -220,12 +220,12 @@ public:
 
                 reply(nats_, msg, submit_result_response{.success = true});
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(result_submit_handler_lg(), error)
+                ORES_LOG_SEV(result_submit_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
                 reply(nats_, msg, submit_result_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(result_submit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(result_submit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             reply(nats_,
                   msg,
                   submit_result_response{.success = false, .message = "Failed to decode request"});

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -66,7 +66,7 @@ TEST_CASE("decimal_holds_the_value_a_double_cannot", "[decimal]") {
 
     const auto from_binary = decimal::from_double(12345678901234567890.1234567890);
     REQUIRE(from_binary.has_value());
-    BOOST_LOG_SEV(lg, info) << "The double names: " << from_binary->to_string();
+    ORES_LOG_SEV(lg, info) << "The double names: " << from_binary->to_string();
     CHECK(*from_binary != wide);
 }
 
@@ -105,7 +105,7 @@ TEST_CASE("decimal_refuses_text_that_is_not_a_decimal", "[decimal]") {
     for (const auto* text :
          {"", " ", "abc", "nan", "inf", "-inf", "1.2.3", "1e", "0x10", "1,5", "--1", "1 2", "."}) {
         const auto result = decimal::from_string(text);
-        BOOST_LOG_SEV(lg, info) << "Refused [" << text << "]";
+        ORES_LOG_SEV(lg, info) << "Refused [" << text << "]";
         CHECK_FALSE(result.has_value());
     }
 }
@@ -142,8 +142,8 @@ TEST_CASE("decimal_reaches_a_double_only_through_the_named_boundary", "[decimal]
     CHECK(decimal::from_double(parsed("0.0425").to_double()).value().to_string() == "0.0425");
 
     const auto wide = parsed("12345678901234567890.123456789");
-    BOOST_LOG_SEV(lg, info) << "Through a double: "
-                            << decimal::from_double(wide.to_double())->to_string();
+    ORES_LOG_SEV(lg, info) << "Through a double: "
+                           << decimal::from_double(wide.to_double())->to_string();
     CHECK(decimal::from_double(wide.to_double()).value() != wide);
 }
 

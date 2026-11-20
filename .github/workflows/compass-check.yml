@@ -1,0 +1,67 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: Compass check
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # compass check runs every gate compass-ng answers for, the generated-code
+  # drift checks among them. Locally it runs before a pull request is raised,
+  # but a merge can still leave main stale, as the BFF list request table was
+  # twice, and nothing reported it until the next branch ran the check. This
+  # job runs the released compass that build/scripts/compass_ng.pin names on
+  # every push to main. A cold run takes under two minutes.
+  compass-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      # The typescript_format check runs the prettier that ores.web installs.
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install the ores.web dependencies
+        run: npm ci --no-audit --no-fund
+        working-directory: projects/ores.web
+      - name: Install the pinned compass release
+        run: |
+          tag=$(sed -n 's/^release: *//p' build/scripts/compass_ng.pin)
+          if [ -z "$tag" ]; then
+              echo "build/scripts/compass_ng.pin names no release" >&2
+              exit 1
+          fi
+          asset="compass-${tag#v}-Linux-x86_64.tar.gz"
+          base="https://github.com/MASD-Project/compass/releases/download/${tag}"
+          cd "$RUNNER_TEMP"
+          curl -fsSLO "${base}/${asset}"
+          curl -fsSLO "${base}/${asset}.sha256"
+          sha256sum -c "${asset}.sha256"
+          tar -xzf "${asset}"
+          bin=$(find "$RUNNER_TEMP/${asset%.tar.gz}" -type f -path '*/bin/compass')
+          echo "$(dirname "$bin")" >> "$GITHUB_PATH"
+      - name: Show the compass version
+        run: compass --version
+      - name: Run compass check
+        run: compass check

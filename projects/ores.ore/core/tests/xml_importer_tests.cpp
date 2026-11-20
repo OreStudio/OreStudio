@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
 #include "test_helpers.hpp"
@@ -44,7 +44,7 @@ TEST_CASE("validate_currency_with_all_required_fields", "[ore][xml][importer]") 
     c.rounding_precision = 2;
 
     const auto errors = importer::validate_currency(c);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
+    ORES_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
 
     CHECK(errors.empty());
 }
@@ -59,7 +59,7 @@ TEST_CASE("validate_currency_with_missing_name", "[ore][xml][importer]") {
     c.rounding_precision = 2;
 
     const auto errors = importer::validate_currency(c);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
+    ORES_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
 
     CHECK(!errors.empty());
     CHECK(errors.contains("Name is required"));
@@ -75,7 +75,7 @@ TEST_CASE("validate_currency_with_missing_iso_code", "[ore][xml][importer]") {
     c.rounding_precision = 2;
 
     const auto errors = importer::validate_currency(c);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
+    ORES_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
 
     CHECK(!errors.empty());
     CHECK(errors.contains("ISO code is required"));
@@ -91,7 +91,7 @@ TEST_CASE("validate_currency_with_missing_rounding_type", "[ore][xml][importer]"
     c.rounding_precision = 2;
 
     const auto errors = importer::validate_currency(c);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
+    ORES_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
 
     CHECK(!errors.empty());
     CHECK(errors.contains("Rounding type is required"));
@@ -108,7 +108,7 @@ TEST_CASE("validate_currency_with_zero_fractions_per_unit", "[ore][xml][importer
     c.rounding_precision = 2;
 
     const auto errors = importer::validate_currency(c);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
+    ORES_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
 
     CHECK(!errors.empty());
     CHECK(errors.contains("Fractions per unit must be positive"));
@@ -125,7 +125,7 @@ TEST_CASE("validate_currency_with_negative_rounding_precision", "[ore][xml][impo
     c.rounding_precision = -1;
 
     const auto errors = importer::validate_currency(c);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
+    ORES_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
 
     CHECK(!errors.empty());
     CHECK(errors.contains("Rounding precision must be non-negative"));
@@ -139,7 +139,7 @@ TEST_CASE("validate_currency_with_multiple_errors", "[ore][xml][importer]") {
     c.rounding_precision = -1;
 
     const auto errors = importer::validate_currency(c);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
+    ORES_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
 
     CHECK(!errors.empty());
     CHECK(errors.contains("Name is required"));
@@ -157,10 +157,10 @@ TEST_CASE("import_currency_config_from_currencies_xml", "[ore][xml][importer]") 
     auto lg(make_logger(test_suite));
 
     const auto f = ores::testing::ore_path("examples/Input/currencies.xml");
-    BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
+    ORES_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto currencies = importer::import_currency_config(f);
-    BOOST_LOG_SEV(lg, debug) << "Imported " << currencies.size() << " currencies";
+    ORES_LOG_SEV(lg, debug) << "Imported " << currencies.size() << " currencies";
 
     REQUIRE(currencies.size() == 179);
 
@@ -180,10 +180,10 @@ TEST_CASE("import_currency_config_from_example_1", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ores::testing::ore_path("examples/Legacy/Example_1/Input/currencies.xml");
-    BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
+    ORES_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto currencies = importer::import_currency_config(f);
-    BOOST_LOG_SEV(lg, debug) << "Imported " << currencies.size() << " currencies";
+    ORES_LOG_SEV(lg, debug) << "Imported " << currencies.size() << " currencies";
 
     REQUIRE(currencies.size() == 2);
 
@@ -211,6 +211,6 @@ TEST_CASE("import_currency_config_maps_all_fields", "[ore][xml][importer]") {
         CHECK(errors.empty());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "All " << currencies.size()
-                             << " imported currencies pass validation";
+    ORES_LOG_SEV(lg, debug) << "All " << currencies.size()
+                            << " imported currencies pass validation";
 }

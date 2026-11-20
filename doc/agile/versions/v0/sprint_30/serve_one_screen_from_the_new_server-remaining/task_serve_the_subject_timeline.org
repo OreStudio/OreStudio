@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-subject-timeline
+#+pr: 4907
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-19
@@ -32,16 +32,34 @@ rather than a failure, which is why the answer carries a list of gaps at all.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
 
--
+- =GET /api/timeline= answers at the BFF's address for all three subjects, with
+  the BFF's member names and status codes.
+- A request's stream is the story the inbox already serves, wrapped with its
+  subject, so the two cannot drift into two shapes.
+- A person's stream is the account, its contact record, the roles it was given,
+  the parties it works in and its sign-ins, and it states the one window it
+  cannot show beside every source it was refused.
+- A party's stream is its own versions, the versions of each part it holds and
+  the opening and closing of each link it keeps, and it states that no read lists
+  a part that was removed from it.
+- Each subject names the row an entry came from, so a screen can pair the entries
+  of one entity and diff them.
+- The events are ordered by the one rule the request story already uses: newest
+  first, and within one second the later act first.
+- A source the caller may not read is a gap on the answer. A source that fails is
+  not: the route answers that the service did not answer.
+- The answer carries an ETag and stays fresh for 30 seconds.
+- The route is paired in the inventory, and the workflow area serves all 18 of
+  its routes.
 
 * Plan
 
@@ -92,9 +110,68 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The workflow suite      | 58 cases, 595 assertions                  | =publish/bin/ores.http.workflow.tests= | f6c6024bbd |
+| The routes in the tree  | 1387: 1054 by =ores.http=, 333 by the BFF | =./compass.sh generate=, then the inventory's *The inventory* | f6c6024bbd |
+| The paired routes       | 288 of 333, so 45 are unpaired           | the inventory's pairing table: one =none= row per unpaired route | f6c6024bbd |
+| The workflow area       | no unpaired route remains                | the same table, searched for the area's addresses | f6c6024bbd |
+| The check gate          | 52 of 52                                 | =./compass.sh check --exclude-heavy= | f6c6024bbd |
+| The http suites         | =ores.http.nats.tests= and =ores.http.core.tests= pass | =./compass.sh test run -- -R 'ores\.http\.(nats|core)\.tests'= | f6c6024bbd |
+| The schema and the tree | in sync, fingerprint =cabc2ecdbf1f608e=  | =./compass.sh db recreate -y -k=, then =./compass.sh bearings= | f6c6024bbd |
+| The person's stream     | 20 events: 3 account, 10 account party, 2 account role, 5 sign-in, 1 gap | =evidence/timeline_live_run.txt= | f6c6024bbd |
+| The party's stream      | 492 events: 7 party, 453 counterparty, 26 currency, 1 business unit, 4 contact, 1 identifier, 3 gaps | =evidence/timeline_live_run.txt= | f6c6024bbd |
+| The request's stream    | 3 events: 2 request versions and 1 decision, no gaps | =evidence/timeline_live_run.txt= | f6c6024bbd |
 
 * Notes
+
+The subject a stream is read for is a word and not an entity type. That is the
+BFF's own split, and it is kept because it is the right one: which rows make up a
+person's story is the server's business, and a browser that named the entity
+types would be stating the composition and would then drift from it.
+
+Three compositions, one of them new. A request's stream is the story the inbox
+already answers, wrapped, so the two subjects cannot become two shapes. A
+person's and a party's are composed here, from the reads their owning components
+already served, and neither invents a subject: each entity type reaches its own
+read through =history_subject_for=.
+
+The gap list is the part worth reading twice. A person's is not symmetric with a
+party's, because what the product cannot say is not symmetric. A sign-in log keeps
+a window, and the stream reads the most recent 200, so an older sign-in is not
+shown: that is a fact about the read and it is stated even for a person who has
+never signed in. A part removed from a party is closed rather than deleted, and no
+read lists a closed row, so the party's stream states that for each kind of part
+instead of showing a story that looks complete.
+
+A refusal becomes a gap; a failure does not. The BFF put both in the same list,
+which read a service that was down as a permission the person lacked. Here only
+the refusal the owning component states is a gap, and a transport failure is
+thrown so the route answers that the service did not answer. The history step
+states its three bad answers - no read for the type, no permission, a read that
+failed - as an answer that did not come, and the composition turns each of them
+into a gap with the sentence the screen shows.
+
+The compositions are proved against a live deployment, not only by construction.
+The database was recreated from this checkout, the demo tenant was provisioned, and
+the gateway the systemd unit runs answered all three subjects over HTTP with the
+cookie a sign-in sets. The run is =evidence/timeline_live_run.txt=: 20 events for
+the person, 492 for the party, 3 for the request, and the address refusing what the
+BFF refused. The schema and the tree agree, at fingerprint =cabc2ecdbf1f608e=.
+
+A party's rows answer only to a session acting as that party, so the party the
+stream is read for must be the party the session chose: the party's own record is
+tenant-scoped and reads either way, while its parts and links are party-scoped and
+read as empty for any other. This is the deployment's scoping and not this view's,
+and the run chooses the party it reads.
+
+What a live run does not prove. The gap for a source the caller may not read was
+not exercised against a real refusal, because the demo tenant's administrator holds
+every read this view asks for. The path is proved by the unit tests that state the
+refusal and by the code that turns a refusal into a gap, not by a refused live
+read.
+
+The one instant formatter is not restated here. The entries carry the instants the
+history layer stamped and the protocol's own text form writes them, as every other
+answer in the part does.
 
 * Test Scenarios
 
@@ -111,12 +188,52 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4907][#4907]] | [http] Serve one subject's story from the gateway |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An unanswered history read was reported as a permission the person lacks | =timeline_sources.cpp= | Fixed | The gap now states that the service did not answer, which is true of all three pieces of news the reply carries in one flag, and the shared read says why it cannot say more. The refusal the transport carries still gaps on 403 and throws otherwise, and a test states that rule. |
+| 2 | The contact history key needs confirming | =person_timeline.cpp= | Fixed | The service reads the record by =email=, the key its model declares; the code says so now. |
+| 3 | Naming a linked row swallowed errors with no gap | =timeline_sources.cpp= | Fixed | Both helpers state a gap when the names cannot be read, and the refusal that read can make is caught there instead of escaping as a 403 on the whole view. |
+| 4 | =roles_of= logged nothing for a bad uuid | =person_timeline.cpp= | Fixed | It logs the case as the naming helpers do. |
+| 5 | The sign-in window gap is always appended | =person_timeline.cpp= | Kept | Deliberate and commented: the window is a fact about the read, not about the person. |
+| 6 | =roles_of= reads at most 1000 roles | =person_timeline.cpp= | Kept | The filter limits the answer to the ids asked for. |
 
 * Result
+
+One subject's story is served. =GET /api/timeline= answers a person, a party and a
+request at the BFF's address, with its member names and status codes, so the
+workflow area serves all 18 of the routes the inventory counts for it and 288 of the
+BFF's 333 are paired.
+
+A request's stream is the story the inbox already answers, wrapped, because the
+entry and its one ordering left that route and became the part's own. A person's is
+the account, its contact record, the roles it was given, the parties it works in and
+its sign-ins. A party's is its own versions, the versions of each part it holds and
+the opening and closing of each link it keeps. No route invents a subject: every
+entity type reaches its read through the gateway's own history step, which is now
+stated once and carries the service's answer whether or not it answered.
+
+The gaps are the part worth reading twice, because what the product cannot say is
+not the same for a person and a party. A person's sign-in log keeps a window, and
+the stream reads the most recent 200. A part removed from a party is closed, and no
+read lists a closed row, so the party's stream says so for each kind of part
+instead of showing a story that looks complete. A source the caller may not read is
+a gap; a source that fails is thrown and answered as the service not answering, so
+a service that is down is never reported as a permission the person lacks. The one
+thing the reply cannot distinguish - no read, no permission, a failed read, all
+stated in one flag - is stated as what is true of all three, and the shared read
+says why.
+
+Everything was verified on the rebased tree. The part's suite passed 58 cases and
+595 assertions, the local gate passed 52 of 52 checks, the inventory regenerates to
+itself, and the parts and the server build. The database was recreated from the
+checkout, so the schema and the tree agree at fingerprint =cabc2ecdbf1f608e=, and
+the gateway the systemd unit runs answered the three subjects with 21, 492 and 3
+events and their gaps; that run is =evidence/timeline_live_run.txt=.
+
+The review of [[https://github.com/OreStudio/OreStudio/pull/4907][#4907]] found one
+real defect: an unanswered history read was reported as a permission the person
+lacks. It is fixed, and the rest of its points are answered on the task.

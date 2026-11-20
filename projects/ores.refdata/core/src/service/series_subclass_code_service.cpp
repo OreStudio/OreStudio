@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/series_subclass_code.hpp"
 #include "ores.refdata.api/messaging/series_subclass_code_protocol.hpp"
 #include "ores.refdata.core/repository/series_subclass_code_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -456,12 +454,12 @@ ores::utility::domain::result series_subclass_code_service::prepare_change(
 
 std::vector<domain::series_subclass_code>
 series_subclass_code_service::list_series_subclasses(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all series subclass codes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all series subclass codes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t series_subclass_code_service::count_series_subclasses() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total series subclass codes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total series subclass codes count";
     return repo_.get_total_series_subclass_count(ctx_);
 }
 
@@ -469,14 +467,14 @@ std::uint32_t series_subclass_code_service::count_series_subclasses() {
 std::optional<domain::series_subclass_code>
 series_subclass_code_service::get_series_subclass_at_version(const std::string& code,
                                                              std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting series subclass code at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting series subclass code at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::series_subclass_code>
 series_subclass_code_service::get_series_subclass(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting series subclass code. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting series subclass code. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -491,11 +489,11 @@ series_subclass_code_service::get_series_subclasses(const std::vector<std::strin
 void series_subclass_code_service::save_series_subclass(const domain::series_subclass_code& v) {
     if (v.code.empty())
         throw std::invalid_argument("Series Subclass Code code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving series subclass code. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving series subclass code. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved series subclass code. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved series subclass code. " << "code: " << v.code;
 }
 
 void series_subclass_code_service::save_series_subclasses(
@@ -504,7 +502,7 @@ void series_subclass_code_service::save_series_subclasses(
         if (e.code.empty())
             throw std::invalid_argument("Series Subclass Code code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << series_subclasses.size() << " series subclass codes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << series_subclasses.size() << " series subclass codes";
     auto ts = series_subclasses;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -513,9 +511,9 @@ void series_subclass_code_service::save_series_subclasses(
 }
 
 void series_subclass_code_service::delete_series_subclass(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing series subclass code. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing series subclass code. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed series subclass code. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed series subclass code. " << "code: " << code;
 }
 
 void series_subclass_code_service::delete_series_subclasses(const std::vector<std::string>& codes) {
@@ -524,7 +522,7 @@ void series_subclass_code_service::delete_series_subclasses(const std::vector<st
 
 std::vector<domain::series_subclass_code>
 series_subclass_code_service::get_series_subclass_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for series subclass code. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for series subclass code. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PRODUCT_FAMILY_CODE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PRODUCT_FAMILY_CODE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/product_family_code.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/product_family_code_entity.hpp"

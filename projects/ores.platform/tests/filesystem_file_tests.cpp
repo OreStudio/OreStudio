@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.platform/filesystem/file_not_found.hpp"
 #include "ores.platform/filesystem/io_error.hpp"
@@ -61,7 +61,7 @@ TEST_CASE("read_content_from_existing_file", "[filesystem]") {
 
     const std::string expected_content = "Hello, World!";
     auto temp_file = create_temp_file(expected_content);
-    BOOST_LOG_SEV(lg, info) << "Created temp file: " << temp_file.path();
+    ORES_LOG_SEV(lg, info) << "Created temp file: " << temp_file.path();
 
     std::string content = file::read_content(temp_file.path());
 
@@ -73,7 +73,7 @@ TEST_CASE("read_content_from_file_with_multiline_content", "[filesystem]") {
 
     const std::string expected_content = "Line 1\nLine 2\nLine 3\n";
     auto temp_file = create_temp_file(expected_content);
-    BOOST_LOG_SEV(lg, info) << "Created temp file with multiline content";
+    ORES_LOG_SEV(lg, info) << "Created temp file with multiline content";
 
     std::string content = file::read_content(temp_file.path());
 
@@ -84,7 +84,7 @@ TEST_CASE("read_content_from_nonexistent_file_throws_exception", "[filesystem]")
     auto lg(make_logger(test_suite));
 
     std::filesystem::path nonexistent("/nonexistent/path/to/file.txt");
-    BOOST_LOG_SEV(lg, info) << "Attempting to read nonexistent file";
+    ORES_LOG_SEV(lg, info) << "Attempting to read nonexistent file";
 
     CHECK_THROWS_AS(file::read_content(nonexistent), file_not_found);
 }
@@ -94,7 +94,7 @@ TEST_CASE("read_content_from_istream", "[filesystem]") {
 
     const std::string expected_content = "Stream content here";
     std::istringstream iss(expected_content);
-    BOOST_LOG_SEV(lg, info) << "Reading from istream";
+    ORES_LOG_SEV(lg, info) << "Reading from istream";
 
     std::string content = file::read_content(iss);
 
@@ -136,7 +136,7 @@ TEST_CASE("read_empty_file", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     auto temp_file = create_temp_file("");
-    BOOST_LOG_SEV(lg, info) << "Reading empty file";
+    ORES_LOG_SEV(lg, info) << "Reading empty file";
 
     std::string content = file::read_content(temp_file.path());
 
@@ -149,7 +149,7 @@ TEST_CASE("write_content_to_new_file", "[filesystem]") {
     scoped_temp_file sut;
     const std::string content = "Written content";
 
-    BOOST_LOG_SEV(lg, info) << "Writing to file: " << sut.path();
+    ORES_LOG_SEV(lg, info) << "Writing to file: " << sut.path();
     file::write_content(sut.path(), content);
 
     CHECK(std::filesystem::exists(sut.path()));
@@ -163,7 +163,7 @@ TEST_CASE("write_content_overwrites_existing_file", "[filesystem]") {
     auto temp_file = create_temp_file("Original content");
     const std::string new_content = "New content";
 
-    BOOST_LOG_SEV(lg, info) << "Overwriting file: " << temp_file.path();
+    ORES_LOG_SEV(lg, info) << "Overwriting file: " << temp_file.path();
     file::write_content(temp_file.path(), new_content);
 
     std::string read_back = file::read_content(temp_file.path());
@@ -176,7 +176,7 @@ TEST_CASE("write_template_to_file", "[filesystem]") {
     scoped_temp_file sut;
 
     streamable_test_object obj{42};
-    BOOST_LOG_SEV(lg, info) << "Writing streamable object to file";
+    ORES_LOG_SEV(lg, info) << "Writing streamable object to file";
     file::write(sut.path(), obj);
 
     CHECK(std::filesystem::exists(sut.path()));
@@ -191,7 +191,7 @@ TEST_CASE("remove_files_from_list", "[filesystem]") {
     auto file2 = create_temp_file("content2");
 
     std::list<std::filesystem::path> files = {file1.path(), file2.path()};
-    BOOST_LOG_SEV(lg, info) << "Removing files from list";
+    ORES_LOG_SEV(lg, info) << "Removing files from list";
 
     CHECK(std::filesystem::exists(file1.path()));
     CHECK(std::filesystem::exists(file2.path()));
@@ -208,7 +208,7 @@ TEST_CASE("write_and_read_with_faker_content", "[filesystem]") {
     scoped_temp_file sut;
 
     std::string faker_content = std::string(faker::lorem::paragraph());
-    BOOST_LOG_SEV(lg, info) << "Writing faker content to: " << sut.path();
+    ORES_LOG_SEV(lg, info) << "Writing faker content to: " << sut.path();
 
     file::write_content(sut.path(), faker_content);
     std::string read_back = file::read_content(sut.path());

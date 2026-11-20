@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/refdata/tenor_screen_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/tenor_codec.hpp"
 #include "ores.refdata.api/domain/tenor_convention_codec.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution_codec.hpp"
@@ -65,7 +65,7 @@ http_response tenor_answer(http_method method,
 
 TEST_CASE("tenor_routes_refuse_a_malformed_request_before_forwarding", "[tenor_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing each tenor route's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing each tenor route's refusals";
 
     const auto refused = [](const http_response& answer) {
         CHECK(answer.status == http_status::bad_request);
@@ -111,7 +111,7 @@ TEST_CASE("tenor_routes_refuse_a_malformed_request_before_forwarding", "[tenor_s
 
 TEST_CASE("tenor_routes_forward_a_well_formed_request", "[tenor_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an accepted tenor request reaches the service";
+    ORES_LOG_SEV(lg, info) << "Testing that an accepted tenor request reaches the service";
 
     // The client is not connected, so an accepted request fails at the forward step.
     const auto unanswered = [](const http_response& answer) {
@@ -170,7 +170,7 @@ TEST_CASE("tenor_routes_forward_a_well_formed_request", "[tenor_screen]") {
 
 TEST_CASE("tenor_catalogue_puts_the_tenors_in_their_own_order", "[tenor_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the tenor catalogue's order and shape";
+    ORES_LOG_SEV(lg, info) << "Testing the tenor catalogue's order and shape";
 
     const auto tenor_at = [](std::string code, int order) {
         ores::refdata::domain::tenor t;
@@ -198,7 +198,7 @@ TEST_CASE("tenor_catalogue_puts_the_tenors_in_their_own_order", "[tenor_screen]"
 
 TEST_CASE("tenor_catalogue_is_a_view_the_screen_reads_with_a_session", "[tenor_screen]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the tenor catalogue's route";
+    ORES_LOG_SEV(lg, info) << "Testing the tenor catalogue's route";
 
     const auto answer = answer_at<tenor_screen_routes>(
         http_method::get, "/api/tenors/catalogue", http_request{}, "/api/tenors/catalogue");

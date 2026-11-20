@@ -31,9 +31,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -232,7 +230,7 @@ void credit_simulation_matrix_row_config_repository::write(
     const context& ctx,
     const domain::credit_simulation_matrix_row_config& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing matrix row. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing matrix row. " << "id: " << v.id;
     const auto t = credit_simulation_matrix_row_config_apply_claim(
         v,
         claim,
@@ -249,7 +247,7 @@ void credit_simulation_matrix_row_config_repository::write(
     const context& ctx,
     const std::vector<domain::credit_simulation_matrix_row_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing matrix rows. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing matrix rows. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("credit_simulation_matrix_row_config_repository::write: one "
                                     "claim is needed for each row");
@@ -293,7 +291,7 @@ credit_simulation_matrix_row_config_repository::read_latest(const context& ctx) 
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_latest(const context& ctx,
                                                             const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix row. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest matrix row. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -314,7 +312,7 @@ credit_simulation_matrix_row_config_repository::read_latest(const context& ctx,
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_latest_by_from_rating(
     const context& ctx, const std::string& from_rating) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix row by from_rating: " << from_rating;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest matrix row by from_rating: " << from_rating;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -360,8 +358,8 @@ credit_simulation_matrix_row_config_repository::read_latest_by_from_rating(
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix rows by from_rating. Count: "
-                               << from_ratings.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest matrix rows by from_rating. Count: "
+                              << from_ratings.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -386,7 +384,7 @@ credit_simulation_matrix_row_config_repository::read_latest_by_from_rating(
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_any_by_from_rating(
     const context& ctx, const std::string& from_rating) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any matrix row by from_rating: " << from_rating;
+    ORES_LOG_SEV(lg(), debug) << "Reading any matrix row by from_rating: " << from_rating;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
@@ -418,7 +416,7 @@ credit_simulation_matrix_row_config_repository::read_any_by_from_rating(
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_all(const context& ctx,
                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all matrix row versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all matrix row versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
@@ -440,8 +438,8 @@ std::optional<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_at_version(const context& ctx,
                                                                 const std::string& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading matrix row at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading matrix row at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
@@ -472,9 +470,9 @@ credit_simulation_matrix_row_config_repository::read_latest_by_transition_matrix
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix rows. transition_matrix_id: "
-                               << transition_matrix_id << " offset: " << offset
-                               << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest matrix rows. transition_matrix_id: "
+                              << transition_matrix_id << " offset: " << offset
+                              << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -502,9 +500,8 @@ credit_simulation_matrix_row_config_repository::get_total_row_count_by_transitio
     const context& ctx,
     const std::string& transition_matrix_id,
     const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Retrieving total active matrix rows count. transition_matrix_id: "
-        << transition_matrix_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active matrix rows count. transition_matrix_id: "
+                              << transition_matrix_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -527,7 +524,7 @@ credit_simulation_matrix_row_config_repository::remove_status
 credit_simulation_matrix_row_config_repository::remove(const context& ctx,
                                                        const std::string& id,
                                                        std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing matrix row. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing matrix row. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -567,8 +564,8 @@ credit_simulation_matrix_row_config_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix rows with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest matrix rows with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
@@ -593,7 +590,7 @@ std::uint32_t credit_simulation_matrix_row_config_repository::get_total_row_coun
     const context& ctx,
     const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active matrix row count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active matrix row count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

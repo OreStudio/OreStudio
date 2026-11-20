@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_PARTY_ROLE_TYPE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/party_role_type.hpp"
 #include "ores.trading.api/messaging/party_role_type_protocol.hpp"
 #include "ores.trading.core/export.hpp"

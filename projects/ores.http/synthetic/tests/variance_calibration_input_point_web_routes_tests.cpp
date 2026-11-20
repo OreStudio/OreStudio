@@ -27,7 +27,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/synthetic/variance_calibration_input_point_web_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -104,7 +104,7 @@ TEST_CASE("variance_calibration_input_point_web_routes_registers_the_screen_addr
     CHECK(has(http_method::delete_, "/api/synthetic/variance-calibration-input-points"));
     CHECK(has(http_method::get, "/api/synthetic/variance-calibration-input-points/key/{key}"));
     CHECK(has(http_method::get, "/api/synthetic/variance-calibration-input-points/by/{parent}"));
-    BOOST_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
 }
 
 TEST_CASE("variance_calibration_input_point_web_routes_names_the_resource_in_its_catalogue_entry",

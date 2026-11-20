@@ -19,7 +19,7 @@
  */
 #include "ores.assets.api/domain/image.hpp"
 #include "ores.assets.api/domain/image_json_io.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
@@ -34,7 +34,7 @@ TEST_CASE("create_image_with_code_and_description", "[domain][image]") {
     sut.code = "gb";
     sut.description = "Flag for country code GB (United Kingdom)";
     sut.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "Image code: " << sut.code;
+    ORES_LOG_SEV(lg, info) << "Image code: " << sut.code;
 
     CHECK(sut.code == "gb");
     CHECK(sut.description == "Flag for country code GB (United Kingdom)");
@@ -45,7 +45,7 @@ TEST_CASE("default_constructed_image_has_zero_version", "[domain][image]") {
     auto lg(make_logger(test_suite));
 
     const image sut;
-    BOOST_LOG_SEV(lg, info) << "Default image version: " << sut.version;
+    ORES_LOG_SEV(lg, info) << "Default image version: " << sut.version;
 
     CHECK(sut.version == 0);
     CHECK(sut.code.empty());
@@ -62,7 +62,7 @@ TEST_CASE("image_version_can_be_set", "[domain][image]") {
     sut.code = "ro";
     sut.description = "Flag for country code RO (Romania)";
     sut.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "Image version: " << sut.version;
+    ORES_LOG_SEV(lg, info) << "Image version: " << sut.version;
 
     CHECK(sut.version == 3);
 }
@@ -81,7 +81,7 @@ TEST_CASE("image_json_output_contains_code_and_description", "[domain][image]") 
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
+    ORES_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("\"code\":\"us\"") != std::string::npos);

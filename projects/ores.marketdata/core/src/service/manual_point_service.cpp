@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.core/service/manual_point_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
@@ -142,7 +142,7 @@ manual_point_service::key(const ores::database::context& ctx,
         request.value,
         request.change_reason_code,
         request.change_commentary);
-    BOOST_LOG_SEV(lg(), info) << "Keyed a manual point on series " << at->series_id;
+    ORES_LOG_SEV(lg(), info) << "Keyed a manual point on series " << at->series_id;
     response.success = true;
     return response;
 }
@@ -166,8 +166,8 @@ manual_point_service::clear(const ores::database::context& ctx,
         response.message = "The node holds no manual point.";
         return response;
     }
-    BOOST_LOG_SEV(lg(), info) << "Cleared " << cleared << " manual point(s) on series "
-                              << at->series_id;
+    ORES_LOG_SEV(lg(), info) << "Cleared " << cleared << " manual point(s) on series "
+                             << at->series_id;
     response.success = true;
     return response;
 }

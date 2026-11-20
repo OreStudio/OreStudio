@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/trade_authorisation_request.hpp"
 #include "ores.trading.api/messaging/trade_authorisation_request_protocol.hpp"
 #include "ores.trading.core/repository/trade_authorisation_request_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -519,12 +517,12 @@ ores::utility::domain::result trade_authorisation_request_service::prepare_chang
 std::vector<domain::trade_authorisation_request>
 trade_authorisation_request_service::list_trade_authorisation_requests(std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade authorisation requests";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade authorisation requests";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_authorisation_request_service::count_trade_authorisation_requests() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade authorisation requests count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade authorisation requests count";
     return repo_.get_total_trade_authorisation_request_count(ctx_);
 }
 
@@ -532,14 +530,14 @@ std::uint32_t trade_authorisation_request_service::count_trade_authorisation_req
 std::vector<domain::trade_authorisation_request>
 trade_authorisation_request_service::list_trade_authorisation_requests_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing trade authorisation requests by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing trade authorisation requests by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t trade_authorisation_request_service::count_trade_authorisation_requests_by_trade_id(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade authorisation requests count by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade authorisation requests count by trade_id: "
+                              << trade_id;
     return repo_.get_total_trade_authorisation_request_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -547,16 +545,16 @@ std::uint32_t trade_authorisation_request_service::count_trade_authorisation_req
 std::optional<domain::trade_authorisation_request>
 trade_authorisation_request_service::get_trade_authorisation_request_at_version(
     const boost::uuids::uuid& request_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade authorisation request at version. "
-                               << "request_id: " << request_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade authorisation request at version. "
+                              << "request_id: " << request_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(request_id), version);
 }
 
 std::optional<domain::trade_authorisation_request>
 trade_authorisation_request_service::get_trade_authorisation_request(
     const boost::uuids::uuid& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade authorisation request. "
-                               << "request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade authorisation request. "
+                              << "request_id: " << request_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(request_id));
     if (results.empty())
         return std::nullopt;
@@ -573,13 +571,13 @@ void trade_authorisation_request_service::save_trade_authorisation_request(
     const domain::trade_authorisation_request& v) {
     if (v.request_id.is_nil())
         throw std::invalid_argument("Trade Authorisation Request request_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade authorisation request. "
-                               << "request_id: " << v.request_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade authorisation request. "
+                              << "request_id: " << v.request_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade authorisation request. "
-                              << "request_id: " << v.request_id;
+    ORES_LOG_SEV(lg(), info) << "Saved trade authorisation request. "
+                             << "request_id: " << v.request_id;
 }
 
 void trade_authorisation_request_service::save_trade_authorisation_requests(
@@ -588,8 +586,8 @@ void trade_authorisation_request_service::save_trade_authorisation_requests(
         if (e.request_id.is_nil())
             throw std::invalid_argument("Trade Authorisation Request request_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << trade_authorisation_requests.size()
-                               << " trade authorisation requests";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << trade_authorisation_requests.size()
+                              << " trade authorisation requests";
     auto ts = trade_authorisation_requests;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -599,11 +597,11 @@ void trade_authorisation_request_service::save_trade_authorisation_requests(
 
 void trade_authorisation_request_service::delete_trade_authorisation_request(
     const boost::uuids::uuid& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade authorisation request. "
-                               << "request_id: " << request_id;
-    repo_.remove(ctx_, boost::uuids::to_string(request_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade authorisation request. "
+    ORES_LOG_SEV(lg(), debug) << "Removing trade authorisation request. "
                               << "request_id: " << request_id;
+    repo_.remove(ctx_, boost::uuids::to_string(request_id));
+    ORES_LOG_SEV(lg(), info) << "Removed trade authorisation request. "
+                             << "request_id: " << request_id;
 }
 
 void trade_authorisation_request_service::delete_trade_authorisation_requests(
@@ -614,8 +612,8 @@ void trade_authorisation_request_service::delete_trade_authorisation_requests(
 std::vector<domain::trade_authorisation_request>
 trade_authorisation_request_service::get_trade_authorisation_request_history(
     const std::string& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade authorisation request. "
-                               << "request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade authorisation request. "
+                              << "request_id: " << request_id;
     return repo_.read_all(ctx_, request_id);
 }
 

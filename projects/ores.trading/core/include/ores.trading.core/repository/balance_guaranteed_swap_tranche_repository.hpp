@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_REPOSITORY_BALANCE_GUARANTEED_SWAP_TRANCHE_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_protocol.hpp"
 #include "ores.trading.core/export.hpp"

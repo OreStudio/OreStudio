@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SCENARIO_VALUE_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SCENARIO_VALUE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_scenario_value.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_scenario_value_entity.hpp"

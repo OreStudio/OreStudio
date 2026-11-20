@@ -89,7 +89,7 @@ pq::result detail::run(pq::transaction& tx,
 
 void detail::refused(const pq::store_error& e, logging::logger_t& lg) {
     using namespace ores::logging;
-    BOOST_LOG_SEV(lg, error) << e.what();
+    ORES_LOG_SEV(lg, error) << e.what();
     BOOST_THROW_EXCEPTION(repository::repository_exception(
         std::format("Repository error: {}", e.what()), e.sqlstate()));
 }
@@ -102,7 +102,7 @@ void detail::finished(logging::logger_t& lg,
     const auto took = std::chrono::duration_cast<std::chrono::milliseconds>(
                           std::chrono::steady_clock::now() - began)
                           .count();
-    BOOST_LOG_SEV(lg, took >= slow_statement_ms ? warn : debug)
+    ORES_LOG_SEV(lg, took >= slow_statement_ms ? warn : debug)
         << what << ". Total: " << rows << " in " << took << " ms";
 }
 
@@ -113,8 +113,8 @@ execute_parameterized_multi_column_query(const context& ctx,
                                          logging::logger_t& lg,
                                          const std::string& operation_desc) {
     using namespace ores::logging;
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
-                             << " parameters";
+    ORES_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
+                            << " parameters";
     const auto began = std::chrono::steady_clock::now();
     std::vector<pq::param> encoded;
     encoded.reserve(params.size());

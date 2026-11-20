@@ -25,13 +25,11 @@
 #include "ores.reporting.core/repository/report_type_configuration_type_repository.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_type_configuration_type.hpp"
 #include "ores.reporting.api/domain/report_type_configuration_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/report_type_configuration_type_entity.hpp"
 #include "ores.reporting.core/repository/report_type_configuration_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -197,9 +195,9 @@ void report_type_configuration_type_repository::write(
 void report_type_configuration_type_repository::write(
     const domain::report_type_configuration_type& report_type_configuration_type,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report type configuration type to database: "
-                               << report_type_configuration_type.report_type_code << "/"
-                               << report_type_configuration_type.configuration_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing report type configuration type to database: "
+                              << report_type_configuration_type.report_type_code << "/"
+                              << report_type_configuration_type.configuration_type_code;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(report_type_configuration_type.report_type_code,
                                          report_type_configuration_type.configuration_type_code) :
@@ -215,8 +213,8 @@ void report_type_configuration_type_repository::write(
 void report_type_configuration_type_repository::write(
     const std::vector<domain::report_type_configuration_type>& report_type_configuration_types,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report type configuration types to database. Count: "
-                               << report_type_configuration_types.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing report type configuration types to database. Count: "
+                              << report_type_configuration_types.size();
     if (claims.size() != report_type_configuration_types.size())
         throw std::invalid_argument(
             "report_type_configuration_type_repository::write: one claim is needed for each row");
@@ -258,8 +256,8 @@ report_type_configuration_type_repository::read_latest() {
 
 std::vector<domain::report_type_configuration_type>
 report_type_configuration_type_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report type configuration types with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report type configuration types with offset: "
+                              << offset << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_type_configuration_type_entity>> |
@@ -279,8 +277,8 @@ report_type_configuration_type_repository::read_latest(std::uint32_t offset, std
 std::vector<domain::report_type_configuration_type>
 report_type_configuration_type_repository::read_latest(const std::string& report_type_code,
                                                        const std::string& configuration_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report type configuration type. "
-                               << report_type_code << "/" << configuration_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report type configuration type. "
+                              << report_type_code << "/" << configuration_type_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto report_type_code_str = report_type_code;
@@ -303,7 +301,7 @@ report_type_configuration_type_repository::read_latest(const std::string& report
 
 std::uint32_t
 report_type_configuration_type_repository::get_total_report_type_configuration_type_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report type configuration types count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active report type configuration types count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -312,15 +310,15 @@ report_type_configuration_type_repository::get_total_report_type_configuration_t
 
     const auto count = query_builder::execute_count_query<report_type_configuration_type_entity>(
         ctx_, query, std::nullopt, lg(), "Counting report type configuration types");
-    BOOST_LOG_SEV(lg(), debug) << "Total active report type configuration types count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active report type configuration types count: " << count;
     return count;
 }
 
 std::vector<domain::report_type_configuration_type>
 report_type_configuration_type_repository::read_latest_by_report_type(
     const std::string& report_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report type configuration types. Report Type: "
-                               << report_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report type configuration types. Report Type: "
+                              << report_type_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -344,7 +342,7 @@ report_type_configuration_type_repository::read_latest_by_report_type(
 std::vector<domain::report_type_configuration_type>
 report_type_configuration_type_repository::read_latest_by_configuration_type(
     const std::string& configuration_type_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading latest report type configuration types. Configuration Type: "
         << configuration_type_code;
 
@@ -371,8 +369,8 @@ report_type_configuration_type_repository::read_latest_by_configuration_type(
 std::vector<domain::report_type_configuration_type>
 report_type_configuration_type_repository::read_latest_by_report_type(
     const std::string& report_type_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report type configuration types. Report Type: "
-                               << report_type_code << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest report type configuration types. Report Type: "
+                              << report_type_code << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -397,7 +395,7 @@ report_type_configuration_type_repository::read_latest_by_report_type(
 std::uint32_t report_type_configuration_type_repository::
     get_total_report_type_configuration_type_count_by_report_type(
         const std::string& report_type_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active report type configuration types count. Report Type: "
         << report_type_code;
     static constexpr auto max = db_timestamp::max();
@@ -410,7 +408,7 @@ std::uint32_t report_type_configuration_type_repository::
 
     const auto count = query_builder::execute_count_query<report_type_configuration_type_entity>(
         ctx_, query, std::nullopt, lg(), "Counting report type configuration types");
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Total active report type configuration types count by report_type: " << count;
     return count;
 }
@@ -418,7 +416,7 @@ std::uint32_t report_type_configuration_type_repository::
 std::uint32_t report_type_configuration_type_repository::
     get_total_report_type_configuration_type_count_by_configuration_type(
         const std::string& configuration_type_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active report type configuration types count. Configuration Type: "
         << configuration_type_code;
     static constexpr auto max = db_timestamp::max();
@@ -432,7 +430,7 @@ std::uint32_t report_type_configuration_type_repository::
 
     const auto count = query_builder::execute_count_query<report_type_configuration_type_entity>(
         ctx_, query, std::nullopt, lg(), "Counting report type configuration types");
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Total active report type configuration types count by configuration_type: " << count;
     return count;
 }
@@ -446,8 +444,8 @@ report_type_configuration_type_repository::remove_status
 report_type_configuration_type_repository::remove(const std::string& report_type_code,
                                                   const std::string& configuration_type_code,
                                                   std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report type configuration type from database: "
-                               << report_type_code << "/" << configuration_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing report type configuration type from database: "
+                              << report_type_code << "/" << configuration_type_code;
 
     const auto current = read_latest(report_type_code, configuration_type_code);
     if (current.empty())
@@ -496,8 +494,8 @@ void report_type_configuration_type_repository::remove(
 
 void report_type_configuration_type_repository::remove_by_report_type(
     const std::string& report_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all report type configuration types from database: "
-                               << report_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing all report type configuration types from database: "
+                              << report_type_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =

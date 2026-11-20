@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/marketdata/subscription_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
@@ -100,7 +100,7 @@ removal_status(const std::string& address, const std::string& pattern, const std
 
 TEST_CASE("subscriptions_state_a_party_its_rights_and_its_version", "[subscription]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a subscription's answer";
+    ORES_LOG_SEV(lg, info) << "Testing a subscription's answer";
 
     const auto answer = subscription_routes::subscriptions_json({subscription_of("bloomberg")});
 
@@ -116,7 +116,7 @@ TEST_CASE("subscriptions_state_a_party_its_rights_and_its_version", "[subscripti
 
 TEST_CASE("routes_state_the_feed_that_serves_a_publisher", "[subscription]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a route's answer";
+    ORES_LOG_SEV(lg, info) << "Testing a route's answer";
 
     const auto answer = subscription_routes::routes_json({route_of("bloomberg")});
 
@@ -129,8 +129,7 @@ TEST_CASE("routes_state_the_feed_that_serves_a_publisher", "[subscription]") {
 
 TEST_CASE("subscriptions_refuse_a_read_without_a_service", "[subscription]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info)
-        << "Testing the subscriptions' refusal when the service does not answer";
+    ORES_LOG_SEV(lg, info) << "Testing the subscriptions' refusal when the service does not answer";
 
     CHECK(answer_at<subscription_routes>(http_method::get,
                                          "/api/marketdata/subscriptions",
@@ -144,7 +143,7 @@ TEST_CASE("subscriptions_refuse_a_read_without_a_service", "[subscription]") {
 
 TEST_CASE("subscriptions_refuse_a_create_without_a_right", "[subscription]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a subscription that carries no right";
+    ORES_LOG_SEV(lg, info) << "Testing a subscription that carries no right";
 
     CHECK(create_status(R"({"provider_code":"bloomberg"})") == http_status::bad_request);
     CHECK(create_status(R"({"provider_code":"bloomberg","display":false,"non_display":false,)"
@@ -155,7 +154,7 @@ TEST_CASE("subscriptions_refuse_a_create_without_a_right", "[subscription]") {
 
 TEST_CASE("subscriptions_refuse_a_create_naming_no_party", "[subscription]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create from a caller who acts in no party";
+    ORES_LOG_SEV(lg, info) << "Testing a create from a caller who acts in no party";
 
     http_request req;
     req.body = R"({"provider_code":"bloomberg","display":true})";
@@ -168,7 +167,7 @@ TEST_CASE("subscriptions_refuse_a_create_naming_no_party", "[subscription]") {
 
 TEST_CASE("subscriptions_refuse_a_body_they_do_not_read", "[subscription]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create's body";
+    ORES_LOG_SEV(lg, info) << "Testing a create's body";
 
     CHECK(create_status(R"({"provider_code":"","display":true})") == http_status::bad_request);
     CHECK(create_status(R"({"provider_code":"bloomberg","display":true,"right":true})") ==
@@ -181,7 +180,7 @@ TEST_CASE("subscriptions_refuse_a_body_they_do_not_read", "[subscription]") {
 
 TEST_CASE("subscriptions_refuse_a_removal_that_states_no_reason", "[subscription]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a removal's body";
+    ORES_LOG_SEV(lg, info) << "Testing a removal's body";
 
     const std::string subscription = "/api/marketdata/subscriptions/bloomberg";
     const std::string subscription_pattern = "/api/marketdata/subscriptions/{provider}";

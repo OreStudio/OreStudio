@@ -25,7 +25,7 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http.core/export.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <memory>
 

@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/barrier_type.hpp"
 #include "ores.trading.api/messaging/barrier_type_protocol.hpp"
 #include "ores.trading.core/repository/barrier_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -441,26 +439,26 @@ barrier_type_service::prepare_change(const messaging::barrier_type_change& chang
 
 std::vector<domain::barrier_type> barrier_type_service::list_barrier_types(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all barrier types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all barrier types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t barrier_type_service::count_barrier_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total barrier types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total barrier types count";
     return repo_.get_total_barrier_type_count(ctx_);
 }
 
 
 std::optional<domain::barrier_type>
 barrier_type_service::get_barrier_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting barrier type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting barrier type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::barrier_type>
 barrier_type_service::get_barrier_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting barrier type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting barrier type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -475,11 +473,11 @@ barrier_type_service::get_barrier_types(const std::vector<std::string>& codes) {
 void barrier_type_service::save_barrier_type(const domain::barrier_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Barrier Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving barrier type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving barrier type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved barrier type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved barrier type. " << "code: " << v.code;
 }
 
 void barrier_type_service::save_barrier_types(
@@ -488,7 +486,7 @@ void barrier_type_service::save_barrier_types(
         if (e.code.empty())
             throw std::invalid_argument("Barrier Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << barrier_types.size() << " barrier types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << barrier_types.size() << " barrier types";
     auto ts = barrier_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -497,9 +495,9 @@ void barrier_type_service::save_barrier_types(
 }
 
 void barrier_type_service::delete_barrier_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing barrier type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing barrier type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed barrier type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed barrier type. " << "code: " << code;
 }
 
 void barrier_type_service::delete_barrier_types(const std::vector<std::string>& codes) {
@@ -508,7 +506,7 @@ void barrier_type_service::delete_barrier_types(const std::vector<std::string>& 
 
 std::vector<domain::barrier_type>
 barrier_type_service::get_barrier_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for barrier type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for barrier type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

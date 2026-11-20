@@ -27,7 +27,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/adapter_protocol.hpp"
 #include "ores.marketdata.core/service/adapter_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -79,7 +79,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_adapters(ores::nats::message msg) {
-        BOOST_LOG_SEV(adapter_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(adapter_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -94,7 +94,7 @@ public:
         }
         auto req = decode<list_adapters_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(adapter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(adapter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -103,13 +103,13 @@ public:
         service::adapter_service svc(sys_ctx);
         try {
             auto response = svc.list_adapters(*req);
-            BOOST_LOG_SEV(adapter_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(adapter_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(adapter_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(adapter_handler_lg(), error) << msg.subject << " failed: " << e.what();
             list_adapters_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -128,7 +128,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_adapter(ores::nats::message msg) {
-        BOOST_LOG_SEV(adapter_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(adapter_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -143,7 +143,7 @@ public:
         }
         auto req = decode<get_adapter_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(adapter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(adapter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -152,13 +152,13 @@ public:
         service::adapter_service svc(sys_ctx);
         try {
             auto response = svc.get_adapter(*req);
-            BOOST_LOG_SEV(adapter_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(adapter_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(adapter_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(adapter_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_adapter_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -177,7 +177,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_adapters(ores::nats::message msg) {
-        BOOST_LOG_SEV(adapter_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(adapter_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -192,7 +192,7 @@ public:
         }
         auto req = decode<get_many_adapters_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(adapter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(adapter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -201,13 +201,13 @@ public:
         service::adapter_service svc(sys_ctx);
         try {
             auto response = svc.get_many_adapters(*req);
-            BOOST_LOG_SEV(adapter_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(adapter_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(adapter_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(adapter_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_many_adapters_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -226,7 +226,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_adapter_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(adapter_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(adapter_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -241,7 +241,7 @@ public:
         }
         auto req = decode<list_adapter_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(adapter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(adapter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -250,13 +250,13 @@ public:
         service::adapter_service svc(sys_ctx);
         try {
             auto response = svc.list_adapter_versions(*req);
-            BOOST_LOG_SEV(adapter_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(adapter_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(adapter_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(adapter_handler_lg(), error) << msg.subject << " failed: " << e.what();
             list_adapter_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -275,7 +275,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_adapter_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(adapter_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(adapter_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -290,7 +290,7 @@ public:
         }
         auto req = decode<get_adapter_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(adapter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(adapter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -299,13 +299,13 @@ public:
         service::adapter_service svc(sys_ctx);
         try {
             auto response = svc.get_adapter_version(*req);
-            BOOST_LOG_SEV(adapter_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(adapter_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(adapter_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(adapter_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_adapter_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";

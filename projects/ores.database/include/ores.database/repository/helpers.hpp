@@ -22,7 +22,7 @@
 
 #include "ores.database/repository/db_types.hpp"
 #include "ores.database/repository/repository_exception.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/exception/diagnostic_information.hpp>
 #include <format>
 #include <string>
@@ -64,7 +64,7 @@ void ensure_success(const T& result, logging::logger_t& lg) {
     using namespace ores::logging;
 
     if (!result) {
-        BOOST_LOG_SEV(lg, error) << result.error().what();
+        ORES_LOG_SEV(lg, error) << result.error().what();
         BOOST_THROW_EXCEPTION(
             repository_exception(std::format("Repository error: {}", result.error().what())));
     }

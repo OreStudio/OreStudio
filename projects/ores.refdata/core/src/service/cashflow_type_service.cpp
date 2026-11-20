@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/cashflow_type.hpp"
 #include "ores.refdata.api/messaging/cashflow_type_protocol.hpp"
 #include "ores.refdata.core/repository/cashflow_type_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -447,28 +445,28 @@ cashflow_type_service::prepare_change(const messaging::cashflow_type_change& cha
 
 std::vector<domain::cashflow_type> cashflow_type_service::list_types(std::uint32_t offset,
                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all cashflow types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all cashflow types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cashflow_type_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cashflow types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total cashflow types count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::cashflow_type> cashflow_type_service::get_type_at_version(
     const std::string& code, const std::string& coding_scheme_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cashflow type at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting cashflow type at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::cashflow_type>
 cashflow_type_service::get_type(const std::string& code, const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cashflow type. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting cashflow type. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -486,13 +484,13 @@ void cashflow_type_service::save_type(const domain::cashflow_type& v) {
         throw std::invalid_argument("Cashflow Type code cannot be empty.");
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument("Cashflow Type coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving cashflow type. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving cashflow type. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved cashflow type. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved cashflow type. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void cashflow_type_service::save_types(const std::vector<domain::cashflow_type>& types) {
@@ -502,7 +500,7 @@ void cashflow_type_service::save_types(const std::vector<domain::cashflow_type>&
         if (e.coding_scheme_code.empty())
             throw std::invalid_argument("Cashflow Type coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " cashflow types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " cashflow types";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -512,11 +510,11 @@ void cashflow_type_service::save_types(const std::vector<domain::cashflow_type>&
 
 void cashflow_type_service::delete_type(const std::string& code,
                                         const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cashflow type. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed cashflow type. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing cashflow type. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed cashflow type. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void cashflow_type_service::delete_types(const std::vector<std::string>& codes,
@@ -527,8 +525,8 @@ void cashflow_type_service::delete_types(const std::vector<std::string>& codes,
 std::vector<domain::cashflow_type>
 cashflow_type_service::get_type_history(const std::string& code,
                                         const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for cashflow type. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for cashflow type. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

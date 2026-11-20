@@ -32,7 +32,7 @@
 #include "ores.iam.core/repository/permission_repository.hpp"
 #include "ores.iam.core/repository/role_permission_repository.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid.hpp>

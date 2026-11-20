@@ -39,17 +39,17 @@ namespace {
 /**
  * @brief Converts boost severity to string representation.
  */
-std::string severity_to_string(ores::logging::boost_severity sev) {
+std::string severity_to_string(ores::logging::backend::boost_severity sev) {
     switch (sev) {
-        case ores::logging::boost_severity::trace:
+        case ores::logging::backend::boost_severity::trace:
             return "trace";
-        case ores::logging::boost_severity::debug:
+        case ores::logging::backend::boost_severity::debug:
             return "debug";
-        case ores::logging::boost_severity::info:
+        case ores::logging::backend::boost_severity::info:
             return "info";
-        case ores::logging::boost_severity::warn:
+        case ores::logging::backend::boost_severity::warn:
             return "warn";
-        case ores::logging::boost_severity::error:
+        case ores::logging::backend::boost_severity::error:
             return "error";
         default:
             return "info";
@@ -93,7 +93,8 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
     }
 
     // Extract and convert severity
-    auto severity_val = boost::log::extract<ores::logging::boost_severity>("Severity", rec);
+    auto severity_val =
+        boost::log::extract<ores::logging::backend::boost_severity>("Severity", rec);
     if (severity_val) {
         entry.level = severity_to_string(severity_val.get());
     } else {

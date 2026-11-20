@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/engine_settings_group_setting.hpp"
 #include "ores.reporting.api/messaging/engine_settings_group_setting_protocol.hpp"
 #include "ores.reporting.core/repository/engine_settings_group_setting_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -469,12 +467,12 @@ ores::utility::domain::result engine_settings_group_setting_service::prepare_cha
 
 std::vector<domain::engine_settings_group_setting>
 engine_settings_group_setting_service::list_settings(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all engine settings group settings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all engine settings group settings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t engine_settings_group_setting_service::count_settings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total engine settings group settings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total engine settings group settings count";
     return repo_.get_total_setting_count(ctx_);
 }
 
@@ -482,14 +480,14 @@ std::uint32_t engine_settings_group_setting_service::count_settings() {
 std::optional<domain::engine_settings_group_setting>
 engine_settings_group_setting_service::get_setting_at_version(const std::string& code,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting engine settings group setting at version. "
-                               << "code: " << code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting engine settings group setting at version. "
+                              << "code: " << code << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::engine_settings_group_setting>
 engine_settings_group_setting_service::find_setting(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding engine settings group setting. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding engine settings group setting. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -505,11 +503,11 @@ void engine_settings_group_setting_service::save_setting(
     const domain::engine_settings_group_setting& v) {
     if (v.code.empty())
         throw std::invalid_argument("Engine Settings Group Setting code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving engine settings group setting. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving engine settings group setting. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved engine settings group setting. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved engine settings group setting. " << "code: " << v.code;
 }
 
 void engine_settings_group_setting_service::save_settings(
@@ -518,7 +516,7 @@ void engine_settings_group_setting_service::save_settings(
         if (e.code.empty())
             throw std::invalid_argument("Engine Settings Group Setting code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << settings.size() << " engine settings group settings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << settings.size() << " engine settings group settings";
     auto ts = settings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -527,9 +525,9 @@ void engine_settings_group_setting_service::save_settings(
 }
 
 void engine_settings_group_setting_service::delete_setting(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing engine settings group setting. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing engine settings group setting. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed engine settings group setting. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed engine settings group setting. " << "code: " << code;
 }
 
 void engine_settings_group_setting_service::delete_settings(const std::vector<std::string>& codes) {
@@ -538,8 +536,8 @@ void engine_settings_group_setting_service::delete_settings(const std::vector<st
 
 std::vector<domain::engine_settings_group_setting>
 engine_settings_group_setting_service::get_setting_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for engine settings group setting. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for engine settings group setting. "
+                              << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

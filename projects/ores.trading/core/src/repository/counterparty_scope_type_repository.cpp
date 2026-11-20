@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/counterparty_scope_type.hpp"
 #include "ores.trading.api/domain/counterparty_scope_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/counterparty_scope_type_protocol.hpp"
 #include "ores.trading.core/repository/counterparty_scope_type_entity.hpp"
 #include "ores.trading.core/repository/counterparty_scope_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -216,7 +214,7 @@ void counterparty_scope_type_repository::write(
 void counterparty_scope_type_repository::write(const context& ctx,
                                                const domain::counterparty_scope_type& v,
                                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty scope type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing counterparty scope type. " << "code: " << v.code;
     const auto t =
         counterparty_scope_type_apply_claim(v,
                                             claim,
@@ -233,7 +231,7 @@ void counterparty_scope_type_repository::write(
     const context& ctx,
     const std::vector<domain::counterparty_scope_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty scope types. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing counterparty scope types. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "counterparty_scope_type_repository::write: one claim is needed for each row");
@@ -272,7 +270,7 @@ counterparty_scope_type_repository::read_latest(const context& ctx) {
 
 std::vector<domain::counterparty_scope_type>
 counterparty_scope_type_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty scope type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty scope type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<counterparty_scope_type_entity>> |
                        query_builder::where("code"_c == code && "valid_to"_c == max);
@@ -289,8 +287,8 @@ counterparty_scope_type_repository::read_latest(const context& ctx, const std::s
 
 std::vector<domain::counterparty_scope_type>
 counterparty_scope_type_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty scope type versions. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all counterparty scope type versions. "
+                              << "code: " << code;
     const auto query = query_builder::read<std::vector<counterparty_scope_type_entity>> |
                        query_builder::where("code"_c == code) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
@@ -306,8 +304,8 @@ counterparty_scope_type_repository::read_all(const context& ctx, const std::stri
 
 std::optional<domain::counterparty_scope_type> counterparty_scope_type_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty scope type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading counterparty scope type at version. " << "code: " << code
+                              << " version: " << version;
     const auto query = query_builder::read<std::vector<counterparty_scope_type_entity>> |
                        query_builder::where("code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
@@ -327,7 +325,7 @@ std::optional<domain::counterparty_scope_type> counterparty_scope_type_repositor
 
 counterparty_scope_type_repository::remove_status counterparty_scope_type_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty scope type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing counterparty scope type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -365,8 +363,8 @@ std::vector<domain::counterparty_scope_type> counterparty_scope_type_repository:
     const ores::utility::domain::order& order,
     const std::optional<messaging::counterparty_scope_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty scope types with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty scope types with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<counterparty_scope_type_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -386,7 +384,7 @@ std::uint32_t counterparty_scope_type_repository::get_total_counterparty_scope_t
     const context& ctx,
     const std::optional<messaging::counterparty_scope_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty scope type count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active counterparty scope type count";
 
     const auto query = query_builder::read<std::vector<counterparty_scope_type_entity>>;
 

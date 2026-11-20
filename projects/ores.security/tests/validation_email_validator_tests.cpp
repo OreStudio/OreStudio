@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/validation/email_validator.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -29,7 +29,7 @@ TEST_CASE("valid_email_passes_validation", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@example.com";
-    BOOST_LOG_SEV(lg, info) << "Testing valid email: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing valid email: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(result.is_valid);
@@ -40,7 +40,7 @@ TEST_CASE("valid_email_with_subdomain", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@mail.example.com";
-    BOOST_LOG_SEV(lg, info) << "Testing email with subdomain: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email with subdomain: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(result.is_valid);
@@ -51,7 +51,7 @@ TEST_CASE("valid_email_with_plus_sign", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user+tag@example.com";
-    BOOST_LOG_SEV(lg, info) << "Testing email with plus sign: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email with plus sign: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(result.is_valid);
@@ -62,7 +62,7 @@ TEST_CASE("valid_email_with_dots_in_local_part", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "first.last@example.com";
-    BOOST_LOG_SEV(lg, info) << "Testing email with dots in local part: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email with dots in local part: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(result.is_valid);
@@ -73,7 +73,7 @@ TEST_CASE("empty_email_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "";
-    BOOST_LOG_SEV(lg, info) << "Testing empty email";
+    ORES_LOG_SEV(lg, info) << "Testing empty email";
 
     auto result = email_validator::validate(email);
     CHECK(!result.is_valid);
@@ -84,7 +84,7 @@ TEST_CASE("email_without_at_symbol_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "userexample.com";
-    BOOST_LOG_SEV(lg, info) << "Testing email without @: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email without @: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(!result.is_valid);
@@ -95,7 +95,7 @@ TEST_CASE("email_with_multiple_at_symbols_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@@example.com";
-    BOOST_LOG_SEV(lg, info) << "Testing email with multiple @: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email with multiple @: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(!result.is_valid);
@@ -106,7 +106,7 @@ TEST_CASE("email_starting_with_at_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "@example.com";
-    BOOST_LOG_SEV(lg, info) << "Testing email starting with @: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email starting with @: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(!result.is_valid);
@@ -117,7 +117,7 @@ TEST_CASE("email_ending_with_at_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@";
-    BOOST_LOG_SEV(lg, info) << "Testing email ending with @: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email ending with @: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(!result.is_valid);
@@ -128,7 +128,7 @@ TEST_CASE("email_without_dot_in_domain_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@localhost";
-    BOOST_LOG_SEV(lg, info) << "Testing email without dot in domain: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email without dot in domain: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(!result.is_valid);
@@ -139,7 +139,7 @@ TEST_CASE("email_with_domain_starting_with_dot_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@.example.com";
-    BOOST_LOG_SEV(lg, info) << "Testing email with domain starting with dot: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email with domain starting with dot: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(!result.is_valid);
@@ -150,7 +150,7 @@ TEST_CASE("email_with_domain_ending_with_dot_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@example.com.";
-    BOOST_LOG_SEV(lg, info) << "Testing email with domain ending with dot: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email with domain ending with dot: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(!result.is_valid);
@@ -161,7 +161,7 @@ TEST_CASE("valid_email_with_numbers", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user123@example123.com";
-    BOOST_LOG_SEV(lg, info) << "Testing email with numbers: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email with numbers: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(result.is_valid);
@@ -172,7 +172,7 @@ TEST_CASE("valid_email_with_hyphen_in_domain", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@my-example.com";
-    BOOST_LOG_SEV(lg, info) << "Testing email with hyphen in domain: " << email;
+    ORES_LOG_SEV(lg, info) << "Testing email with hyphen in domain: " << email;
 
     auto result = email_validator::validate(email);
     CHECK(result.is_valid);

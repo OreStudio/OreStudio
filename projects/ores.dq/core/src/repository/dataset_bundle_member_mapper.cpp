@@ -27,8 +27,6 @@
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_bundle_member_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::dq::repository {
@@ -38,7 +36,7 @@ using namespace ores::database::repository;
 
 domain::dataset_bundle_member
 dataset_bundle_member_mapper::map(const dataset_bundle_member_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::dataset_bundle_member r;
     r.version = v.version;
@@ -53,13 +51,13 @@ dataset_bundle_member_mapper::map(const dataset_bundle_member_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 dataset_bundle_member_entity
 dataset_bundle_member_mapper::map(const domain::dataset_bundle_member& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     dataset_bundle_member_entity r;
     r.bundle_code = v.bundle_code;
@@ -73,7 +71,7 @@ dataset_bundle_member_mapper::map(const domain::dataset_bundle_member& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

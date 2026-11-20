@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/history_commands.hpp"
@@ -74,7 +74,7 @@ TEST_CASE("history_commands_get_names_the_arguments_it_needs", "[commands][histo
     command_feedback::reset();
     history_commands::process_get(out, session, {workflow_instance});
 
-    BOOST_LOG_SEV(lg, debug) << "Usage output: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Usage output: " << out.str();
     CHECK(out.str().find("<entity_type> <entity_id>") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -89,7 +89,7 @@ TEST_CASE("history_commands_get_refuses_a_version_it_cannot_read", "[commands][h
     history_commands::process_get(
         out, session, {workflow_instance, instance_id, "--diff", "--version", "two"});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a bad version: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a bad version: " << out.str();
     CHECK(out.str().find("Invalid --version value") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -105,7 +105,7 @@ TEST_CASE("history_commands_get_refuses_a_version_without_a_diff", "[commands][h
     command_feedback::reset();
     history_commands::process_get(out, session, {workflow_instance, instance_id, "--version", "2"});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a version without a diff: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a version without a diff: " << out.str();
     CHECK(out.str().find("only supported together with --diff") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -119,7 +119,7 @@ TEST_CASE("history_commands_get_requires_a_session", "[commands][history]") {
     command_feedback::reset();
     history_commands::process_get(out, session, {workflow_instance, instance_id});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }

@@ -77,7 +77,7 @@ constexpr std::string_view service_version = ORES_VERSION;
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.compute.service", 0, 1);
 
     ores::nats::service::client nats(cfg.nats);
@@ -134,7 +134,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     (void)dispatch_sub;
 
     event_source.start();
-    BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+    ORES_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
     // Create separate contexts for pollers so the main context can be
     // moved into run() for the subscription handlers.

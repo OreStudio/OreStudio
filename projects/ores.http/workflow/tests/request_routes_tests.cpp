@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -66,7 +66,7 @@ http_request asking_for_one_role() {
 
 TEST_CASE("the_requests_a_person_raised_are_one_page_or_a_refusal", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the page of a person's own requests";
+    ORES_LOG_SEV(lg, info) << "Testing the page of a person's own requests";
 
     const auto answered =
         answer_at<workflow_routes>(http_method::get, mine_pattern, http_request{}, mine_pattern);
@@ -86,7 +86,7 @@ TEST_CASE("the_requests_a_person_raised_are_one_page_or_a_refusal", "[workflow_r
 
 TEST_CASE("the_requests_a_person_raised_take_a_page_and_nothing_else", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter the page does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter the page does not name";
 
     http_request req;
     req.query_params["kind"] = "iam.role_grant";
@@ -98,7 +98,7 @@ TEST_CASE("the_requests_a_person_raised_take_a_page_and_nothing_else", "[workflo
 
 TEST_CASE("an_ask_names_at_least_one_role_and_why", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the body an ask takes";
+    ORES_LOG_SEV(lg, info) << "Testing the body an ask takes";
 
     const std::vector<std::string> bodies = {R"({"roleIds":[],"reason":"because"})",
                                              R"({"roleIds":["not-a-role"],"reason":"because"})",
@@ -118,7 +118,7 @@ TEST_CASE("an_ask_names_at_least_one_role_and_why", "[workflow_requests]") {
 
 TEST_CASE("an_ask_reaches_the_service_when_it_is_the_shape_it_takes", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing an ask with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing an ask with no service behind it";
 
     CHECK(answer_at<workflow_routes>(
               http_method::post, mine_pattern, asking_for_one_role(), mine_pattern)
@@ -127,7 +127,7 @@ TEST_CASE("an_ask_reaches_the_service_when_it_is_the_shape_it_takes", "[workflow
 
 TEST_CASE("a_request_is_withdrawn_by_its_identifier", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier a withdrawal names";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier a withdrawal names";
 
     http_request req;
     req.body = R"({"version":0,"comment":"no longer needed"})";
@@ -139,7 +139,7 @@ TEST_CASE("a_request_is_withdrawn_by_its_identifier", "[workflow_requests]") {
 
 TEST_CASE("a_withdrawal_names_the_version_read", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the body a withdrawal takes";
+    ORES_LOG_SEV(lg, info) << "Testing the body a withdrawal takes";
 
     const std::vector<std::string> bodies = {R"({"comment":"no longer needed"})",
                                              R"({"version":-1,"comment":"no longer needed"})",
@@ -156,7 +156,7 @@ TEST_CASE("a_withdrawal_names_the_version_read", "[workflow_requests]") {
 
 TEST_CASE("a_withdrawal_reaches_the_service_when_it_is_the_shape_it_takes", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a withdrawal with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a withdrawal with no service behind it";
 
     http_request req;
     req.body = R"({"version":3,"comment":"no longer needed"})";
@@ -166,7 +166,7 @@ TEST_CASE("a_withdrawal_reaches_the_service_when_it_is_the_shape_it_takes", "[wo
 
 TEST_CASE("a_withdrawal_refuses_a_parameter_it_does_not_take", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter a withdrawal does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter a withdrawal does not name";
 
     http_request req;
     req.query_params["force"] = "true";
@@ -179,7 +179,7 @@ TEST_CASE("a_withdrawal_refuses_a_parameter_it_does_not_take", "[workflow_reques
 
 TEST_CASE("a_decision_is_one_of_four_verbs_against_the_version_read", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the body a decision takes";
+    ORES_LOG_SEV(lg, info) << "Testing the body a decision takes";
 
     const std::vector<std::string> bodies = {
         R"({"version":0,"comment":"","decisionCode":"maybe"})",
@@ -203,7 +203,7 @@ TEST_CASE("a_decision_is_one_of_four_verbs_against_the_version_read", "[workflow
 
 TEST_CASE("a_decision_takes_the_part_and_the_reason_a_hold_names", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a decision with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a decision with no service behind it";
 
     http_request req;
     req.body =
@@ -216,7 +216,7 @@ TEST_CASE("a_decision_takes_the_part_and_the_reason_a_hold_names", "[workflow_re
 
 TEST_CASE("a_decision_is_named_by_the_requests_identifier", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier a decision names";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier a decision names";
 
     http_request req;
     req.body = R"({"version":0,"comment":"","decisionCode":"approve"})";
@@ -228,7 +228,7 @@ TEST_CASE("a_decision_is_named_by_the_requests_identifier", "[workflow_requests]
 
 TEST_CASE("one_request_is_named_by_its_identifier", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier one request names";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier one request names";
 
     const auto refused = answer_at<workflow_routes>(
         http_method::get, "/api/requests/not-an-id", http_request{}, detail_pattern);
@@ -238,7 +238,7 @@ TEST_CASE("one_request_is_named_by_its_identifier", "[workflow_requests]") {
 
 TEST_CASE("one_request_answers_the_service_is_absent", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing one request with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing one request with no service behind it";
 
     CHECK(answer_at<workflow_routes>(
               http_method::get, "/api/requests/" + a_request_id, http_request{}, detail_pattern)
@@ -247,7 +247,7 @@ TEST_CASE("one_request_answers_the_service_is_absent", "[workflow_requests]") {
 
 TEST_CASE("one_request_refuses_a_parameter_it_does_not_take", "[workflow_requests]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter one request does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter one request does not name";
 
     http_request req;
     req.query_params["asOf"] = "2026-01-01";

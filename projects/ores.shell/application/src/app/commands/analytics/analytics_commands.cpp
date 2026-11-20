@@ -37,7 +37,7 @@ using namespace logging;
 using ores::nats::service::nats_client;
 
 void analytics_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Registering analytics command surface.";
+    ORES_LOG_SEV(lg(), debug) << "Registering analytics command surface.";
 
     pricing_engine_type_commands::register_commands(root_menu, session);
     pricing_model_engine_pair_commands::register_commands(root_menu, session);

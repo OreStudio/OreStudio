@@ -388,7 +388,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering ir_curve_bootstrap_configs routes";
+    ORES_LOG_SEV(lg(), info) << "Registering ir_curve_bootstrap_configs routes";
 
     auto list_route =
         router->get("/api/v1/reference-data/ir_curve_bootstrap_configs")
@@ -567,8 +567,8 @@ void ir_curve_bootstrap_config_routes::register_routes(
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "ir_curve_bootstrap_configs routes registered: " << 10
-                              << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "ir_curve_bootstrap_configs routes registered: " << 10
+                             << " endpoint(s)";
 }
 
 }

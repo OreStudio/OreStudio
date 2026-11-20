@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_SWAPTION_VOLATILITY_SMILE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_SWAPTION_VOLATILITY_SMILE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_smile.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/swaption_volatility_smile_entity.hpp"

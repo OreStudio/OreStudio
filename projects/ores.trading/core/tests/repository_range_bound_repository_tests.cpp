@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/range_bound.hpp"
@@ -104,5 +104,5 @@ TEST_CASE("range_bound_reads_back_in_the_document_order", "[repository][range_bo
     REQUIRE(exported.size() == 2);
     CHECK(exported[0].sequence_number == 1);
     CHECK(exported[1].sequence_number == 2);
-    BOOST_LOG_SEV(lg, debug) << "Read range bounds: " << read.size();
+    ORES_LOG_SEV(lg, debug) << "Read range bounds: " << read.size();
 }

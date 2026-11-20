@@ -26,7 +26,6 @@
 #include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.dq.api/messaging/fsm_transition_protocol.hpp"
 #include "ores.dq.core/repository/fsm_transition_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -483,12 +481,12 @@ fsm_transition_service::prepare_change(const messaging::fsm_transition_change& c
 
 std::vector<domain::fsm_transition> fsm_transition_service::list_transitions(std::uint32_t offset,
                                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all fsm transitions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all fsm transitions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t fsm_transition_service::count_transitions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total fsm transitions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total fsm transitions count";
     return repo_.get_total_transition_count(ctx_);
 }
 
@@ -496,14 +494,14 @@ std::uint32_t fsm_transition_service::count_transitions() {
 std::optional<domain::fsm_transition>
 fsm_transition_service::get_transition_at_version(const boost::uuids::uuid& id,
                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting fsm transition at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting fsm transition at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::fsm_transition>
 fsm_transition_service::get_transition(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting fsm transition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting fsm transition. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -512,7 +510,7 @@ fsm_transition_service::get_transition(const boost::uuids::uuid& id) {
 
 std::optional<domain::fsm_transition>
 fsm_transition_service::get_transition_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting fsm transition by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting fsm transition by name: " << name;
     messaging::fsm_transition_key k;
     k.name = name;
     auto found = fsm_transition_read_one(repo_, ctx_, k);
@@ -529,11 +527,11 @@ fsm_transition_service::get_transitions(const std::vector<std::string>& ids) {
 void fsm_transition_service::save_transition(const domain::fsm_transition& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("FSM Transition id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving fsm transition. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving fsm transition. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved fsm transition. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved fsm transition. " << "id: " << v.id;
 }
 
 void fsm_transition_service::save_transitions(
@@ -542,7 +540,7 @@ void fsm_transition_service::save_transitions(
         if (e.id.is_nil())
             throw std::invalid_argument("FSM Transition id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << transitions.size() << " fsm transitions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << transitions.size() << " fsm transitions";
     auto ts = transitions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -551,9 +549,9 @@ void fsm_transition_service::save_transitions(
 }
 
 void fsm_transition_service::delete_transition(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing fsm transition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing fsm transition. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed fsm transition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed fsm transition. " << "id: " << id;
 }
 
 void fsm_transition_service::delete_transitions(const std::vector<std::string>& ids) {
@@ -562,7 +560,7 @@ void fsm_transition_service::delete_transitions(const std::vector<std::string>& 
 
 std::vector<domain::fsm_transition>
 fsm_transition_service::get_transition_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for fsm transition. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for fsm transition. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

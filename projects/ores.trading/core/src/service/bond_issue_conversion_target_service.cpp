@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
 #include "ores.trading.api/messaging/bond_issue_conversion_target_protocol.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -484,12 +482,12 @@ ores::utility::domain::result bond_issue_conversion_target_service::prepare_chan
 std::vector<domain::bond_issue_conversion_target>
 bond_issue_conversion_target_service::list_conversion_targets(std::uint32_t offset,
                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond issue conversion targets";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond issue conversion targets";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_issue_conversion_target_service::count_conversion_targets() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond issue conversion targets count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond issue conversion targets count";
     return repo_.get_total_conversion_target_count(ctx_);
 }
 
@@ -497,19 +495,18 @@ std::uint32_t bond_issue_conversion_target_service::count_conversion_targets() {
 std::optional<domain::bond_issue_conversion_target>
 bond_issue_conversion_target_service::get_conversion_target_at_version(
     const std::string& issue_id, const std::string& sequence_number, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue conversion target at version. "
-                               << "issue_id: " << issue_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue conversion target at version. "
+                              << "issue_id: " << issue_id << " sequence_number: " << sequence_number
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, issue_id, sequence_number, version);
 }
 
 std::optional<domain::bond_issue_conversion_target>
 bond_issue_conversion_target_service::get_conversion_target(const std::string& issue_id,
                                                             const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue conversion target. "
-                               << "issue_id: " << issue_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue conversion target. "
+                              << "issue_id: " << issue_id
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, issue_id, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -526,15 +523,14 @@ void bond_issue_conversion_target_service::save_conversion_target(
     const domain::bond_issue_conversion_target& v) {
     if (v.issue_id.is_nil())
         throw std::invalid_argument("Bond Issue Conversion Target issue_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond issue conversion target. "
-                               << "issue_id: " << v.issue_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving bond issue conversion target. "
+                              << "issue_id: " << v.issue_id
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond issue conversion target. "
-                              << "issue_id: " << v.issue_id
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved bond issue conversion target. " << "issue_id: " << v.issue_id
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void bond_issue_conversion_target_service::save_conversion_targets(
@@ -543,8 +539,8 @@ void bond_issue_conversion_target_service::save_conversion_targets(
         if (e.issue_id.is_nil())
             throw std::invalid_argument("Bond Issue Conversion Target issue_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << conversion_targets.size()
-                               << " bond issue conversion targets";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << conversion_targets.size()
+                              << " bond issue conversion targets";
     auto ts = conversion_targets;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -554,13 +550,12 @@ void bond_issue_conversion_target_service::save_conversion_targets(
 
 void bond_issue_conversion_target_service::delete_conversion_target(
     const std::string& issue_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond issue conversion target. "
-                               << "issue_id: " << issue_id
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, issue_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed bond issue conversion target. "
+    ORES_LOG_SEV(lg(), debug) << "Removing bond issue conversion target. "
                               << "issue_id: " << issue_id
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, issue_id, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed bond issue conversion target. " << "issue_id: " << issue_id
+                             << " sequence_number: " << sequence_number;
 }
 
 void bond_issue_conversion_target_service::delete_conversion_targets(
@@ -571,9 +566,9 @@ void bond_issue_conversion_target_service::delete_conversion_targets(
 std::vector<domain::bond_issue_conversion_target>
 bond_issue_conversion_target_service::get_conversion_target_history(
     const std::string& issue_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond issue conversion target. "
-                               << "issue_id: " << issue_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond issue conversion target. "
+                              << "issue_id: " << issue_id
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, issue_id, sequence_number);
 }
 

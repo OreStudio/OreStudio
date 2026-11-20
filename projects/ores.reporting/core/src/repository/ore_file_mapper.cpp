@@ -24,11 +24,9 @@
  */
 #include "ores.reporting.core/repository/ore_file_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/ore_file.hpp"
 #include "ores.reporting.api/domain/ore_file_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/ore_file_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::reporting::repository {
@@ -37,7 +35,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::ore_file ore_file_mapper::map(const ore_file_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::ore_file r;
     r.version = v.version;
@@ -60,12 +58,12 @@ domain::ore_file ore_file_mapper::map(const ore_file_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 ore_file_entity ore_file_mapper::map(const domain::ore_file& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     ore_file_entity r;
     r.code = v.code;
@@ -87,7 +85,7 @@ ore_file_entity ore_file_mapper::map(const domain::ore_file& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

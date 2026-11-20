@@ -117,6 +117,13 @@ RULES = (
          CPP, RESOURCE, "market-data",
          "One series' observations inside a window, oldest first, the count read as the cap on"
          " the answer, at the address and in the shape the BFF answered."),
+    Rule("the quotes view's routes",
+         ("regex", r"^GET /api/marketdata/quotes(/feeds|/history)?$"),
+         None, RESOURCE, "market-data",
+         "The feeds the caller may watch for display, the latest quote of each datum on them"
+         " from the board each server fills by listening to every feed subject once, and one"
+         " point of a provider's series over a span; every read asks the market data service"
+         " which feeds the caller may watch."),
     Rule("the curves' route",
          ("regex", r"^POST /api/curves/(series|series-by-id|series-list|slice|evolution"
                    r"|snapshot|manual-point(/clear)?|compute|fx-forward-ladder"
@@ -427,6 +434,13 @@ RULES = (
          "What one request proposes, answered by ores.http at the address and in the shape the BFF"
          " answered: the request is read first because its kind decides where its lines are kept,"
          " and then the component that owns the kind states them beside the value in force."),
+    Rule("one subject's story",
+         ("exact", "GET /api/timeline"),
+         CPP, COMPOSED, "workflow",
+         "One person's, party's or request's story answered by ores.http at the address and in"
+         " the shape the BFF answered: a request wraps the stream the inbox already serves, a"
+         " person and a party compose every source their owner gates, and a source that refuses"
+         " travels as a gap rather than as a hole in the answer."),
     Rule("the request story",
          ("regex", r"^GET /api/requests/:id/(story|changes)$"),
          BFF, COMPOSED, "workflow",

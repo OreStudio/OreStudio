@@ -22,7 +22,7 @@
  * Template: cpp_shell_operation_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/iam/signup_operations_commands.hpp"
@@ -63,7 +63,7 @@ TEST_CASE("signup_operations_registers_every_declared_command", "[commands]") {
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 1 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 1 command(s).";
 }
 
 TEST_CASE("signup_operations_process_signup_reports_the_expected_count", "[commands]") {
@@ -79,7 +79,7 @@ TEST_CASE("signup_operations_process_signup_reports_the_expected_count", "[comma
     command_feedback::reset();
     signup_operations_commands::process_signup(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -104,7 +104,7 @@ TEST_CASE("signup_operations_process_signup_reaches_the_transport", "[commands]"
                                                    "sample",
                                                });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);

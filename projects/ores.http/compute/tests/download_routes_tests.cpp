@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/compute/compute_routes.hpp"
 #include "ores.http/routes/compute/download_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -63,7 +63,7 @@ bool response_holds(const std::string& json, const std::string& part) {
 
 TEST_CASE("a_download_refuses_an_object_identifier_that_is_not_one", "[grid_downloads]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier a download names";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier a download names";
 
     const auto input = answer_at<compute_routes>(http_method::get,
                                                  "/api/operations/grid/jobs/workunits/x/input",
@@ -82,7 +82,7 @@ TEST_CASE("a_download_refuses_an_object_identifier_that_is_not_one", "[grid_down
 
 TEST_CASE("a_download_answers_the_service_is_absent", "[grid_downloads]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a download with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a download with no service behind it";
 
     CHECK(answer_of(a_workunit_input, input_pattern).status == http_status::bad_gateway);
     CHECK(answer_of(a_result_output, output_pattern).status == http_status::bad_gateway);
@@ -90,7 +90,7 @@ TEST_CASE("a_download_answers_the_service_is_absent", "[grid_downloads]") {
 
 TEST_CASE("a_download_refuses_a_parameter_it_does_not_take", "[grid_downloads]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter a download does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter a download does not name";
 
     http_request req;
     req.query_params["name"] = "input.tar.gz";
@@ -102,7 +102,7 @@ TEST_CASE("a_download_refuses_a_parameter_it_does_not_take", "[grid_downloads]")
 
 TEST_CASE("a_stored_address_names_the_key_under_the_platform_bucket", "[grid_downloads]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the object a stored address names";
+    ORES_LOG_SEV(lg, info) << "Testing the object a stored address names";
 
     CHECK(stored_key(a_stored_input) ==
           "compute/input/11111111-1111-1111-1111-111111111111.tar.gz");
@@ -117,7 +117,7 @@ TEST_CASE("a_stored_address_names_the_key_under_the_platform_bucket", "[grid_dow
 
 TEST_CASE("a_download_is_saved_under_the_name_of_its_object", "[grid_downloads]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the name a download is saved as";
+    ORES_LOG_SEV(lg, info) << "Testing the name a download is saved as";
 
     CHECK(download_name("compute/output/abc.tar.gz") == "abc.tar.gz");
     CHECK(download_name("compute/input/abc") == "abc");
@@ -127,7 +127,7 @@ TEST_CASE("a_download_is_saved_under_the_name_of_its_object", "[grid_downloads]"
 
 TEST_CASE("a_download_name_reaches_the_header_as_printable_ascii", "[grid_downloads]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the header a download name reaches";
+    ORES_LOG_SEV(lg, info) << "Testing the header a download name reaches";
 
     CHECK(disposition_for("report.tar.gz") == R"(attachment; filename="report.tar.gz")");
     CHECK(disposition_for("a\"b\\c") == R"(attachment; filename="a_b_c")");
@@ -137,7 +137,7 @@ TEST_CASE("a_download_name_reaches_the_header_as_printable_ascii", "[grid_downlo
 
 TEST_CASE("a_download_states_the_type_its_object_is_stored_as", "[grid_downloads]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the type a download states";
+    ORES_LOG_SEV(lg, info) << "Testing the type a download states";
 
     CHECK(content_type_of("compute/output/abc.tar.gz") == "application/gzip");
     CHECK(content_type_of("compute/input/abc.tgz") == "application/gzip");

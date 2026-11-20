@@ -35,7 +35,7 @@ The full template source. Edit here and re-tangle with
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 {{#domain_entity.has_filter_record}}
@@ -381,7 +381,7 @@ public:
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid.hpp>
 {{/has_uuid_left_or_right}}
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 {{! The junction header holds a context ctx_ member, so it needs the definition
     while the entity header above only names the context and takes the forward
     declaration. }}

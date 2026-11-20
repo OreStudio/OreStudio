@@ -42,8 +42,8 @@ void log_host_command(ores::logging::logger_t& lg,
     if (opts.on_before_log)
         opts.on_before_log();
 
-    BOOST_LOG_SEV(lg, info) << "Command line arguments: " << args;
-    BOOST_LOG_SEV(lg, debug) << "Configuration: " << cfg;
+    ORES_LOG_SEV(lg, info) << "Command line arguments: " << args;
+    ORES_LOG_SEV(lg, debug) << "Configuration: " << cfg;
 }
 
 /**
@@ -60,11 +60,11 @@ inline void log_host_failure(ores::logging::logger_t& lg,
     const auto* const be(dynamic_cast<const boost::exception* const>(&e));
     if (be != nullptr) {
         using boost::diagnostic_information;
-        BOOST_LOG_SEV(lg, error) << "Error: " << diagnostic_information(*be);
+        ORES_LOG_SEV(lg, error) << "Error: " << diagnostic_information(*be);
     } else {
-        BOOST_LOG_SEV(lg, error) << "Error: " << e.what();
+        ORES_LOG_SEV(lg, error) << "Error: " << e.what();
     }
-    BOOST_LOG_SEV(lg, error) << failure_message;
+    ORES_LOG_SEV(lg, error) << failure_message;
 }
 
 }

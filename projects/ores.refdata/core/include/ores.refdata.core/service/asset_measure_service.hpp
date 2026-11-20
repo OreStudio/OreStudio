@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_ASSET_MEASURE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/asset_measure.hpp"
 #include "ores.refdata.api/messaging/asset_measure_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

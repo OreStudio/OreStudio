@@ -21,7 +21,7 @@
 #define ORES_WORKFLOW_CORE_REPOSITORY_STEP_CLAIM_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.workflow.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>

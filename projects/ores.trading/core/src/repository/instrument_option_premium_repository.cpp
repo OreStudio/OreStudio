@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/instrument_option_premium.hpp"
 #include "ores.trading.api/domain/instrument_option_premium_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/instrument_option_premium_protocol.hpp"
 #include "ores.trading.core/repository/instrument_option_premium_entity.hpp"
 #include "ores.trading.core/repository/instrument_option_premium_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -233,9 +231,8 @@ void instrument_option_premium_repository::write(
 void instrument_option_premium_repository::write(const context& ctx,
                                                  const domain::instrument_option_premium& v,
                                                  const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing instrument option premium. "
-                               << "trade_id: " << v.trade_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Writing instrument option premium. " << "trade_id: " << v.trade_id
+                              << " sequence_number: " << v.sequence_number;
     const auto t = instrument_option_premium_apply_claim(
         v,
         claim,
@@ -253,7 +250,7 @@ void instrument_option_premium_repository::write(
     const context& ctx,
     const std::vector<domain::instrument_option_premium>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing instrument option premiums. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing instrument option premiums. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "instrument_option_premium_repository::write: one claim is needed for each row");
@@ -293,9 +290,9 @@ instrument_option_premium_repository::read_latest(const context& ctx) {
 
 std::vector<domain::instrument_option_premium> instrument_option_premium_repository::read_latest(
     const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument option premium. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest instrument option premium. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -315,9 +312,9 @@ std::vector<domain::instrument_option_premium> instrument_option_premium_reposit
 
 std::vector<domain::instrument_option_premium> instrument_option_premium_repository::read_all(
     const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all instrument option premium versions. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading all instrument option premium versions. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_option_premium_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
@@ -338,10 +335,9 @@ instrument_option_premium_repository::read_at_version(const context& ctx,
                                                       const std::string& trade_id,
                                                       const std::string& sequence_number,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading instrument option premium at version. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading instrument option premium at version. "
+                              << "trade_id: " << trade_id << " sequence_number: " << sequence_number
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<instrument_option_premium_entity>> |
@@ -370,8 +366,8 @@ instrument_option_premium_repository::read_latest_by_trade_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::instrument_option_premiums_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument option premiums. trade_id: "
-                               << trade_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest instrument option premiums. trade_id: " << trade_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_option_premium_entity>> |
@@ -394,7 +390,7 @@ std::uint32_t instrument_option_premium_repository::get_total_option_premium_cou
     const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::instrument_option_premiums_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active instrument option premiums count. trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
 
@@ -417,8 +413,8 @@ instrument_option_premium_repository::remove(const context& ctx,
                                              const std::string& trade_id,
                                              const std::string& sequence_number,
                                              std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument option premium. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Removing instrument option premium. " << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     const auto current = read_latest(ctx, trade_id, sequence_number);
     if (current.empty())
         return remove_status::missing;
@@ -460,8 +456,8 @@ std::vector<domain::instrument_option_premium> instrument_option_premium_reposit
     const ores::utility::domain::order& order,
     const std::optional<messaging::instrument_option_premiums_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument option premiums with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest instrument option premiums with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_option_premium_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -483,7 +479,7 @@ std::uint32_t instrument_option_premium_repository::get_total_option_premium_cou
     const context& ctx,
     const std::optional<messaging::instrument_option_premiums_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument option premium count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active instrument option premium count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_option_premium_entity>> |

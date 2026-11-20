@@ -20,7 +20,7 @@
 #define ORES_MARKETDATA_SERVICE_MESSAGING_FX_VOL_SURFACE_OPERATIONS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
@@ -84,6 +84,35 @@ public:
                   *req_ctx, *req));
     }
 
+    /**
+     * @brief Reads sources' quotes as smiles by delta. It writes nothing, so it needs the
+     * permission to read calibrations, not to make one.
+     */
+    void fit(ores::nats::message msg) {
+        using namespace ores::logging;
+        using namespace ores::service::messaging;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(fx_vol_surface_operations_handler_lg(), msg);
+        auto req_ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx) {
+            error_reply(nats_, msg, req_ctx.error());
+            return;
+        }
+        if (!has_permission(*req_ctx, "marketdata::fx_vol_surface_calibrations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        const auto req = decode<fit_fx_vol_quotes_request>(msg);
+        if (!req) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        reply(nats_,
+              msg,
+              ores::marketdata::service::app::fx_vol_surface_calibration_service::fit_quotes(
+                  *req_ctx, *req));
+    }
+
     void publish(ores::nats::message msg) {
         using namespace ores::logging;
         using namespace ores::service::messaging;
@@ -99,7 +128,7 @@ public:
             maker_permission = ores::marketdata::service::app::raise_permission_of(
                 *req_ctx, ores::marketdata::service::app::fx_vol_surface_publish_kind_code);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(fx_vol_surface_operations_handler_lg(), error)
+            ORES_LOG_SEV(fx_vol_surface_operations_handler_lg(), error)
                 << msg.subject << " refused: " << e.what();
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

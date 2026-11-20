@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.iam.api/messaging/geo_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -80,7 +80,7 @@ public:
         }
         auto request = ores::service::messaging::decode<lookup_country_request>(msg);
         if (!request) {
-            BOOST_LOG_SEV(geo_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(geo_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -102,7 +102,7 @@ public:
                   lookup_country_response{
                       .country_code = located->country_code, .found = true, .success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(geo_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(geo_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, lookup_country_response{.success = false, .message = e.what()});
         }
     }

@@ -22,7 +22,7 @@
 
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <mutex>
 #include <optional>
 #include <string>

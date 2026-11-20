@@ -27,13 +27,11 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_currency_group.hpp"
 #include "ores.refdata.api/domain/currency_currency_group_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/currency_currency_group_entity.hpp"
 #include "ores.refdata.core/repository/currency_currency_group_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -197,9 +195,9 @@ void currency_currency_group_repository::write(
 void currency_currency_group_repository::write(
     const domain::currency_currency_group& currency_group,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency group to database: "
-                               << currency_group.currency_iso_code << "/"
-                               << currency_group.currency_group_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing currency group to database: "
+                              << currency_group.currency_iso_code << "/"
+                              << currency_group.currency_group_code;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(currency_group.currency_iso_code, currency_group.currency_group_code) :
@@ -212,8 +210,8 @@ void currency_currency_group_repository::write(
 void currency_currency_group_repository::write(
     const std::vector<domain::currency_currency_group>& currency_groups,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency groups to database. Count: "
-                               << currency_groups.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing currency groups to database. Count: "
+                              << currency_groups.size();
     if (claims.size() != currency_groups.size())
         throw std::invalid_argument(
             "currency_currency_group_repository::write: one claim is needed for each row");
@@ -256,8 +254,8 @@ std::vector<domain::currency_currency_group> currency_currency_group_repository:
 
 std::vector<domain::currency_currency_group>
 currency_currency_group_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency groups with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency groups with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -279,8 +277,8 @@ currency_currency_group_repository::read_latest(std::uint32_t offset, std::uint3
 std::vector<domain::currency_currency_group>
 currency_currency_group_repository::read_latest(const std::string& currency_iso_code,
                                                 const std::string& currency_group_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency group. " << currency_iso_code << "/"
-                               << currency_group_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency group. " << currency_iso_code << "/"
+                              << currency_group_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto currency_iso_code_str = currency_iso_code;
@@ -303,7 +301,7 @@ currency_currency_group_repository::read_latest(const std::string& currency_iso_
 }
 
 std::uint32_t currency_currency_group_repository::get_total_currency_group_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency groups count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active currency groups count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -314,13 +312,13 @@ std::uint32_t currency_currency_group_repository::get_total_currency_group_count
 
     const auto count = query_builder::execute_count_query<currency_currency_group_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency groups");
-    BOOST_LOG_SEV(lg(), debug) << "Total active currency groups count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active currency groups count: " << count;
     return count;
 }
 
 std::vector<domain::currency_currency_group>
 currency_currency_group_repository::read_latest_by_currency(const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency groups. Currency: " << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency groups. Currency: " << currency_iso_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -344,7 +342,7 @@ currency_currency_group_repository::read_latest_by_currency(const std::string& c
 
 std::vector<domain::currency_currency_group>
 currency_currency_group_repository::read_latest_by_group(const std::string& currency_group_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency groups. Group: " << currency_group_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency groups. Group: " << currency_group_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -370,8 +368,8 @@ std::vector<domain::currency_currency_group>
 currency_currency_group_repository::read_latest_by_currency(const std::string& currency_iso_code,
                                                             std::uint32_t offset,
                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency groups. Currency: " << currency_iso_code
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency groups. Currency: " << currency_iso_code
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -396,8 +394,8 @@ currency_currency_group_repository::read_latest_by_currency(const std::string& c
 
 std::uint32_t currency_currency_group_repository::get_total_currency_group_count_by_currency(
     const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency groups count. Currency: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active currency groups count. Currency: "
+                              << currency_iso_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -409,14 +407,14 @@ std::uint32_t currency_currency_group_repository::get_total_currency_group_count
 
     const auto count = query_builder::execute_count_query<currency_currency_group_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency groups");
-    BOOST_LOG_SEV(lg(), debug) << "Total active currency groups count by currency: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active currency groups count by currency: " << count;
     return count;
 }
 
 std::uint32_t currency_currency_group_repository::get_total_currency_group_count_by_group(
     const std::string& currency_group_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency groups count. Group: "
-                               << currency_group_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active currency groups count. Group: "
+                              << currency_group_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -428,14 +426,14 @@ std::uint32_t currency_currency_group_repository::get_total_currency_group_count
 
     const auto count = query_builder::execute_count_query<currency_currency_group_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency groups");
-    BOOST_LOG_SEV(lg(), debug) << "Total active currency groups count by group: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active currency groups count by group: " << count;
     return count;
 }
 
 std::vector<currency_currency_group_history_row>
 currency_currency_group_repository::read_all_by_currency(const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the currency groups. Currency: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the currency groups. Currency: "
+                              << currency_iso_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -488,8 +486,8 @@ currency_currency_group_repository::remove_status
 currency_currency_group_repository::remove(const std::string& currency_iso_code,
                                            const std::string& currency_group_code,
                                            std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency group from database: " << currency_iso_code
-                               << "/" << currency_group_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing currency group from database: " << currency_iso_code
+                              << "/" << currency_group_code;
 
     const auto current = read_latest(currency_iso_code, currency_group_code);
     if (current.empty())
@@ -536,8 +534,8 @@ void currency_currency_group_repository::remove(
 }
 
 void currency_currency_group_repository::remove_by_currency(const std::string& currency_iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all currency groups from database: "
-                               << currency_iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing all currency groups from database: "
+                              << currency_iso_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =

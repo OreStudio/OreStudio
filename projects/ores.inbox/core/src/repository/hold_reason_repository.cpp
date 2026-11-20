@@ -32,9 +32,7 @@
 #include "ores.inbox.api/messaging/hold_reason_protocol.hpp"
 #include "ores.inbox.core/repository/hold_reason_entity.hpp"
 #include "ores.inbox.core/repository/hold_reason_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -224,7 +222,7 @@ void hold_reason_repository::write(const context& ctx, const std::vector<domain:
 void hold_reason_repository::write(const context& ctx,
                                    const domain::hold_reason& v,
                                    const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing hold reason. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing hold reason. " << "code: " << v.code;
     const auto t =
         hold_reason_apply_claim(v,
                                 claim,
@@ -238,7 +236,7 @@ void hold_reason_repository::write(const context& ctx,
 void hold_reason_repository::write(const context& ctx,
                                    const std::vector<domain::hold_reason>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing hold reasons. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing hold reasons. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "hold_reason_repository::write: one claim is needed for each row");
@@ -276,7 +274,7 @@ std::vector<domain::hold_reason> hold_reason_repository::read_latest(const conte
 
 std::vector<domain::hold_reason> hold_reason_repository::read_latest(const context& ctx,
                                                                      const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest hold reason. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest hold reason. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -295,7 +293,7 @@ std::vector<domain::hold_reason> hold_reason_repository::read_latest(const conte
 
 std::vector<domain::hold_reason> hold_reason_repository::read_all(const context& ctx,
                                                                   const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all hold reason versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all hold reason versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -314,8 +312,8 @@ std::vector<domain::hold_reason> hold_reason_repository::read_all(const context&
 std::optional<domain::hold_reason> hold_reason_repository::read_at_version(const context& ctx,
                                                                            const std::string& code,
                                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading hold reason at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading hold reason at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<hold_reason_entity>> |
@@ -338,7 +336,7 @@ std::optional<domain::hold_reason> hold_reason_repository::read_at_version(const
 
 hold_reason_repository::remove_status hold_reason_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing hold reason. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing hold reason. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -376,8 +374,8 @@ hold_reason_repository::read_latest(const context& ctx,
                                     const ores::utility::domain::order& order,
                                     const std::optional<messaging::hold_reasons_filter>& filter,
                                     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest hold reasons with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest hold reasons with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<hold_reason_entity>> |
@@ -399,7 +397,7 @@ std::uint32_t hold_reason_repository::get_total_reason_count(
     const context& ctx,
     const std::optional<messaging::hold_reasons_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active hold reason count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active hold reason count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

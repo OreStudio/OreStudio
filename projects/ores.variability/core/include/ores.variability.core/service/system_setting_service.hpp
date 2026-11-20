@@ -26,7 +26,7 @@
 #define ORES_VARIABILITY_CORE_SERVICE_SYSTEM_SETTING_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/messaging/system_setting_protocol.hpp"
 #include "ores.variability.core/export.hpp"

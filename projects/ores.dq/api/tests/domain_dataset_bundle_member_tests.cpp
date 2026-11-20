@@ -22,7 +22,7 @@
 #include "ores.dq.api/domain/dataset_bundle_member_table.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member_table_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/dataset_bundle_member_generator.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "test_suite.hpp"
@@ -52,7 +52,7 @@ TEST_CASE("create_dataset_bundle_member_with_valid_fields", "[domain]") {
     sut.change_commentary = "Initial creation";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 1);
 
-    BOOST_LOG_SEV(lg, info) << "Dataset bundle member: " << sut;
+    ORES_LOG_SEV(lg, info) << "Dataset bundle member: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.bundle_code == "crypto");
@@ -79,7 +79,7 @@ TEST_CASE("dataset_bundle_member_convert_single_to_table", "[domain]") {
     std::vector<dataset_bundle_member> members = {dbm};
     auto table = convert_to_table(members);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Bundle"));
@@ -94,7 +94,7 @@ TEST_CASE("dataset_bundle_member_generator_produces_valid_instance", "[domain]")
     generation_context ctx;
     auto sut = ores::dq::generators::generate_synthetic_dataset_bundle_member(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated bundle member: " << sut;
+    ORES_LOG_SEV(lg, info) << "Generated bundle member: " << sut;
 
     CHECK(sut.version == 0);
     CHECK(!sut.bundle_code.empty());
@@ -112,8 +112,8 @@ TEST_CASE("dataset_bundle_member_generator_produces_multiple_instances", "[domai
     const std::size_t count = 5;
     auto members = ores::dq::generators::generate_synthetic_dataset_bundle_members(count, ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated " << members.size() << " bundle members";
-    BOOST_LOG_SEV(lg, info) << members;
+    ORES_LOG_SEV(lg, info) << "Generated " << members.size() << " bundle members";
+    ORES_LOG_SEV(lg, info) << members;
 
     CHECK(members.size() == count);
 

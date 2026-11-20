@@ -19,7 +19,7 @@
  */
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.core/repository/fsm_state_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
@@ -79,7 +79,7 @@ TEST_CASE("read_latest_by_machine_name_returns_nothing_for_an_unknown_machine", 
     // A machine named in a typo, or one whose seed was dropped, is an empty
     // list rather than an exception: the caller decides what a missing
     // machine means for it.
-    BOOST_LOG_SEV(lg, debug) << "Reading a machine that does not exist.";
+    ORES_LOG_SEV(lg, debug) << "Reading a machine that does not exist.";
     const auto states = repo.read_latest_by_machine_name(sys_ctx, "no_such_machine");
 
     CHECK(states.empty());

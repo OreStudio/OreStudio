@@ -26,7 +26,6 @@
 #include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.compute.core/repository/batch_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -492,25 +490,25 @@ batch_service::prepare_change(const messaging::batch_change& change,
 
 
 std::vector<domain::batch> batch_service::list_batches(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all compute batches";
+    ORES_LOG_SEV(lg(), debug) << "Listing all compute batches";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t batch_service::count_batches() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total compute batches count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total compute batches count";
     return repo_.get_total_batch_count(ctx_);
 }
 
 
 std::optional<domain::batch> batch_service::get_batch_at_version(const boost::uuids::uuid& id,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute batch at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute batch at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::batch> batch_service::get_batch(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute batch. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute batch. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -519,7 +517,7 @@ std::optional<domain::batch> batch_service::get_batch(const boost::uuids::uuid& 
 
 std::optional<domain::batch>
 batch_service::get_batch_by_external_ref(const std::string& external_ref) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute batch by external_ref: " << external_ref;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute batch by external_ref: " << external_ref;
     messaging::batch_key k;
     k.external_ref = external_ref;
     auto found = batch_read_one(repo_, ctx_, k);
@@ -535,11 +533,11 @@ std::vector<domain::batch> batch_service::get_batches(const std::vector<std::str
 void batch_service::save_batch(const domain::batch& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Batch id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving compute batch. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving compute batch. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved compute batch. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved compute batch. " << "id: " << v.id;
 }
 
 void batch_service::save_batches(const std::vector<domain::batch>& batches) {
@@ -547,7 +545,7 @@ void batch_service::save_batches(const std::vector<domain::batch>& batches) {
         if (e.id.is_nil())
             throw std::invalid_argument("Batch id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << batches.size() << " compute batches";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << batches.size() << " compute batches";
     auto ts = batches;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -556,9 +554,9 @@ void batch_service::save_batches(const std::vector<domain::batch>& batches) {
 }
 
 void batch_service::delete_batch(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing compute batch. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing compute batch. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed compute batch. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed compute batch. " << "id: " << id;
 }
 
 void batch_service::delete_batches(const std::vector<std::string>& ids) {
@@ -566,7 +564,7 @@ void batch_service::delete_batches(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::batch> batch_service::get_batch_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for compute batch. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for compute batch. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

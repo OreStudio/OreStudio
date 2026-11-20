@@ -21,7 +21,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CALENDAR_MATERIALISATION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <chrono>
 #include <cstdint>

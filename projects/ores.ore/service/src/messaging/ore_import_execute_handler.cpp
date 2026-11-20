@@ -1008,8 +1008,8 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = ores::utility::codec::json::try_read<ore_import_execute_request>(sv);
     if (!parsed) {
-        BOOST_LOG_SEV(lg(), error)
-            << "ore.import.execute: failed to decode request | step=" << step_id;
+        ORES_LOG_SEV(lg(), error) << "ore.import.execute: failed to decode request | step="
+                                  << step_id;
         publish_step_completion(nats_,
                                 step_id,
                                 inst_id,
@@ -1021,8 +1021,8 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
     }
     const auto& req = *parsed;
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute starting | corr=" << req.correlation_id
-                              << " request_id=" << req.request_id << " step=" << step_id;
+    ORES_LOG_SEV(lg(), info) << "ore.import.execute starting | corr=" << req.correlation_id
+                             << " request_id=" << req.request_id << " step=" << step_id;
 
     auto delegated_nats =
         outbound_nats_.with_delegation(req.bearer_token).with_correlation_id(req.correlation_id);
@@ -1034,11 +1034,11 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
     // Step 0: fetch tarball from storage and extract to work directory
     // -------------------------------------------------------------------------
     const auto import_dir = work_dir_ / req.request_id;
-    BOOST_LOG_SEV(lg(), debug) << "ore.import.execute step 0: fetch_and_unpack | corr="
-                               << req.correlation_id
-                               << " bucket=" << ores::ore::net::ore_storage::bucket
-                               << " key=" << ores::ore::net::ore_storage::import_key(req.request_id)
-                               << " dest=" << import_dir.string();
+    ORES_LOG_SEV(lg(), debug) << "ore.import.execute step 0: fetch_and_unpack | corr="
+                              << req.correlation_id
+                              << " bucket=" << ores::ore::net::ore_storage::bucket
+                              << " key=" << ores::ore::net::ore_storage::import_key(req.request_id)
+                              << " dest=" << import_dir.string();
 
     try {
         std::filesystem::create_directories(import_dir);
@@ -1048,17 +1048,16 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
                                   import_dir);
     } catch (const std::exception& e) {
         const auto failure = std::format("fetch_and_unpack failed: {}", e.what());
-        BOOST_LOG_SEV(lg(), error)
-            << "ore.import.execute step 0 failed | corr=" << req.correlation_id
-            << " error=" << failure;
+        ORES_LOG_SEV(lg(), error) << "ore.import.execute step 0 failed | corr="
+                                  << req.correlation_id << " error=" << failure;
         publish_step_completion(
             nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", failure);
         std::move(delivery).commit();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 0 complete | corr=" << req.correlation_id
-                              << " import_dir=" << import_dir.string();
+    ORES_LOG_SEV(lg(), info) << "ore.import.execute step 0 complete | corr=" << req.correlation_id
+                             << " import_dir=" << import_dir.string();
 
     // -------------------------------------------------------------------------
     // Step 1: scan the extracted directory
@@ -1069,19 +1068,18 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         scan = scanner.scan();
     } catch (const std::exception& e) {
         const auto failure = std::format("Directory scan failed: {}", e.what());
-        BOOST_LOG_SEV(lg(), error)
-            << "ore.import.execute step 1 failed | corr=" << req.correlation_id
-            << " error=" << failure;
+        ORES_LOG_SEV(lg(), error) << "ore.import.execute step 1 failed | corr="
+                                  << req.correlation_id << " error=" << failure;
         publish_step_completion(
             nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", failure);
         std::move(delivery).commit();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 1 complete | corr=" << req.correlation_id
-                              << " currency_files=" << scan.currency_files.size()
-                              << " portfolio_files=" << scan.portfolio_files.size()
-                              << " ignored_files=" << scan.ignored_files.size();
+    ORES_LOG_SEV(lg(), info) << "ore.import.execute step 1 complete | corr=" << req.correlation_id
+                             << " currency_files=" << scan.currency_files.size()
+                             << " portfolio_files=" << scan.portfolio_files.size()
+                             << " ignored_files=" << scan.ignored_files.size();
 
     // -------------------------------------------------------------------------
     // Step 2: list existing currency ISO codes
@@ -1095,7 +1093,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         std::string err;
         auto list_resp = nats_call(delegated_nats, list_req, err);
         if (!list_resp) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.execute step 2 failed | corr=" << req.correlation_id
                 << " error=" << err;
             publish_step_completion(
@@ -1107,8 +1105,8 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
             existing_iso_codes.insert(c.iso_code);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 2 complete | corr=" << req.correlation_id
-                              << " existing_iso_codes=" << existing_iso_codes.size();
+    ORES_LOG_SEV(lg(), info) << "ore.import.execute step 2 complete | corr=" << req.correlation_id
+                             << " existing_iso_codes=" << existing_iso_codes.size();
 
     // -------------------------------------------------------------------------
     // Step 3: build the import plan
@@ -1123,7 +1121,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
             failure = std::format("Failed to parse import_choices_json: {}", e.what());
         }
         if (!failure.empty()) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.execute step 3 failed | corr=" << req.correlation_id
                 << " error=" << failure;
             publish_step_completion(nats_,
@@ -1149,7 +1147,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
                                                  "sandbox, or set official to import into the "
                                                  "official portfolio tree.") :
                                      err;
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.execute step 3 failed | corr=" << req.correlation_id
                 << " error=" << failure;
             publish_step_completion(nats_,
@@ -1172,19 +1170,18 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         plan = planner.plan();
     } catch (const std::exception& e) {
         const auto failure = std::format("Import plan failed: {}", e.what());
-        BOOST_LOG_SEV(lg(), error)
-            << "ore.import.execute step 3 failed | corr=" << req.correlation_id
-            << " error=" << failure;
+        ORES_LOG_SEV(lg(), error) << "ore.import.execute step 3 failed | corr="
+                                  << req.correlation_id << " error=" << failure;
         publish_step_completion(
             nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", failure);
         std::move(delivery).commit();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 3 complete | corr=" << req.correlation_id
-                              << " currencies=" << plan.currencies.size()
-                              << " portfolios=" << plan.portfolios.size()
-                              << " books=" << plan.books.size() << " trades=" << plan.trades.size();
+    ORES_LOG_SEV(lg(), info) << "ore.import.execute step 3 complete | corr=" << req.correlation_id
+                             << " currencies=" << plan.currencies.size()
+                             << " portfolios=" << plan.portfolios.size()
+                             << " books=" << plan.books.size() << " trades=" << plan.trades.size();
 
     // -------------------------------------------------------------------------
     // Step 4: save currencies
@@ -1202,7 +1199,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
                                                  iso,
                                                  resp ? resp->result.message : "(no response)") :
                                      err;
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.execute step 4 failed | corr=" << req.correlation_id
                 << " iso_code=" << iso << " error=" << failure;
             publish_step_completion(nats_,
@@ -1217,8 +1214,8 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         result.saved_currency_iso_codes.push_back(iso);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 4 complete | corr=" << req.correlation_id
-                              << " saved=" << result.saved_currency_iso_codes.size();
+    ORES_LOG_SEV(lg(), info) << "ore.import.execute step 4 complete | corr=" << req.correlation_id
+                             << " saved=" << result.saved_currency_iso_codes.size();
 
     // -------------------------------------------------------------------------
     // Step 5: save portfolios (parents-first from planner)
@@ -1238,7 +1235,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
                                                  pid,
                                                  resp ? resp->result.message : "(no response)") :
                                      err;
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.execute step 5 failed | corr=" << req.correlation_id
                 << " portfolio=" << pid << " error=" << failure;
             publish_step_completion(nats_,
@@ -1253,8 +1250,8 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         result.saved_portfolio_names.push_back(name);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 5 complete | corr=" << req.correlation_id
-                              << " saved=" << result.saved_portfolio_names.size();
+    ORES_LOG_SEV(lg(), info) << "ore.import.execute step 5 complete | corr=" << req.correlation_id
+                             << " saved=" << result.saved_portfolio_names.size();
 
     // -------------------------------------------------------------------------
     // Step 6: save books
@@ -1274,7 +1271,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
                                                  bid,
                                                  resp ? resp->result.message : "(no response)") :
                                      err;
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.execute step 6 failed | corr=" << req.correlation_id
                 << " book=" << bid << " error=" << failure;
             publish_step_completion(nats_,
@@ -1289,8 +1286,8 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         result.saved_book_names.push_back(name);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 6 complete | corr=" << req.correlation_id
-                              << " saved=" << result.saved_book_names.size();
+    ORES_LOG_SEV(lg(), info) << "ore.import.execute step 6 complete | corr=" << req.correlation_id
+                             << " saved=" << result.saved_book_names.size();
 
     // -------------------------------------------------------------------------
     // Step 7: save trades (failures collected; saga continues)
@@ -1321,7 +1318,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
                         "{} of the trades stated inside this one were not booked, so it is not "
                         "booked either: see their errors.",
                         unbooked);
-                    BOOST_LOG_SEV(lg(), warn)
+                    ORES_LOG_SEV(lg(), warn)
                         << "ore.import.execute trade save failed | corr=" << req.correlation_id
                         << " trade_id=" << tid << " source=" << src << " error=" << failure;
                     result.item_errors.push_back(
@@ -1337,7 +1334,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         if (ext_id.empty()) {
             const auto failure = std::string("Trade has no external id: the ORE trade id is "
                                              "required.");
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "ore.import.execute trade save failed | corr=" << req.correlation_id
                 << " trade_id=" << tid << " source=" << src << " error=" << failure;
             result.item_errors.push_back({.source_file = src, .item_id = tid, .message = failure});
@@ -1361,7 +1358,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
                                     "identifier with this name.",
                                     *envelope->counter_party) :
                         resolve_error;
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "ore.import.execute counterparty unresolved | corr=" << req.correlation_id
                     << " trade_id=" << tid << " source=" << src << " error=" << failure;
                 result.item_errors.push_back(
@@ -1383,7 +1380,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
                                     "identifier with this name.",
                                     *envelope->netting_set_id) :
                         netting_error;
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "ore.import.execute netting set unresolved | corr=" << req.correlation_id
                     << " trade_id=" << tid << " source=" << src << " error=" << failure;
                 result.item_errors.push_back(
@@ -1411,7 +1408,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
                 resolved.portfolio_ids.push_back(*portfolio);
             }
             if (!unresolved.empty()) {
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "ore.import.execute portfolio unresolved | corr=" << req.correlation_id
                     << " trade_id=" << tid << " source=" << src << " error=" << unresolved;
                 result.item_errors.push_back(
@@ -1428,7 +1425,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         const auto booking_error =
             book_imported_trade(delegated_nats, item, resolved, into_sandbox, bond_issues);
         if (!booking_error.empty()) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "ore.import.execute trade booking failed | corr=" << req.correlation_id
                 << " trade_id=" << tid << " source=" << src << " error=" << booking_error;
             result.item_errors.push_back(
@@ -1466,7 +1463,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         // A trade leaves the saved list only once its booking is closed, so a
         // failed close still names it among the trades on the book.
         if (const auto reason = close_bookings(delegated_nats, orphaned); !reason.empty()) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.execute embedded trades not closed | corr=" << req.correlation_id
                 << " error=" << reason;
             for (const auto* item : orphans)
@@ -1490,17 +1487,17 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 7 complete | corr=" << req.correlation_id
-                              << " saved=" << result.saved_trade_ids.size()
-                              << " failed=" << result.item_errors.size();
+    ORES_LOG_SEV(lg(), info) << "ore.import.execute step 7 complete | corr=" << req.correlation_id
+                             << " saved=" << result.saved_trade_ids.size()
+                             << " failed=" << result.item_errors.size();
 
     // -------------------------------------------------------------------------
     // Step 7b: join each composite trade to its components in a structure
     // -------------------------------------------------------------------------
     const auto structure_errors = join_composites(delegated_nats, plan.trades, booked_counterparty);
     for (const auto& error : structure_errors) {
-        BOOST_LOG_SEV(lg(), warn) << "ore.import.execute structure failed | corr="
-                                  << req.correlation_id << " error=" << error.message;
+        ORES_LOG_SEV(lg(), warn) << "ore.import.execute structure failed | corr="
+                                 << req.correlation_id << " error=" << error.message;
         result.item_errors.push_back(error);
     }
 
@@ -1528,8 +1525,8 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
     }
 
     for (const auto& warning : import_warnings)
-        BOOST_LOG_SEV(lg(), warn) << "ore.import.execute warning | corr=" << req.correlation_id
-                                  << " warning=" << warning;
+        ORES_LOG_SEV(lg(), warn) << "ore.import.execute warning | corr=" << req.correlation_id
+                                 << " warning=" << warning;
 
     std::vector<wf_log_entry> step_log;
     if (!result.saved_trade_ids.empty()) {
@@ -1553,13 +1550,13 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
             "ORE import completed." :
             std::format("ORE import completed with {} error(s).", result.item_errors.size());
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute complete | corr=" << req.correlation_id
-                              << " currencies=" << result.saved_currency_iso_codes.size()
-                              << " portfolios=" << result.saved_portfolio_names.size()
-                              << " books=" << result.saved_book_names.size()
-                              << " trades=" << result.saved_trade_ids.size()
-                              << " item_errors=" << result.item_errors.size()
-                              << " outcome=" << ores::workflow::messaging::to_string(outcome);
+    ORES_LOG_SEV(lg(), info) << "ore.import.execute complete | corr=" << req.correlation_id
+                             << " currencies=" << result.saved_currency_iso_codes.size()
+                             << " portfolios=" << result.saved_portfolio_names.size()
+                             << " books=" << result.saved_book_names.size()
+                             << " trades=" << result.saved_trade_ids.size()
+                             << " item_errors=" << result.item_errors.size()
+                             << " outcome=" << ores::workflow::messaging::to_string(outcome);
 
     if (outcome == wf_outcome::failed) {
         publish_step_completion(
@@ -1595,8 +1592,8 @@ void ore_import_execute_handler::rollback(ores::nats::delivery delivery) {
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = ores::utility::codec::json::try_read<ore_import_rollback_request>(sv);
     if (!parsed) {
-        BOOST_LOG_SEV(lg(), error)
-            << "ore.import.rollback: failed to decode request | step=" << step_id;
+        ORES_LOG_SEV(lg(), error) << "ore.import.rollback: failed to decode request | step="
+                                  << step_id;
         publish_step_completion(nats_,
                                 step_id,
                                 inst_id,
@@ -1608,8 +1605,8 @@ void ore_import_execute_handler::rollback(ores::nats::delivery delivery) {
     }
     const auto& req = *parsed;
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.rollback starting | corr=" << req.correlation_id
-                              << " step=" << step_id;
+    ORES_LOG_SEV(lg(), info) << "ore.import.rollback starting | corr=" << req.correlation_id
+                             << " step=" << step_id;
 
     auto delegated_nats =
         outbound_nats_.with_delegation(req.bearer_token).with_correlation_id(req.correlation_id);
@@ -1618,30 +1615,30 @@ void ore_import_execute_handler::rollback(ores::nats::delivery delivery) {
     // The anchor is immutable, so a rolled-back trade keeps its anchor and
     // loses its live booking, which takes it off its book.
     if (!req.saved_trade_ids.empty()) {
-        BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: close bookings | corr="
-                                  << req.correlation_id << " count=" << req.saved_trade_ids.size();
+        ORES_LOG_SEV(lg(), info) << "ore.import.rollback: close bookings | corr="
+                                 << req.correlation_id << " count=" << req.saved_trade_ids.size();
         std::vector<boost::uuids::uuid> trade_ids;
         trade_ids.reserve(req.saved_trade_ids.size());
         for (const auto& saved_id : req.saved_trade_ids) {
             try {
                 trade_ids.push_back(boost::lexical_cast<boost::uuids::uuid>(saved_id));
             } catch (const boost::bad_lexical_cast&) {
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "ore.import.rollback skipping unparsable trade id | corr="
                     << req.correlation_id << " id=" << saved_id;
             }
         }
         const auto reason = close_bookings(delegated_nats, trade_ids);
         if (!reason.empty())
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.rollback close_bookings failed | corr=" << req.correlation_id
                 << " error=" << reason;
     }
 
     // ── Delete books ─────────────────────────────────────────────────────────
     if (!req.saved_book_names.empty()) {
-        BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete books | corr="
-                                  << req.correlation_id << " count=" << req.saved_book_names.size();
+        ORES_LOG_SEV(lg(), info) << "ore.import.rollback: delete books | corr="
+                                 << req.correlation_id << " count=" << req.saved_book_names.size();
         ores::refdata::messaging::delete_many_books_request del_req{
             .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
                                                            .commentary =
@@ -1650,16 +1647,16 @@ void ore_import_execute_handler::rollback(ores::nats::delivery delivery) {
             del_req.removals.push_back({.key = {.name = name}});
         const auto reason = remove_in_parts(delegated_nats, del_req);
         if (!reason.empty())
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.rollback delete_books failed | corr=" << req.correlation_id
                 << " error=" << reason;
     }
 
     // ── Delete portfolios (reverse order — children before parents) ──────────
     if (!req.saved_portfolio_names.empty()) {
-        BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete portfolios | corr="
-                                  << req.correlation_id
-                                  << " count=" << req.saved_portfolio_names.size();
+        ORES_LOG_SEV(lg(), info) << "ore.import.rollback: delete portfolios | corr="
+                                 << req.correlation_id
+                                 << " count=" << req.saved_portfolio_names.size();
         ores::refdata::messaging::delete_many_portfolios_request del_req{
             .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
                                                            .commentary =
@@ -1669,16 +1666,16 @@ void ore_import_execute_handler::rollback(ores::nats::delivery delivery) {
             del_req.removals.push_back({.key = {.name = *it}});
         const auto reason = remove_in_parts(delegated_nats, del_req);
         if (!reason.empty())
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.rollback delete_portfolios failed | corr=" << req.correlation_id
                 << " error=" << reason;
     }
 
     // ── Delete currencies ────────────────────────────────────────────────────
     if (!req.saved_currency_iso_codes.empty()) {
-        BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete currencies | corr="
-                                  << req.correlation_id
-                                  << " count=" << req.saved_currency_iso_codes.size();
+        ORES_LOG_SEV(lg(), info) << "ore.import.rollback: delete currencies | corr="
+                                 << req.correlation_id
+                                 << " count=" << req.saved_currency_iso_codes.size();
         ores::refdata::messaging::delete_many_currencies_request del_req{
             .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
                                                            .commentary =
@@ -1687,12 +1684,12 @@ void ore_import_execute_handler::rollback(ores::nats::delivery delivery) {
             del_req.removals.push_back({.key = {.iso_code = iso}});
         const auto reason = remove_in_parts(delegated_nats, del_req);
         if (!reason.empty())
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "ore.import.rollback delete_currencies failed | corr=" << req.correlation_id
                 << " error=" << reason;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.rollback complete | corr=" << req.correlation_id;
+    ORES_LOG_SEV(lg(), info) << "ore.import.rollback complete | corr=" << req.correlation_id;
     publish_step_completion(nats_,
                             step_id,
                             inst_id,

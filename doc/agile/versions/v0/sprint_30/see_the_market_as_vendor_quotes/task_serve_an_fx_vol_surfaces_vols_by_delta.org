@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: B903EF9A-9753-4BEF-8945-516106238842
+:END:
+#+title: Task: Serve an FX vol surface's vols by delta
+#+description: Convert each vendor's quoted FX vol surface (ATM, risk reversals, butterflies) into vols by delta on the server, by the pair's FX option conventions, so the quotes view can compare vendors' smiles.
+#+type: task
+#+level: s1
+#+filetags: :market_data:fx:volatility:service:see_the_market_as_vendor_quotes:sprint_30:v0:
+#+owner: marco
+#+branch: feature/serve-an-fx-vol-surfaces-vols-by-delta
+#+pr: 4920
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The quotes view compares two vendors' FX vol surfaces as vols by delta (10P, 25P, ATM, 25C, 10C), because a difference in a risk reversal is a difference in skew, not in a vol. The conversion depends on the pair's delta convention (spot or forward delta, premium-adjusted or not), its ATM convention and a smile fitted to the strangles, which only the server knows from the FX option conventions. The browser must not guess it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+- A read returns a vendor's surface of a pair, or the consensus, as vols by delta for each tenor, converted by the pair's FX option conventions.
+- The conversion is tested against known values for at least one spot-delta and one premium-adjusted forward-delta pair.
+- A surface that lacks a quote the conversion needs is returned with that tenor marked incomplete, not converted from a guess.
+- The quotes view's compare mode reads the server's vols by delta instead of the prototype's strangle approximation.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Raised on 2026-11-19 while prototyping the compare mode of
+  [[id:4A9A4369-D6C1-4FF6-B9BF-47B8D87FE0DB][Read the quotes by series prototype]]. The prototype stands in with the
+  simple strangle approximation (25C = ATM + 25BF + 25RR/2) and labels the view
+  as the server's; the product owner asked that the real conversion live on the
+  server side.
+- The conventions already exist in the schema: =refdata_fx_option_conventions=
+  and =refdata_curve_volatility_delta_surfaces= carry the delta and ATM types.
+  Read them before choosing where the conversion lives.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4920][#4920]] | [marketdata,web] Serve an FX vol surface's vols by delta |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | ores.http checks the pair less than the BFF | quote_routes.cpp | Decline | The service is the authority: it refuses a pair that is not BASE/QUOTE with a plain message, through either entry point. |
+| 2 | No limit on a request's size in ores.http | fx_vol_surface_calibration_plan.cpp | Accept | The service refuses more than 8 sources, or a source of more than 1000 quotes, before any fit, so both entry points are capped. Checked live: 10 sources are refused. |
+| 3 | A fit holds the NATS handler thread | application.cpp | Decline | nats.c gives each subscription its own delivery thread (no global delivery is set), so a slow fit delays only other fits, never other subjects. |
+| 4 | Pillar ids repeat past 65,536 quotes | fx_vol_surface_calibration_plan.cpp | Accept | Closed by the cap of 1000 quotes a source. |
+| 5 | A quote with a label SSVI cannot read is dropped silently | fx_vol_surface_calibration_plan.cpp | Decline | The screen sends only the board's ATM, RR and BF labels; a source left with nothing is told so. |
+| 6 | The point name passed to read_strike_label is unclear | fx_vol_surface_calibration_plan.cpp | Accept | It now uses pillar_key_of, the same key the blueprint's pillars use. |
+| 7 | One delta type for every expiry | fx_vol_surface_calibration_plan.cpp | Decline | Already stated as a limitation of the PR and the task. |
+| 8 | No test of fit_quotes' per-source isolation | fx_vol_surface_calibration_service.cpp | Accept | The per-source loop moved into the pure plan (fit_quote_sources) and is tested: a source with nothing to fit is answered with why while two others fit, the forwards are read once, and both caps refuse. |
+| 9 | The full check gate was not run | - | Decline | Stated in the PR; the gate recreates the environment's database. |
+| 10 | quote_fit_series' bytes are unexplained | fx_vol_surface_calibration_plan.hpp | Accept | Its comment says they spell QuoteFit, then one. |
+| 11 | fit_body sits before the namespace aliases | quote_routes.cpp | Decline | A grouping preference; the struct reads with its wire fields. |
+
+* Result
+
+- The market data service answers =fit_fx_vol_quotes= (its own operation model,
+  =ores.marketdata.fx_vol_quote_fit_operations=, with no shell command, since a
+  list of quotes is not typed at a prompt): for each named source of a pair's
+  quotes it builds a recipe from the quotes (=make_quote_fit_recipe=: the
+  source's expiries in tenor order, its ATM, risk reversals and butterflies,
+  and an output grid of 10P, 25P, ATM, 25C and 10C in the convention's delta
+  type), reads the pair's convention =<BASE>-<QUOTE>-FXOPTION= and the party's
+  published forward set at now, and fits SSVI with the calibration's own
+  =check_recipe=, =prepare_calibration= and =calibrate_ssvi=. It writes
+  nothing, and needs =marketdata::fx_vol_surface_calibrations:read=. A source
+  that cannot be fitted is answered with why, and the others still are.
+- =ores.http= and the BFF answer =POST /api/marketdata/quotes/vols-by-delta=
+  with the pair and the sources; the instant is the route's own.
+- The quotes view's surface compare reads as quoted or by delta. By delta it
+  sends A's and B's quotes, B the consensus of the others as before, refits
+  every ten seconds, and draws A − B at each delta, the picked tenor's smile
+  and a delta by tenor, naming the convention and delta type the server used.
+- Checked on the running fleet as UK plc: a fit of two sources over 13 expiries
+  answered in 2 to 6 seconds; EUR/USD's derived surface read as a smile by
+  delta on EUR-USD-FXOPTION (spot deltas), and a synthetic source with a −0.4
+  risk reversal and a 0.2 butterfly fitted to wings 0.41 apart about a point
+  0.19 above ATM, as quoted.
+- Tests: the plan's quote fit (3 cases: the recipe, a flat smile, a skewed
+  one), the fit codec round trips (4), the vols-by-delta route (2), the
+  Playwright check of the by-delta compare (fitted in 5.4 s), and every web
+  workspace.

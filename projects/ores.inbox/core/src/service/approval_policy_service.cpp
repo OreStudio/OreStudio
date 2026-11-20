@@ -29,10 +29,8 @@
 #include "ores.inbox.api/domain/approval_policy.hpp"
 #include "ores.inbox.api/messaging/approval_policy_protocol.hpp"
 #include "ores.inbox.core/repository/approval_policy_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -450,26 +448,26 @@ approval_policy_service::prepare_change(const messaging::approval_policy_change&
 
 std::vector<domain::approval_policy> approval_policy_service::list_policies(std::uint32_t offset,
                                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all approval policys";
+    ORES_LOG_SEV(lg(), debug) << "Listing all approval policys";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t approval_policy_service::count_policies() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total approval policys count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total approval policys count";
     return repo_.get_total_policy_count(ctx_);
 }
 
 
 std::optional<domain::approval_policy>
 approval_policy_service::get_policy_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting approval policy at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting approval policy at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::approval_policy>
 approval_policy_service::find_policy(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding approval policy. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding approval policy. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -484,11 +482,11 @@ approval_policy_service::get_policies(const std::vector<std::string>& codes) {
 void approval_policy_service::save_policy(const domain::approval_policy& v) {
     if (v.code.empty())
         throw std::invalid_argument("Approval Policy code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving approval policy. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving approval policy. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved approval policy. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved approval policy. " << "code: " << v.code;
 }
 
 void approval_policy_service::save_policies(const std::vector<domain::approval_policy>& policies) {
@@ -496,7 +494,7 @@ void approval_policy_service::save_policies(const std::vector<domain::approval_p
         if (e.code.empty())
             throw std::invalid_argument("Approval Policy code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << policies.size() << " approval policys";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << policies.size() << " approval policys";
     auto ts = policies;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -505,9 +503,9 @@ void approval_policy_service::save_policies(const std::vector<domain::approval_p
 }
 
 void approval_policy_service::delete_policy(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing approval policy. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing approval policy. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed approval policy. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed approval policy. " << "code: " << code;
 }
 
 void approval_policy_service::delete_policies(const std::vector<std::string>& codes) {
@@ -516,7 +514,7 @@ void approval_policy_service::delete_policies(const std::vector<std::string>& co
 
 std::vector<domain::approval_policy>
 approval_policy_service::get_policy_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for approval policy. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for approval policy. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

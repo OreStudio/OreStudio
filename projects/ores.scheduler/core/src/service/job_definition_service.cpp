@@ -26,7 +26,6 @@
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.scheduler.core/repository/job_definition_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -453,12 +451,12 @@ job_definition_service::prepare_change(const messaging::job_definition_change& c
 
 std::vector<domain::job_definition> job_definition_service::list_definitions(std::uint32_t offset,
                                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all job definitions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all job definitions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t job_definition_service::count_definitions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total job definitions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total job definitions count";
     return repo_.get_total_definition_count(ctx_);
 }
 
@@ -466,14 +464,14 @@ std::uint32_t job_definition_service::count_definitions() {
 std::optional<domain::job_definition>
 job_definition_service::get_definition_at_version(const boost::uuids::uuid& id,
                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting job definition at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting job definition at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::job_definition>
 job_definition_service::get_definition(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting job definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting job definition. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -488,11 +486,11 @@ job_definition_service::get_definitions(const std::vector<std::string>& ids) {
 void job_definition_service::save_definition(const domain::job_definition& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Job Definition id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving job definition. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving job definition. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved job definition. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved job definition. " << "id: " << v.id;
 }
 
 void job_definition_service::save_definitions(
@@ -501,7 +499,7 @@ void job_definition_service::save_definitions(
         if (e.id.is_nil())
             throw std::invalid_argument("Job Definition id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << definitions.size() << " job definitions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << definitions.size() << " job definitions";
     auto ts = definitions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -510,9 +508,9 @@ void job_definition_service::save_definitions(
 }
 
 void job_definition_service::delete_definition(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing job definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing job definition. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed job definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed job definition. " << "id: " << id;
 }
 
 void job_definition_service::delete_definitions(const std::vector<std::string>& ids) {
@@ -521,7 +519,7 @@ void job_definition_service::delete_definitions(const std::vector<std::string>& 
 
 std::vector<domain::job_definition>
 job_definition_service::get_definition_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for job definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for job definition. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

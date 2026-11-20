@@ -16,7 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
@@ -69,9 +69,8 @@ auto xml_emitter_read_file(const fs::path& path) -> std::string {
  * either the text or the values.
  */
 template <typename Record>
-auto write_back(const document_type& doc,
-                std::string_view text,
-                Record& record) -> std::expected<std::string, std::string> {
+auto write_back(const document_type& doc, std::string_view text, Record& record)
+    -> std::expected<std::string, std::string> {
     const auto bound = binder::bind(doc, text, &record);
     if (!bound)
         return std::unexpected("the document does not bind: " + bound.error().message);

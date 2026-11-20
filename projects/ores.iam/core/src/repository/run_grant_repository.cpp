@@ -31,9 +31,7 @@
 #include "ores.iam.api/messaging/run_grant_protocol.hpp"
 #include "ores.iam.core/repository/run_grant_entity.hpp"
 #include "ores.iam.core/repository/run_grant_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -218,7 +216,7 @@ void run_grant_repository::write(const context& ctx, const std::vector<domain::r
 void run_grant_repository::write(const context& ctx,
                                  const domain::run_grant& v,
                                  const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing run grant. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing run grant. " << "id: " << v.id;
     const auto t = run_grant_apply_claim(v,
                                          claim,
                                          run_grant_claim_reads_current(claim) ?
@@ -231,7 +229,7 @@ void run_grant_repository::write(const context& ctx,
 void run_grant_repository::write(const context& ctx,
                                  const std::vector<domain::run_grant>& v,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing run grants. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing run grants. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "run_grant_repository::write: one claim is needed for each row");
@@ -266,7 +264,7 @@ std::vector<domain::run_grant> run_grant_repository::read_latest(const context& 
 
 std::vector<domain::run_grant> run_grant_repository::read_latest(const context& ctx,
                                                                  const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest run grant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest run grant. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -283,7 +281,7 @@ std::vector<domain::run_grant> run_grant_repository::read_latest(const context& 
 
 std::vector<domain::run_grant>
 run_grant_repository::read_latest_by_resource(const context& ctx, const std::string& resource) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest run grant by resource: " << resource;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest run grant by resource: " << resource;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_grant_entity>> |
@@ -324,8 +322,8 @@ run_grant_repository::read_latest_by_resource(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest run grants by resource. Count: "
-                               << resources.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest run grants by resource. Count: "
+                              << resources.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_grant_entity>> |
@@ -345,7 +343,7 @@ run_grant_repository::read_latest_by_resource(const context& ctx,
 
 std::vector<domain::run_grant>
 run_grant_repository::read_any_by_resource(const context& ctx, const std::string& resource) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any run grant by resource: " << resource;
+    ORES_LOG_SEV(lg(), debug) << "Reading any run grant by resource: " << resource;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_grant_entity>> |
                        query_builder::where("tenant_id"_c == tid && "resource"_c == resource) |
@@ -372,7 +370,7 @@ run_grant_repository::read_any_by_resource(const context& ctx, const std::string
 
 std::vector<domain::run_grant> run_grant_repository::read_all(const context& ctx,
                                                               const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all run grant versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all run grant versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_grant_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -389,8 +387,8 @@ std::vector<domain::run_grant> run_grant_repository::read_all(const context& ctx
 std::optional<domain::run_grant> run_grant_repository::read_at_version(const context& ctx,
                                                                        const std::string& id,
                                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading run grant at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading run grant at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<run_grant_entity>> |
@@ -416,9 +414,8 @@ std::vector<domain::run_grant> run_grant_repository::read_latest_by_grantor_acco
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::run_grants_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest run grants. grantor_account_id: "
-                               << grantor_account_id << " offset: " << offset
-                               << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest run grants. grantor_account_id: "
+                              << grantor_account_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -441,8 +438,8 @@ std::uint32_t run_grant_repository::get_total_grant_count_by_grantor_account_id(
     const context& ctx,
     const std::string& grantor_account_id,
     const std::optional<messaging::run_grants_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active run grants count. grantor_account_id: "
-                               << grantor_account_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active run grants count. grantor_account_id: "
+                              << grantor_account_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -462,7 +459,7 @@ std::uint32_t run_grant_repository::get_total_grant_count_by_grantor_account_id(
 
 run_grant_repository::remove_status run_grant_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing run grant. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing run grant. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -500,8 +497,8 @@ run_grant_repository::read_latest(const context& ctx,
                                   const ores::utility::domain::order& order,
                                   const std::optional<messaging::run_grants_filter>& filter,
                                   const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest run grants with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest run grants with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_grant_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -521,7 +518,7 @@ std::uint32_t run_grant_repository::get_total_grant_count(
     const context& ctx,
     const std::optional<messaging::run_grants_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active run grant count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active run grant count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_grant_entity>> |

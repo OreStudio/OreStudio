@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_SWAPTION_PROXY_CONFIG_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/swaption_proxy_config.hpp"
 #include "ores.refdata.api/messaging/swaption_proxy_config_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

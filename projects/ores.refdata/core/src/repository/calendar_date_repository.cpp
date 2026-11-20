@@ -26,14 +26,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/domain/calendar_date_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/calendar_date_entity.hpp"
 #include "ores.refdata.core/repository/calendar_date_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
@@ -188,8 +186,8 @@ void calendar_date_repository::write(const std::vector<domain::calendar_date>& c
 
 void calendar_date_repository::write(const domain::calendar_date& calendar_date,
                                      const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing calendar date to database: "
-                               << calendar_date.calendar_code << "/" << calendar_date.date;
+    ORES_LOG_SEV(lg(), debug) << "Writing calendar date to database: "
+                              << calendar_date.calendar_code << "/" << calendar_date.date;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(calendar_date.calendar_code, calendar_date.date) :
                              std::vector<domain::calendar_date>{};
@@ -201,8 +199,8 @@ void calendar_date_repository::write(const domain::calendar_date& calendar_date,
 void calendar_date_repository::write(
     const std::vector<domain::calendar_date>& calendar_dates,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing calendar dates to database. Count: "
-                               << calendar_dates.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing calendar dates to database. Count: "
+                              << calendar_dates.size();
     if (claims.size() != calendar_dates.size())
         throw std::invalid_argument(
             "calendar_date_repository::write: one claim is needed for each row");
@@ -238,8 +236,8 @@ std::vector<domain::calendar_date> calendar_date_repository::read_latest() {
 
 std::vector<domain::calendar_date> calendar_date_repository::read_latest(std::uint32_t offset,
                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar dates with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar dates with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<calendar_date_entity>> |
@@ -258,7 +256,7 @@ std::vector<domain::calendar_date> calendar_date_repository::read_latest(std::ui
 std::vector<domain::calendar_date>
 calendar_date_repository::read_latest(const std::string& calendar_code,
                                       const std::chrono::year_month_day& date) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar date. " << calendar_code << "/" << date;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar date. " << calendar_code << "/" << date;
 
     static constexpr auto max = db_timestamp::max();
     const auto calendar_code_str = calendar_code;
@@ -278,7 +276,7 @@ calendar_date_repository::read_latest(const std::string& calendar_code,
 }
 
 std::uint32_t calendar_date_repository::get_total_calendar_date_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -287,13 +285,13 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count() {
 
     const auto count = query_builder::execute_count_query<calendar_date_entity>(
         ctx_, query, std::nullopt, lg(), "Counting calendar dates");
-    BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active calendar dates count: " << count;
     return count;
 }
 
 std::vector<domain::calendar_date>
 calendar_date_repository::read_latest_by_calendar(const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar dates. Calendar: " << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar dates. Calendar: " << calendar_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -315,7 +313,7 @@ calendar_date_repository::read_latest_by_calendar(const std::string& calendar_co
 
 std::vector<domain::calendar_date>
 calendar_date_repository::read_latest_by_date(const std::chrono::year_month_day& date) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar dates. Date: " << date;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar dates. Date: " << date;
 
     static constexpr auto max = db_timestamp::max();
     const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
@@ -337,8 +335,8 @@ calendar_date_repository::read_latest_by_date(const std::chrono::year_month_day&
 
 std::vector<domain::calendar_date> calendar_date_repository::read_latest_by_calendar(
     const std::string& calendar_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar dates. Calendar: " << calendar_code
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest calendar dates. Calendar: " << calendar_code
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -361,8 +359,8 @@ std::vector<domain::calendar_date> calendar_date_repository::read_latest_by_cale
 
 std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_calendar(
     const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count. Calendar: "
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count. Calendar: "
+                              << calendar_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -373,14 +371,14 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_calenda
 
     const auto count = query_builder::execute_count_query<calendar_date_entity>(
         ctx_, query, std::nullopt, lg(), "Counting calendar dates");
-    BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count by calendar: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active calendar dates count by calendar: " << count;
     return count;
 }
 
 std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_date(
     const std::chrono::year_month_day& date) {
     const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count. Date: " << date;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count. Date: " << date;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -390,14 +388,14 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_date(
 
     const auto count = query_builder::execute_count_query<calendar_date_entity>(
         ctx_, query, std::nullopt, lg(), "Counting calendar dates");
-    BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count by date: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active calendar dates count by date: " << count;
     return count;
 }
 
 std::vector<calendar_date_history_row>
 calendar_date_repository::read_all_by_calendar(const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the calendar dates. Calendar: "
-                               << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the calendar dates. Calendar: "
+                              << calendar_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
@@ -446,8 +444,8 @@ calendar_date_repository::remove_status
 calendar_date_repository::remove(const std::string& calendar_code,
                                  const std::chrono::year_month_day& date,
                                  std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar date from database: " << calendar_code << "/"
-                               << date;
+    ORES_LOG_SEV(lg(), debug) << "Removing calendar date from database: " << calendar_code << "/"
+                              << date;
 
     const auto current = read_latest(calendar_code, date);
     if (current.empty())
@@ -492,7 +490,7 @@ void calendar_date_repository::remove(const std::vector<std::string>& calendar_c
 }
 
 void calendar_date_repository::remove_by_calendar(const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all calendar dates from database: " << calendar_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing all calendar dates from database: " << calendar_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =

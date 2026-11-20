@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.synthetic.api/domain/market_data_provider.hpp"
 #include "ores.synthetic.api/messaging/market_data_provider_protocol.hpp"
 #include "ores.synthetic.core/repository/market_data_provider_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -456,12 +454,12 @@ ores::utility::domain::result market_data_provider_service::prepare_change(
 
 std::vector<domain::market_data_provider>
 market_data_provider_service::list_providers(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all market data providers";
+    ORES_LOG_SEV(lg(), debug) << "Listing all market data providers";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t market_data_provider_service::count_providers() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total market data providers count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total market data providers count";
     return repo_.get_total_provider_count(ctx_);
 }
 
@@ -469,14 +467,14 @@ std::uint32_t market_data_provider_service::count_providers() {
 std::optional<domain::market_data_provider>
 market_data_provider_service::get_provider_at_version(const std::string& code,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data provider at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data provider at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::market_data_provider>
 market_data_provider_service::get_provider(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data provider. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data provider. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -491,11 +489,11 @@ market_data_provider_service::get_providers(const std::vector<std::string>& code
 void market_data_provider_service::save_provider(const domain::market_data_provider& v) {
     if (v.code.empty())
         throw std::invalid_argument("Market Data Provider code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market data provider. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving market data provider. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market data provider. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved market data provider. " << "code: " << v.code;
 }
 
 void market_data_provider_service::save_providers(
@@ -504,7 +502,7 @@ void market_data_provider_service::save_providers(
         if (e.code.empty())
             throw std::invalid_argument("Market Data Provider code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << providers.size() << " market data providers";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << providers.size() << " market data providers";
     auto ts = providers;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -513,9 +511,9 @@ void market_data_provider_service::save_providers(
 }
 
 void market_data_provider_service::delete_provider(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market data provider. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing market data provider. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed market data provider. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed market data provider. " << "code: " << code;
 }
 
 void market_data_provider_service::delete_providers(const std::vector<std::string>& codes) {
@@ -524,7 +522,7 @@ void market_data_provider_service::delete_providers(const std::vector<std::strin
 
 std::vector<domain::market_data_provider>
 market_data_provider_service::get_provider_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market data provider. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for market data provider. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

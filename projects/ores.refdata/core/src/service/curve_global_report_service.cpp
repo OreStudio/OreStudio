@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_global_report.hpp"
 #include "ores.refdata.api/messaging/curve_global_report_protocol.hpp"
 #include "ores.refdata.core/repository/curve_global_report_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -473,12 +471,12 @@ curve_global_report_service::prepare_change(const messaging::curve_global_report
 
 std::vector<domain::curve_global_report>
 curve_global_report_service::list_global_reports(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve global reports";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve global reports";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_global_report_service::count_global_reports() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve global reports count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve global reports count";
     return repo_.get_total_global_report_count(ctx_);
 }
 
@@ -486,14 +484,14 @@ std::uint32_t curve_global_report_service::count_global_reports() {
 std::optional<domain::curve_global_report>
 curve_global_report_service::get_global_report_at_version(const boost::uuids::uuid& id,
                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve global report at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve global report at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_global_report>
 curve_global_report_service::get_global_report(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve global report. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve global report. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -508,11 +506,11 @@ curve_global_report_service::get_global_reports(const std::vector<std::string>& 
 void curve_global_report_service::save_global_report(const domain::curve_global_report& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Global Report id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve global report. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve global report. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve global report. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve global report. " << "id: " << v.id;
 }
 
 void curve_global_report_service::save_global_reports(
@@ -521,7 +519,7 @@ void curve_global_report_service::save_global_reports(
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Global Report id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << global_reports.size() << " curve global reports";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << global_reports.size() << " curve global reports";
     auto ts = global_reports;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -530,9 +528,9 @@ void curve_global_report_service::save_global_reports(
 }
 
 void curve_global_report_service::delete_global_report(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve global report. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve global report. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve global report. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve global report. " << "id: " << id;
 }
 
 void curve_global_report_service::delete_global_reports(const std::vector<std::string>& ids) {
@@ -541,7 +539,7 @@ void curve_global_report_service::delete_global_reports(const std::vector<std::s
 
 std::vector<domain::curve_global_report>
 curve_global_report_service::get_global_report_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve global report. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve global report. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

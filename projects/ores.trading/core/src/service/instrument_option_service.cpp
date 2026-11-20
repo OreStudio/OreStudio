@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/messaging/instrument_option_protocol.hpp"
 #include "ores.trading.core/repository/instrument_option_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -485,12 +483,12 @@ instrument_option_service::prepare_change(const messaging::instrument_option_cha
 
 std::vector<domain::instrument_option>
 instrument_option_service::list_instrument_options(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all instrument options";
+    ORES_LOG_SEV(lg(), debug) << "Listing all instrument options";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t instrument_option_service::count_instrument_options() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total instrument options count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total instrument options count";
     return repo_.get_total_instrument_option_count(ctx_);
 }
 
@@ -498,14 +496,14 @@ std::uint32_t instrument_option_service::count_instrument_options() {
 std::optional<domain::instrument_option>
 instrument_option_service::get_instrument_option_at_version(const boost::uuids::uuid& trade_id,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument option at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting instrument option at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::instrument_option>
 instrument_option_service::get_instrument_option(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument option. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting instrument option. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -520,11 +518,11 @@ instrument_option_service::get_instrument_options(const std::vector<std::string>
 void instrument_option_service::save_instrument_option(const domain::instrument_option& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Instrument Option trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving instrument option. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving instrument option. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved instrument option. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved instrument option. " << "trade_id: " << v.trade_id;
 }
 
 void instrument_option_service::save_instrument_options(
@@ -533,7 +531,7 @@ void instrument_option_service::save_instrument_options(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Instrument Option trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << instrument_options.size() << " instrument options";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << instrument_options.size() << " instrument options";
     auto ts = instrument_options;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -542,9 +540,9 @@ void instrument_option_service::save_instrument_options(
 }
 
 void instrument_option_service::delete_instrument_option(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument option. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing instrument option. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed instrument option. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed instrument option. " << "trade_id: " << trade_id;
 }
 
 void instrument_option_service::delete_instrument_options(
@@ -554,8 +552,8 @@ void instrument_option_service::delete_instrument_options(
 
 std::vector<domain::instrument_option>
 instrument_option_service::get_instrument_option_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument option. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for instrument option. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

@@ -31,9 +31,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -218,7 +216,7 @@ void todays_market_collection_kind_repository::write(
     const context& ctx,
     const domain::todays_market_collection_kind& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing today's market collection kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing today's market collection kind. " << "code: " << v.code;
     const auto t = todays_market_collection_kind_apply_claim(
         v,
         claim,
@@ -235,7 +233,7 @@ void todays_market_collection_kind_repository::write(
     const context& ctx,
     const std::vector<domain::todays_market_collection_kind>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing today's market collection kinds. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing today's market collection kinds. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "todays_market_collection_kind_repository::write: one claim is needed for each row");
@@ -275,8 +273,8 @@ todays_market_collection_kind_repository::read_latest(const context& ctx) {
 
 std::vector<domain::todays_market_collection_kind>
 todays_market_collection_kind_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market collection kind. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest today's market collection kind. "
+                              << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -295,8 +293,8 @@ todays_market_collection_kind_repository::read_latest(const context& ctx, const 
 
 std::vector<domain::todays_market_collection_kind>
 todays_market_collection_kind_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all today's market collection kind versions. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all today's market collection kind versions. "
+                              << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_kind_entity>> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code) |
@@ -315,8 +313,8 @@ std::optional<domain::todays_market_collection_kind>
 todays_market_collection_kind_repository::read_at_version(const context& ctx,
                                                           const std::string& code,
                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading today's market collection kind at version. "
-                               << "code: " << code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading today's market collection kind at version. "
+                              << "code: " << code << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<todays_market_collection_kind_entity>> |
@@ -340,7 +338,7 @@ todays_market_collection_kind_repository::remove_status
 todays_market_collection_kind_repository::remove(const context& ctx,
                                                  const std::string& code,
                                                  std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market collection kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market collection kind. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -380,8 +378,8 @@ todays_market_collection_kind_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::todays_market_collection_kinds_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market collection kinds with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest today's market collection kinds with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_kind_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -403,7 +401,7 @@ std::uint32_t todays_market_collection_kind_repository::get_total_kind_count(
     const context& ctx,
     const std::optional<messaging::todays_market_collection_kinds_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active today's market collection kind count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active today's market collection kind count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_kind_entity>> |

@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/domain/calendar_exception.hpp"
 #include "ores.refdata.api/domain/calendar_rule.hpp"
@@ -38,7 +37,6 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -166,7 +164,7 @@ TEST_CASE("regenerate_base_less_calendar_applies_rules_and_exceptions",
     CHECK(written > 0);
 
     auto rows = date_repo.read_latest_by_calendar(cal.code);
-    BOOST_LOG_SEV(lg, debug) << "Materialised " << rows.size() << " calendar_date rows";
+    ORES_LOG_SEV(lg, debug) << "Materialised " << rows.size() << " calendar_date rows";
     REQUIRE(!rows.empty());
 
     bool found_rule_holiday = false;
@@ -232,7 +230,7 @@ TEST_CASE("regenerate_leaves_a_saturday_rule_where_it_is_when_only_sundays_move"
     CHECK(written > 0);
 
     auto rows = date_repo.read_latest_by_calendar(cal.code);
-    BOOST_LOG_SEV(lg, debug) << "Materialised " << rows.size() << " calendar_date rows";
+    ORES_LOG_SEV(lg, debug) << "Materialised " << rows.size() << " calendar_date rows";
     REQUIRE(!rows.empty());
 
     bool found_natural_saturday = false;

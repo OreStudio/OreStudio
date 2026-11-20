@@ -397,3 +397,129 @@ TEST_CASE("a_forward_set_with_no_row_on_its_spot_date_is_refused_naming_it",
     CHECK(anchored.error().contains("no row on its spot date"));
     CHECK(anchored.error().contains("2026-12-01"));
 }
+
+namespace {
+
+/// One source's quotes at 1M, 1Y and 2Y, quoted in the order a screen holds them.
+std::vector<quoted_surface_point> source_quotes(double atm, double rr25, double bf25) {
+    std::vector<quoted_surface_point> out;
+    for (const std::string expiry : {"2Y", "1M", "1Y"}) {
+        out.push_back({expiry, "ATM", atm});
+        out.push_back({expiry, "25RR", rr25});
+        out.push_back({expiry, "25BF", bf25});
+    }
+    return out;
+}
+
+/// The smile by delta a source's quotes fit to, by expiry and display label.
+std::map<std::pair<std::string, std::string>, double>
+fit_by_delta(const std::vector<quoted_surface_point>& quotes) {
+    const auto made =
+        make_quote_fit_recipe("EUR", "USD", *eur_usd_recipe().convention, "ice", quotes);
+    REQUIRE(made);
+    const auto checked = check_recipe(made->recipe);
+    REQUIRE(checked);
+    const auto prepared =
+        prepare_calibration(made->recipe, *checked, eur_usd_forward_set(), made->quotes, 0.01, 1);
+    REQUIRE(prepared);
+    const auto fit = qs::calibrate_ssvi(prepared->request);
+    REQUIRE(fit);
+    std::map<std::pair<std::string, std::string>, double> out;
+    for (const auto& point : fit->grid)
+        out[{point.expiry_id, delta_label(point.strike_id)}] = point.volatility;
+    return out;
+}
+
+}
+
+TEST_CASE("a source's quotes become a recipe of its own expiries, in tenor order",
+          "[app][fx_vol_surface_calibration_plan][quote_fit]") {
+    auto quotes = source_quotes(0.10, 0.0, 0.0);
+    quotes.push_back({"1M", "25C", 0.11});
+    quotes.push_back({"1M", "10RR", std::nan("")});
+    const auto made =
+        make_quote_fit_recipe("EUR", "USD", *eur_usd_recipe().convention, "ice", quotes);
+    REQUIRE(made);
+    CHECK(made->recipe.blueprint.output_expiries == "1M,1Y,2Y");
+    CHECK(made->recipe.blueprint.output_strikes.starts_with("DEL/"));
+    // A call quote and a volatility that is not a number are left out.
+    CHECK(made->recipe.pillars.size() == 9);
+    CHECK(made->quotes.at(quote_fit_series()).size() == 9);
+    CHECK(delta_label("DEL/PaSpot/Put/25") == "25P");
+    CHECK(delta_label("DEL/Spot/Call/10") == "10C");
+    CHECK(delta_label("ATM") == "ATM");
+
+    CHECK_FALSE(make_quote_fit_recipe(
+        "EUR", "USD", *eur_usd_recipe().convention, "ice", {{"soon", "ATM", 0.1}}));
+    const auto empty = make_quote_fit_recipe("EUR", "USD", *eur_usd_recipe().convention, "B", {});
+    REQUIRE_FALSE(empty);
+    CHECK(empty.error().contains("B quotes no ATM"));
+}
+
+TEST_CASE("a flat smile reads the same volatility at every delta",
+          "[app][fx_vol_surface_calibration_plan][quote_fit]") {
+    const auto smile = fit_by_delta(source_quotes(0.10, 0.0, 0.0));
+    REQUIRE(smile.size() == 15);
+    for (const auto& [point, volatility] : smile)
+        CHECK(volatility == Approx(0.10).margin(1e-4));
+}
+
+TEST_CASE("a positive risk reversal puts the call wing above the put wing",
+          "[app][fx_vol_surface_calibration_plan][quote_fit]") {
+    const auto smile = fit_by_delta(source_quotes(0.10, 0.01, 0.002));
+    for (const std::string expiry : {"1M", "1Y", "2Y"}) {
+        CHECK(smile.at({expiry, "25C"}) > smile.at({expiry, "25P"}));
+        CHECK(smile.at({expiry, "25C"}) - smile.at({expiry, "25P"}) == Approx(0.01).margin(0.002));
+        CHECK(smile.at({expiry, "ATM"}) == Approx(0.10).margin(0.002));
+    }
+}
+
+TEST_CASE("a source that cannot be fitted is answered with why, and the others are still fitted",
+          "[app][fx_vol_surface_calibration_plan][quote_fit]") {
+    namespace mm = ores::marketdata::messaging;
+    const auto source_of = [](const std::string& name, const std::vector<quoted_surface_point>& q) {
+        mm::fx_vol_quote_source out;
+        out.name = name;
+        for (const auto& p : q)
+            out.quotes.push_back(
+                {.expiry = p.expiry, .label = p.label, .volatility = p.volatility});
+        return out;
+    };
+    int reads = 0;
+    const auto forwards_of = [&](const surface_calibration_recipe&) {
+        ++reads;
+        return eur_usd_forward_set();
+    };
+    const auto fits = fit_quote_sources("EUR",
+                                        "USD",
+                                        *eur_usd_recipe().convention,
+                                        {source_of("empty", {}),
+                                         source_of("ice", source_quotes(0.10, 0.0, 0.0)),
+                                         source_of("tradeweb", source_quotes(0.12, 0.0, 0.0))},
+                                        forwards_of,
+                                        0.01);
+    REQUIRE(fits);
+    REQUIRE(fits->size() == 3);
+    CHECK((*fits)[0].name == "empty");
+    CHECK_FALSE((*fits)[0].fitted);
+    CHECK((*fits)[0].message.contains("empty quotes no ATM"));
+    CHECK((*fits)[1].fitted);
+    CHECK((*fits)[1].points.size() == 15);
+    CHECK((*fits)[2].fitted);
+    CHECK((*fits)[2].points.front().volatility == Approx(0.12).margin(1e-4));
+    CHECK(reads == 1);
+
+    const std::vector<mm::fx_vol_quote_source> crowd(most_fit_sources + 1,
+                                                     source_of("ice", source_quotes(0.1, 0, 0)));
+    const auto refused =
+        fit_quote_sources("EUR", "USD", *eur_usd_recipe().convention, crowd, forwards_of, 0.01);
+    REQUIRE_FALSE(refused);
+    CHECK(refused.error().contains("at most 8 sources"));
+
+    std::vector<quoted_surface_point> many(most_fit_quotes + 1, {"1M", "ATM", 0.1});
+    const auto large = fit_quote_sources(
+        "EUR", "USD", *eur_usd_recipe().convention, {source_of("ice", many)}, forwards_of, 0.01);
+    REQUIRE_FALSE(large);
+    CHECK(large.error().contains("ice holds 1001"));
+    CHECK(reads == 1);
+}

@@ -27,6 +27,7 @@
 #include "ores.http/routes/workflow/request_routes.hpp"
 #include "ores.http/routes/workflow/request_story_routes.hpp"
 #include "ores.http/routes/workflow/retry_routes.hpp"
+#include "ores.http/routes/workflow/timeline.hpp"
 
 namespace ores::http::routes::workflow {
 
@@ -43,6 +44,7 @@ void workflow_routes::register_routes(
     request_proposal_routes::register_routes(router, registry, session);
     request_story_routes::register_routes(router, registry, session);
     progress_routes::register_routes(router, registry, session);
+    timeline_routes::register_routes(router, registry, session);
 }
 
 }

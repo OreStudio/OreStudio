@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.core/repository/instrument_code_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -450,26 +448,26 @@ instrument_code_service::prepare_change(const messaging::instrument_code_change&
 
 std::vector<domain::instrument_code>
 instrument_code_service::list_instruments(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all instrument codes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all instrument codes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t instrument_code_service::count_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total instrument codes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total instrument codes count";
     return repo_.get_total_instrument_count(ctx_);
 }
 
 
 std::optional<domain::instrument_code>
 instrument_code_service::get_instrument_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument code at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting instrument code at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::instrument_code>
 instrument_code_service::get_instrument(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument code. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting instrument code. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -484,11 +482,11 @@ instrument_code_service::get_instruments(const std::vector<std::string>& codes) 
 void instrument_code_service::save_instrument(const domain::instrument_code& v) {
     if (v.code.empty())
         throw std::invalid_argument("Instrument Code code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving instrument code. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving instrument code. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved instrument code. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved instrument code. " << "code: " << v.code;
 }
 
 void instrument_code_service::save_instruments(
@@ -497,7 +495,7 @@ void instrument_code_service::save_instruments(
         if (e.code.empty())
             throw std::invalid_argument("Instrument Code code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << instruments.size() << " instrument codes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << instruments.size() << " instrument codes";
     auto ts = instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -506,9 +504,9 @@ void instrument_code_service::save_instruments(
 }
 
 void instrument_code_service::delete_instrument(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument code. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing instrument code. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed instrument code. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed instrument code. " << "code: " << code;
 }
 
 void instrument_code_service::delete_instruments(const std::vector<std::string>& codes) {
@@ -517,7 +515,7 @@ void instrument_code_service::delete_instruments(const std::vector<std::string>&
 
 std::vector<domain::instrument_code>
 instrument_code_service::get_instrument_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument code. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for instrument code. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

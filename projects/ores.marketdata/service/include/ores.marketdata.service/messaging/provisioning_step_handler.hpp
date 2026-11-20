@@ -27,7 +27,7 @@
 #include "ores.iam.api/workflow/provision_step_arguments.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
@@ -211,7 +211,7 @@ public:
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
+            ORES_LOG_SEV(lg(), ores::logging::warn)
                 << "Ignored a command with no workflow headers: " << msg.subject;
             std::move(delivery).reject();
             return;
@@ -247,7 +247,7 @@ public:
             // The work could not be done, and nothing here says it never will
             // be. The step fails, which stops the run or starts its
             // compensation; a person or a resume decides whether to try again.
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Step " << wf->step_id << " failed: " << e.what();
             wf->fail(e.what());
         }
@@ -367,8 +367,8 @@ private:
                 throw std::runtime_error("The tenant holds no party the market data step names: '" +
                                          assignment.party + "'.");
 
-        BOOST_LOG_SEV(lg(), ores::logging::info) << "subscribe_market_data: " << subscribed.size()
-                                                 << " part(y/ies) subscribed; completing the step";
+        ORES_LOG_SEV(lg(), ores::logging::info) << "subscribe_market_data: " << subscribed.size()
+                                                << " part(y/ies) subscribed; completing the step";
         // The result states the kind and the parties subscribed: nothing else of
         // the shared result shape is filled for this kind, and no reader of it
         // expects more.
@@ -879,7 +879,7 @@ private:
                 const auto line = party_name + ": " + std::to_string(plan.waiting.size()) +
                                   " curve(s) wait for their quotes, asking again in " +
                                   std::to_string(retry_interval.count()) + "s";
-                BOOST_LOG_SEV(lg(), ores::logging::info) << "publish_party_curves: " << line;
+                ORES_LOG_SEV(lg(), ores::logging::info) << "publish_party_curves: " << line;
                 // The count ready moves only as quotes arrive, so waiting is
                 // seen to progress or to stand still.
                 wf.progress(party_name + ": curves with their quotes",
@@ -957,7 +957,7 @@ private:
                         break;
                 }
             }
-            BOOST_LOG_SEV(lg(), ores::logging::info)
+            ORES_LOG_SEV(lg(), ores::logging::info)
                 << "publish_party_curves: " << party_name << ": published " << published_now
                 << ", already published " << already_published << ", not published "
                 << outcomes.size() - published_now + plan.waiting.size();
@@ -1166,7 +1166,7 @@ private:
                         break;
                 }
             }
-            BOOST_LOG_SEV(lg(), ores::logging::info)
+            ORES_LOG_SEV(lg(), ores::logging::info)
                 << "publish_party_forwards: " << party_name << ": published " << published << " of "
                 << pairs.size() << " pair(s)";
             wf.record(party_name + ": published forward sets for " + std::to_string(published) +
@@ -1392,7 +1392,7 @@ private:
                 const auto line = party_name + ": " + std::to_string(plan.waiting.size()) +
                                   " surface blueprint(s) wait for their quotes, asking again in " +
                                   std::to_string(retry_interval.count()) + "s";
-                BOOST_LOG_SEV(lg(), ores::logging::info)
+                ORES_LOG_SEV(lg(), ores::logging::info)
                     << "give_party_surface_blueprints: " << line;
                 wf.progress(party_name + ": surface blueprints with their quotes",
                             static_cast<std::int64_t>(plan.ready.size()),
@@ -1405,7 +1405,7 @@ private:
                     catalogue, read_party_surface_holdings(party_ctx, party->id));
             }
             write_party_surface_plan(party_nats, plan, party_name);
-            BOOST_LOG_SEV(lg(), ores::logging::info)
+            ORES_LOG_SEV(lg(), ores::logging::info)
                 << "give_party_surface_blueprints: " << party_name << ": "
                 << plan.blueprints_to_write.size() << " written, " << plan.ready.size() << " held, "
                 << plan.waiting.size() << " waiting";
@@ -1780,7 +1780,7 @@ private:
                         break;
                 }
             }
-            BOOST_LOG_SEV(lg(), ores::logging::info)
+            ORES_LOG_SEV(lg(), ores::logging::info)
                 << "publish_party_surfaces: " << party_name << ": published " << published << " of "
                 << recipes.size() << " surface(s)";
             wf.record(party_name + ": published " + std::to_string(published) + " of " +

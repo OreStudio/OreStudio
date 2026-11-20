@@ -20,7 +20,7 @@
 #ifndef ORES_ORE_CORE_SCANNER_ORE_DIRECTORY_SCANNER_HPP
 #define ORES_ORE_CORE_SCANNER_ORE_DIRECTORY_SCANNER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/scanner/scan_result.hpp"
 #include <filesystem>

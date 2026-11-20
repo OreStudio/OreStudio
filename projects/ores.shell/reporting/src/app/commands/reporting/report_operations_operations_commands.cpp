@@ -265,7 +265,7 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
 
 void report_operations_operations_commands::process_trigger_report_instance(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating trigger-report-instance request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating trigger-report-instance request.";
 
     using request_type = ores::reporting::messaging::trigger_report_instance_request;
 
@@ -347,7 +347,7 @@ void report_operations_operations_commands::process_trigger_report_instance(
 
 void report_operations_operations_commands::process_get_run_health(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-run-health request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-run-health request.";
 
     using request_type = ores::reporting::messaging::get_run_health_request;
 
@@ -402,7 +402,7 @@ void report_operations_operations_commands::process_get_run_health(
 
 void report_operations_operations_commands::process_record_run_pricing(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating record-run-pricing request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating record-run-pricing request.";
 
     using request_type = ores::reporting::messaging::record_run_pricing_request;
 
@@ -459,7 +459,7 @@ void report_operations_operations_commands::process_record_run_pricing(
 
 void report_operations_operations_commands::process_schedule_report_definitions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating schedule-report-definitions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating schedule-report-definitions request.";
 
     using request_type = ores::reporting::messaging::schedule_report_definitions_request;
 
@@ -514,7 +514,7 @@ void report_operations_operations_commands::process_schedule_report_definitions(
 
 void report_operations_operations_commands::process_unschedule_report_definitions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating unschedule-report-definitions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating unschedule-report-definitions request.";
 
     using request_type = ores::reporting::messaging::unschedule_report_definitions_request;
 
@@ -569,7 +569,7 @@ void report_operations_operations_commands::process_unschedule_report_definition
 
 void report_operations_operations_commands::process_gather_trades(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating gather-trades request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating gather-trades request.";
 
     using request_type = ores::reporting::messaging::gather_trades_request;
 
@@ -626,7 +626,7 @@ void report_operations_operations_commands::process_gather_trades(
 
 void report_operations_operations_commands::process_gather_market_data(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating gather-market-data request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating gather-market-data request.";
 
     using request_type = ores::reporting::messaging::gather_market_data_request;
 
@@ -683,7 +683,7 @@ void report_operations_operations_commands::process_gather_market_data(
 
 void report_operations_operations_commands::process_assemble_bundle(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating assemble-bundle request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating assemble-bundle request.";
 
     using request_type = ores::reporting::messaging::assemble_bundle_request;
 
@@ -758,7 +758,7 @@ void report_operations_operations_commands::process_assemble_bundle(
 
 void report_operations_operations_commands::process_prepare_ore_package(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating prepare-ore-package request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating prepare-ore-package request.";
 
     using request_type = ores::reporting::messaging::prepare_ore_package_request;
 
@@ -821,7 +821,7 @@ void report_operations_operations_commands::process_prepare_ore_package(
 
 void report_operations_operations_commands::process_submit_compute(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating submit-compute request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating submit-compute request.";
 
     using request_type = ores::reporting::messaging::submit_compute_request;
 
@@ -880,7 +880,7 @@ void report_operations_operations_commands::process_submit_compute(
 
 void report_operations_operations_commands::process_collect_compute_results(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating collect-compute-results request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating collect-compute-results request.";
 
     using request_type = ores::reporting::messaging::collect_compute_results_request;
 
@@ -937,7 +937,7 @@ void report_operations_operations_commands::process_collect_compute_results(
 
 void report_operations_operations_commands::process_post_process_results(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating post-process-results request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating post-process-results request.";
 
     using request_type = ores::reporting::messaging::post_process_results_request;
 
@@ -995,7 +995,7 @@ void report_operations_operations_commands::process_post_process_results(
 
 void report_operations_operations_commands::process_finalise_report(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating finalise-report request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating finalise-report request.";
 
     using request_type = ores::reporting::messaging::finalise_report_request;
 
@@ -1051,7 +1051,7 @@ void report_operations_operations_commands::process_finalise_report(
 
 void report_operations_operations_commands::process_fail_report(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating fail-report request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating fail-report request.";
 
     using request_type = ores::reporting::messaging::fail_report_request;
 
@@ -1108,7 +1108,7 @@ void report_operations_operations_commands::process_fail_report(
 
 void report_operations_operations_commands::process_resolve_prepared_input(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating resolve-prepared-input request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating resolve-prepared-input request.";
 
     using request_type = ores::reporting::messaging::resolve_prepared_input_request;
 
@@ -1165,7 +1165,7 @@ void report_operations_operations_commands::process_resolve_prepared_input(
 
 void report_operations_operations_commands::process_ignore_compute_results(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating ignore-compute-results request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating ignore-compute-results request.";
 
     using request_type = ores::reporting::messaging::ignore_compute_results_request;
 
@@ -1222,7 +1222,7 @@ void report_operations_operations_commands::process_ignore_compute_results(
 
 void report_operations_operations_commands::process_get_next_fire(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-next-fire request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-next-fire request.";
 
     using request_type = ores::reporting::messaging::get_next_fire_request;
 
@@ -1276,7 +1276,7 @@ void report_operations_operations_commands::process_get_next_fire(
 
 void report_operations_operations_commands::process_resolve_cut(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating resolve-cut request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating resolve-cut request.";
 
     using request_type = ores::reporting::messaging::resolve_cut_request;
 
@@ -1367,7 +1367,7 @@ void report_operations_operations_commands::process_resolve_cut(
 
 void report_operations_operations_commands::process_list_cut_rows(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-cut-rows request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-cut-rows request.";
 
     using request_type = ores::reporting::messaging::list_cut_rows_request;
 
@@ -1444,7 +1444,7 @@ void report_operations_operations_commands::process_list_cut_rows(
 
 void report_operations_operations_commands::process_get_cut_record(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-cut-record request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-cut-record request.";
 
     using request_type = ores::reporting::messaging::get_cut_record_request;
 
@@ -1500,7 +1500,7 @@ void report_operations_operations_commands::process_get_cut_record(
 void report_operations_operations_commands::process_take_cut(std::ostream& out,
                                                              nats_client& session,
                                                              const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating take-cut request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating take-cut request.";
 
     using request_type = ores::reporting::messaging::take_cut_request;
 
@@ -1572,7 +1572,7 @@ void report_operations_operations_commands::process_take_cut(std::ostream& out,
 
 void report_operations_operations_commands::process_list_cut_authorisation_subjects(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-cut-authorisation-subjects request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-cut-authorisation-subjects request.";
 
     using request_type = ores::reporting::messaging::list_cut_authorisation_subjects_request;
 

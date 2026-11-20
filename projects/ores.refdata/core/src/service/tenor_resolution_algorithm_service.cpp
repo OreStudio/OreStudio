@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_resolution_algorithm.hpp"
 #include "ores.refdata.api/messaging/tenor_resolution_algorithm_protocol.hpp"
 #include "ores.refdata.core/repository/tenor_resolution_algorithm_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -464,12 +462,12 @@ ores::utility::domain::result tenor_resolution_algorithm_service::prepare_change
 
 std::vector<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_service::list_algorithms(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all tenor resolution algorithms";
+    ORES_LOG_SEV(lg(), debug) << "Listing all tenor resolution algorithms";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t tenor_resolution_algorithm_service::count_algorithms() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total tenor resolution algorithms count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total tenor resolution algorithms count";
     return repo_.get_total_algorithm_count(ctx_);
 }
 
@@ -477,14 +475,14 @@ std::uint32_t tenor_resolution_algorithm_service::count_algorithms() {
 std::optional<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_service::get_algorithm_at_version(const std::string& code,
                                                              std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor resolution algorithm at version. "
-                               << "code: " << code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenor resolution algorithm at version. "
+                              << "code: " << code << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_service::get_algorithm(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor resolution algorithm. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenor resolution algorithm. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -500,11 +498,11 @@ void tenor_resolution_algorithm_service::save_algorithm(
     const domain::tenor_resolution_algorithm& v) {
     if (v.code.empty())
         throw std::invalid_argument("Tenor Resolution Algorithm code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor resolution algorithm. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving tenor resolution algorithm. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor resolution algorithm. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved tenor resolution algorithm. " << "code: " << v.code;
 }
 
 void tenor_resolution_algorithm_service::save_algorithms(
@@ -513,7 +511,7 @@ void tenor_resolution_algorithm_service::save_algorithms(
         if (e.code.empty())
             throw std::invalid_argument("Tenor Resolution Algorithm code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << algorithms.size() << " tenor resolution algorithms";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << algorithms.size() << " tenor resolution algorithms";
     auto ts = algorithms;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -522,9 +520,9 @@ void tenor_resolution_algorithm_service::save_algorithms(
 }
 
 void tenor_resolution_algorithm_service::delete_algorithm(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor resolution algorithm. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing tenor resolution algorithm. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenor resolution algorithm. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed tenor resolution algorithm. " << "code: " << code;
 }
 
 void tenor_resolution_algorithm_service::delete_algorithms(const std::vector<std::string>& codes) {
@@ -533,8 +531,8 @@ void tenor_resolution_algorithm_service::delete_algorithms(const std::vector<std
 
 std::vector<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_service::get_algorithm_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor resolution algorithm. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for tenor resolution algorithm. "
+                              << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

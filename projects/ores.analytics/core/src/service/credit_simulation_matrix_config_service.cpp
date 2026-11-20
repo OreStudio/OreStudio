@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/credit_simulation_matrix_config.hpp"
 #include "ores.analytics.api/messaging/credit_simulation_matrix_config_protocol.hpp"
 #include "ores.analytics.core/repository/credit_simulation_matrix_config_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -506,12 +504,12 @@ ores::utility::domain::result credit_simulation_matrix_config_service::prepare_c
 
 std::vector<domain::credit_simulation_matrix_config>
 credit_simulation_matrix_config_service::list_matrices(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all transition matrices";
+    ORES_LOG_SEV(lg(), debug) << "Listing all transition matrices";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t credit_simulation_matrix_config_service::count_matrices() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total transition matrices count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total transition matrices count";
     return repo_.get_total_matrix_count(ctx_);
 }
 
@@ -519,14 +517,14 @@ std::uint32_t credit_simulation_matrix_config_service::count_matrices() {
 std::optional<domain::credit_simulation_matrix_config>
 credit_simulation_matrix_config_service::get_matrix_at_version(const boost::uuids::uuid& id,
                                                                std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting transition matrix at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting transition matrix at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::credit_simulation_matrix_config>
 credit_simulation_matrix_config_service::get_matrix(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting transition matrix. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting transition matrix. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -535,7 +533,7 @@ credit_simulation_matrix_config_service::get_matrix(const boost::uuids::uuid& id
 
 std::optional<domain::credit_simulation_matrix_config>
 credit_simulation_matrix_config_service::get_matrix_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting transition matrix by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting transition matrix by name: " << name;
     messaging::credit_simulation_matrix_config_key k;
     k.name = name;
     auto found = credit_simulation_matrix_config_read_one(repo_, ctx_, k);
@@ -553,11 +551,11 @@ void credit_simulation_matrix_config_service::save_matrix(
     const domain::credit_simulation_matrix_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Credit Simulation Matrix Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving transition matrix. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving transition matrix. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved transition matrix. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved transition matrix. " << "id: " << v.id;
 }
 
 void credit_simulation_matrix_config_service::save_matrices(
@@ -566,7 +564,7 @@ void credit_simulation_matrix_config_service::save_matrices(
         if (e.id.is_nil())
             throw std::invalid_argument("Credit Simulation Matrix Config id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << matrices.size() << " transition matrices";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << matrices.size() << " transition matrices";
     auto ts = matrices;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -575,9 +573,9 @@ void credit_simulation_matrix_config_service::save_matrices(
 }
 
 void credit_simulation_matrix_config_service::delete_matrix(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing transition matrix. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing transition matrix. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed transition matrix. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed transition matrix. " << "id: " << id;
 }
 
 void credit_simulation_matrix_config_service::delete_matrices(const std::vector<std::string>& ids) {
@@ -586,7 +584,7 @@ void credit_simulation_matrix_config_service::delete_matrices(const std::vector<
 
 std::vector<domain::credit_simulation_matrix_config>
 credit_simulation_matrix_config_service::get_matrix_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for transition matrix. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for transition matrix. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_OPTION_EXERCISE_PRICE_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_OPTION_EXERCISE_PRICE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/instrument_option_exercise_price_entity.hpp"

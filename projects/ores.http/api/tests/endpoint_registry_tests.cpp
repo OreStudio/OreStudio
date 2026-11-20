@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/route.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -48,7 +48,7 @@ using namespace ores::logging;
 
 TEST_CASE("endpoint_registry_generates_minimal_openapi_spec", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing minimal OpenAPI spec generation";
+    ORES_LOG_SEV(lg, info) << "Testing minimal OpenAPI spec generation";
 
     endpoint_registry registry;
     auto json = registry.generate_openapi_json();
@@ -59,7 +59,7 @@ TEST_CASE("endpoint_registry_generates_minimal_openapi_spec", "[endpoint_registr
 
 TEST_CASE("endpoint_registry_generates_spec_with_info", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing OpenAPI spec with info";
+    ORES_LOG_SEV(lg, info) << "Testing OpenAPI spec with info";
 
     endpoint_registry registry;
     api_info info;
@@ -77,7 +77,7 @@ TEST_CASE("endpoint_registry_generates_spec_with_info", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_generates_spec_with_contact", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing OpenAPI spec with contact info";
+    ORES_LOG_SEV(lg, info) << "Testing OpenAPI spec with contact info";
 
     endpoint_registry registry;
     api_info info;
@@ -94,7 +94,7 @@ TEST_CASE("endpoint_registry_generates_spec_with_contact", "[endpoint_registry]"
 
 TEST_CASE("endpoint_registry_generates_spec_with_license", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing OpenAPI spec with license info";
+    ORES_LOG_SEV(lg, info) << "Testing OpenAPI spec with license info";
 
     endpoint_registry registry;
     api_info info;
@@ -111,7 +111,7 @@ TEST_CASE("endpoint_registry_generates_spec_with_license", "[endpoint_registry]"
 
 TEST_CASE("endpoint_registry_generates_spec_with_servers", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing OpenAPI spec with servers";
+    ORES_LOG_SEV(lg, info) << "Testing OpenAPI spec with servers";
 
     endpoint_registry registry;
     registry.add_server({"https://api.example.com", "Production server"});
@@ -127,7 +127,7 @@ TEST_CASE("endpoint_registry_generates_spec_with_servers", "[endpoint_registry]"
 
 TEST_CASE("endpoint_registry_generates_default_server_when_none_added", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing OpenAPI spec with default server";
+    ORES_LOG_SEV(lg, info) << "Testing OpenAPI spec with default server";
 
     endpoint_registry registry;
     auto json = registry.generate_openapi_json();
@@ -138,7 +138,7 @@ TEST_CASE("endpoint_registry_generates_default_server_when_none_added", "[endpoi
 
 TEST_CASE("endpoint_registry_registers_get_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing GET route registration";
+    ORES_LOG_SEV(lg, info) << "Testing GET route registration";
 
     endpoint_registry registry;
     registry.register_route(make_test_route(http_method::get, "/health", "Health check"));
@@ -152,7 +152,7 @@ TEST_CASE("endpoint_registry_registers_get_route", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_registers_post_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing POST route registration";
+    ORES_LOG_SEV(lg, info) << "Testing POST route registration";
 
     endpoint_registry registry;
     registry.register_route(make_test_route(http_method::post, "/users", "Create user"));
@@ -165,7 +165,7 @@ TEST_CASE("endpoint_registry_registers_post_route", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_registers_put_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing PUT route registration";
+    ORES_LOG_SEV(lg, info) << "Testing PUT route registration";
 
     endpoint_registry registry;
     registry.register_route(make_test_route(http_method::put, "/users/{id}", "Update user"));
@@ -178,7 +178,7 @@ TEST_CASE("endpoint_registry_registers_put_route", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_registers_patch_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing PATCH route registration";
+    ORES_LOG_SEV(lg, info) << "Testing PATCH route registration";
 
     endpoint_registry registry;
     registry.register_route(make_test_route(http_method::patch, "/users/{id}", "Patch user"));
@@ -190,7 +190,7 @@ TEST_CASE("endpoint_registry_registers_patch_route", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_registers_delete_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing DELETE route registration";
+    ORES_LOG_SEV(lg, info) << "Testing DELETE route registration";
 
     endpoint_registry registry;
     registry.register_route(make_test_route(http_method::delete_, "/users/{id}", "Delete user"));
@@ -202,7 +202,7 @@ TEST_CASE("endpoint_registry_registers_delete_route", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_registers_head_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing HEAD route registration";
+    ORES_LOG_SEV(lg, info) << "Testing HEAD route registration";
 
     endpoint_registry registry;
     registry.register_route(make_test_route(http_method::head, "/users", "Check users"));
@@ -214,7 +214,7 @@ TEST_CASE("endpoint_registry_registers_head_route", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_registers_options_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing OPTIONS route registration";
+    ORES_LOG_SEV(lg, info) << "Testing OPTIONS route registration";
 
     endpoint_registry registry;
     registry.register_route(make_test_route(http_method::options, "/users", "Options for users"));
@@ -226,7 +226,7 @@ TEST_CASE("endpoint_registry_registers_options_route", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_includes_path_parameters", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing path parameter inclusion";
+    ORES_LOG_SEV(lg, info) << "Testing path parameter inclusion";
 
     endpoint_registry registry;
 
@@ -246,7 +246,7 @@ TEST_CASE("endpoint_registry_includes_path_parameters", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_includes_authentication_requirement", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing authentication requirement inclusion";
+    ORES_LOG_SEV(lg, info) << "Testing authentication requirement inclusion";
 
     endpoint_registry registry;
     registry.register_route(
@@ -261,7 +261,7 @@ TEST_CASE("endpoint_registry_includes_authentication_requirement", "[endpoint_re
 
 TEST_CASE("endpoint_registry_includes_tags", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing tags inclusion";
+    ORES_LOG_SEV(lg, info) << "Testing tags inclusion";
 
     endpoint_registry registry;
 
@@ -280,7 +280,7 @@ TEST_CASE("endpoint_registry_includes_tags", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_includes_description", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing description inclusion";
+    ORES_LOG_SEV(lg, info) << "Testing description inclusion";
 
     endpoint_registry registry;
     registry.register_route(make_test_route(http_method::get,
@@ -296,7 +296,7 @@ TEST_CASE("endpoint_registry_includes_description", "[endpoint_registry]") {
 
 TEST_CASE("endpoint_registry_includes_standard_responses", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing standard response inclusion";
+    ORES_LOG_SEV(lg, info) << "Testing standard response inclusion";
 
     endpoint_registry registry;
     registry.register_route(make_test_route(http_method::get, "/health", "Health check"));
@@ -309,7 +309,7 @@ TEST_CASE("endpoint_registry_includes_standard_responses", "[endpoint_registry]"
 
 TEST_CASE("endpoint_registry_generates_security_components", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing security components generation";
+    ORES_LOG_SEV(lg, info) << "Testing security components generation";
 
     endpoint_registry registry;
     auto json = registry.generate_openapi_json();
@@ -323,7 +323,7 @@ TEST_CASE("endpoint_registry_generates_security_components", "[endpoint_registry
 
 TEST_CASE("endpoint_registry_multiple_methods_same_path", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing multiple methods on same path";
+    ORES_LOG_SEV(lg, info) << "Testing multiple methods on same path";
 
     endpoint_registry registry;
     registry.register_route(make_test_route(http_method::get, "/users", "List users"));
@@ -338,7 +338,7 @@ TEST_CASE("endpoint_registry_multiple_methods_same_path", "[endpoint_registry]")
 
 TEST_CASE("endpoint_registry_generates_swagger_ui_html", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing Swagger UI HTML generation";
+    ORES_LOG_SEV(lg, info) << "Testing Swagger UI HTML generation";
 
     endpoint_registry registry;
     api_info info;
@@ -356,7 +356,7 @@ TEST_CASE("endpoint_registry_generates_swagger_ui_html", "[endpoint_registry]") 
 
 TEST_CASE("endpoint_registry_generates_swagger_ui_html_default_spec_url", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing Swagger UI HTML with default spec URL";
+    ORES_LOG_SEV(lg, info) << "Testing Swagger UI HTML with default spec URL";
 
     endpoint_registry registry;
     auto html = registry.generate_swagger_ui_html();

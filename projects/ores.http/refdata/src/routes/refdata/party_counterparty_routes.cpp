@@ -340,7 +340,7 @@ void party_counterparty_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering party_counterparties routes";
+    ORES_LOG_SEV(lg(), info) << "Registering party_counterparties routes";
 
     auto list_route =
         router->get("/api/v1/reference-data/party_counterparties")
@@ -493,7 +493,7 @@ void party_counterparty_routes::register_routes(
     router->add_route(by_counterparty_id_built);
     registry->register_route(by_counterparty_id_built);
 
-    BOOST_LOG_SEV(lg(), info) << "party_counterparties routes registered: " << 10 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "party_counterparties routes registered: " << 10 << " endpoint(s)";
 }
 
 }

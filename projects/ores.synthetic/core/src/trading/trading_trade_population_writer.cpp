@@ -21,7 +21,7 @@
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
@@ -438,7 +438,7 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     // states. The population is then booked as nobody of the party, so the run says so rather than
     // leaving the party's staff with trades none of them can own.
     if (scope.traders.empty() && fallback_) {
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
+        ORES_LOG_SEV(lg(), ores::logging::warn)
             << "Party " << boost::uuids::to_string(scope.party_id)
             << " holds no account with the Trading role, so its population is entered by '"
             << fallback_->username << "' and no person of the party owns its requests.";

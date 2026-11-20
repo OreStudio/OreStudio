@@ -30,7 +30,7 @@
 #include "ores.inbox.api/messaging/approval_request_part_protocol.hpp"
 #include "ores.inbox.core/export.hpp"
 #include "ores.inbox.core/repository/approval_request_part_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <optional>

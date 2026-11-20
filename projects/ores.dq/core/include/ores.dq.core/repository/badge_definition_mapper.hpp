@@ -28,7 +28,7 @@
 #include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/badge_definition_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::dq::repository {
 

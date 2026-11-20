@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_SERVICE_FX_SPOT_GENERATION_CONFIG_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

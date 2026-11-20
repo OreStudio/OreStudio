@@ -27,13 +27,11 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/structure_template_role.hpp"
 #include "ores.trading.api/domain/structure_template_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/structure_template_role_entity.hpp"
 #include "ores.trading.core/repository/structure_template_role_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -222,8 +220,8 @@ void structure_template_role_repository::write(
 void structure_template_role_repository::write(const context& ctx,
                                                const domain::structure_template_role& v,
                                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing structure template role. "
-                               << "template_code: " << v.template_code << " role: " << v.role;
+    ORES_LOG_SEV(lg(), debug) << "Writing structure template role. "
+                              << "template_code: " << v.template_code << " role: " << v.role;
     const auto t = structure_template_role_apply_claim(
         v,
         claim,
@@ -240,7 +238,7 @@ void structure_template_role_repository::write(
     const context& ctx,
     const std::vector<domain::structure_template_role>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing structure template roles. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing structure template roles. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "structure_template_role_repository::write: one claim is needed for each row");
@@ -282,8 +280,8 @@ structure_template_role_repository::read_latest(const context& ctx) {
 
 std::vector<domain::structure_template_role> structure_template_role_repository::read_latest(
     const context& ctx, const std::string& template_code, const std::string& role) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest structure template role. "
-                               << "template_code: " << template_code << " role: " << role;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest structure template role. "
+                              << "template_code: " << template_code << " role: " << role;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -304,8 +302,8 @@ std::vector<domain::structure_template_role> structure_template_role_repository:
 
 std::vector<domain::structure_template_role> structure_template_role_repository::read_all(
     const context& ctx, const std::string& template_code, const std::string& role) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all structure template role versions. "
-                               << "template_code: " << template_code << " role: " << role;
+    ORES_LOG_SEV(lg(), debug) << "Reading all structure template role versions. "
+                              << "template_code: " << template_code << " role: " << role;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -328,9 +326,9 @@ structure_template_role_repository::read_at_version(const context& ctx,
                                                     const std::string& template_code,
                                                     const std::string& role,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading structure template role at version. "
-                               << "template_code: " << template_code << " role: " << role
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading structure template role at version. "
+                              << "template_code: " << template_code << " role: " << role
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<structure_template_role_entity>> |
@@ -358,8 +356,8 @@ structure_template_role_repository::remove(const context& ctx,
                                            const std::string& template_code,
                                            const std::string& role,
                                            std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing structure template role. "
-                               << "template_code: " << template_code << " role: " << role;
+    ORES_LOG_SEV(lg(), debug) << "Removing structure template role. "
+                              << "template_code: " << template_code << " role: " << role;
     const auto current = read_latest(ctx, template_code, role);
     if (current.empty())
         return remove_status::missing;
@@ -400,8 +398,8 @@ structure_template_role_repository::read_latest(const context& ctx,
                                                 std::uint32_t limit,
                                                 const ores::utility::domain::order& order,
                                                 const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest structure template roles with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest structure template roles with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<structure_template_role_entity>> |
@@ -421,7 +419,7 @@ structure_template_role_repository::read_latest(const context& ctx,
 
 std::uint32_t structure_template_role_repository::get_total_template_role_count(
     const context& ctx, const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active structure template role count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active structure template role count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

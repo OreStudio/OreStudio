@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_CBO_TRANCHE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/cbo_tranche.hpp"
 #include "ores.trading.api/messaging/cbo_tranche_protocol.hpp"
 #include "ores.trading.core/export.hpp"

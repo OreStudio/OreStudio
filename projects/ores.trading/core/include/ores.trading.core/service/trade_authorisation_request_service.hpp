@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_TRADE_AUTHORISATION_REQUEST_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/trade_authorisation_request.hpp"
 #include "ores.trading.api/messaging/trade_authorisation_request_protocol.hpp"
 #include "ores.trading.core/export.hpp"

@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/scripted_parameter_value.hpp"
 #include "ores.trading.api/domain/scripted_parameter_value_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/scripted_parameter_value_protocol.hpp"
 #include "ores.trading.core/repository/scripted_parameter_value_entity.hpp"
 #include "ores.trading.core/repository/scripted_parameter_value_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -245,9 +243,9 @@ void scripted_parameter_value_repository::write(
 void scripted_parameter_value_repository::write(const context& ctx,
                                                 const domain::scripted_parameter_value& v,
                                                 const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing scripted parameter value. " << "trade_id: " << v.trade_id
-                               << " parameter_sequence_number: " << v.parameter_sequence_number
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Writing scripted parameter value. " << "trade_id: " << v.trade_id
+                              << " parameter_sequence_number: " << v.parameter_sequence_number
+                              << " sequence_number: " << v.sequence_number;
     const auto t = scripted_parameter_value_apply_claim(
         v,
         claim,
@@ -267,7 +265,7 @@ void scripted_parameter_value_repository::write(
     const context& ctx,
     const std::vector<domain::scripted_parameter_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing scripted parameter values. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing scripted parameter values. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "scripted_parameter_value_repository::write: one claim is needed for each row");
@@ -311,10 +309,10 @@ scripted_parameter_value_repository::read_latest(const context& ctx,
                                                  const std::string& trade_id,
                                                  const std::string& parameter_sequence_number,
                                                  const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest scripted parameter value. "
-                               << "trade_id: " << trade_id
-                               << " parameter_sequence_number: " << parameter_sequence_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest scripted parameter value. "
+                              << "trade_id: " << trade_id
+                              << " parameter_sequence_number: " << parameter_sequence_number
+                              << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -338,10 +336,10 @@ scripted_parameter_value_repository::read_all(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& parameter_sequence_number,
                                               const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all scripted parameter value versions. "
-                               << "trade_id: " << trade_id
-                               << " parameter_sequence_number: " << parameter_sequence_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading all scripted parameter value versions. "
+                              << "trade_id: " << trade_id
+                              << " parameter_sequence_number: " << parameter_sequence_number
+                              << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<scripted_parameter_value_entity>> |
@@ -365,11 +363,10 @@ scripted_parameter_value_repository::read_at_version(const context& ctx,
                                                      const std::string& parameter_sequence_number,
                                                      const std::string& sequence_number,
                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading scripted parameter value at version. "
-                               << "trade_id: " << trade_id
-                               << " parameter_sequence_number: " << parameter_sequence_number
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading scripted parameter value at version. "
+                              << "trade_id: " << trade_id
+                              << " parameter_sequence_number: " << parameter_sequence_number
+                              << " sequence_number: " << sequence_number << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<scripted_parameter_value_entity>> |
@@ -399,8 +396,8 @@ scripted_parameter_value_repository::read_latest_by_trade_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::scripted_parameter_values_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest scripted parameter values. trade_id: " << trade_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest scripted parameter values. trade_id: " << trade_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<scripted_parameter_value_entity>> |
@@ -425,7 +422,7 @@ scripted_parameter_value_repository::get_total_scripted_parameter_value_count_by
     const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::scripted_parameter_values_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active scripted parameter values count. trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
 
@@ -449,9 +446,9 @@ scripted_parameter_value_repository::remove(const context& ctx,
                                             const std::string& parameter_sequence_number,
                                             const std::string& sequence_number,
                                             std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing scripted parameter value. " << "trade_id: " << trade_id
-                               << " parameter_sequence_number: " << parameter_sequence_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Removing scripted parameter value. " << "trade_id: " << trade_id
+                              << " parameter_sequence_number: " << parameter_sequence_number
+                              << " sequence_number: " << sequence_number;
     const auto current = read_latest(ctx, trade_id, parameter_sequence_number, sequence_number);
     if (current.empty())
         return remove_status::missing;
@@ -497,8 +494,8 @@ std::vector<domain::scripted_parameter_value> scripted_parameter_value_repositor
     const ores::utility::domain::order& order,
     const std::optional<messaging::scripted_parameter_values_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest scripted parameter values with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest scripted parameter values with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<scripted_parameter_value_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -521,7 +518,7 @@ std::uint32_t scripted_parameter_value_repository::get_total_scripted_parameter_
     const context& ctx,
     const std::optional<messaging::scripted_parameter_values_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active scripted parameter value count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active scripted parameter value count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<scripted_parameter_value_entity>> |

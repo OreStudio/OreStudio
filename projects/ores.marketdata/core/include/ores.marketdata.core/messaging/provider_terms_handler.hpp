@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_PROVIDER_TERMS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/provider_terms_list_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/provider_terms_operations_protocol.hpp"
 #include "ores.marketdata.core/repository/provider_repository.hpp"
@@ -166,12 +166,12 @@ public:
                 repo.write(req_ctx, {withdrawn}, {claim_of(found.front())});
                 resp.success = true;
                 resp.message = "Withdrew the acceptance of '" + req->provider_code + "'.";
-                BOOST_LOG_SEV(provider_terms_handler_lg(), info)
+                ORES_LOG_SEV(provider_terms_handler_lg(), info)
                     << actor << " withdrew the acceptance of provider '" << req->provider_code
                     << "'";
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(provider_terms_handler_lg(), error)
+            ORES_LOG_SEV(provider_terms_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
@@ -221,11 +221,11 @@ private:
                 out.message = "Accepted the terms of '" + code + "'.";
                 out.accepted_by = accepted.terms_accepted_by;
                 out.accepted_at = accepted.terms_accepted_at;
-                BOOST_LOG_SEV(provider_terms_handler_lg(), ores::logging::info)
+                ORES_LOG_SEV(provider_terms_handler_lg(), ores::logging::info)
                     << actor << " accepted the terms of provider '" << code << "'";
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(provider_terms_handler_lg(), ores::logging::error)
+            ORES_LOG_SEV(provider_terms_handler_lg(), ores::logging::error)
                 << "Accepting the terms of '" << code << "' failed: " << e.what();
             out.success = false;
             out.message = e.what();

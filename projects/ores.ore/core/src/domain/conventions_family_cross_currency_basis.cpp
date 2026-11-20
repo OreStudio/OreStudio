@@ -36,7 +36,7 @@ using namespace conventions_fields;
 
 ores::refdata::messaging::cross_currency_basis_convention_item
 conventions_mapper::map_cross_currency_basis(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency basis convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping cross-currency basis convention: " << text_of(v, "Id");
 
     ores::refdata::messaging::cross_currency_basis_convention_item r;
     refdata::domain::convention central;

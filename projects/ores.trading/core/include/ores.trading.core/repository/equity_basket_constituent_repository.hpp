@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_REPOSITORY_EQUITY_BASKET_CONSTITUENT_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"

@@ -19,7 +19,6 @@
  */
 #include "ores.reporting.core/service/report_run_grant_service.hpp"
 #include "ores.iam.api/messaging/run_grant_operations_protocol.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
@@ -108,8 +107,8 @@ report_run_grant_service::ensure(const domain::report_definition& def) {
         def.tenant_id, ctx_.actor().empty() ? ctx_.service_account() : ctx_.actor()));
     svc.save_definition(updated);
 
-    BOOST_LOG_SEV(lg(), info) << "Recorded run grant " << boost::uuids::to_string(*grant_id)
-                              << " on definition " << boost::uuids::to_string(def.id);
+    ORES_LOG_SEV(lg(), info) << "Recorded run grant " << boost::uuids::to_string(*grant_id)
+                             << " on definition " << boost::uuids::to_string(def.id);
     return grant_id;
 }
 

@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/bond_forward.hpp"
 #include "ores.trading.api/domain/bond_forward_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/bond_forward_protocol.hpp"
 #include "ores.trading.core/repository/bond_forward_entity.hpp"
 #include "ores.trading.core/repository/bond_forward_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -212,7 +210,7 @@ void bond_forward_repository::write(const context& ctx,
 void bond_forward_repository::write(const context& ctx,
                                     const domain::bond_forward& v,
                                     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond forward. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing bond forward. " << "trade_id: " << v.trade_id;
     const auto t =
         bond_forward_apply_claim(v,
                                  claim,
@@ -227,7 +225,7 @@ void bond_forward_repository::write(
     const context& ctx,
     const std::vector<domain::bond_forward>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond forwards. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing bond forwards. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "bond_forward_repository::write: one claim is needed for each row");
@@ -263,7 +261,7 @@ std::vector<domain::bond_forward> bond_forward_repository::read_latest(const con
 
 std::vector<domain::bond_forward>
 bond_forward_repository::read_latest(const context& ctx, const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond forward. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond forward. " << "trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_forward_entity>> |
@@ -281,7 +279,7 @@ bond_forward_repository::read_latest(const context& ctx, const std::string& trad
 
 std::vector<domain::bond_forward> bond_forward_repository::read_all(const context& ctx,
                                                                     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all bond forward versions. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all bond forward versions. " << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_forward_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
@@ -297,8 +295,8 @@ std::vector<domain::bond_forward> bond_forward_repository::read_all(const contex
 
 std::optional<domain::bond_forward> bond_forward_repository::read_at_version(
     const context& ctx, const std::string& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading bond forward at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading bond forward at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_forward_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
@@ -321,7 +319,7 @@ std::optional<domain::bond_forward> bond_forward_repository::read_at_version(
 
 bond_forward_repository::remove_status bond_forward_repository::remove(
     const context& ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond forward. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond forward. " << "trade_id: " << trade_id;
     const auto current = read_latest(ctx, trade_id);
     if (current.empty())
         return remove_status::missing;
@@ -359,8 +357,8 @@ bond_forward_repository::read_latest(const context& ctx,
                                      const ores::utility::domain::order& order,
                                      const std::optional<messaging::bond_forwards_filter>& filter,
                                      const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond forwards with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond forwards with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_forward_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -381,7 +379,7 @@ std::uint32_t bond_forward_repository::get_total_bond_forward_count(
     const context& ctx,
     const std::optional<messaging::bond_forwards_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond forward count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active bond forward count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_forward_entity>> |

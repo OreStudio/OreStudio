@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/local_jurisdiction.hpp"
 #include "ores.refdata.api/messaging/local_jurisdiction_protocol.hpp"
 #include "ores.refdata.core/repository/local_jurisdiction_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -458,29 +456,29 @@ local_jurisdiction_service::prepare_change(const messaging::local_jurisdiction_c
 
 std::vector<domain::local_jurisdiction>
 local_jurisdiction_service::list_jurisdictions(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all local jurisdictions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all local jurisdictions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t local_jurisdiction_service::count_jurisdictions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total local jurisdictions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total local jurisdictions count";
     return repo_.get_total_jurisdiction_count(ctx_);
 }
 
 
 std::optional<domain::local_jurisdiction> local_jurisdiction_service::get_jurisdiction_at_version(
     const std::string& code, const std::string& coding_scheme_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting local jurisdiction at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting local jurisdiction at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::local_jurisdiction>
 local_jurisdiction_service::get_jurisdiction(const std::string& code,
                                              const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting local jurisdiction. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting local jurisdiction. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -498,13 +496,13 @@ void local_jurisdiction_service::save_jurisdiction(const domain::local_jurisdict
         throw std::invalid_argument("Local Jurisdiction code cannot be empty.");
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument("Local Jurisdiction coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving local jurisdiction. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving local jurisdiction. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved local jurisdiction. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved local jurisdiction. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void local_jurisdiction_service::save_jurisdictions(
@@ -515,7 +513,7 @@ void local_jurisdiction_service::save_jurisdictions(
         if (e.coding_scheme_code.empty())
             throw std::invalid_argument("Local Jurisdiction coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << jurisdictions.size() << " local jurisdictions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << jurisdictions.size() << " local jurisdictions";
     auto ts = jurisdictions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -525,11 +523,11 @@ void local_jurisdiction_service::save_jurisdictions(
 
 void local_jurisdiction_service::delete_jurisdiction(const std::string& code,
                                                      const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing local jurisdiction. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed local jurisdiction. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing local jurisdiction. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed local jurisdiction. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void local_jurisdiction_service::delete_jurisdictions(
@@ -540,8 +538,8 @@ void local_jurisdiction_service::delete_jurisdictions(
 std::vector<domain::local_jurisdiction>
 local_jurisdiction_service::get_jurisdiction_history(const std::string& code,
                                                      const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for local jurisdiction. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for local jurisdiction. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/script.hpp"
 #include "ores.trading.api/domain/script_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/script_protocol.hpp"
 #include "ores.trading.core/repository/script_entity.hpp"
 #include "ores.trading.core/repository/script_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -223,7 +221,7 @@ void script_repository::write(const context& ctx, const std::vector<domain::scri
 void script_repository::write(const context& ctx,
                               const domain::script& v,
                               const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing script. " << "name: " << v.name;
+    ORES_LOG_SEV(lg(), debug) << "Writing script. " << "name: " << v.name;
     const auto t = script_apply_claim(v,
                                       claim,
                                       script_claim_reads_current(claim) ?
@@ -236,7 +234,7 @@ void script_repository::write(const context& ctx,
 void script_repository::write(const context& ctx,
                               const std::vector<domain::script>& v,
                               const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing scripts. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing scripts. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("script_repository::write: one claim is needed for each row");
     std::vector<domain::script> to_read;
@@ -272,7 +270,7 @@ std::vector<domain::script> script_repository::read_latest(const context& ctx) {
 
 std::vector<domain::script> script_repository::read_latest(const context& ctx,
                                                            const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest script. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest script. " << "name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -291,7 +289,7 @@ std::vector<domain::script> script_repository::read_latest(const context& ctx,
 
 std::vector<domain::script> script_repository::read_all(const context& ctx,
                                                         const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all script versions. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading all script versions. " << "name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -310,8 +308,8 @@ std::vector<domain::script> script_repository::read_all(const context& ctx,
 std::optional<domain::script> script_repository::read_at_version(const context& ctx,
                                                                  const std::string& name,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading script at version. " << "name: " << name
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading script at version. " << "name: " << name
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<script_entity>> |
@@ -334,7 +332,7 @@ std::optional<domain::script> script_repository::read_at_version(const context& 
 script_repository::remove_status script_repository::remove(const context& ctx,
                                                            const std::string& name,
                                                            std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing script. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Removing script. " << "name: " << name;
     const auto current = read_latest(ctx, name);
     if (current.empty())
         return remove_status::missing;
@@ -372,8 +370,8 @@ script_repository::read_latest(const context& ctx,
                                const ores::utility::domain::order& order,
                                const std::optional<messaging::scripts_filter>& filter,
                                const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest scripts with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest scripts with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<script_entity>> |
@@ -394,7 +392,7 @@ std::uint32_t
 script_repository::get_total_script_count(const context& ctx,
                                           const std::optional<messaging::scripts_filter>& filter,
                                           const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active script count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active script count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

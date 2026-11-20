@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_REPOSITORY_ACTIVITY_CATEGORY_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/activity_category.hpp"
 #include "ores.trading.api/messaging/activity_category_protocol.hpp"
 #include "ores.trading.core/export.hpp"

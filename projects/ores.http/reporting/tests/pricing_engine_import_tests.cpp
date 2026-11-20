@@ -22,7 +22,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/reporting/pricing_engine_import.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -72,7 +72,7 @@ http_status import_status_of(const std::string& address, http_request req) {
 
 TEST_CASE("an_import_preview_refuses_a_query_it_does_not_read", "[pricing_engine_import]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the import preview's query";
+    ORES_LOG_SEV(lg, info) << "Testing the import preview's query";
 
     http_request req;
     req.body = R"({"content":"<PricingEngines/>"})";
@@ -82,7 +82,7 @@ TEST_CASE("an_import_preview_refuses_a_query_it_does_not_read", "[pricing_engine
 
 TEST_CASE("an_import_preview_refuses_a_body_with_no_document", "[pricing_engine_import]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the import preview's document";
+    ORES_LOG_SEV(lg, info) << "Testing the import preview's document";
 
     http_request empty;
     empty.body = R"({"content":""})";
@@ -96,7 +96,7 @@ TEST_CASE("an_import_preview_refuses_a_body_with_no_document", "[pricing_engine_
 TEST_CASE("an_import_preview_refuses_a_configuration_that_is_not_an_id",
           "[pricing_engine_import]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the import preview's configuration";
+    ORES_LOG_SEV(lg, info) << "Testing the import preview's configuration";
 
     http_request req;
     req.body = R"({"content":"<PricingEngines/>","configurationId":"amc"})";
@@ -105,7 +105,7 @@ TEST_CASE("an_import_preview_refuses_a_configuration_that_is_not_an_id",
 
 TEST_CASE("an_import_preview_with_no_service_is_refused_as_upstream", "[pricing_engine_import]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the import preview with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing the import preview with no service behind it";
 
     http_request req;
     req.body = R"({"content":"<PricingEngines/>"})";
@@ -114,7 +114,7 @@ TEST_CASE("an_import_preview_with_no_service_is_refused_as_upstream", "[pricing_
 
 TEST_CASE("an_import_refuses_a_query_it_does_not_read", "[pricing_engine_import]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the import's query";
+    ORES_LOG_SEV(lg, info) << "Testing the import's query";
 
     http_request req;
     req.body = R"({"content":"<PricingEngines/>","intent":{"reason_code":"seed"}})";
@@ -125,7 +125,7 @@ TEST_CASE("an_import_refuses_a_query_it_does_not_read", "[pricing_engine_import]
 TEST_CASE("an_import_refuses_a_name_longer_than_a_configuration_may_hold",
           "[pricing_engine_import]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the import's new name";
+    ORES_LOG_SEV(lg, info) << "Testing the import's new name";
 
     http_request req;
     req.body = R"({"content":"<PricingEngines/>","newName":")" + std::string(201, 'a') +
@@ -135,7 +135,7 @@ TEST_CASE("an_import_refuses_a_name_longer_than_a_configuration_may_hold",
 
 TEST_CASE("an_import_refuses_a_configuration_that_is_not_an_id", "[pricing_engine_import]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the import's configuration";
+    ORES_LOG_SEV(lg, info) << "Testing the import's configuration";
 
     http_request req;
     req.body = R"({"content":"<PricingEngines/>","configurationId":"amc",)"
@@ -145,7 +145,7 @@ TEST_CASE("an_import_refuses_a_configuration_that_is_not_an_id", "[pricing_engin
 
 TEST_CASE("an_import_with_no_service_is_refused_as_upstream", "[pricing_engine_import]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the import with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing the import with no service behind it";
 
     http_request req;
     req.body = R"({"content":"<PricingEngines/>","intent":{"reason_code":"seed"}})";

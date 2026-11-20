@@ -25,7 +25,7 @@
 #include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_parameter_repository.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -91,7 +91,7 @@ TEST_CASE("write_single_pricing_model_product_parameter", "[repository]") {
         p.pricing_model_product_id = product_id;
     }
     REQUIRE(!params.empty());
-    BOOST_LOG_SEV(lg, debug) << "Parameter: " << params[0];
+    ORES_LOG_SEV(lg, debug) << "Parameter: " << params[0];
 
     pricing_model_product_parameter_repository repo;
     CHECK_NOTHROW(repo.write(h.context(), params[0]));
@@ -109,7 +109,7 @@ TEST_CASE("write_multiple_pricing_model_product_parameters", "[repository]") {
         p.pricing_model_config_id = config_id;
         p.pricing_model_product_id = product_id;
     }
-    BOOST_LOG_SEV(lg, debug) << "Parameters: " << params;
+    ORES_LOG_SEV(lg, debug) << "Parameters: " << params;
 
     pricing_model_product_parameter_repository repo;
     CHECK_NOTHROW(repo.write(h.context(), params));
@@ -131,7 +131,7 @@ TEST_CASE("read_latest_pricing_model_product_parameters_for_config", "[repositor
     repo.write(h.context(), written);
 
     auto read = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read parameters: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read parameters: " << read;
 
     CHECK(read.size() >= written.size());
 }
@@ -153,7 +153,7 @@ TEST_CASE("read_latest_pricing_model_product_parameters_for_product", "[reposito
 
     const auto product_id_str = boost::uuids::to_string(product_id);
     auto read = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read parameters for product: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read parameters for product: " << read;
 
     // 5 product-scoped parameters written for this product
     auto product_scoped = 0;
@@ -179,13 +179,13 @@ TEST_CASE("read_latest_pricing_model_product_parameter_by_id", "[repository]") {
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
-    BOOST_LOG_SEV(lg, debug) << "Parameter id: " << param_id_str;
+    ORES_LOG_SEV(lg, debug) << "Parameter id: " << param_id_str;
 
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), p);
 
     auto read = repo.read_latest(h.context(), param_id_str);
-    BOOST_LOG_SEV(lg, debug) << "Read parameters: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read parameters: " << read;
 
     REQUIRE(read.size() == 1);
     CHECK(read[0].id == p.id);
@@ -206,7 +206,7 @@ TEST_CASE("read_all_pricing_model_product_parameter_history", "[repository]") {
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
-    BOOST_LOG_SEV(lg, debug) << "Parameter: " << p;
+    ORES_LOG_SEV(lg, debug) << "Parameter: " << p;
 
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), p);
@@ -215,7 +215,7 @@ TEST_CASE("read_all_pricing_model_product_parameter_history", "[repository]") {
     repo.write(h.context(), p);
 
     auto history = repo.read_all(h.context(), param_id_str);
-    BOOST_LOG_SEV(lg, debug) << "History: " << history;
+    ORES_LOG_SEV(lg, debug) << "History: " << history;
 
     CHECK(history.size() >= 2);
 }

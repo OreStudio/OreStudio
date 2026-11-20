@@ -48,7 +48,7 @@ void auth_event_log::insert(const std::string& event_type,
                             const std::string& party_id,
                             const std::string& error_detail) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Recording auth event: " << event_type;
+    ORES_LOG_SEV(lg(), debug) << "Recording auth event: " << event_type;
 
     boost::uuids::random_generator uuid_gen;
 
@@ -69,7 +69,7 @@ void auth_event_log::insert(const std::string& event_type,
     event.tenant_id = scope.tenant_id;
     auth_event_repository().write(scope.ctx, event);
 
-    BOOST_LOG_SEV(lg(), debug) << "Auth event recorded: " << event_type;
+    ORES_LOG_SEV(lg(), debug) << "Auth event recorded: " << event_type;
 }
 
 void auth_event_log::record_login_success(const std::chrono::system_clock::time_point& event_time,

@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 0B48074A-FBFA-4467-964A-CDB9AF23794F
+:END:
+#+title: Task: Pick a currency, then compare like for like
+#+description: Choose a currency before a curve, offer the same currency's curves beside it, offer other currencies' overnight curves only behind an explicit choice, and state what a cross-currency pair shows.
+#+type: task
+#+level: s1
+#+filetags: :compare_curves_within_a_currency:sprint_30:v0:
+#+owner: marco
+#+branch: feature/compare-curves-within-a-currency
+#+pr: 4909
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-19
+#+updated: 2026-11-19
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6898220F-A217-4848-A796-B5D17F1CDE65][Compare curves within a currency, and across currencies like for like]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person compares the curves of one currency by default, and compares two currencies only overnight against overnight, with the screen saying what each comparison shows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6898220F-A217-4848-A796-B5D17F1CDE65][Compare curves within a currency, and across currencies like for like]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-19                               |
+
+* Acceptance
+
+- The curve analytics asks for a currency first, and the curve picker lists that currency's curves only.
+- The curve beside lists the same currency's curves by default, the curve the chosen one discounts off first.
+- Other currencies are offered only behind an explicit choice, and only their funding curves, beside a funding curve.
+- A cross-currency pair states what it shows, the rate differential, instead of the funding and projection lesson.
+
+* Plan
+
+Both pickers listed every curve of every currency in one flat list.
+
+1. Give each curve option its currency, from its bootstrap config.
+2. State the rules in one module, =curveChoice=: the currencies, a currency's
+   curves with its funding curve first, the curves that may stand beside the
+   chosen one, and the two pairs the screen explains.
+3. Ask for a currency first, then a curve of it; offer the same currency's
+   curves beside it, the one it discounts off first; offer other currencies'
+   overnight curves only on request and only beside an overnight curve. An
+   address that names any other pair draws one curve.
+4. Explain a cross-currency pair with its own panel: the rate differential,
+   forward points and carry.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Curve choice and analytics screen tests | 26, pass | =npx vitest run src/marketdata/curveChoice.test.ts src/marketdata/curveAnalyticsScreen.test.tsx= | 044f450845 |
+| Web suite | 2,601 tests, pass | =npx vitest run= in =packages/web= | 044f450845 |
+| Live: GBP overnight beside USD overnight | both curves drawn, pillar by pillar, the differential panel | a probe of the running services as the system administrator | 044f450845 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4909][#4909]] | [web] Compare curves within a currency, and across currencies overnight only |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #4909 review 1: name the projection role as a constant, as the funding role is | =curveChoice.ts= | Accept | A PROJECTION constant beside FUNDING |
+| 2 | PR #4909 review 1: the undefined checks in differentialOf repeat comparesAcross | =curveChoice.ts= | Decline | They narrow the types the returned pair needs |
+| 3 | PR #4909 review 1: pin that a pair takes one panel at most | =curveChoice.test.ts= | Accept | A test states that neither pair matches the other's case |
+| 4 | PR #4909 review 1: the default curve beside is not checked against the allowed list | =CurveAnalyticsPage.tsx= | Accept | The default goes through the allowed list, as a named curve does |
+| 5 | PR #4909 review 1: a disabled checkbox is hard to discover | =CurveAnalyticsPage.tsx= | Decline | Its title says why it is disabled |
+| 6 | PR #4909 review 1: test the toggle and its unchecking | =curveAnalyticsScreen.test.tsx= | Decline | The screen tests render statically and cannot click; the drawn states with and without across are tested |
+| 7 | PR #4909 review 1: check the locale key sets match | locales | Decline | The French and Portuguese catalogues are typed against the English one, so a missing key fails the type check |
+
+* Result
+
+The curve analytics asks for a currency, then a curve of it. The curve beside it
+is the same currency's, the curve it discounts off first. Another currency is
+offered only on request and only beside an overnight curve, and only its
+overnight curves; such a pair has its own panel, which says the gap is the rate
+differential, the source of forward points and of carry. All four acceptance
+points are met.

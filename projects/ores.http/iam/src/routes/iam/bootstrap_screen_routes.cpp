@@ -70,10 +70,10 @@ bool bootstrap_screen_routes::wizard_finished(const http_request& req,
                 variability::system_setting_key{std::string(setting)}});
         return reply.system_setting && reply.system_setting->value == "true";
     } catch (const rr::refusal& r) {
-        BOOST_LOG_SEV(lg(), debug) << "The setting " << setting << " was not read: " << r.message;
+        ORES_LOG_SEV(lg(), debug) << "The setting " << setting << " was not read: " << r.message;
         return false;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), debug) << "The setting " << setting << " was not read: " << e.what();
+        ORES_LOG_SEV(lg(), debug) << "The setting " << setting << " was not read: " << e.what();
         return false;
     }
 }

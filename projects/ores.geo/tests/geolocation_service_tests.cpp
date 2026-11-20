@@ -18,7 +18,7 @@
  */
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/ip/address.hpp>

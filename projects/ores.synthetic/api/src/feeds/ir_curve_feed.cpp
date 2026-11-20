@@ -21,7 +21,7 @@
 #include "ores.analytics.quant/domain/process_parameter_validation.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -107,8 +107,6 @@ ir_curve_feed::ir_curve_feed(
         board_spot_date_ = curve_spot_date;
     }
 
-    display_subject_ = ores::marketdata::domain::feed_display_subject_for(source_name_);
-
     // One curve quotes every pillar, so the targets are matched to the entries here and an entry
     // with no id fails the build: a pillar the adapter cannot name has nowhere to publish.
     for (const auto& e : entries_) {
@@ -188,23 +186,6 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
         const auto& e = entries_[i];
         const auto value = std::format("{}", price_ir_curve_entry(*process_, e));
 
-        // Each market tick names one pillar: the datum built at construction from the entry's own
-        // dates and the index tenor, so the series it lands in carries the instrument's identity
-        // rather than the pipeline's vocabulary. It goes out before the adapter branch, as a spot
-        // feed's does, because a screen reads this copy: a pillar served by an adapter is still a
-        // pillar the feed published, and dropping its market tick left the feed silent on every
-        // screen while its ticks were stored.
-        {
-            ores::marketdata::messaging::market_tick shown;
-            shown.oresmd_uri = datum_uris_[i];
-            shown.value = value;
-            shown.observation_time = now;
-            shown.source = source_name_;
-
-            const auto shown_encoded = ores::nats::default_wire_codec().encode(shown);
-            nats_.publish(display_subject_, shown_encoded);
-        }
-
         // A pillar that serves an adapter publishes the adapter's own tick under the pillar's
         // vendor id, as an adapter of a live provider does. The service maps the id to its datum
         // and finds the parties, so the tick names neither.
@@ -241,7 +222,7 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
         // target rather than from the producer subject the feed does not use for it. The log is
         // what a person reads to find out where the feed's ticks are, so it names the family the
         // ticks actually travelled on.
-        BOOST_LOG_SEV(ir_curve_feed_lg(), info)
+        ORES_LOG_SEV(ir_curve_feed_lg(), info)
             << "SYNTHETIC CURVE PUBLISH: source='" << source_name_ << "' batch=" << n
             << " points=" << entries_.size() << " subject='" << published_subject() << "'";
     }
@@ -253,6 +234,15 @@ const std::string& ir_curve_feed::published_subject() const {
         if (target)
             return target->target.subject;
     return nats_subject_;
+}
+
+std::vector<std::string> ir_curve_feed::vendor_watch_subjects() const {
+    // Every pillar of a curve is quoted through the one adapter of its collection's provider.
+    for (const auto& target : adapter_targets_)
+        if (target)
+            return ores::marketdata::domain::provider_series_watch_subjects(
+                target->target.provider_code, series_uris_);
+    return {};
 }
 
 void ir_curve_feed::stop() {
@@ -346,7 +336,7 @@ ir_curve_start resolve_ir_start(ores::nats::service::nats_client& auth_nats,
         // Every adapter stores the decimal of a published percent; a rate above one in size is
         // a percent stored by mistake, which would start the curve a hundred times too high.
         if (std::abs(*rate) > 1.0)
-            BOOST_LOG_SEV(ir_curve_feed_lg(), ores::logging::warn)
+            ORES_LOG_SEV(ir_curve_feed_lg(), ores::logging::warn)
                 << "Curve " << cfg.source_name << " starts from " << latest->value << " of "
                 << item.item << ", which is above one in size: is it a percent?";
         out.rate = *rate;
@@ -441,7 +431,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                 ores::utility::decimal::decimal::from_double(v.parameter_value))
                             record.value = *kept;
     }
-    BOOST_LOG_SEV(ir_curve_feed_lg(), info)
+    ORES_LOG_SEV(ir_curve_feed_lg(), info)
         << "Curve " << cfg.source_name << " starts at "
         << (record.from_fixing ? record.value.to_string() + " from " + record.item + " (" +
                                      record.provider_code + ")" :

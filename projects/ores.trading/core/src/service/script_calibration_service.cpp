@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/script_calibration.hpp"
 #include "ores.trading.api/messaging/script_calibration_protocol.hpp"
 #include "ores.trading.core/repository/script_calibration_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -475,12 +473,12 @@ script_calibration_service::prepare_change(const messaging::script_calibration_c
 
 std::vector<domain::script_calibration>
 script_calibration_service::list_calibrations(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all script calibrations";
+    ORES_LOG_SEV(lg(), debug) << "Listing all script calibrations";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t script_calibration_service::count_calibrations() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total script calibrations count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total script calibrations count";
     return repo_.get_total_calibration_count(ctx_);
 }
 
@@ -490,10 +488,9 @@ script_calibration_service::get_calibration_at_version(const std::string& script
                                                        const std::string& purpose,
                                                        const std::string& sequence_number,
                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script calibration at version. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting script calibration at version. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, script_name, purpose, sequence_number, version);
 }
 
@@ -501,9 +498,8 @@ std::optional<domain::script_calibration>
 script_calibration_service::get_calibration(const std::string& script_name,
                                             const std::string& purpose,
                                             const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script calibration. " << "script_name: " << script_name
-                               << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting script calibration. " << "script_name: " << script_name
+                              << " purpose: " << purpose << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, script_name, purpose, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -522,15 +518,15 @@ void script_calibration_service::save_calibration(const domain::script_calibrati
         throw std::invalid_argument("Script Calibration script_name cannot be empty.");
     if (v.purpose.empty())
         throw std::invalid_argument("Script Calibration purpose cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving script calibration. " << "script_name: " << v.script_name
-                               << " purpose: " << v.purpose
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving script calibration. " << "script_name: " << v.script_name
+                              << " purpose: " << v.purpose
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved script calibration. " << "script_name: " << v.script_name
-                              << " purpose: " << v.purpose
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved script calibration. " << "script_name: " << v.script_name
+                             << " purpose: " << v.purpose
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void script_calibration_service::save_calibrations(
@@ -541,7 +537,7 @@ void script_calibration_service::save_calibrations(
         if (e.purpose.empty())
             throw std::invalid_argument("Script Calibration purpose cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << calibrations.size() << " script calibrations";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << calibrations.size() << " script calibrations";
     auto ts = calibrations;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -552,12 +548,11 @@ void script_calibration_service::save_calibrations(
 void script_calibration_service::delete_calibration(const std::string& script_name,
                                                     const std::string& purpose,
                                                     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing script calibration. " << "script_name: " << script_name
-                               << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, script_name, purpose, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed script calibration. " << "script_name: " << script_name
+    ORES_LOG_SEV(lg(), debug) << "Removing script calibration. " << "script_name: " << script_name
                               << " purpose: " << purpose << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, script_name, purpose, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed script calibration. " << "script_name: " << script_name
+                             << " purpose: " << purpose << " sequence_number: " << sequence_number;
 }
 
 void script_calibration_service::delete_calibrations(
@@ -571,9 +566,9 @@ std::vector<domain::script_calibration>
 script_calibration_service::get_calibration_history(const std::string& script_name,
                                                     const std::string& purpose,
                                                     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for script calibration. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for script calibration. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, script_name, purpose, sequence_number);
 }
 

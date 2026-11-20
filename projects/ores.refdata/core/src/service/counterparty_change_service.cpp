@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/counterparty_change.hpp"
 #include "ores.refdata.api/messaging/counterparty_change_protocol.hpp"
 #include "ores.refdata.core/repository/counterparty_change_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -282,12 +280,12 @@ counterparty_change_service::get_counterparty_change_version(
 
 std::vector<domain::counterparty_change>
 counterparty_change_service::list_counterparty_changes(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all counterparty changes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all counterparty changes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t counterparty_change_service::count_counterparty_changes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total counterparty changes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total counterparty changes count";
     return repo_.get_total_counterparty_change_count(ctx_);
 }
 
@@ -296,14 +294,14 @@ std::vector<domain::counterparty_change>
 counterparty_change_service::list_counterparty_changes_by_request_id(const std::string& request_id,
                                                                      std::uint32_t offset,
                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing counterparty changes by request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing counterparty changes by request_id: " << request_id;
     return repo_.read_latest_by_request_id(ctx_, request_id, offset, limit);
 }
 
 std::uint32_t counterparty_change_service::count_counterparty_changes_by_request_id(
     const std::string& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total counterparty changes count by request_id: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total counterparty changes count by request_id: "
+                              << request_id;
     return repo_.get_total_counterparty_change_count_by_request_id(ctx_, request_id);
 }
 
@@ -311,14 +309,14 @@ std::uint32_t counterparty_change_service::count_counterparty_changes_by_request
 std::optional<domain::counterparty_change>
 counterparty_change_service::get_counterparty_change_at_version(const boost::uuids::uuid& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty change at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting counterparty change at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::counterparty_change>
 counterparty_change_service::get_counterparty_change(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty change. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting counterparty change. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -333,11 +331,11 @@ counterparty_change_service::get_counterparty_changes(const std::vector<std::str
 void counterparty_change_service::save_counterparty_change(const domain::counterparty_change& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Counterparty Change id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving counterparty change. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving counterparty change. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved counterparty change. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved counterparty change. " << "id: " << v.id;
 }
 
 void counterparty_change_service::save_counterparty_changes(
@@ -346,8 +344,8 @@ void counterparty_change_service::save_counterparty_changes(
         if (e.id.is_nil())
             throw std::invalid_argument("Counterparty Change id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_changes.size()
-                               << " counterparty changes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << counterparty_changes.size()
+                              << " counterparty changes";
     auto ts = counterparty_changes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -356,9 +354,9 @@ void counterparty_change_service::save_counterparty_changes(
 }
 
 void counterparty_change_service::delete_counterparty_change(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty change. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing counterparty change. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed counterparty change. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed counterparty change. " << "id: " << id;
 }
 
 void counterparty_change_service::delete_counterparty_changes(const std::vector<std::string>& ids) {
@@ -367,7 +365,7 @@ void counterparty_change_service::delete_counterparty_changes(const std::vector<
 
 std::vector<domain::counterparty_change>
 counterparty_change_service::get_counterparty_change_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty change. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for counterparty change. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

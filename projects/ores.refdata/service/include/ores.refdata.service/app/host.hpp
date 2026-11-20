@@ -20,7 +20,7 @@
 #ifndef ORES_REFDATA_SERVICE_APP_HOST_HPP
 #define ORES_REFDATA_SERVICE_APP_HOST_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.service/export.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <ostream>

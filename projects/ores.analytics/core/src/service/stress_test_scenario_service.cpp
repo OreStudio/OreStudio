@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/stress_test_scenario.hpp"
 #include "ores.analytics.api/messaging/stress_test_scenario_protocol.hpp"
 #include "ores.analytics.core/repository/stress_test_scenario_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -462,12 +460,12 @@ ores::utility::domain::result stress_test_scenario_service::prepare_change(
 std::vector<domain::stress_test_scenario>
 stress_test_scenario_service::list_stress_test_scenarios(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all stress test scenarios";
+    ORES_LOG_SEV(lg(), debug) << "Listing all stress test scenarios";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t stress_test_scenario_service::count_stress_test_scenarios() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total stress test scenarios count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total stress test scenarios count";
     return repo_.get_total_stress_test_scenario_count(ctx_);
 }
 
@@ -475,14 +473,14 @@ std::uint32_t stress_test_scenario_service::count_stress_test_scenarios() {
 std::optional<domain::stress_test_scenario>
 stress_test_scenario_service::get_stress_test_scenario_at_version(const boost::uuids::uuid& id,
                                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting stress test scenario at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting stress test scenario at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::stress_test_scenario>
 stress_test_scenario_service::get_stress_test_scenario(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting stress test scenario. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting stress test scenario. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -498,11 +496,11 @@ void stress_test_scenario_service::save_stress_test_scenario(
     const domain::stress_test_scenario& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Stress Test Scenario id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving stress test scenario. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving stress test scenario. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved stress test scenario. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved stress test scenario. " << "id: " << v.id;
 }
 
 void stress_test_scenario_service::save_stress_test_scenarios(
@@ -511,8 +509,8 @@ void stress_test_scenario_service::save_stress_test_scenarios(
         if (e.id.is_nil())
             throw std::invalid_argument("Stress Test Scenario id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << stress_test_scenarios.size()
-                               << " stress test scenarios";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << stress_test_scenarios.size()
+                              << " stress test scenarios";
     auto ts = stress_test_scenarios;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -521,9 +519,9 @@ void stress_test_scenario_service::save_stress_test_scenarios(
 }
 
 void stress_test_scenario_service::delete_stress_test_scenario(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing stress test scenario. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing stress test scenario. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed stress test scenario. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed stress test scenario. " << "id: " << id;
 }
 
 void stress_test_scenario_service::delete_stress_test_scenarios(
@@ -533,7 +531,7 @@ void stress_test_scenario_service::delete_stress_test_scenarios(
 
 std::vector<domain::stress_test_scenario>
 stress_test_scenario_service::get_stress_test_scenario_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for stress test scenario. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for stress test scenario. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

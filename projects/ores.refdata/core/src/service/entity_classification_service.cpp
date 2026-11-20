@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/entity_classification.hpp"
 #include "ores.refdata.api/messaging/entity_classification_protocol.hpp"
 #include "ores.refdata.core/repository/entity_classification_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -467,12 +465,12 @@ ores::utility::domain::result entity_classification_service::prepare_change(
 
 std::vector<domain::entity_classification>
 entity_classification_service::list_classifications(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all entity classifications";
+    ORES_LOG_SEV(lg(), debug) << "Listing all entity classifications";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t entity_classification_service::count_classifications() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total entity classifications count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total entity classifications count";
     return repo_.get_total_classification_count(ctx_);
 }
 
@@ -481,17 +479,17 @@ std::optional<domain::entity_classification>
 entity_classification_service::get_classification_at_version(const std::string& code,
                                                              const std::string& coding_scheme_code,
                                                              std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting entity classification at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting entity classification at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::entity_classification>
 entity_classification_service::get_classification(const std::string& code,
                                                   const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting entity classification. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting entity classification. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -508,13 +506,13 @@ void entity_classification_service::save_classification(const domain::entity_cla
         throw std::invalid_argument("Entity Classification code cannot be empty.");
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument("Entity Classification coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving entity classification. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving entity classification. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved entity classification. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved entity classification. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void entity_classification_service::save_classifications(
@@ -526,7 +524,7 @@ void entity_classification_service::save_classifications(
             throw std::invalid_argument(
                 "Entity Classification coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << classifications.size() << " entity classifications";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << classifications.size() << " entity classifications";
     auto ts = classifications;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -536,11 +534,11 @@ void entity_classification_service::save_classifications(
 
 void entity_classification_service::delete_classification(const std::string& code,
                                                           const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing entity classification. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed entity classification. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing entity classification. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed entity classification. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void entity_classification_service::delete_classifications(
@@ -551,8 +549,8 @@ void entity_classification_service::delete_classifications(
 std::vector<domain::entity_classification>
 entity_classification_service::get_classification_history(const std::string& code,
                                                           const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for entity classification. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for entity classification. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

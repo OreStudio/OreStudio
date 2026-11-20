@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.core/service/series_shape_writer.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/series_axis.hpp"
 #include "ores.marketdata.api/domain/series_axis_value.hpp"
@@ -180,7 +180,7 @@ void series_shape_writer::declare(const ores::database::context& ctx,
         value_repo.write(ctx, value_rows);
     }
 
-    BOOST_LOG_SEV(series_shape_writer_lg(), info)
+    ORES_LOG_SEV(series_shape_writer_lg(), info)
         << "Declared shape of series " << series_uri << ": " << axis_rows.size() << " axes, "
         << value_rows.size() << " new values";
 }

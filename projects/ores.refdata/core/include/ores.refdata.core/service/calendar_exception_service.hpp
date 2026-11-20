@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CALENDAR_EXCEPTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/calendar_exception.hpp"
 #include "ores.refdata.api/messaging/calendar_exception_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

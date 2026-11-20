@@ -26,7 +26,7 @@
 #include "ores.inbox.api/workflow/apply_step_command.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -171,7 +171,7 @@ private:
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
+            ORES_LOG_SEV(lg(), ores::logging::warn)
                 << "Ignored a command with no workflow headers: " << msg.subject;
             std::move(delivery).reject();
             return;
@@ -207,7 +207,7 @@ private:
         } catch (const std::exception& e) {
             // The work could not be done and nothing says it never will be, so
             // the step fails and the engine's retry may run it again.
-            BOOST_LOG_SEV(lg(), ores::logging::error)
+            ORES_LOG_SEV(lg(), ores::logging::error)
                 << "Step " << wf->step_id << " failed: " << e.what();
             wf->fail(e.what());
         }

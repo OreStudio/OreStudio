@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.api/domain/equity_basket_constituent_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_basket_constituent_entity.hpp"
 #include "ores.trading.core/repository/equity_basket_constituent_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -211,9 +209,8 @@ void equity_basket_constituent_repository::write(
 void equity_basket_constituent_repository::write(const context& ctx,
                                                  const domain::equity_basket_constituent& v,
                                                  const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity basket constituent. "
-                               << "trade_id: " << v.trade_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Writing equity basket constituent. " << "trade_id: " << v.trade_id
+                              << " sequence_number: " << v.sequence_number;
     const auto t = equity_basket_constituent_apply_claim(
         v,
         claim,
@@ -231,7 +228,7 @@ void equity_basket_constituent_repository::write(
     const context& ctx,
     const std::vector<domain::equity_basket_constituent>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity basket constituents. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing equity basket constituents. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "equity_basket_constituent_repository::write: one claim is needed for each row");
@@ -271,9 +268,9 @@ equity_basket_constituent_repository::read_latest(const context& ctx) {
 
 std::vector<domain::equity_basket_constituent> equity_basket_constituent_repository::read_latest(
     const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest equity basket constituent. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest equity basket constituent. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -293,9 +290,9 @@ std::vector<domain::equity_basket_constituent> equity_basket_constituent_reposit
 
 std::vector<domain::equity_basket_constituent> equity_basket_constituent_repository::read_all(
     const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all equity basket constituent versions. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading all equity basket constituent versions. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_basket_constituent_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
@@ -316,10 +313,9 @@ equity_basket_constituent_repository::read_at_version(const context& ctx,
                                                       const std::string& trade_id,
                                                       const std::string& sequence_number,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading equity basket constituent at version. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading equity basket constituent at version. "
+                              << "trade_id: " << trade_id << " sequence_number: " << sequence_number
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<equity_basket_constituent_entity>> |
@@ -345,8 +341,8 @@ equity_basket_constituent_repository::remove(const context& ctx,
                                              const std::string& trade_id,
                                              const std::string& sequence_number,
                                              std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing equity basket constituent. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Removing equity basket constituent. " << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     const auto current = read_latest(ctx, trade_id, sequence_number);
     if (current.empty())
         return remove_status::missing;
@@ -387,8 +383,8 @@ equity_basket_constituent_repository::read_latest(const context& ctx,
                                                   std::uint32_t limit,
                                                   const ores::utility::domain::order& order,
                                                   const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest equity basket constituents with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest equity basket constituents with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_basket_constituent_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -407,7 +403,7 @@ equity_basket_constituent_repository::read_latest(const context& ctx,
 
 std::uint32_t equity_basket_constituent_repository::get_total_equity_basket_constituent_count(
     const context& ctx, const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active equity basket constituent count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active equity basket constituent count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_basket_constituent_entity>> |

@@ -27,9 +27,7 @@
 #include "ores.iam.api/domain/seed_profile_step.hpp"
 #include "ores.iam.api/domain/seed_profile_step_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/seed_profile_step_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -40,7 +38,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::seed_profile_step seed_profile_step_mapper::map(const seed_profile_step_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::seed_profile_step r;
     r.version = v.version;
@@ -56,12 +54,12 @@ domain::seed_profile_step seed_profile_step_mapper::map(const seed_profile_step_
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 seed_profile_step_entity seed_profile_step_mapper::map(const domain::seed_profile_step& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     seed_profile_step_entity r;
     r.id = v.id;
@@ -76,7 +74,7 @@ seed_profile_step_entity seed_profile_step_mapper::map(const domain::seed_profil
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

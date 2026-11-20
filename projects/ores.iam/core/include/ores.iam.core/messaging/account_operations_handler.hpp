@@ -35,7 +35,7 @@
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/concurrency/atomic_shared_ptr.hpp"
@@ -160,7 +160,7 @@ inline bool acct_is_party_onboarding_complete(const ores::database::context& ctx
         return sfs.is_onboarding_party_complete();
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), warn)
+        ORES_LOG_SEV(account_handler_lg(), warn)
             << "Failed to check party onboarding completion: " << e.what();
     }
     return false;
@@ -174,7 +174,7 @@ inline std::string acct_lookup_tenant_name(const ores::database::context& ctx,
             return tenants.front().name;
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name: " << e.what();
+        ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name: " << e.what();
     }
     return {};
 }
@@ -221,7 +221,7 @@ public:
                 std::make_shared<const domain::token_settings>(domain::token_settings::load(svc)));
         } catch (const std::exception& e) {
             using namespace ores::logging;
-            BOOST_LOG_SEV(account_handler_lg(), warn)
+            ORES_LOG_SEV(account_handler_lg(), warn)
                 << "Failed to load token settings, using defaults: " << e.what();
         }
     }
@@ -275,7 +275,7 @@ public:
                 auto acct = setup_svc.create_account(
                     username, req->email, req->password, ctx_.service_account());
 
-                BOOST_LOG_SEV(account_handler_lg(), debug)
+                ORES_LOG_SEV(account_handler_lg(), debug)
                     << "Workflow step completed: " << msg.subject;
                 const auto resp = save_account_response{
                     .success = true, .account_id = boost::uuids::to_string(acct.id)};
@@ -287,7 +287,7 @@ public:
                     ores::utility::codec::wire_traits<save_account_response>::write_json(resp),
                     "");
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(account_handler_lg(), error)
+                ORES_LOG_SEV(account_handler_lg(), error)
                     << "Workflow step failed: " << msg.subject << " — " << e.what();
                 publish_step_completion(nats_,
                                         step_id,
@@ -302,7 +302,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<save_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -342,13 +342,13 @@ public:
             service::account_setup_service setup_svc(acct_svc, auth_svc);
             auto acct =
                 setup_svc.create_account(username, req->email, req->password, base_ctx.actor());
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   save_account_response{.success = true,
                                         .account_id = boost::uuids::to_string(acct.id)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, save_account_response{.success = false, .message = e.what()});
         }
     }
@@ -357,7 +357,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<delete_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -375,10 +375,10 @@ public:
             service::account_operations_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.delete_account(sg(req->account_id));
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, delete_account_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, delete_account_response{.success = false, .message = e.what()});
         }
     }
@@ -387,7 +387,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<lock_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         lock_account_response resp;
@@ -409,12 +409,11 @@ public:
                 svc.lock_account(sg(id), std::format("Locked by {}", ctx.actor()));
                 resp.results.push_back({.success = true});
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(account_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
+                ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
                 resp.results.push_back({.success = false, .message = e.what()});
             }
         }
-        BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
@@ -422,7 +421,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<unlock_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         unlock_account_response resp;
@@ -444,12 +443,11 @@ public:
                 svc.unlock_account(sg(id), std::format("Unlocked by {}", ctx.actor()));
                 resp.results.push_back({.success = true});
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(account_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
+                ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
                 resp.results.push_back({.success = false, .message = e.what()});
             }
         }
-        BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
@@ -457,7 +455,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<reset_password_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         reset_password_response resp;
@@ -492,13 +490,12 @@ public:
                     resp.results.push_back({.success = false, .message = err});
                 }
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(account_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
+                ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
                 resp.results.push_back({.success = false, .message = e.what()});
             }
         }
         resp.success = true;
-        BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
@@ -506,7 +503,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<change_password_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -538,13 +535,13 @@ public:
             service::account_operations_service svc(ctx);
             auto err = svc.change_password(account_id, req->current_password, req->new_password);
             if (err.empty()) {
-                BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+                ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, change_password_response{.success = true});
             } else {
                 reply(nats_, msg, change_password_response{.success = false, .message = err});
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             // The caller is told the change failed, never the exception's own text.
             reply(nats_,
                   msg,
@@ -557,7 +554,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<update_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -641,10 +638,10 @@ public:
                                ctx.actor(),
                                req->change_reason_code,
                                req->change_commentary);
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, update_account_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, update_account_response{.success = false, .message = e.what()});
         }
     }
@@ -653,7 +650,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<update_my_email_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -685,13 +682,13 @@ public:
             service::account_operations_service svc(ctx);
             auto err = svc.update_my_email(account_id, req->email);
             if (err.empty()) {
-                BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+                ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, update_my_email_response{.success = true});
             } else {
                 reply(nats_, msg, update_my_email_response{.success = false, .message = err});
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, update_my_email_response{.success = false, .message = e.what()});
         }
     }
@@ -700,7 +697,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<set_my_default_party_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -733,7 +730,7 @@ public:
                 try {
                     party_id = sg(req->party_id);
                 } catch (const std::exception&) {
-                    BOOST_LOG_SEV(account_handler_lg(), warn)
+                    ORES_LOG_SEV(account_handler_lg(), warn)
                         << "set_default_party: invalid party_id: " << req->party_id;
                     reply(nats_,
                           msg,
@@ -755,7 +752,7 @@ public:
                 service::account_operations_service svc(ctx);
                 auto err = svc.set_my_default_party(account_id, std::nullopt);
                 if (err.empty()) {
-                    BOOST_LOG_SEV(account_handler_lg(), debug)
+                    ORES_LOG_SEV(account_handler_lg(), debug)
                         << "Completed " << msg.subject << " (cleared)";
                     reply(nats_, msg, set_my_default_party_response{.success = true});
                 } else {
@@ -772,7 +769,7 @@ public:
                 return ap.party_id == party_id;
             });
             if (!is_member) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "set_default_party: party " << req->party_id
                     << " not in account's party list (account has " << parties.size()
                     << " parties)";
@@ -786,13 +783,13 @@ public:
             service::account_operations_service svc(ctx);
             auto err = svc.set_my_default_party(account_id, party_id);
             if (err.empty()) {
-                BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+                ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, set_my_default_party_response{.success = true});
             } else {
                 reply(nats_, msg, set_my_default_party_response{.success = false, .message = err});
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, set_my_default_party_response{.success = false, .message = e.what()});
         }
     }
@@ -809,7 +806,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<update_self_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -819,14 +816,14 @@ public:
             const auto& [account_id, ctx] = *scope;
             service::account_operations_service svc(ctx);
             auto response = svc.update_self_account(*req, account_id);
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such. The store's own text describes
             // the schema to whoever reads it, so it stays in the log.
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             update_self_account_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -847,7 +844,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<update_self_account_contact_information_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -857,10 +854,10 @@ public:
             const auto& [account_id, ctx] = *scope;
             service::account_operations_service svc(ctx);
             auto response = svc.update_self_account_contact_information(*req, account_id);
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             update_self_account_contact_information_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -885,10 +882,10 @@ public:
             const auto& [account_id, ctx] = *scope;
             service::account_operations_service svc(ctx);
             auto response = svc.get_my_account_contact_information(account_id);
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_my_account_contact_information_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -913,10 +910,10 @@ public:
             const auto& [account_id, ctx] = *scope;
             service::account_operations_service svc(ctx);
             auto response = svc.get_my_account(account_id);
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_my_account_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -941,10 +938,10 @@ public:
             const auto& [account_id, ctx] = *scope;
             service::account_operations_service svc(ctx);
             auto response = svc.get_my_login_info(account_id);
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_my_login_info_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -969,10 +966,10 @@ public:
             const auto& [account_id, ctx] = *scope;
             service::account_operations_service svc(ctx);
             auto response = svc.get_my_sessions(account_id);
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_my_sessions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -1032,11 +1029,11 @@ public:
                 response.parties.push_back(acct_project_my_party(
                     ap.party_id, acct_lookup_party(*party_cache_, tenant_id, ap.party_id)));
             }
-            BOOST_LOG_SEV(account_handler_lg(), debug)
+            ORES_LOG_SEV(account_handler_lg(), debug)
                 << "Completed " << msg.subject << " with " << response.parties.size() << " parties";
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_my_parties_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -1056,7 +1053,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<set_reporting_line_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -1073,10 +1070,10 @@ public:
             }
             service::account_operations_service svc(ctx);
             auto response = svc.set_reporting_line(*req);
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             set_reporting_line_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -1100,7 +1097,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<get_reporting_tree_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -1121,10 +1118,10 @@ public:
             auto response = svc.get_reporting_tree(
                 *req, tenant_wide ? std::nullopt : std::optional<boost::uuids::uuid>{account_id});
             acct_name_tree_parties(*party_cache_, ctx.tenant_id().to_string(), response.parties);
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_reporting_tree_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -1137,7 +1134,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<select_party_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -1152,7 +1149,7 @@ public:
 
             auto claims_result = signer_.validate(token);
             if (!claims_result) {
-                BOOST_LOG_SEV(account_handler_lg(), warn) << "select_party: JWT validation failed";
+                ORES_LOG_SEV(account_handler_lg(), warn) << "select_party: JWT validation failed";
                 reply(
                     nats_,
                     msg,
@@ -1160,7 +1157,7 @@ public:
                 return;
             }
             if (claims_result->audience != security::jwt::party_selection_audience) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "select_party: unexpected token audience: " << claims_result->audience;
                 reply(
                     nats_,
@@ -1171,7 +1168,7 @@ public:
 
             boost::uuids::string_generator sg;
             auto account_id = sg(claims_result->subject);
-            BOOST_LOG_SEV(account_handler_lg(), debug)
+            ORES_LOG_SEV(account_handler_lg(), debug)
                 << "select_party: account=" << claims_result->subject
                 << " requested_party=" << req->party_id;
 
@@ -1181,7 +1178,7 @@ public:
             // the "select_party_only" token.
             const auto tenant_id_str = claims_result->tenant_id.value_or("");
             if (tenant_id_str.empty()) {
-                BOOST_LOG_SEV(account_handler_lg(), warn) << "select_party: token has no tenant_id";
+                ORES_LOG_SEV(account_handler_lg(), warn) << "select_party: token has no tenant_id";
                 reply(nats_,
                       msg,
                       select_party_response{.success = false,
@@ -1190,7 +1187,7 @@ public:
             }
             auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
             if (!tid_result) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "select_party: invalid tenant_id in token: " << tenant_id_str;
                 reply(nats_,
                       msg,
@@ -1204,7 +1201,7 @@ public:
             try {
                 requested_party_id = sg(req->party_id);
             } catch (const std::exception&) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "select_party: invalid party_id: " << req->party_id;
                 reply(
                     nats_,
@@ -1215,7 +1212,7 @@ public:
             repository::account_party_repository ap_repo(ctx);
             auto parties = ap_repo.read_latest_by_account(account_id);
 
-            BOOST_LOG_SEV(account_handler_lg(), debug)
+            ORES_LOG_SEV(account_handler_lg(), debug)
                 << "select_party: account has " << parties.size() << " party membership(s)";
 
             bool is_member = false;
@@ -1227,7 +1224,7 @@ public:
             }
 
             if (!is_member) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "select_party: party " << req->party_id
                     << " not in account's party list (account has " << parties.size()
                     << " parties)";
@@ -1267,9 +1264,9 @@ public:
                 auto tid = sg(tenant_id_str);
                 t_name = acct_lookup_tenant_name(ctx, tid);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name during "
-                                                             "party selection: "
-                                                          << e.what();
+                ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name during "
+                                                            "party selection: "
+                                                         << e.what();
             }
             const bool onboarding_complete = acct_is_party_onboarding_complete(
                 ctx, tenant_id_str, boost::uuids::to_string(requested_party_id));
@@ -1279,23 +1276,23 @@ public:
                     acct_lookup_party(*party_cache_, tenant_id_str, requested_party_id)) {
                 p_name = p->full_name;
                 if (party_setup_required) {
-                    BOOST_LOG_SEV(account_handler_lg(), info)
+                    ORES_LOG_SEV(account_handler_lg(), info)
                         << "select_party: party_setup_required=true for party "
                         << boost::uuids::to_string(requested_party_id);
                 } else if (p->status == "Inactive") {
                     party_setup_warning =
                         "Party setup completed, but the party is still marked Inactive.";
-                    BOOST_LOG_SEV(account_handler_lg(), warn)
+                    ORES_LOG_SEV(account_handler_lg(), warn)
                         << "select_party: onboarding.party complete but party "
                         << boost::uuids::to_string(requested_party_id) << " still Inactive";
                 }
             } else {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "select_party: party not found in cache for party "
                     << boost::uuids::to_string(requested_party_id);
             }
 
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             /*
              * The login that led here recorded nothing, because an account
              * with several parties only finishes signing in when one is
@@ -1313,7 +1310,7 @@ public:
                                              claims_result->session_id.value_or(""),
                                              boost::uuids::to_string(requested_party_id));
             } catch (const std::exception& ev_err) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "Failed to record login_success event: " << ev_err.what();
             }
             reply(nats_,
@@ -1328,7 +1325,7 @@ public:
                                         .party_setup_warning = party_setup_warning,
                                         .access_lifetime_s = token_settings()->access_lifetime_s});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, select_party_response{.success = false, .message = e.what()});
         }
     }
@@ -1349,7 +1346,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<switch_party_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -1364,7 +1361,7 @@ public:
 
             auto claims_result = signer_.validate(token);
             if (!claims_result) {
-                BOOST_LOG_SEV(account_handler_lg(), warn) << "switch_party: JWT validation failed";
+                ORES_LOG_SEV(account_handler_lg(), warn) << "switch_party: JWT validation failed";
                 reply(
                     nats_,
                     msg,
@@ -1377,7 +1374,7 @@ public:
             // for that one special case, in auth_handler.hpp), not the
             // literal string "authenticated".
             if (claims_result->audience == security::jwt::party_selection_audience) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "switch_party: rejecting single-use select_party_only token -- "
                        "use select_party to complete initial login instead";
                 reply(
@@ -1389,13 +1386,13 @@ public:
 
             boost::uuids::string_generator sg;
             auto account_id = sg(claims_result->subject);
-            BOOST_LOG_SEV(account_handler_lg(), debug)
+            ORES_LOG_SEV(account_handler_lg(), debug)
                 << "switch_party: account=" << claims_result->subject
                 << " requested_party=" << req->party_id;
 
             const auto tenant_id_str = claims_result->tenant_id.value_or("");
             if (tenant_id_str.empty()) {
-                BOOST_LOG_SEV(account_handler_lg(), warn) << "switch_party: token has no tenant_id";
+                ORES_LOG_SEV(account_handler_lg(), warn) << "switch_party: token has no tenant_id";
                 reply(nats_,
                       msg,
                       select_party_response{.success = false,
@@ -1404,7 +1401,7 @@ public:
             }
             auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
             if (!tid_result) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "switch_party: invalid tenant_id in token: " << tenant_id_str;
                 reply(nats_,
                       msg,
@@ -1418,7 +1415,7 @@ public:
             try {
                 requested_party_id = sg(req->party_id);
             } catch (const std::exception&) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "switch_party: invalid party_id: " << req->party_id;
                 reply(
                     nats_,
@@ -1429,7 +1426,7 @@ public:
             repository::account_party_repository ap_repo(ctx);
             auto parties = ap_repo.read_latest_by_account(account_id);
 
-            BOOST_LOG_SEV(account_handler_lg(), debug)
+            ORES_LOG_SEV(account_handler_lg(), debug)
                 << "switch_party: account has " << parties.size() << " party membership(s)";
 
             bool is_member = false;
@@ -1441,7 +1438,7 @@ public:
             }
 
             if (!is_member) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "switch_party: party " << req->party_id
                     << " not in account's party list (account has " << parties.size()
                     << " parties)";
@@ -1481,9 +1478,9 @@ public:
                 auto tid = sg(tenant_id_str);
                 t_name = acct_lookup_tenant_name(ctx, tid);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name during "
-                                                             "party switch: "
-                                                          << e.what();
+                ORES_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name during "
+                                                            "party switch: "
+                                                         << e.what();
             }
             const bool onboarding_complete = acct_is_party_onboarding_complete(
                 ctx, tenant_id_str, boost::uuids::to_string(requested_party_id));
@@ -1493,23 +1490,23 @@ public:
                     acct_lookup_party(*party_cache_, tenant_id_str, requested_party_id)) {
                 p_name = p->full_name;
                 if (party_setup_required) {
-                    BOOST_LOG_SEV(account_handler_lg(), info)
+                    ORES_LOG_SEV(account_handler_lg(), info)
                         << "switch_party: party_setup_required=true for party "
                         << boost::uuids::to_string(requested_party_id);
                 } else if (p->status == "Inactive") {
                     party_setup_warning =
                         "Party setup completed, but the party is still marked Inactive.";
-                    BOOST_LOG_SEV(account_handler_lg(), warn)
+                    ORES_LOG_SEV(account_handler_lg(), warn)
                         << "switch_party: onboarding.party complete but party "
                         << boost::uuids::to_string(requested_party_id) << " still Inactive";
                 }
             } else {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
+                ORES_LOG_SEV(account_handler_lg(), warn)
                     << "switch_party: party not found in cache for party "
                     << boost::uuids::to_string(requested_party_id);
             }
 
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   select_party_response{.success = true,
@@ -1522,7 +1519,7 @@ public:
                                         .party_setup_warning = party_setup_warning,
                                         .access_lifetime_s = token_settings()->access_lifetime_s});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, select_party_response{.success = false, .message = e.what()});
         }
     }
@@ -1555,7 +1552,7 @@ private:
         try {
             account_id = sg(claims_result->subject);
         } catch (const std::exception&) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
+            ORES_LOG_SEV(account_handler_lg(), warn)
                 << "Self request refused: token subject is not an account id: "
                 << claims_result->subject;
             error_reply(nats_, msg, ores::service::error_code::unauthorized);

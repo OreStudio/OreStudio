@@ -24,7 +24,7 @@
 #include "ores.analytics.quant/domain/derived_rate.hpp"
 #include "ores.analytics.quant/domain/rate_status.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/export.hpp"
@@ -131,7 +131,7 @@ public:
             // A payload that does not decode is refused, not ignored: without
             // this the caller reads nothing and reports a request timeout for
             // what is really a bad request.
-            BOOST_LOG_SEV(crm_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(crm_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -168,7 +168,7 @@ public:
                   get_crm_rate_response{
                       .success = true, .message = {}, .rate = to_item(req->crm_name, *result)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(crm_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(crm_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   get_crm_rate_response{.success = false, .message = e.what(), .rate = {}});
@@ -189,7 +189,7 @@ public:
         }
         auto req = decode<get_crm_rates_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(crm_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(crm_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -214,7 +214,7 @@ public:
             }
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(crm_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(crm_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   get_crm_rates_response{.success = false, .message = e.what(), .rates = {}});

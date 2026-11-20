@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http/routes/refdata/convention_terms.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -46,7 +46,7 @@ term_view swap_term() {
 
 TEST_CASE("a_refused_term_takes_the_field_the_service_named", "[convention_terms]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the field a refused term is put on";
+    ORES_LOG_SEV(lg, info) << "Testing the field a refused term is put on";
 
     result refused;
     refused.outcome = outcome::invalid;
@@ -67,7 +67,7 @@ TEST_CASE("a_refused_term_takes_the_field_the_service_named", "[convention_terms
 
 TEST_CASE("a_refusal_that_names_no_term_keeps_no_field", "[convention_terms]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a refusal that names no term";
+    ORES_LOG_SEV(lg, info) << "Testing a refusal that names no term";
 
     result refused;
     refused.outcome = outcome::invalid;

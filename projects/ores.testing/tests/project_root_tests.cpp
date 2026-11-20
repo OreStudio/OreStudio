@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/project_root.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -29,7 +29,7 @@ TEST_CASE("resolves_a_path_that_names_the_component_model", "[testing]") {
 
     const auto resolved = ores::testing::project_root::resolve(
         "projects/ores.testing/modeling/component_overview.org");
-    BOOST_LOG_SEV(lg, ores::logging::info) << "Resolved: " << resolved.string();
+    ORES_LOG_SEV(lg, ores::logging::info) << "Resolved: " << resolved.string();
 
     CHECK(resolved.filename() == "component_overview.org");
     CHECK(resolved.parent_path().filename() == "modeling");
@@ -41,7 +41,7 @@ TEST_CASE("discovers_a_root_that_holds_the_repository", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto root = ores::testing::project_root::get();
-    BOOST_LOG_SEV(lg, ores::logging::info) << "Root: " << root.string();
+    ORES_LOG_SEV(lg, ores::logging::info) << "Root: " << root.string();
 
     CHECK(std::filesystem::exists(root / ".git"));
     CHECK(std::filesystem::is_directory(root / "projects"));

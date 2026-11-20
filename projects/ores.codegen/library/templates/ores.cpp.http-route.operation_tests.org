@@ -51,7 +51,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.http/routes/{{component}}/{{entity_singular}}_routes.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
@@ -119,7 +119,7 @@ TEST_CASE("{{entity_singular}}_routes_registers_every_declared_operation", "[rou
         CHECK(found != routes.end());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Registered {{http_route.route_count}} route(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered {{http_route.route_count}} route(s).";
 }
 
 TEST_CASE("{{entity_singular}}_routes_requires_a_session_where_the_message_does", "[routes]") {
@@ -155,7 +155,7 @@ TEST_CASE("{{entity_singular}}_routes_requires_a_session_where_the_message_does"
         CHECK(found->auth_declared);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of {{http_route.route_count}} route(s).";
+    ORES_LOG_SEV(lg, debug) << "Checked the auth flag of {{http_route.route_count}} route(s).";
 }
 {{/operation}}
 #+end_src

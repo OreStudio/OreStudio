@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/counterparty_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
@@ -29,7 +28,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -57,7 +55,7 @@ TEST_CASE("write_single_counterparty_identifier", "[repository]") {
     auto ci = generate_synthetic_counterparty_identifier(ctx);
     ci.change_reason_code = "system.test";
     ci.counterparty_id = cp.id;
-    BOOST_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
+    ORES_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
 
     counterparty_identifier_repository repo;
     repo.write(h.context(), ci);
@@ -83,7 +81,7 @@ TEST_CASE("write_multiple_counterparty_identifiers", "[repository]") {
         ci.change_reason_code = "system.test";
         ci.counterparty_id = cp.id;
     }
-    BOOST_LOG_SEV(lg, debug) << "Counterparty identifiers: " << counterparty_identifiers;
+    ORES_LOG_SEV(lg, debug) << "Counterparty identifiers: " << counterparty_identifiers;
 
     counterparty_identifier_repository repo;
     repo.write(h.context(), counterparty_identifiers);
@@ -113,14 +111,14 @@ TEST_CASE("read_latest_counterparty_identifiers", "[repository]") {
         ci.change_reason_code = "system.test";
         ci.counterparty_id = cp.id;
     }
-    BOOST_LOG_SEV(lg, debug) << "Written counterparty identifiers: "
-                             << written_counterparty_identifiers;
+    ORES_LOG_SEV(lg, debug) << "Written counterparty identifiers: "
+                            << written_counterparty_identifiers;
 
     counterparty_identifier_repository repo;
     repo.write(h.context(), written_counterparty_identifiers);
 
     auto read_counterparty_identifiers = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
+    ORES_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
 
     for (const auto& written : written_counterparty_identifiers) {
         const auto it = std::ranges::find_if(
@@ -145,7 +143,7 @@ TEST_CASE("read_latest_counterparty_identifier_by_id", "[repository]") {
     ci.change_reason_code = "system.test";
     ci.counterparty_id = cp.id;
     const auto original_id_value = ci.id_value;
-    BOOST_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
+    ORES_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
 
     counterparty_identifier_repository repo;
     repo.write(h.context(), ci);
@@ -155,7 +153,7 @@ TEST_CASE("read_latest_counterparty_identifier_by_id", "[repository]") {
 
     auto read_counterparty_identifiers =
         repo.read_latest(h.context(), boost::uuids::to_string(ci.id));
-    BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
+    ORES_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
 
     REQUIRE(read_counterparty_identifiers.size() == 1);
     CHECK(read_counterparty_identifiers[0].id == ci.id);
@@ -182,11 +180,11 @@ TEST_CASE("read_nonexistent_counterparty_identifier_id", "[repository]") {
     repo.write(h.context(), keeper);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_counterparty_identifiers =
         repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
+    ORES_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
 
     const auto answered_with_another_key =
         std::ranges::any_of(read_counterparty_identifiers, [&](const counterparty_identifier& c) {

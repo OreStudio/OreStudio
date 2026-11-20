@@ -30,9 +30,7 @@
 #include "ores.inbox.api/domain/approval_request_part_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/approval_request_part_entity.hpp"
 #include "ores.inbox.core/repository/approval_request_part_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -194,9 +192,9 @@ void approval_request_part_repository::write(
 void approval_request_part_repository::write(
     const domain::approval_request_part& approval_request_part,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing approval request part to database: "
-                               << approval_request_part.request_id << "/"
-                               << approval_request_part.part_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing approval request part to database: "
+                              << approval_request_part.request_id << "/"
+                              << approval_request_part.part_code;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(approval_request_part.request_id, approval_request_part.part_code) :
@@ -211,8 +209,8 @@ void approval_request_part_repository::write(
 void approval_request_part_repository::write(
     const std::vector<domain::approval_request_part>& approval_request_parts,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing approval request parts to database. Count: "
-                               << approval_request_parts.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing approval request parts to database. Count: "
+                              << approval_request_parts.size();
     if (claims.size() != approval_request_parts.size())
         throw std::invalid_argument(
             "approval_request_part_repository::write: one claim is needed for each row");
@@ -253,8 +251,8 @@ std::vector<domain::approval_request_part> approval_request_part_repository::rea
 
 std::vector<domain::approval_request_part>
 approval_request_part_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request parts with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval request parts with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
@@ -274,8 +272,8 @@ approval_request_part_repository::read_latest(std::uint32_t offset, std::uint32_
 std::vector<domain::approval_request_part>
 approval_request_part_repository::read_latest(const boost::uuids::uuid& request_id,
                                               const std::string& part_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request part. " << request_id << "/"
-                               << part_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval request part. " << request_id << "/"
+                              << part_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto request_id_str = boost::uuids::to_string(request_id);
@@ -296,7 +294,7 @@ approval_request_part_repository::read_latest(const boost::uuids::uuid& request_
 }
 
 std::uint32_t approval_request_part_repository::get_total_approval_request_part_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval request parts count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active approval request parts count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -305,13 +303,13 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
 
     const auto count = query_builder::execute_count_query<approval_request_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval request parts");
-    BOOST_LOG_SEV(lg(), debug) << "Total active approval request parts count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active approval request parts count: " << count;
     return count;
 }
 
 std::vector<domain::approval_request_part>
 approval_request_part_repository::read_latest_by_request(const boost::uuids::uuid& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request parts. Request: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval request parts. Request: " << request_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto request_id_str = boost::uuids::to_string(request_id);
@@ -335,7 +333,7 @@ approval_request_part_repository::read_latest_by_request(const boost::uuids::uui
 
 std::vector<domain::approval_request_part>
 approval_request_part_repository::read_latest_by_part(const std::string& part_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request parts. Part: " << part_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval request parts. Part: " << part_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -358,8 +356,8 @@ approval_request_part_repository::read_latest_by_part(const std::string& part_co
 std::vector<domain::approval_request_part> approval_request_part_repository::read_latest_by_request(
     const boost::uuids::uuid& request_id, std::uint32_t offset, std::uint32_t limit) {
     const auto request_id_str = boost::uuids::to_string(request_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request parts. Request: " << request_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval request parts. Request: " << request_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -384,8 +382,8 @@ std::vector<domain::approval_request_part> approval_request_part_repository::rea
 std::uint32_t approval_request_part_repository::get_total_approval_request_part_count_by_request(
     const boost::uuids::uuid& request_id) {
     const auto request_id_str = boost::uuids::to_string(request_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval request parts count. Request: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active approval request parts count. Request: "
+                              << request_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -396,14 +394,14 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
 
     const auto count = query_builder::execute_count_query<approval_request_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval request parts");
-    BOOST_LOG_SEV(lg(), debug) << "Total active approval request parts count by request: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active approval request parts count by request: " << count;
     return count;
 }
 
 std::uint32_t approval_request_part_repository::get_total_approval_request_part_count_by_part(
     const std::string& part_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval request parts count. Part: "
-                               << part_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active approval request parts count. Part: "
+                              << part_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -413,14 +411,14 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
 
     const auto count = query_builder::execute_count_query<approval_request_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval request parts");
-    BOOST_LOG_SEV(lg(), debug) << "Total active approval request parts count by part: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active approval request parts count by part: " << count;
     return count;
 }
 
 std::vector<approval_request_part_history_row>
 approval_request_part_repository::read_all_by_request(const boost::uuids::uuid& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the approval request parts. Request: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the approval request parts. Request: "
+                              << request_id;
 
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -472,8 +470,8 @@ approval_request_part_repository::remove_status
 approval_request_part_repository::remove(const boost::uuids::uuid& request_id,
                                          const std::string& part_code,
                                          std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing approval request part from database: " << request_id
-                               << "/" << part_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing approval request part from database: " << request_id
+                              << "/" << part_code;
 
     const auto current = read_latest(request_id, part_code);
     if (current.empty())
@@ -520,8 +518,8 @@ void approval_request_part_repository::remove(const std::vector<boost::uuids::uu
 }
 
 void approval_request_part_repository::remove_by_request(const boost::uuids::uuid& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all approval request parts from database: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all approval request parts from database: "
+                              << request_id;
 
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();

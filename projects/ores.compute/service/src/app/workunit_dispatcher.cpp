@@ -63,19 +63,19 @@ void workunit_dispatcher::dispatch(const ores::eventing::domain::entity_change_e
     try {
         const auto tenant_ctx =
             ores::database::service::tenant_context::with_tenant(ctx_, evt.tenant_id);
-        BOOST_LOG_SEV(lg(), debug) << "Dispatching " << evt.entity_ids.size()
-                                   << " workunit(s) for tenant " << evt.tenant_id;
+        ORES_LOG_SEV(lg(), debug) << "Dispatching " << evt.entity_ids.size()
+                                  << " workunit(s) for tenant " << evt.tenant_id;
         for (const auto& workunit_id : evt.entity_ids) {
             try {
                 dispatch_one(tenant_ctx, workunit_id);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "Dispatch failed for workunit " << workunit_id << ": " << e.what();
             }
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Cannot dispatch workunits for tenant " << evt.tenant_id << ": " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Cannot dispatch workunits for tenant " << evt.tenant_id
+                                  << ": " << e.what();
     }
 }
 
@@ -84,7 +84,7 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
     ores::compute::service::workunit_service wu_svc(tenant_ctx);
     const auto wu = wu_svc.get_workunit(boost::lexical_cast<boost::uuids::uuid>(workunit_id));
     if (!wu) {
-        BOOST_LOG_SEV(lg(), warn) << "Workunit not found for dispatch: " << workunit_id;
+        ORES_LOG_SEV(lg(), warn) << "Workunit not found for dispatch: " << workunit_id;
         return;
     }
 
@@ -97,23 +97,23 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
         result_repo.get_total_result_count_by_workunit_id(tenant_ctx, workunit_id));
     const auto missing = wu->target_redundancy - existing;
     if (missing <= 0) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "Workunit " << workunit_id << " at redundancy target; skipping";
+        ORES_LOG_SEV(lg(), debug) << "Workunit " << workunit_id
+                                  << " at redundancy target; skipping";
         return;
     }
 
     if (wu->app_version_id.is_nil()) {
-        BOOST_LOG_SEV(lg(), warn) << "Workunit " << workunit_id
-                                  << " has no app_version_id; cannot dispatch";
+        ORES_LOG_SEV(lg(), warn) << "Workunit " << workunit_id
+                                 << " has no app_version_id; cannot dispatch";
         return;
     }
 
     repository::app_version_platform_repository avp_repo(tenant_ctx);
     const auto avps = avp_repo.read_latest_by_app_version(wu->app_version_id);
     if (avps.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No platform packages for app_version "
-                                  << boost::uuids::to_string(wu->app_version_id)
-                                  << "; cannot dispatch workunit " << workunit_id;
+        ORES_LOG_SEV(lg(), warn) << "No platform packages for app_version "
+                                 << boost::uuids::to_string(wu->app_version_id)
+                                 << "; cannot dispatch workunit " << workunit_id;
         return;
     }
 
@@ -124,9 +124,9 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
     const auto waiting = ores::compute::repository::work_ledger_repository().waiting(
         ctx_, boost::lexical_cast<boost::uuids::uuid>(tenant_uuid));
     if (waiting + missing > tenant_queue_limit) {
-        BOOST_LOG_SEV(lg(), warn) << "Refusing to dispatch workunit " << workunit_id
-                                  << " for tenant " << tenant_uuid << ": " << waiting
-                                  << " job(s) already wait and the limit is " << tenant_queue_limit;
+        ORES_LOG_SEV(lg(), warn) << "Refusing to dispatch workunit " << workunit_id
+                                 << " for tenant " << tenant_uuid << ": " << waiting
+                                 << " job(s) already wait and the limit is " << tenant_queue_limit;
         return;
     }
 
@@ -136,8 +136,8 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
         ores::compute::repository::work_tenant_repository().note(
             ctx_, boost::lexical_cast<boost::uuids::uuid>(tenant_uuid));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Could not note tenant " << tenant_uuid
-                                  << " for the grid samples: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Could not note tenant " << tenant_uuid
+                                 << " for the grid samples: " << e.what();
     }
 
     ores::compute::service::result_service result_svc(tenant_ctx);
@@ -170,8 +170,8 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
              .platforms = std::move(platforms),
              .priority = wu->priority});
 
-        BOOST_LOG_SEV(lg(), info) << "Queued result " << boost::uuids::to_string(result_id)
-                                  << " for workunit " << workunit_id;
+        ORES_LOG_SEV(lg(), info) << "Queued result " << boost::uuids::to_string(result_id)
+                                 << " for workunit " << workunit_id;
     }
 
     // A plain notice with no job in it: idle nodes ask for work at once instead of

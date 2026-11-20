@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/marketdata/oresmd_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -45,7 +45,7 @@ http_status oresmd_status(const std::string& address, const std::string& body) {
 
 TEST_CASE("oresmd_read_the_schema_without_a_service", "[oresmd]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the schema's refusal when the service does not answer";
+    ORES_LOG_SEV(lg, info) << "Testing the schema's refusal when the service does not answer";
 
     http_request req;
     CHECK(
@@ -55,7 +55,7 @@ TEST_CASE("oresmd_read_the_schema_without_a_service", "[oresmd]") {
 
 TEST_CASE("oresmd_read_one_uri_without_a_service", "[oresmd]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parse and a compose when the service does not answer";
+    ORES_LOG_SEV(lg, info) << "Testing a parse and a compose when the service does not answer";
 
     CHECK(oresmd_status("/api/oresmd/parse", R"({"uri":"oresmd://fx/EUR"})") ==
           http_status::bad_gateway);
@@ -65,7 +65,7 @@ TEST_CASE("oresmd_read_one_uri_without_a_service", "[oresmd]") {
 
 TEST_CASE("oresmd_refuse_a_body_they_do_not_read", "[oresmd]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the codec routes' bodies";
+    ORES_LOG_SEV(lg, info) << "Testing the codec routes' bodies";
 
     CHECK(oresmd_status("/api/oresmd/parse", "") == http_status::bad_request);
     CHECK(oresmd_status("/api/oresmd/parse", R"({"uri":"oresmd://fx/EUR","kind":"fx"})") ==
@@ -78,7 +78,7 @@ TEST_CASE("oresmd_refuse_a_body_they_do_not_read", "[oresmd]") {
 
 TEST_CASE("oresmd_refuse_a_batch_larger_than_a_page", "[oresmd]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the limits on a batch read";
+    ORES_LOG_SEV(lg, info) << "Testing the limits on a batch read";
 
     std::string uris;
     for (int at = 0; at < 201; ++at) {
@@ -91,7 +91,7 @@ TEST_CASE("oresmd_refuse_a_batch_larger_than_a_page", "[oresmd]") {
 
 TEST_CASE("oresmd_refuse_a_field_set_larger_than_the_codec_reads", "[oresmd]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the limits on a compose";
+    ORES_LOG_SEV(lg, info) << "Testing the limits on a compose";
 
     std::string fields;
     for (int at = 0; at < 65; ++at) {

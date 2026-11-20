@@ -81,8 +81,8 @@ constexpr std::string_view service_version = ORES_VERSION;
 boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
                                               const config::options& cfg) {
 
-    BOOST_LOG_SEV(lg(), info) << utility::version::format_startup_message("ORE Studio HTTP Server");
-    BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
+    ORES_LOG_SEV(lg(), info) << utility::version::format_startup_message("ORE Studio HTTP Server");
+    ORES_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
 
     const std::string http_base_url = cfg.http_base_url.empty() ?
                                           "http://localhost:" + std::to_string(cfg.server.port) :
@@ -99,7 +99,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         nats,
         iam::client::make_service_token_provider(nats, cfg.database.user, cfg.database.password));
 
-    BOOST_LOG_SEV(lg(), info) << "Initializing database connection...";
+    ORES_LOG_SEV(lg(), info) << "Initializing database connection...";
     database::context_factory::configuration db_cfg{
         .database_options = cfg.database,
         .pool_size = static_cast<std::size_t>(cfg.database.pool_size),
@@ -108,14 +108,14 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         .service_account = cfg.database.user};
     auto ctx = database::context_factory::make_context(db_cfg);
 
-    BOOST_LOG_SEV(lg(), info) << "Initializing shared services...";
+    ORES_LOG_SEV(lg(), info) << "Initializing shared services...";
     auto system_flags = std::make_shared<variability::service::system_settings_service>(
         ctx, database::service::tenant_context::system_tenant_id);
     system_flags->refresh();
     auto sessions = std::make_shared<iam::service::auth_session_service>();
     auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);
 
-    BOOST_LOG_SEV(lg(), info) << "Initializing event bus...";
+    ORES_LOG_SEV(lg(), info) << "Initializing event bus...";
     eventing::service::event_bus event_bus;
     eventing::service::postgres_event_source event_source(ctx, event_bus);
 
@@ -126,8 +126,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     auto flags_sub = event_bus.subscribe<variability::messaging::system_setting_event>(
         [&system_flags](const variability::messaging::system_setting_event& e) {
-            BOOST_LOG_SEV(lg(), info) << "System setting changed: " << e.key.name << " ("
-                                      << e.action << "), refreshing the settings cache";
+            ORES_LOG_SEV(lg(), info) << "System setting changed: " << e.key.name << " (" << e.action
+                                     << "), refreshing the settings cache";
             system_flags->refresh();
         });
 
@@ -146,7 +146,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
                 auto session_id = gen(session_id_str);
                 session_repo->update_bytes(ctx, session_id, start_time, bytes_sent, bytes_received);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "Failed to update session bytes: " << e.what();
+                ORES_LOG_SEV(lg(), warn) << "Failed to update session bytes: " << e.what();
             }
         });
 
@@ -162,7 +162,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     api_info.license_name = "GPL-3.0";
     registry->set_info(api_info);
 
-    BOOST_LOG_SEV(lg(), info) << "Registering API routes...";
+    ORES_LOG_SEV(lg(), info) << "Registering API routes...";
 
     auto api_info_builder =
         router->get("/api/v1/info")
@@ -200,10 +200,10 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         site = http::site::load_site(cfg.site_config, cfg.site_env, [](std::string_view name) {
             return ores::platform::environment::environment::get_value(std::string(name));
         });
-        BOOST_LOG_SEV(lg(), info) << "Serving site environment " << site->served.id << " from "
-                                  << site->source;
+        ORES_LOG_SEV(lg(), info) << "Serving site environment " << site->served.id << " from "
+                                 << site->source;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "No site routes: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "No site routes: " << e.what();
     }
     ores::http::routes::site_routes::register_routes(router, registry, std::move(site));
 
@@ -283,16 +283,16 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             routes::web_bundle_routes bundle(cfg.web_dir);
             bundle.register_routes(router, registry);
         } else {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "No browser bundle at " << cfg.web_dir << "; the server serves no application";
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "API routes registered.";
-    BOOST_LOG_SEV(lg(), info) << "Total endpoints: " << router->routes().size();
-    BOOST_LOG_SEV(lg(), info) << "OpenAPI spec available at /openapi.json";
-    BOOST_LOG_SEV(lg(), info) << "Swagger UI available at /swagger";
-    BOOST_LOG_SEV(lg(), info) << "HTTP base URL advertised via NATS: " << http_base_url;
+    ORES_LOG_SEV(lg(), info) << "API routes registered.";
+    ORES_LOG_SEV(lg(), info) << "Total endpoints: " << router->routes().size();
+    ORES_LOG_SEV(lg(), info) << "OpenAPI spec available at /openapi.json";
+    ORES_LOG_SEV(lg(), info) << "Swagger UI available at /swagger";
+    ORES_LOG_SEV(lg(), info) << "HTTP base URL advertised via NATS: " << http_base_url;
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

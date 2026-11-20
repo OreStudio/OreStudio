@@ -38,8 +38,8 @@ void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo
         test_running_ = true;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting test: " << current_test_name_
-                               << " (timeout: " << timeout_.count() << "s)";
+    ORES_LOG_SEV(lg(), debug) << "Starting test: " << current_test_name_
+                              << " (timeout: " << timeout_.count() << "s)";
 
     watchdog_thread_ = std::thread([this]() { watchdog_thread_func(); });
 }
@@ -61,13 +61,13 @@ void test_timeout_listener::testCaseEnded(Catch::TestCaseStats const& /*testCase
     auto elapsed = std::chrono::steady_clock::now() - test_start_time_;
     auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed);
 
-    BOOST_LOG_SEV(lg(), debug) << "Test completed: " << current_test_name_
-                               << " (duration: " << elapsed_seconds.count() << "s)";
+    ORES_LOG_SEV(lg(), debug) << "Test completed: " << current_test_name_
+                              << " (duration: " << elapsed_seconds.count() << "s)";
 
     if (elapsed > timeout_ / 2) {
-        BOOST_LOG_SEV(lg(), warn) << "Slow test: " << current_test_name_ << " took "
-                                  << elapsed_seconds.count() << "s (timeout: " << timeout_.count()
-                                  << "s)";
+        ORES_LOG_SEV(lg(), warn) << "Slow test: " << current_test_name_ << " took "
+                                 << elapsed_seconds.count() << "s (timeout: " << timeout_.count()
+                                 << "s)";
     }
 }
 
@@ -85,8 +85,8 @@ void test_timeout_listener::watchdog_thread_func() {
         auto elapsed = std::chrono::steady_clock::now() - test_start_time_;
         if (elapsed > timeout_) {
             // Log to both Boost.Log and stderr to ensure visibility
-            BOOST_LOG_SEV(lg(), error) << "TEST TIMEOUT: " << current_test_name_ << " exceeded "
-                                       << timeout_.count() << " seconds limit!";
+            ORES_LOG_SEV(lg(), error) << "TEST TIMEOUT: " << current_test_name_ << " exceeded "
+                                      << timeout_.count() << " seconds limit!";
 
             std::cerr << "\n\n"
                       << "========================================\n"

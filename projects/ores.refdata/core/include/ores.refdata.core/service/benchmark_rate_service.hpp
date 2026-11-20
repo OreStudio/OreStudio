@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_BENCHMARK_RATE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/benchmark_rate.hpp"
 #include "ores.refdata.api/messaging/benchmark_rate_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

@@ -21,7 +21,7 @@
 #define ORES_REPORTING_CORE_TESTS_REPORT_INSTANCE_TEST_FIXTURE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.reporting.api/domain/report_trigger_event.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"

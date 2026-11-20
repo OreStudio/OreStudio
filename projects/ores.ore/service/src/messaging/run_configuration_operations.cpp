@@ -19,7 +19,7 @@
  */
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/curve_configuration_projection.hpp"
@@ -565,7 +565,7 @@ input_files export_run(nats_client& owners, const std::string& report_definition
      */
     auto pruned = ores::ore::xml::without_unloadable_analytics(files);
     for (const auto& analytic : pruned.dropped)
-        BOOST_LOG_SEV(run_configuration_operations_lg(), ores::logging::warn)
+        ORES_LOG_SEV(run_configuration_operations_lg(), ores::logging::warn)
             << "The export dropped the analytic '" << analytic << "' for definition "
             << report_definition_id << ": its run document names a file the export does not carry.";
     return pruned.files;
@@ -649,7 +649,7 @@ ore_projection_of(nats_client& owners, const std::string& report_definition_id) 
         }
     }
 
-    BOOST_LOG_SEV(run_configuration_operations_lg(), ores::logging::debug)
+    ORES_LOG_SEV(run_configuration_operations_lg(), ores::logging::debug)
         << "ore_projection_of: " << index_of_curve_uri.size() << " curve name(s) for definition "
         << report_definition_id;
 

@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_SERVICE_FX_VOL_SURFACE_FEED_EXPIRY_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed_expiry.hpp"
 #include "ores.synthetic.api/messaging/fx_vol_surface_feed_expiry_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

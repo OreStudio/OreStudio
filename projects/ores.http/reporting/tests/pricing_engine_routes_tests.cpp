@@ -23,7 +23,7 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/reporting/pricing_engine_routes.hpp"
 #include "ores.http/routes/reporting/pricing_vocabulary.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -75,7 +75,7 @@ http_status pricing_status_of(http_method method,
 
 TEST_CASE("a_page_of_pricing_engines_refuses_a_query_it_does_not_read", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the page of pricing engines' query";
+    ORES_LOG_SEV(lg, info) << "Testing the page of pricing engines' query";
 
     http_request req;
     req.query_params["party"] = "acme";
@@ -85,7 +85,7 @@ TEST_CASE("a_page_of_pricing_engines_refuses_a_query_it_does_not_read", "[pricin
 
 TEST_CASE("a_page_of_pricing_engines_with_no_service_is_refused_as_upstream", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a page of pricing engines with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a page of pricing engines with no service behind it";
 
     CHECK(pricing_status_of(http_method::get, engines_address, http_request{}, engines_address) ==
           http_status::bad_gateway);
@@ -93,7 +93,7 @@ TEST_CASE("a_page_of_pricing_engines_with_no_service_is_refused_as_upstream", "[
 
 TEST_CASE("one_pricing_engine_refuses_an_id_that_is_not_an_id", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing one pricing engine's id";
+    ORES_LOG_SEV(lg, info) << "Testing one pricing engine's id";
 
     CHECK(pricing_status_of(http_method::get,
                             "/api/reporting/pricing-engines/not-an-id",
@@ -103,7 +103,7 @@ TEST_CASE("one_pricing_engine_refuses_an_id_that_is_not_an_id", "[pricing_engine
 
 TEST_CASE("one_pricing_engine_with_no_service_is_refused_as_upstream", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing one pricing engine with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing one pricing engine with no service behind it";
 
     CHECK(pricing_status_of(http_method::get,
                             "/api/reporting/pricing-engines/00000000-0000-0000-0000-0000000000e1",
@@ -113,7 +113,7 @@ TEST_CASE("one_pricing_engine_with_no_service_is_refused_as_upstream", "[pricing
 
 TEST_CASE("a_documents_history_refuses_an_id_that_is_not_an_id", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a document's history id";
+    ORES_LOG_SEV(lg, info) << "Testing a document's history id";
 
     CHECK(pricing_status_of(http_method::get,
                             "/api/reporting/pricing-engines/not-an-id/history",
@@ -124,7 +124,7 @@ TEST_CASE("a_documents_history_refuses_an_id_that_is_not_an_id", "[pricing_engin
 
 TEST_CASE("a_documents_history_with_no_service_is_refused_as_upstream", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a document's history with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a document's history with no service behind it";
 
     CHECK(pricing_status_of(
               http_method::get,
@@ -135,7 +135,7 @@ TEST_CASE("a_documents_history_with_no_service_is_refused_as_upstream", "[pricin
 
 TEST_CASE("the_vocabulary_refuses_a_query_it_does_not_read", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the vocabulary's query";
+    ORES_LOG_SEV(lg, info) << "Testing the vocabulary's query";
 
     ores::nats::service::nats_client session;
     auto table = std::make_shared<ores::http::net::router>();
@@ -160,7 +160,7 @@ TEST_CASE("the_vocabulary_refuses_a_query_it_does_not_read", "[pricing_engines]"
 
 TEST_CASE("the_vocabulary_is_read_before_one_document", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the vocabulary is not read as a document's id";
+    ORES_LOG_SEV(lg, info) << "Testing that the vocabulary is not read as a document's id";
 
     ores::nats::service::nats_client session;
     auto table = std::make_shared<ores::http::net::router>();
@@ -176,7 +176,7 @@ TEST_CASE("the_vocabulary_is_read_before_one_document", "[pricing_engines]") {
 
 TEST_CASE("an_ore_document_refuses_an_id_that_is_not_an_id", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing an ORE document's id";
+    ORES_LOG_SEV(lg, info) << "Testing an ORE document's id";
 
     CHECK(pricing_status_of(http_method::get,
                             "/api/reporting/pricing-engines/not-an-id/ore-document",
@@ -187,7 +187,7 @@ TEST_CASE("an_ore_document_refuses_an_id_that_is_not_an_id", "[pricing_engines]"
 
 TEST_CASE("an_ore_document_with_no_service_is_refused_as_upstream", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing an ORE document with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing an ORE document with no service behind it";
 
     CHECK(pricing_status_of(
               http_method::get,

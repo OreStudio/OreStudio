@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_ZERO_INFLATION_INDEX_CONVENTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
 #include "ores.refdata.api/messaging/zero_inflation_index_convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

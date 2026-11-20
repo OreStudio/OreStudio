@@ -164,7 +164,7 @@ void counterparty_identifier_change_commands::register_commands(cli::Menu& root_
 void counterparty_identifier_change_commands::process_list(std::ostream& out,
                                                            nats_client& session,
                                                            const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list request.";
 
     using request_type = messaging::list_counterparty_identifier_changes_request;
     if constexpr (request_type::requires_session) {
@@ -214,7 +214,7 @@ void counterparty_identifier_change_commands::process_list(std::ostream& out,
 void counterparty_identifier_change_commands::process_get(std::ostream& out,
                                                           nats_client& session,
                                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get request.";
 
     using request_type = messaging::get_counterparty_identifier_change_request;
     if constexpr (request_type::requires_session) {
@@ -258,7 +258,7 @@ void counterparty_identifier_change_commands::process_get(std::ostream& out,
 
 void counterparty_identifier_change_commands::process_get_many(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
     using request_type = messaging::get_many_counterparty_identifier_changes_request;
     if constexpr (request_type::requires_session) {
@@ -306,7 +306,7 @@ void counterparty_identifier_change_commands::process_get_many(
 
 void counterparty_identifier_change_commands::process_by_request_id(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating by-request-id request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating by-request-id request.";
 
     using request_type = messaging::list_by_request_id_counterparty_identifier_changes_request;
     if constexpr (request_type::requires_session) {
@@ -363,7 +363,7 @@ void counterparty_identifier_change_commands::process_by_request_id(
 
 void counterparty_identifier_change_commands::process_versions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating versions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating versions request.";
 
     using request_type = messaging::list_counterparty_identifier_change_versions_request;
     if constexpr (request_type::requires_session) {
@@ -413,7 +413,7 @@ void counterparty_identifier_change_commands::process_versions(
 
 void counterparty_identifier_change_commands::process_version(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating version request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating version request.";
 
     using request_type = messaging::get_counterparty_identifier_change_version_request;
     if constexpr (request_type::requires_session) {

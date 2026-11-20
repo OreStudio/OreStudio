@@ -61,7 +61,7 @@ void signup_operations_commands::register_commands(cli::Menu& root_menu, nats_cl
 void signup_operations_commands::process_signup(std::ostream& out,
                                                 nats_client& session,
                                                 const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating signup request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating signup request.";
 
     using request_type = ores::iam::messaging::signup_request;
 

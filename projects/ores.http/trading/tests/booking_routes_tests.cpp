@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/trading/booking_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -121,7 +121,7 @@ http_status booking_link_status(const std::string& trade, const std::string& bod
 
 TEST_CASE("booking_offers_the_acting_partys_open_books", "[booking]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the books the booking form offers";
+    ORES_LOG_SEV(lg, info) << "Testing the books the booking form offers";
 
     const std::vector books{
         booking_book_of(
@@ -139,7 +139,7 @@ TEST_CASE("booking_offers_the_acting_partys_open_books", "[booking]") {
 
 TEST_CASE("booking_prefers_the_tenants_own_identifier_schemes", "[booking]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier schemes the form offers";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier schemes the form offers";
 
     const std::vector<trading_domain::trade_id_type> declared{booking_scheme_of("UTI"),
                                                               booking_scheme_of("Internal"),
@@ -162,7 +162,7 @@ TEST_CASE("booking_prefers_the_tenants_own_identifier_schemes", "[booking]") {
 
 TEST_CASE("booking_records_a_link_against_the_newest_activity", "[booking]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the activity a link is recorded against";
+    ORES_LOG_SEV(lg, info) << "Testing the activity a link is recorded against";
 
     const std::vector states{booking_state_of(1, "00000000-0000-0000-0000-0000000000e1"),
                              booking_state_of(3, "00000000-0000-0000-0000-0000000000e3"),
@@ -175,7 +175,7 @@ TEST_CASE("booking_records_a_link_against_the_newest_activity", "[booking]") {
 
 TEST_CASE("booking_refuses_a_malformed_request", "[booking]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the booking routes' refusals";
+    ORES_LOG_SEV(lg, info) << "Testing the booking routes' refusals";
 
     CHECK(answer_at<booking_routes>(
               http_method::get, "/api/trades/new", http_request{}, "/api/trades/new")

@@ -29,10 +29,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -442,25 +440,25 @@ pricing_model_service::prepare_change(const messaging::pricing_model_change& cha
 
 std::vector<domain::pricing_model> pricing_model_service::list_models(std::uint32_t offset,
                                                                       std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all pricing models";
+    ORES_LOG_SEV(lg(), debug) << "Listing all pricing models";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t pricing_model_service::count_models() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total pricing models count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total pricing models count";
     return repo_.get_total_model_count(ctx_);
 }
 
 
 std::optional<domain::pricing_model>
 pricing_model_service::get_model_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting pricing model at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting pricing model at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::pricing_model> pricing_model_service::find_model(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding pricing model. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding pricing model. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -475,11 +473,11 @@ pricing_model_service::get_models(const std::vector<std::string>& codes) {
 void pricing_model_service::save_model(const domain::pricing_model& v) {
     if (v.code.empty())
         throw std::invalid_argument("Pricing Model code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving pricing model. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving pricing model. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved pricing model. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved pricing model. " << "code: " << v.code;
 }
 
 void pricing_model_service::save_models(const std::vector<domain::pricing_model>& models) {
@@ -487,7 +485,7 @@ void pricing_model_service::save_models(const std::vector<domain::pricing_model>
         if (e.code.empty())
             throw std::invalid_argument("Pricing Model code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << models.size() << " pricing models";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << models.size() << " pricing models";
     auto ts = models;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -496,9 +494,9 @@ void pricing_model_service::save_models(const std::vector<domain::pricing_model>
 }
 
 void pricing_model_service::delete_model(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing pricing model. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed pricing model. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed pricing model. " << "code: " << code;
 }
 
 void pricing_model_service::delete_models(const std::vector<std::string>& codes) {
@@ -507,7 +505,7 @@ void pricing_model_service::delete_models(const std::vector<std::string>& codes)
 
 std::vector<domain::pricing_model>
 pricing_model_service::get_model_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing model. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for pricing model. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

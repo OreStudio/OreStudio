@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/reporting/cut_kind_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -66,7 +66,7 @@ http_status put_of(const std::string& body) {
 
 TEST_CASE("the_kinds_of_cut_refuse_a_page_they_do_not_read", "[cut_kind]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the kind list's page and order";
+    ORES_LOG_SEV(lg, info) << "Testing the kind list's page and order";
 
     // A page states a limit, as the BFF's own schema required.
     CHECK(answer_at<cut_kind_routes>(http_method::get, kinds_address, http_request{}, kinds_address)
@@ -82,7 +82,7 @@ TEST_CASE("the_kinds_of_cut_refuse_a_page_they_do_not_read", "[cut_kind]") {
 
 TEST_CASE("the_kinds_of_cut_refuse_a_query_they_do_not_read", "[cut_kind]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the kind list's strict query";
+    ORES_LOG_SEV(lg, info) << "Testing the kind list's strict query";
 
     http_request req;
     req.query_params["limit"] = "10";
@@ -93,7 +93,7 @@ TEST_CASE("the_kinds_of_cut_refuse_a_query_they_do_not_read", "[cut_kind]") {
 
 TEST_CASE("a_kind_of_cut_refuses_a_write_it_does_not_state", "[cut_kind]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a kind's write refusals";
+    ORES_LOG_SEV(lg, info) << "Testing a kind's write refusals";
 
     // A write states why it is made, and the version it was read at.
     CHECK(put_of(R"({"change":{}}") == http_status::bad_request);
@@ -109,7 +109,7 @@ TEST_CASE("a_kind_of_cut_refuses_a_write_it_does_not_state", "[cut_kind]") {
 
 TEST_CASE("a_kind_keeps_the_retention_destination_the_form_never_offers", "[cut_kind]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a kind's write is rebuilt from the row it read";
+    ORES_LOG_SEV(lg, info) << "Testing that a kind's write is rebuilt from the row it read";
 
     // The form offers nine of the row's fields, and the destination is not one
     // of them: the write is assembled from the row just read, so a body that
@@ -122,7 +122,7 @@ TEST_CASE("a_kind_keeps_the_retention_destination_the_form_never_offers", "[cut_
 
 TEST_CASE("a_kind_of_cut_read_with_no_service_is_refused_as_upstream", "[cut_kind]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a kind read with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a kind read with no service behind it";
 
     CHECK(answer_at<cut_kind_routes>(http_method::get, kind_address, http_request{}, kind_pattern)
               .status == http_status::bad_gateway);

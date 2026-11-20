@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_COUNTERPARTY_CONTACT_INFORMATION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

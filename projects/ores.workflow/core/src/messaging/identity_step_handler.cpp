@@ -18,7 +18,7 @@
  *
  */
 #include "ores.workflow.core/messaging/identity_step_handler.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
@@ -57,8 +57,8 @@ void handle(ores::nats::service::client& nats, ores::nats::delivery delivery) {
     if (!ctx) {
         // Not a step command at all, so there is no step to fail and nothing a
         // second delivery would achieve.
-        BOOST_LOG_SEV(lg(), warn) << "Identity command arrived without workflow headers on "
-                                  << msg.subject;
+        ORES_LOG_SEV(lg(), warn) << "Identity command arrived without workflow headers on "
+                                 << msg.subject;
         std::move(delivery).reject();
         return;
     }
@@ -80,8 +80,8 @@ void handle(ores::nats::service::client& nats, ores::nats::delivery delivery) {
     const auto delay = step.delay();
 
     if (delay > 0) {
-        BOOST_LOG_SEV(lg(), info) << "Identity step '" << step.name << "' waiting " << delay
-                                  << "s so the run can be observed.";
+        ORES_LOG_SEV(lg(), info) << "Identity step '" << step.name << "' waiting " << delay
+                                 << "s so the run can be observed.";
         std::this_thread::sleep_for(std::chrono::seconds(delay));
     }
 
@@ -91,7 +91,7 @@ void handle(ores::nats::service::client& nats, ores::nats::delivery delivery) {
     if (outcome == "warn") {
         // The log is the point of this path: a step can succeed and still have
         // skipped work, and only the log says so.
-        BOOST_LOG_SEV(lg(), info) << "Identity step '" << step.name << "' reporting warnings.";
+        ORES_LOG_SEV(lg(), info) << "Identity step '" << step.name << "' reporting warnings.";
         ctx->warn(result_json,
                   {ores::workflow::messaging::step_log_entry{
                       .level = ores::workflow::messaging::step_log_level::warn,
@@ -102,7 +102,7 @@ void handle(ores::nats::service::client& nats, ores::nats::delivery delivery) {
     }
 
     if (outcome == "fail") {
-        BOOST_LOG_SEV(lg(), info) << "Identity step '" << step.name << "' reporting failure.";
+        ORES_LOG_SEV(lg(), info) << "Identity step '" << step.name << "' reporting failure.";
         ctx->fail("identity step '" + step.name + "' deliberately failed",
                   {ores::workflow::messaging::step_log_entry{
                       .level = ores::workflow::messaging::step_log_level::error,
@@ -113,15 +113,15 @@ void handle(ores::nats::service::client& nats, ores::nats::delivery delivery) {
     }
 
     if (outcome != "complete") {
-        BOOST_LOG_SEV(lg(), warn) << "Identity step '" << step.name
-                                  << "' asked for unknown behaviour '" << outcome << "'.";
+        ORES_LOG_SEV(lg(), warn) << "Identity step '" << step.name
+                                 << "' asked for unknown behaviour '" << outcome << "'.";
         ctx->fail("identity step '" + step.name + "' asked for unknown behaviour '" + outcome +
                   "'");
         std::move(delivery).commit();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Identity step '" << step.name << "' reporting completion.";
+    ORES_LOG_SEV(lg(), info) << "Identity step '" << step.name << "' reporting completion.";
     ctx->complete(result_json);
     std::move(delivery).commit();
 }

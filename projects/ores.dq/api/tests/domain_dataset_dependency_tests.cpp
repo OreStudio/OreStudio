@@ -19,7 +19,7 @@
  */
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/dataset_dependency_json_io.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -36,7 +36,7 @@ TEST_CASE("create_dataset_dependency_with_valid_fields", "[domain]") {
     sut.modified_by = "admin";
     sut.recorded_at = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Dataset dependency: " << sut;
+    ORES_LOG_SEV(lg, info) << "Dataset dependency: " << sut;
 
     CHECK(sut.dataset_code == "iso.countries");
     CHECK(sut.dependency_code == "assets.country_flags");
@@ -66,7 +66,7 @@ TEST_CASE("dataset_dependency_uses_standard_codes", "[domain]") {
     CHECK(dep2.dataset_code == "crypto.large");
     CHECK(dep2.dependency_code == "assets.crypto_icons");
 
-    BOOST_LOG_SEV(lg, info) << "Standard dataset codes work correctly";
+    ORES_LOG_SEV(lg, info) << "Standard dataset codes work correctly";
 }
 
 TEST_CASE("dataset_dependency_supports_custom_codes", "[domain]") {
@@ -80,7 +80,7 @@ TEST_CASE("dataset_dependency_supports_custom_codes", "[domain]") {
     sut.modified_by = "user123";
     sut.recorded_at = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Custom dataset dependency: " << sut;
+    ORES_LOG_SEV(lg, info) << "Custom dataset dependency: " << sut;
 
     CHECK(sut.dataset_code == "custom.my_dataset");
     CHECK(sut.dependency_code == "custom.reference_data");

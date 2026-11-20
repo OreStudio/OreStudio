@@ -18,14 +18,12 @@
  *
  */
 #include "ores.reporting.core/service/cut_read_service.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.core/repository/cut_approval_detail_repository.hpp"
 #include "ores.reporting.core/repository/cut_gap_repository.hpp"
 #include "ores.reporting.core/repository/cut_kind_repository.hpp"
 #include "ores.reporting.core/repository/cut_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -188,13 +186,13 @@ std::optional<boost::uuids::uuid> replacement_of(const domain::cut& cut,
 std::expected<cut_page, std::string> cut_read_service::list(const cut_list_query& query) {
     const auto party_id = ctx_.party_id();
     if (!party_id) {
-        BOOST_LOG_SEV(lg(), warn) << "A cuts list was read with no party in the session.";
+        ORES_LOG_SEV(lg(), warn) << "A cuts list was read with no party in the session.";
         return cut_page{};
     }
 
     const auto window_of_month = cut_window_of(query.month);
     if (!window_of_month) {
-        BOOST_LOG_SEV(lg(), warn) << "A cuts list was refused: " << window_of_month.error();
+        ORES_LOG_SEV(lg(), warn) << "A cuts list was refused: " << window_of_month.error();
         return std::unexpected(window_of_month.error());
     }
     const auto [from, to] = *window_of_month;
@@ -234,7 +232,7 @@ std::expected<cut_page, std::string> cut_read_service::list(const cut_list_query
         if (found == kinds_by_code.end()) {
             const auto kind = kind_of(row.cut.kind_code);
             if (!kind) {
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "Cut " << boost::uuids::to_string(row.cut.id) << " names the kind "
                     << row.cut.kind_code << ", which the store does not hold.";
                 continue;
@@ -312,8 +310,8 @@ std::optional<cut_record_view> cut_read_service::record(const boost::uuids::uuid
     if (record.kind)
         record.label = cut_label_of(cut, *record.kind);
     else
-        BOOST_LOG_SEV(lg(), warn) << "Cut " << boost::uuids::to_string(cut.id) << " names the kind "
-                                  << cut.kind_code << ", which the store does not hold.";
+        ORES_LOG_SEV(lg(), warn) << "Cut " << boost::uuids::to_string(cut.id) << " names the kind "
+                                 << cut.kind_code << ", which the store does not hold.";
 
     record.run_count = run_count(cut.id);
 
@@ -342,14 +340,14 @@ cut_read_service::authorisation_subjects(const std::vector<boost::uuids::uuid>& 
         if (!detail) {
             // A request raised outside a take names no body, and the caller says
             // so rather than drawing an empty subject as one about nothing.
-            BOOST_LOG_SEV(lg(), debug) << "No cut authorisation detail for request "
-                                       << boost::uuids::to_string(request_id);
+            ORES_LOG_SEV(lg(), debug) << "No cut authorisation detail for request "
+                                      << boost::uuids::to_string(request_id);
             continue;
         }
 
         const auto found = cuts_repo.read_latest(ctx_, boost::uuids::to_string(detail->cut_id));
         if (found.empty()) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The request " << boost::uuids::to_string(request_id) << " names cut "
                 << boost::uuids::to_string(detail->cut_id) << ", which the store does not hold.";
             continue;

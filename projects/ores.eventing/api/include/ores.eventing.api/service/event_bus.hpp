@@ -21,7 +21,7 @@
 #define ORES_EVENTING_API_SERVICE_EVENT_BUS_HPP
 
 #include "ores.eventing.api/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/core/demangle.hpp>
 #include <any>
 #include <functional>
@@ -169,8 +169,8 @@ public:
         subscribers_[type_idx].push_back({id, std::move(handler)});
 
         const auto count = subscribers_[type_idx].size();
-        BOOST_LOG_SEV(lg(), info) << "Subscriber " << id << " subscribed to event type '"
-                                  << type_name << "' (total subscribers: " << count << ")";
+        ORES_LOG_SEV(lg(), info) << "Subscriber " << id << " subscribed to event type '"
+                                 << type_name << "' (total subscribers: " << count << ")";
 
         return subscription(
             [this, type_idx, id, type_name]() { unsubscribe(type_idx, id, type_name); });
@@ -200,8 +200,8 @@ public:
 
             auto it = subscribers_.find(type_idx);
             if (it == subscribers_.end()) {
-                BOOST_LOG_SEV(lg(), debug) << "No subscribers for event type '" << type_name
-                                           << "' - event will not be delivered";
+                ORES_LOG_SEV(lg(), debug) << "No subscribers for event type '" << type_name
+                                          << "' - event will not be delivered";
                 return;
             }
 
@@ -212,15 +212,15 @@ public:
                         std::any_cast<const std::function<void(const Event&)>&>(entry.handler);
                     handlers_copy.push_back(handler);
                 } catch (const std::bad_any_cast& e) {
-                    BOOST_LOG_SEV(lg(), error)
+                    ORES_LOG_SEV(lg(), error)
                         << "Type mismatch for subscriber " << entry.id << " on event type '"
                         << type_name << "': " << e.what();
                 }
             }
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Publishing event type '" << type_name << "' to "
-                                  << handlers_copy.size() << " subscriber(s)";
+        ORES_LOG_SEV(lg(), info) << "Publishing event type '" << type_name << "' to "
+                                 << handlers_copy.size() << " subscriber(s)";
 
         std::size_t success_count = 0;
         for (const auto& handler : handlers_copy) {
@@ -228,17 +228,17 @@ public:
                 handler(event);
                 ++success_count;
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "Exception in event handler for '" << type_name << "': " << e.what();
             }
         }
 
         if (success_count < handlers_copy.size()) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Event '" << type_name << "' delivery incomplete: " << success_count << "/"
                 << handlers_copy.size() << " handlers succeeded";
         } else {
-            BOOST_LOG_SEV(lg(), debug)
+            ORES_LOG_SEV(lg(), debug)
                 << "Event '" << type_name << "' delivery complete: " << success_count << "/"
                 << handlers_copy.size() << " handlers succeeded";
         }
@@ -269,7 +269,7 @@ private:
 
         auto it = subscribers_.find(type_idx);
         if (it == subscribers_.end()) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Unsubscribe called for subscriber " << id
                 << " but no subscribers exist for event type '" << type_name << "'";
             return;
@@ -281,17 +281,16 @@ private:
 
         if (removed > 0) {
             const auto remaining = list.size();
-            BOOST_LOG_SEV(lg(), info)
+            ORES_LOG_SEV(lg(), info)
                 << "Subscriber " << id << " unsubscribed from event type '" << type_name
                 << "' (remaining subscribers: " << remaining << ")";
         } else {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Unsubscribe called for subscriber " << id
-                << " but it was not found in event type '" << type_name << "'";
+            ORES_LOG_SEV(lg(), warn) << "Unsubscribe called for subscriber " << id
+                                     << " but it was not found in event type '" << type_name << "'";
         }
 
         if (list.empty()) {
-            BOOST_LOG_SEV(lg(), debug)
+            ORES_LOG_SEV(lg(), debug)
                 << "No more subscribers for event type '" << type_name << "' - removing from map";
             subscribers_.erase(it);
         }

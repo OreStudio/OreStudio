@@ -18,7 +18,7 @@
  *
  */
 #include "ores.scheduler.core/service/nats_request_action_handler.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.scheduler.core/service/action_payloads.hpp"
@@ -43,7 +43,7 @@ nats_request_action_handler::nats_request_action_handler(ores::nats::service::na
 
 boost::asio::awaitable<std::expected<void, std::string>>
 nats_request_action_handler::execute(const action_context& ctx) {
-    BOOST_LOG_SEV(nats_request_action_handler_lg(), debug)
+    ORES_LOG_SEV(nats_request_action_handler_lg(), debug)
         << "Executing NATS request action for job: " << ctx.job.job_name;
     try {
         nats_request_payload parsed;
@@ -53,7 +53,7 @@ nats_request_action_handler::execute(const action_context& ctx) {
         } catch (const std::exception& e) {
             const auto msg =
                 "Failed to parse action_payload for job '" + ctx.job.job_name + "': " + e.what();
-            BOOST_LOG_SEV(nats_request_action_handler_lg(), error) << msg;
+            ORES_LOG_SEV(nats_request_action_handler_lg(), error) << msg;
             co_return std::unexpected(msg);
         }
 
@@ -61,7 +61,7 @@ nats_request_action_handler::execute(const action_context& ctx) {
         if (subject.empty()) {
             const auto msg =
                 std::string("action_payload missing subject for job '") + ctx.job.job_name + "'";
-            BOOST_LOG_SEV(nats_request_action_handler_lg(), error) << msg;
+            ORES_LOG_SEV(nats_request_action_handler_lg(), error) << msg;
             co_return std::unexpected(msg);
         }
 
@@ -75,17 +75,17 @@ nats_request_action_handler::execute(const action_context& ctx) {
         const auto err = reply.headers.find(std::string(ores::nats::headers::x_error));
         if (err != reply.headers.end()) {
             const auto msg = "Subject " + subject + " refused the request: " + err->second;
-            BOOST_LOG_SEV(nats_request_action_handler_lg(), error)
+            ORES_LOG_SEV(nats_request_action_handler_lg(), error)
                 << msg << " (job: " << ctx.job.job_name << ")";
             co_return std::unexpected(msg);
         }
 
-        BOOST_LOG_SEV(nats_request_action_handler_lg(), info)
+        ORES_LOG_SEV(nats_request_action_handler_lg(), info)
             << "NATS request action succeeded for job: " << ctx.job.job_name
             << " (subject: " << subject << ")";
         co_return std::expected<void, std::string>{};
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(nats_request_action_handler_lg(), error)
+        ORES_LOG_SEV(nats_request_action_handler_lg(), error)
             << "NATS request action failed for job: " << ctx.job.job_name << ": " << e.what();
         co_return std::unexpected(std::string(e.what()));
     }

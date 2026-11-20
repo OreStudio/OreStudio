@@ -28,7 +28,7 @@
 #include "ores.analytics.api/domain/stress_test_scenario.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/stress_test_scenario_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::analytics::repository {
 

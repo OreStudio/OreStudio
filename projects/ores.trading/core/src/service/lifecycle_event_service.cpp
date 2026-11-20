@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/lifecycle_event.hpp"
 #include "ores.trading.api/messaging/lifecycle_event_protocol.hpp"
 #include "ores.trading.core/repository/lifecycle_event_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -445,25 +443,25 @@ lifecycle_event_service::prepare_change(const messaging::lifecycle_event_change&
 
 std::vector<domain::lifecycle_event> lifecycle_event_service::list_events(std::uint32_t offset,
                                                                           std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all lifecycle events";
+    ORES_LOG_SEV(lg(), debug) << "Listing all lifecycle events";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t lifecycle_event_service::count_events() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total lifecycle events count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total lifecycle events count";
     return repo_.get_total_event_count(ctx_);
 }
 
 
 std::optional<domain::lifecycle_event>
 lifecycle_event_service::get_event_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting lifecycle event at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting lifecycle event at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::lifecycle_event> lifecycle_event_service::get_event(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting lifecycle event. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting lifecycle event. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -478,11 +476,11 @@ lifecycle_event_service::get_events(const std::vector<std::string>& codes) {
 void lifecycle_event_service::save_event(const domain::lifecycle_event& v) {
     if (v.code.empty())
         throw std::invalid_argument("Lifecycle Event code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving lifecycle event. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving lifecycle event. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved lifecycle event. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved lifecycle event. " << "code: " << v.code;
 }
 
 void lifecycle_event_service::save_events(const std::vector<domain::lifecycle_event>& events) {
@@ -490,7 +488,7 @@ void lifecycle_event_service::save_events(const std::vector<domain::lifecycle_ev
         if (e.code.empty())
             throw std::invalid_argument("Lifecycle Event code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << events.size() << " lifecycle events";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << events.size() << " lifecycle events";
     auto ts = events;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -499,9 +497,9 @@ void lifecycle_event_service::save_events(const std::vector<domain::lifecycle_ev
 }
 
 void lifecycle_event_service::delete_event(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing lifecycle event. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing lifecycle event. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed lifecycle event. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed lifecycle event. " << "code: " << code;
 }
 
 void lifecycle_event_service::delete_events(const std::vector<std::string>& codes) {
@@ -510,7 +508,7 @@ void lifecycle_event_service::delete_events(const std::vector<std::string>& code
 
 std::vector<domain::lifecycle_event>
 lifecycle_event_service::get_event_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for lifecycle event. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for lifecycle event. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

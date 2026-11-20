@@ -18,8 +18,9 @@
  *
  */
 #include "ores.storage.core/filesystem/local_store.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <algorithm>
+#include <atomic>
 #include <fstream>
 #include <iterator>
 
@@ -44,7 +45,7 @@ object_not_found::object_not_found(const std::string& what)
 
 local_store::local_store(std::filesystem::path root)
     : root_(std::move(root)) {
-    BOOST_LOG_SEV(local_store_lg(), debug) << "Storage root: " << root_.string();
+    ORES_LOG_SEV(local_store_lg(), debug) << "Storage root: " << root_.string();
 }
 
 bool local_store::is_valid_bucket(std::string_view bucket) {
@@ -69,7 +70,7 @@ std::optional<std::filesystem::path> local_store::resolve(const std::string& buc
     auto [it1, it2] =
         std::mismatch(bucket_dir.begin(), bucket_dir.end(), full_path.begin(), full_path.end());
     if (it1 != bucket_dir.end()) {
-        BOOST_LOG_SEV(local_store_lg(), warn)
+        ORES_LOG_SEV(local_store_lg(), warn)
             << "Path traversal attempt: bucket=" << bucket << " key=" << key;
         return std::nullopt;
     }
@@ -102,7 +103,7 @@ void local_store::put(const std::string& bucket, const std::string& key, std::st
 
     commit_put(part, bucket, key);
 
-    BOOST_LOG_SEV(local_store_lg(), debug)
+    ORES_LOG_SEV(local_store_lg(), debug)
         << "put: bucket=" << bucket << " key=" << key << " bytes=" << data.size();
 }
 
@@ -161,7 +162,7 @@ std::string local_store::get(const std::string& bucket, const std::string& key) 
     if (!f)
         throw object_not_found(bucket + "/" + key);
 
-    BOOST_LOG_SEV(local_store_lg(), debug) << "get: bucket=" << bucket << " key=" << key;
+    ORES_LOG_SEV(local_store_lg(), debug) << "get: bucket=" << bucket << " key=" << key;
     return std::string(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
 }
 
@@ -195,7 +196,7 @@ bool local_store::remove(const std::string& bucket, const std::string& key) {
     if (ec && ec != std::errc::no_such_file_or_directory)
         throw std::runtime_error("Cannot delete object: " + path->string() + ": " + ec.message());
 
-    BOOST_LOG_SEV(local_store_lg(), debug)
+    ORES_LOG_SEV(local_store_lg(), debug)
         << "remove: bucket=" << bucket << " key=" << key << " existed=" << existed;
     return existed;
 }

@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_DAY_COUNT_FRACTION_TYPE_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/day_count_fraction_type.hpp"
 #include "ores.refdata.api/messaging/day_count_fraction_type_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

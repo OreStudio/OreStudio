@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/day_counter.hpp"
 #include "ores.refdata.api/messaging/day_counter_protocol.hpp"
 #include "ores.refdata.core/repository/day_counter_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -440,25 +438,25 @@ day_counter_service::prepare_change(const messaging::day_counter_change& change,
 
 std::vector<domain::day_counter> day_counter_service::list_day_counters(std::uint32_t offset,
                                                                         std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all day counters";
+    ORES_LOG_SEV(lg(), debug) << "Listing all day counters";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t day_counter_service::count_day_counters() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total day counters count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total day counters count";
     return repo_.get_total_day_counter_count(ctx_);
 }
 
 
 std::optional<domain::day_counter>
 day_counter_service::get_day_counter_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting day counter at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting day counter at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::day_counter> day_counter_service::get_day_counter(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting day counter. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting day counter. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -473,11 +471,11 @@ day_counter_service::get_day_counters(const std::vector<std::string>& codes) {
 void day_counter_service::save_day_counter(const domain::day_counter& v) {
     if (v.code.empty())
         throw std::invalid_argument("Day Counter code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving day counter. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving day counter. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved day counter. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved day counter. " << "code: " << v.code;
 }
 
 void day_counter_service::save_day_counters(const std::vector<domain::day_counter>& day_counters) {
@@ -485,7 +483,7 @@ void day_counter_service::save_day_counters(const std::vector<domain::day_counte
         if (e.code.empty())
             throw std::invalid_argument("Day Counter code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << day_counters.size() << " day counters";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << day_counters.size() << " day counters";
     auto ts = day_counters;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -494,9 +492,9 @@ void day_counter_service::save_day_counters(const std::vector<domain::day_counte
 }
 
 void day_counter_service::delete_day_counter(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing day counter. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing day counter. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed day counter. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed day counter. " << "code: " << code;
 }
 
 void day_counter_service::delete_day_counters(const std::vector<std::string>& codes) {
@@ -505,7 +503,7 @@ void day_counter_service::delete_day_counters(const std::vector<std::string>& co
 
 std::vector<domain::day_counter>
 day_counter_service::get_day_counter_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for day counter. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for day counter. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

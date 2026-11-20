@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/workflow/request_story_routes.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -63,7 +63,7 @@ bool story_holds(const std::string& body, const std::string& part) {
 
 TEST_CASE("a_story_is_named_by_its_request", "[workflow_story]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier a story names";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier a story names";
 
     const auto refused = answer_at<workflow_routes>(
         http_method::get, "/api/requests/not-a-request/story", http_request{}, story_pattern);
@@ -73,7 +73,7 @@ TEST_CASE("a_story_is_named_by_its_request", "[workflow_story]") {
 
 TEST_CASE("a_story_answers_the_service_is_absent", "[workflow_story]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a story with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a story with no service behind it";
 
     CHECK(answer_at<workflow_routes>(http_method::get, its_story, http_request{}, story_pattern)
               .status == http_status::bad_gateway);
@@ -81,7 +81,7 @@ TEST_CASE("a_story_answers_the_service_is_absent", "[workflow_story]") {
 
 TEST_CASE("a_story_refuses_a_parameter_it_does_not_take", "[workflow_story]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter a story does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter a story does not name";
 
     http_request req;
     req.query_params["since"] = "2026-01-01";
@@ -93,7 +93,7 @@ TEST_CASE("a_story_refuses_a_parameter_it_does_not_take", "[workflow_story]") {
 
 TEST_CASE("a_story_is_kept_privately_for_fifteen_seconds", "[workflow_story]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the cache policy a story carries";
+    ORES_LOG_SEV(lg, info) << "Testing the cache policy a story carries";
 
     http_request req;
     const auto first = request_story_routes::story_answer(req, a_story_body);

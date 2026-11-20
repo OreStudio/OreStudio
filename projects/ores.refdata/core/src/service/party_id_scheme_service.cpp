@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
 #include "ores.refdata.core/repository/party_id_scheme_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -448,26 +446,26 @@ party_id_scheme_service::prepare_change(const messaging::party_id_scheme_change&
 
 std::vector<domain::party_id_scheme> party_id_scheme_service::list_schemes(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all party ID schemes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all party ID schemes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t party_id_scheme_service::count_schemes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total party ID schemes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total party ID schemes count";
     return repo_.get_total_scheme_count(ctx_);
 }
 
 
 std::optional<domain::party_id_scheme>
 party_id_scheme_service::get_scheme_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party ID scheme at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting party ID scheme at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::party_id_scheme>
 party_id_scheme_service::find_scheme(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding party ID scheme. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding party ID scheme. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -482,11 +480,11 @@ party_id_scheme_service::get_schemes(const std::vector<std::string>& codes) {
 void party_id_scheme_service::save_scheme(const domain::party_id_scheme& v) {
     if (v.code.empty())
         throw std::invalid_argument("Party ID Scheme code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving party ID scheme. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving party ID scheme. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved party ID scheme. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved party ID scheme. " << "code: " << v.code;
 }
 
 void party_id_scheme_service::save_schemes(const std::vector<domain::party_id_scheme>& schemes) {
@@ -494,7 +492,7 @@ void party_id_scheme_service::save_schemes(const std::vector<domain::party_id_sc
         if (e.code.empty())
             throw std::invalid_argument("Party ID Scheme code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " party ID schemes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " party ID schemes";
     auto ts = schemes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -503,9 +501,9 @@ void party_id_scheme_service::save_schemes(const std::vector<domain::party_id_sc
 }
 
 void party_id_scheme_service::delete_scheme(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party ID scheme. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing party ID scheme. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed party ID scheme. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed party ID scheme. " << "code: " << code;
 }
 
 void party_id_scheme_service::delete_schemes(const std::vector<std::string>& codes) {
@@ -514,7 +512,7 @@ void party_id_scheme_service::delete_schemes(const std::vector<std::string>& cod
 
 std::vector<domain::party_id_scheme>
 party_id_scheme_service::get_scheme_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party ID scheme. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for party ID scheme. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

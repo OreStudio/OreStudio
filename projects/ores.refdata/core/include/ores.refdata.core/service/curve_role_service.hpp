@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CURVE_ROLE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/curve_role.hpp"
 #include "ores.refdata.api/messaging/curve_role_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

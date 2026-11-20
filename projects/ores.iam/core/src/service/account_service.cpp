@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -249,25 +247,25 @@ account_service::get_account_version(const messaging::get_account_version_reques
 
 std::vector<domain::account> account_service::list_accounts(std::uint32_t offset,
                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all accounts";
+    ORES_LOG_SEV(lg(), debug) << "Listing all accounts";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t account_service::count_accounts() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total accounts count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total accounts count";
     return repo_.get_total_account_count(ctx_);
 }
 
 
 std::optional<domain::account> account_service::get_account_at_version(const boost::uuids::uuid& id,
                                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting account at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting account at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::account> account_service::get_account(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting account. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting account. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -276,7 +274,7 @@ std::optional<domain::account> account_service::get_account(const boost::uuids::
 
 std::optional<domain::account>
 account_service::get_account_by_username(const std::string& username) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting account by username: " << username;
+    ORES_LOG_SEV(lg(), debug) << "Getting account by username: " << username;
     messaging::account_key k;
     k.username = username;
     auto found = account_read_one(repo_, ctx_, k);
@@ -292,11 +290,11 @@ std::vector<domain::account> account_service::get_accounts(const std::vector<std
 void account_service::save_account(const domain::account& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Account id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving account. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving account. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved account. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved account. " << "id: " << v.id;
 }
 
 void account_service::save_accounts(const std::vector<domain::account>& accounts) {
@@ -304,7 +302,7 @@ void account_service::save_accounts(const std::vector<domain::account>& accounts
         if (e.id.is_nil())
             throw std::invalid_argument("Account id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << accounts.size() << " accounts";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << accounts.size() << " accounts";
     auto ts = accounts;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -313,9 +311,9 @@ void account_service::save_accounts(const std::vector<domain::account>& accounts
 }
 
 void account_service::delete_account(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing account. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed account. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed account. " << "id: " << id;
 }
 
 void account_service::delete_accounts(const std::vector<std::string>& ids) {
@@ -323,7 +321,7 @@ void account_service::delete_accounts(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::account> account_service::get_account_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for account. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for account. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

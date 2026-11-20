@@ -27,9 +27,7 @@
 #include "ores.iam.api/domain/role_grant_request.hpp"
 #include "ores.iam.api/domain/role_grant_request_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/role_grant_request_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -40,7 +38,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::role_grant_request role_grant_request_mapper::map(const role_grant_request_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::role_grant_request r;
     r.version = v.version;
@@ -53,12 +51,12 @@ domain::role_grant_request role_grant_request_mapper::map(const role_grant_reque
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 role_grant_request_entity role_grant_request_mapper::map(const domain::role_grant_request& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     role_grant_request_entity r;
     r.request_id = v.request_id;
@@ -70,7 +68,7 @@ role_grant_request_entity role_grant_request_mapper::map(const domain::role_gran
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

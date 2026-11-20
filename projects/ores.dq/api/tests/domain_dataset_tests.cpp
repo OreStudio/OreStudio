@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.api/domain/dataset_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/dataset_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
@@ -57,7 +57,7 @@ TEST_CASE("create_dataset_with_valid_fields", "[domain]") {
     sut.ingestion_timestamp = datetime::make_timepoint(2023, 1, 1);
     sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
-    BOOST_LOG_SEV(lg, info) << "Dataset: " << sut;
+    ORES_LOG_SEV(lg, info) << "Dataset: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.catalog_name == "ISO Standards");
@@ -95,7 +95,7 @@ TEST_CASE("dataset_convert_single_to_table", "[domain]") {
     std::vector<dataset> datasets = {ds};
     auto table = convert_to_table(datasets);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Name"));
@@ -127,7 +127,7 @@ TEST_CASE("dataset_with_lineage", "[domain]") {
     derived.ingestion_timestamp = datetime::make_timepoint(2023, 1, 1);
     derived.modified_by = "etl_process";
 
-    BOOST_LOG_SEV(lg, info) << "Derived dataset: " << derived;
+    ORES_LOG_SEV(lg, info) << "Derived dataset: " << derived;
 
     CHECK(derived.upstream_derivation_id == source_id);
     CHECK(derived.lineage_depth == 1);

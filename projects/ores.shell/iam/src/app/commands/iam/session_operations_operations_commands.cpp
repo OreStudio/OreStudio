@@ -68,7 +68,7 @@ void session_operations_operations_commands::register_commands(cli::Menu& root_m
 
 void session_operations_operations_commands::process_get_active_sessions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-active-sessions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-active-sessions request.";
 
     using request_type = ores::iam::messaging::get_active_sessions_request;
 
@@ -120,7 +120,7 @@ void session_operations_operations_commands::process_get_active_sessions(
 
 void session_operations_operations_commands::process_end_session(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating end-session request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating end-session request.";
 
     using request_type = ores::iam::messaging::end_session_request;
 

@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/marketdata/adapter_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -66,7 +66,7 @@ marketdata_domain::session session_of(const char* code, const char* environment)
 
 TEST_CASE("adapters_state_the_kind_of_source_their_feed_reads", "[adapter]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the kind of source an adapter names";
+    ORES_LOG_SEV(lg, info) << "Testing the kind of source an adapter names";
 
     marketdata_messaging::list_adapter_status_response reply;
     reply.success = true;
@@ -84,7 +84,7 @@ TEST_CASE("adapters_state_the_kind_of_source_their_feed_reads", "[adapter]") {
 
 TEST_CASE("adapters_state_the_service_own_words", "[adapter]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the message an adapter read forwards";
+    ORES_LOG_SEV(lg, info) << "Testing the message an adapter read forwards";
 
     marketdata_messaging::list_adapter_status_response reply;
     reply.success = false;
@@ -99,7 +99,7 @@ TEST_CASE("adapters_state_the_service_own_words", "[adapter]") {
 
 TEST_CASE("adapters_refuse_a_read_without_a_service", "[adapter]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the adapters' refusal when the service does not answer";
+    ORES_LOG_SEV(lg, info) << "Testing the adapters' refusal when the service does not answer";
 
     CHECK(answer_at<adapter_routes>(http_method::get,
                                     "/api/marketdata/adapters",

@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/body_sink.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/http_server.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/running_under_valgrind.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -700,7 +700,7 @@ request_handler streamed_echo(const std::shared_ptr<streamed_sink_record>& recor
 
 TEST_CASE("a_route_with_a_sink_receives_the_body_in_chunks", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a streamed body reaches its sink whole";
+    ORES_LOG_SEV(lg, info) << "Testing that a streamed body reaches its sink whole";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -736,7 +736,7 @@ TEST_CASE("a_route_with_a_sink_receives_the_body_in_chunks", "[http_streamed_bod
 
 TEST_CASE("a_streamed_body_past_the_limit_is_refused", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a streamed body keeps the route's limit";
+    ORES_LOG_SEV(lg, info) << "Testing that a streamed body keeps the route's limit";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -772,7 +772,7 @@ TEST_CASE("a_streamed_body_past_the_limit_is_refused", "[http_streamed_body]") {
 
 TEST_CASE("a_stream_that_runs_past_the_limit_is_refused_and_discarded", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a chunked body past the limit is discarded";
+    ORES_LOG_SEV(lg, info) << "Testing that a chunked body past the limit is discarded";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -808,7 +808,7 @@ TEST_CASE("a_stream_that_runs_past_the_limit_is_refused_and_discarded", "[http_s
 
 TEST_CASE("a_destination_that_refuses_a_chunk_is_answered_500", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a sink which cannot take the bytes is a 500";
+    ORES_LOG_SEV(lg, info) << "Testing that a sink which cannot take the bytes is a 500";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -840,7 +840,7 @@ TEST_CASE("a_destination_that_refuses_a_chunk_is_answered_500", "[http_streamed_
 
 TEST_CASE("a_body_that_stops_arriving_is_closed_on_the_deadline", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a stalled body does not hold the connection";
+    ORES_LOG_SEV(lg, info) << "Testing that a stalled body does not hold the connection";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -873,7 +873,7 @@ TEST_CASE("a_body_that_stops_arriving_is_closed_on_the_deadline", "[http_streame
 
 TEST_CASE("bytes_that_cannot_be_completed_are_answered_500", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a sink which cannot finish is a 500";
+    ORES_LOG_SEV(lg, info) << "Testing that a sink which cannot finish is a 500";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -905,7 +905,7 @@ TEST_CASE("bytes_that_cannot_be_completed_are_answered_500", "[http_streamed_bod
 
 TEST_CASE("a_256_mib_upload_does_not_grow_the_process", "[http_streamed_body][memory]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a large upload costs a chunk and not itself";
+    ORES_LOG_SEV(lg, info) << "Testing that a large upload costs a chunk and not itself";
 
 #if !defined(__linux__)
     SKIP("resident memory is read from /proc, which this platform does not have");
@@ -977,7 +977,7 @@ TEST_CASE("a_256_mib_upload_does_not_grow_the_process", "[http_streamed_body][me
 
 TEST_CASE("a_sink_publishes_only_a_body_it_has_finished", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the sink's own order: consume, finish, publish";
+    ORES_LOG_SEV(lg, info) << "Testing the sink's own order: consume, finish, publish";
 
     streamed_counting_states sink;
 
@@ -1002,7 +1002,7 @@ TEST_CASE("a_sink_publishes_only_a_body_it_has_finished", "[http_streamed_body]"
 
 TEST_CASE("a_sink_that_is_never_published_is_discarded", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an abandoned sink throws its bytes away";
+    ORES_LOG_SEV(lg, info) << "Testing that an abandoned sink throws its bytes away";
 
     streamed_counting_states sink;
     REQUIRE(sink.consume("bytes nobody keeps"));
@@ -1016,7 +1016,7 @@ TEST_CASE("a_sink_that_is_never_published_is_discarded", "[http_streamed_body]")
 
 TEST_CASE("two_streamed_requests_are_answered_on_one_connection", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the stream leaves the connection usable";
+    ORES_LOG_SEV(lg, info) << "Testing that the stream leaves the connection usable";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -1046,7 +1046,7 @@ TEST_CASE("two_streamed_requests_are_answered_on_one_connection", "[http_streame
 
 TEST_CASE("a_streamed_route_answers_expect_continue_before_the_body", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a sink route still invites a body it will take";
+    ORES_LOG_SEV(lg, info) << "Testing that a sink route still invites a body it will take";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -1076,7 +1076,7 @@ TEST_CASE("a_streamed_route_answers_expect_continue_before_the_body", "[http_str
 
 TEST_CASE("a_response_reads_its_body_from_a_source", "[http_response_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a response body is written from a source";
+    ORES_LOG_SEV(lg, info) << "Testing that a response body is written from a source";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -1112,7 +1112,7 @@ TEST_CASE("a_response_reads_its_body_from_a_source", "[http_response_stream]") {
 
 TEST_CASE("a_response_with_no_length_is_written_in_chunks", "[http_response_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a source without a length is chunked";
+    ORES_LOG_SEV(lg, info) << "Testing that a source without a length is chunked";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -1146,7 +1146,7 @@ TEST_CASE("a_response_with_no_length_is_written_in_chunks", "[http_response_stre
 
 TEST_CASE("a_source_that_fails_mid_body_closes_the_connection", "[http_response_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a body shorter than its length is not a hang";
+    ORES_LOG_SEV(lg, info) << "Testing that a body shorter than its length is not a hang";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -1176,7 +1176,7 @@ TEST_CASE("a_source_that_fails_mid_body_closes_the_connection", "[http_response_
 
 TEST_CASE("an_awaitable_source_writes_its_body_and_states_its_length", "[http_response_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a response body is written from a source that waits";
+    ORES_LOG_SEV(lg, info) << "Testing that a response body is written from a source that waits";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -1211,7 +1211,7 @@ TEST_CASE("an_awaitable_source_writes_its_body_and_states_its_length", "[http_re
 
 TEST_CASE("a_source_with_no_length_is_chunked_while_it_waits", "[http_response_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a waiting source without a length is chunked";
+    ORES_LOG_SEV(lg, info) << "Testing that a waiting source without a length is chunked";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -1244,7 +1244,7 @@ TEST_CASE("a_source_with_no_length_is_chunked_while_it_waits", "[http_response_s
 
 TEST_CASE("a_source_that_waits_does_not_hold_another_connection", "[http_response_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that one waiting response does not block another";
+    ORES_LOG_SEV(lg, info) << "Testing that one waiting response does not block another";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -1312,7 +1312,7 @@ TEST_CASE("a_source_that_waits_does_not_hold_another_connection", "[http_respons
 TEST_CASE("an_awaitable_source_that_fails_mid_body_closes_the_connection",
           "[http_response_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a failing awaitable source closes the connection";
+    ORES_LOG_SEV(lg, info) << "Testing that a failing awaitable source closes the connection";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -1347,7 +1347,7 @@ TEST_CASE("an_awaitable_source_that_fails_mid_body_closes_the_connection",
 
 TEST_CASE("a_route_without_a_sink_still_receives_its_whole_body", "[http_streamed_body]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a buffered route is untouched by the sink path";
+    ORES_LOG_SEV(lg, info) << "Testing that a buffered route is untouched by the sink path";
 
     http_server_options options;
     options.address = "127.0.0.1";

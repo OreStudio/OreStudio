@@ -65,7 +65,7 @@ http_server::http_server(asio::io_context& io_ctx, const http_server_options& op
         limits_ = std::make_shared<rate_limiting>(rate_policies::from(options_),
                                                   trusted_proxies::parse(options_.trusted_proxies),
                                                   options_.rate_limit_max_keys);
-    BOOST_LOG_SEV(lg(), info) << "HTTP server initializing with options: " << options_;
+    ORES_LOG_SEV(lg(), info) << "HTTP server initializing with options: " << options_;
 
     // No credential is built from these options. The verifier arrives from the
     // service framework, which fetches the key IAM publishes, and a session
@@ -74,7 +74,7 @@ http_server::http_server(asio::io_context& io_ctx, const http_server_options& op
 }
 
 void http_server::setup_builtin_routes() {
-    BOOST_LOG_SEV(lg(), debug) << "Setting up built-in routes";
+    ORES_LOG_SEV(lg(), debug) << "Setting up built-in routes";
 
     // Health check endpoint
     /*
@@ -149,12 +149,12 @@ void http_server::setup_builtin_routes() {
             });
     router_->add_route(swagger_builder.build());
 
-    BOOST_LOG_SEV(lg(), info) << "Built-in routes registered: /health, /openapi.json, /swagger";
+    ORES_LOG_SEV(lg(), info) << "Built-in routes registered: /health, /openapi.json, /swagger";
 }
 
 asio::awaitable<void> http_server::run() {
-    BOOST_LOG_SEV(lg(), info) << "Starting HTTP server on " << options_.address << ":"
-                              << options_.port;
+    ORES_LOG_SEV(lg(), info) << "Starting HTTP server on " << options_.address << ":"
+                             << options_.port;
 
     tcp::endpoint endpoint(asio::ip::make_address(options_.address), options_.port);
 
@@ -181,29 +181,29 @@ asio::awaitable<void> http_server::run() {
         sweep_timer_ = std::make_unique<boost::asio::steady_timer>(io_ctx_);
         schedule_sweep();
     }
-    BOOST_LOG_SEV(lg(), info) << "Service ready.";
-    BOOST_LOG_SEV(lg(), info) << "Waiting for requests...";
-    BOOST_LOG_SEV(lg(), info) << "Accepting connections on port " << options_.port << ".";
+    ORES_LOG_SEV(lg(), info) << "Service ready.";
+    ORES_LOG_SEV(lg(), info) << "Waiting for requests...";
+    ORES_LOG_SEV(lg(), info) << "Accepting connections on port " << options_.port << ".";
 
     co_await accept_connections();
 
-    BOOST_LOG_SEV(lg(), info) << "Service stopped.";
+    ORES_LOG_SEV(lg(), info) << "Service stopped.";
 }
 
 asio::awaitable<void> http_server::accept_connections() {
     while (running_.load()) {
         try {
-            BOOST_LOG_SEV(lg(), trace) << "Waiting for connection...";
+            ORES_LOG_SEV(lg(), trace) << "Waiting for connection...";
 
             tcp::socket socket = co_await acceptor_->async_accept(asio::use_awaitable);
 
             auto remote = socket.remote_endpoint();
-            BOOST_LOG_SEV(lg(), info) << "Accepted connection from " << remote.address().to_string()
-                                      << ":" << remote.port();
+            ORES_LOG_SEV(lg(), info) << "Accepted connection from " << remote.address().to_string()
+                                     << ":" << remote.port();
 
             if (active_connections_.load() >= options_.max_connections) {
-                BOOST_LOG_SEV(lg(), warn) << "Max connections reached (" << options_.max_connections
-                                          << "), rejecting connection";
+                ORES_LOG_SEV(lg(), warn) << "Max connections reached (" << options_.max_connections
+                                         << "), rejecting connection";
                 boost::system::error_code ec;
                 socket.close(ec);
                 continue;
@@ -211,7 +211,7 @@ asio::awaitable<void> http_server::accept_connections() {
 
             active_connections_.fetch_add(1);
             counters_.connections_open.fetch_add(1, std::memory_order_relaxed);
-            BOOST_LOG_SEV(lg(), debug) << "Active connections: " << active_connections_.load();
+            ORES_LOG_SEV(lg(), debug) << "Active connections: " << active_connections_.load();
 
             // Create and run session
             auto session = std::make_shared<http_session>(std::move(socket),
@@ -232,21 +232,21 @@ asio::awaitable<void> http_server::accept_connections() {
                     try {
                         co_await session->run();
                     } catch (const std::exception& e) {
-                        BOOST_LOG_SEV(lg(), error) << "Session exception: " << e.what();
+                        ORES_LOG_SEV(lg(), error) << "Session exception: " << e.what();
                     }
                     active_connections_.fetch_sub(1);
                     counters_.connections_open.fetch_sub(1, std::memory_order_relaxed);
-                    BOOST_LOG_SEV(lg(), debug)
+                    ORES_LOG_SEV(lg(), debug)
                         << "Session ended, active connections: " << active_connections_.load();
                 },
                 asio::detached);
 
         } catch (const boost::system::system_error& e) {
             if (e.code() == asio::error::operation_aborted) {
-                BOOST_LOG_SEV(lg(), debug) << "Accept operation aborted";
+                ORES_LOG_SEV(lg(), debug) << "Accept operation aborted";
                 break;
             }
-            BOOST_LOG_SEV(lg(), error) << "Accept error: " << e.what();
+            ORES_LOG_SEV(lg(), error) << "Accept error: " << e.what();
         }
     }
 }
@@ -265,21 +265,21 @@ void http_server::schedule_sweep() {
         if (ec || !running_.load())
             return;
         const auto dropped = limits_->limiter.sweep();
-        BOOST_LOG_SEV(lg(), trace) << "Rate limiter swept " << dropped << " full bucket(s), "
-                                   << limits_->limiter.tracked() << " kept";
+        ORES_LOG_SEV(lg(), trace) << "Rate limiter swept " << dropped << " full bucket(s), "
+                                  << limits_->limiter.tracked() << " kept";
         schedule_sweep();
     });
 }
 
 void http_server::stop() {
-    BOOST_LOG_SEV(lg(), info) << "Stopping HTTP server...";
+    ORES_LOG_SEV(lg(), info) << "Stopping HTTP server...";
     running_.store(false);
 
     if (acceptor_ && acceptor_->is_open()) {
         boost::system::error_code ec;
         acceptor_->close(ec);
         if (ec) {
-            BOOST_LOG_SEV(lg(), warn) << "Error closing acceptor: " << ec.message();
+            ORES_LOG_SEV(lg(), warn) << "Error closing acceptor: " << ec.message();
         }
     }
 
@@ -296,8 +296,8 @@ void http_server::stop() {
     if (sweep_timer_)
         boost::asio::post(io_ctx_, [this] { sweep_timer_->cancel(); });
 
-    BOOST_LOG_SEV(lg(), info) << "HTTP server stop initiated, " << "waiting for "
-                              << active_connections_.load() << " active connections";
+    ORES_LOG_SEV(lg(), info) << "HTTP server stop initiated, " << "waiting for "
+                             << active_connections_.load() << " active connections";
 }
 
 }

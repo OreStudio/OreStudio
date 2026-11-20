@@ -367,7 +367,7 @@ void business_unit_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering business_units routes";
+    ORES_LOG_SEV(lg(), info) << "Registering business_units routes";
 
     auto list_route =
         router->get("/api/v1/reference-data/business_units")
@@ -536,7 +536,7 @@ void business_unit_routes::register_routes(
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "business_units routes registered: " << 11 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "business_units routes registered: " << 11 << " endpoint(s)";
 }
 
 }

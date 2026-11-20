@@ -24,11 +24,9 @@
  */
 #include "ores.refdata.core/repository/legal_entity_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/legal_entity.hpp"
 #include "ores.refdata.api/domain/legal_entity_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/legal_entity_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <vector>
 
@@ -38,7 +36,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::legal_entity legal_entity_mapper::map(const legal_entity_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::legal_entity r;
     r.version = v.version;
@@ -55,12 +53,12 @@ domain::legal_entity legal_entity_mapper::map(const legal_entity_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 legal_entity_entity legal_entity_mapper::map(const domain::legal_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     legal_entity_entity r;
     r.lei = v.lei;
@@ -76,7 +74,7 @@ legal_entity_entity legal_entity_mapper::map(const domain::legal_entity& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

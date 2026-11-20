@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_correlation_config.hpp"
 #include "ores.refdata.api/messaging/curve_correlation_config_protocol.hpp"
 #include "ores.refdata.core/repository/curve_correlation_config_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -483,12 +481,12 @@ ores::utility::domain::result curve_correlation_config_service::prepare_change(
 std::vector<domain::curve_correlation_config>
 curve_correlation_config_service::list_correlation_configs(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve correlation configs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve correlation configs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_correlation_config_service::count_correlation_configs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve correlation configs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve correlation configs count";
     return repo_.get_total_correlation_config_count(ctx_);
 }
 
@@ -496,14 +494,14 @@ std::uint32_t curve_correlation_config_service::count_correlation_configs() {
 std::optional<domain::curve_correlation_config>
 curve_correlation_config_service::get_correlation_config_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve correlation config at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve correlation config at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_correlation_config>
 curve_correlation_config_service::get_correlation_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve correlation config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve correlation config. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -519,11 +517,11 @@ void curve_correlation_config_service::save_correlation_config(
     const domain::curve_correlation_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Correlation Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve correlation config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve correlation config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve correlation config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve correlation config. " << "id: " << v.id;
 }
 
 void curve_correlation_config_service::save_correlation_configs(
@@ -532,8 +530,8 @@ void curve_correlation_config_service::save_correlation_configs(
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Correlation Config id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << correlation_configs.size()
-                               << " curve correlation configs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << correlation_configs.size()
+                              << " curve correlation configs";
     auto ts = correlation_configs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -542,9 +540,9 @@ void curve_correlation_config_service::save_correlation_configs(
 }
 
 void curve_correlation_config_service::delete_correlation_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve correlation config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve correlation config. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve correlation config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve correlation config. " << "id: " << id;
 }
 
 void curve_correlation_config_service::delete_correlation_configs(
@@ -554,7 +552,7 @@ void curve_correlation_config_service::delete_correlation_configs(
 
 std::vector<domain::curve_correlation_config>
 curve_correlation_config_service::get_correlation_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve correlation config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve correlation config. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

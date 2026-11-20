@@ -17,10 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/logger.hpp"
 #include "ores.logging/logging_exception.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.logging/logging_options_validator.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -40,7 +40,7 @@ TEST_CASE("validate_accepts_console_only_options", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const logging_options cfg(make_console_only_options());
-    BOOST_LOG_SEV(lg, ores::logging::info) << cfg;
+    ORES_LOG_SEV(lg, ores::logging::info) << cfg;
 
     CHECK_NOTHROW(logging_options_validator::validate(cfg));
 
@@ -56,7 +56,7 @@ TEST_CASE("validate_accepts_file_only_options", "[logging]") {
     cfg.severity = "info";
     cfg.output_to_console = false;
     cfg.filename = "app.log";
-    BOOST_LOG_SEV(lg, ores::logging::info) << cfg;
+    ORES_LOG_SEV(lg, ores::logging::info) << cfg;
 
     CHECK_NOTHROW(logging_options_validator::validate(cfg));
 
@@ -71,7 +71,7 @@ TEST_CASE("validate_rejects_options_with_no_output", "[logging]") {
     logging_options cfg;
     cfg.severity = "info";
     cfg.output_to_console = false;
-    BOOST_LOG_SEV(lg, ores::logging::info) << cfg;
+    ORES_LOG_SEV(lg, ores::logging::info) << cfg;
 
     CHECK_THROWS_AS(logging_options_validator::validate(cfg), logging_exception);
     CHECK_THROWS_WITH(logging_options_validator::validate(cfg),
@@ -83,7 +83,7 @@ TEST_CASE("validate_rejects_output_directory_without_filename", "[logging]") {
 
     logging_options cfg(make_console_only_options());
     cfg.output_directory = "log";
-    BOOST_LOG_SEV(lg, ores::logging::info) << cfg;
+    ORES_LOG_SEV(lg, ores::logging::info) << cfg;
 
     CHECK_THROWS_AS(logging_options_validator::validate(cfg), logging_exception);
     CHECK_THROWS_WITH(logging_options_validator::validate(cfg),
@@ -95,7 +95,7 @@ TEST_CASE("validate_rejects_unknown_severity_with_invalid_argument", "[logging]"
 
     logging_options cfg(make_console_only_options());
     cfg.severity = "bogus";
-    BOOST_LOG_SEV(lg, ores::logging::info) << cfg;
+    ORES_LOG_SEV(lg, ores::logging::info) << cfg;
 
     CHECK_THROWS_AS(logging_options_validator::validate(cfg), std::invalid_argument);
 }

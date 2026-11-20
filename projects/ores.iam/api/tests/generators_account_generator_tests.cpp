@@ -20,7 +20,7 @@
 #include "ores.iam.api/domain/account.hpp"         // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/account_generator.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -38,7 +38,7 @@ TEST_CASE("generate_single_account", "[generators]") {
 
     generation_context ctx;
     auto account = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated account: " << account;
+    ORES_LOG_SEV(lg, debug) << "Generated account: " << account;
 
     CHECK(!account.username.empty());
     CHECK(!account.email.empty());
@@ -51,7 +51,7 @@ TEST_CASE("generate_multiple_accounts", "[generators]") {
 
     generation_context ctx;
     auto accounts = generate_synthetic_accounts(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
+    ORES_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
 
     CHECK(accounts.size() == 3);
 }

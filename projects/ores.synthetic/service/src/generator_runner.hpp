@@ -20,7 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_GENERATOR_RUNNER_HPP
 #define ORES_SYNTHETIC_SERVICE_GENERATOR_RUNNER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "running_set.hpp"
@@ -72,6 +72,8 @@ struct running_feed_start final {
     std::string source_name;
     /** Absent for a kind that starts from no published value. */
     std::optional<ores::marketdata::domain::feed_start> start;
+    /** The vendor subjects the feed's ticks land on, which a screen of the feed watches. */
+    std::vector<std::string> watch_subjects;
 };
 
 /**
@@ -181,7 +183,7 @@ public:
                     throw std::runtime_error("The generator is not built.");
                 const auto source_name = generator->source_name();
                 if (!claim(source_name)) {
-                    BOOST_LOG_SEV(lg(), ores::logging::info)
+                    ORES_LOG_SEV(lg(), ores::logging::info)
                         << "The demand of " << id.external_id << " names the feed " << source_name
                         << ", which a manual run already publishes. It runs once.";
                     served_elsewhere.insert(feed);
@@ -201,7 +203,7 @@ public:
                 out.accepted.push_back(id);
                 ++out.started;
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), ores::logging::warn)
+                ORES_LOG_SEV(lg(), ores::logging::warn)
                     << "The generator of " << id.external_id << " cannot start: " << e.what();
                 failed.insert(feed);
                 out.rejected.push_back(rejected_id{id, "generator_failed"});
@@ -216,7 +218,7 @@ public:
             it = running_.erase(it);
             ++out.stopped;
         }
-        BOOST_LOG_SEV(lg(), ores::logging::info)
+        ORES_LOG_SEV(lg(), ores::logging::info)
             << "Demand of " << demand.size() << " id(s): " << out.accepted.size() << " accepted, "
             << out.rejected.size() << " rejected, " << out.started << " started, " << out.stopped
             << " stopped; " << running_.size() << " generator(s) running";
@@ -230,9 +232,10 @@ public:
     /**
      * @brief Starts the feed an operator asked for, keyed by the id of its config.
      *
-     * A manual run builds the feed as a producer, with no adapter target, and no demand names its
-     * group, so the next demand set leaves it running. Returns false, and starts nothing, when a
-     * run of the feed's source name is already publishing it, whichever run started it.
+     * A manual run publishes through its collection's adapter as a demanded run does, and no
+     * demand names its group, so the next demand set leaves it running. Returns false, and starts
+     * nothing, when a run of the feed's source name is already publishing it, whichever run started
+     * it.
      */
     bool start_manual(std::string group, std::shared_ptr<ores::marketdata::domain::i_feed> feed) {
         if (!feed)
@@ -256,8 +259,8 @@ public:
             }
             running_.emplace(std::move(group), std::move(started));
         }
-        BOOST_LOG_SEV(lg(), ores::logging::info) << "Manual start of " << source_name << "; "
-                                                 << running_count() << " generator(s) running";
+        ORES_LOG_SEV(lg(), ores::logging::info) << "Manual start of " << source_name << "; "
+                                                << running_count() << " generator(s) running";
         return true;
     }
 
@@ -275,7 +278,7 @@ public:
             running_.erase(found);
         }
         halt(stopped);
-        BOOST_LOG_SEV(lg(), ores::logging::info)
+        ORES_LOG_SEV(lg(), ores::logging::info)
             << "Stopped " << source_name << "; " << running_count() << " generator(s) running";
         return 1;
     }
@@ -313,7 +316,9 @@ public:
         for (const auto& [_, g] : running_) {
             if (!g.feed)
                 continue;
-            out.push_back({.source_name = g.source_name, .start = g.feed->start_source()});
+            out.push_back({.source_name = g.source_name,
+                           .start = g.feed->start_source(),
+                           .watch_subjects = g.feed->vendor_watch_subjects()});
         }
         return out;
     }
@@ -363,7 +368,7 @@ private:
             const auto k = key_of(offer.id);
             const auto feed = feed_of(offer);
             if (!out.a_feed_of.emplace(k, feed).second) {
-                BOOST_LOG_SEV(lg(), ores::logging::warn)
+                ORES_LOG_SEV(lg(), ores::logging::warn)
                     << "A second generator is offered for " << offer.id.external_id
                     << ". It is not used.";
                 continue;
@@ -382,7 +387,7 @@ private:
             try {
                 raw->start();
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), ores::logging::error)
+                ORES_LOG_SEV(lg(), ores::logging::error)
                     << "The generator of " << raw->source_name() << " stopped: " << e.what();
                 failed->store(true);
             }

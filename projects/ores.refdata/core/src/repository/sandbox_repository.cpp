@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/sandbox.hpp"
 #include "ores.refdata.api/domain/sandbox_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/sandbox_protocol.hpp"
 #include "ores.refdata.core/repository/sandbox_entity.hpp"
 #include "ores.refdata.core/repository/sandbox_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -218,7 +216,7 @@ void sandbox_repository::write(const context& ctx, const std::vector<domain::san
 void sandbox_repository::write(const context& ctx,
                                const domain::sandbox& v,
                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing sandbox. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing sandbox. " << "id: " << v.id;
     const auto t = sandbox_apply_claim(v,
                                        claim,
                                        sandbox_claim_reads_current(claim) ?
@@ -231,7 +229,7 @@ void sandbox_repository::write(const context& ctx,
 void sandbox_repository::write(const context& ctx,
                                const std::vector<domain::sandbox>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing sandboxes. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing sandboxes. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("sandbox_repository::write: one claim is needed for each row");
     std::vector<domain::sandbox> to_read;
@@ -265,7 +263,7 @@ std::vector<domain::sandbox> sandbox_repository::read_latest(const context& ctx)
 
 std::vector<domain::sandbox> sandbox_repository::read_latest(const context& ctx,
                                                              const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sandbox. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sandbox. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -282,7 +280,7 @@ std::vector<domain::sandbox> sandbox_repository::read_latest(const context& ctx,
 
 std::vector<domain::sandbox> sandbox_repository::read_latest_by_name(const context& ctx,
                                                                      const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sandbox by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sandbox by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -316,7 +314,7 @@ sandbox_repository::read_latest_by_name(const context& ctx, const std::vector<st
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sandboxes by name. Count: " << names.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sandboxes by name. Count: " << names.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -333,7 +331,7 @@ sandbox_repository::read_latest_by_name(const context& ctx, const std::vector<st
 
 std::vector<domain::sandbox> sandbox_repository::read_any_by_name(const context& ctx,
                                                                   const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any sandbox by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading any sandbox by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_entity>> |
                        query_builder::where("tenant_id"_c == tid && "name"_c == name) |
@@ -350,7 +348,7 @@ std::vector<domain::sandbox> sandbox_repository::read_any_by_name(const context&
 
 std::vector<domain::sandbox> sandbox_repository::read_all(const context& ctx,
                                                           const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all sandbox versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all sandbox versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -367,8 +365,8 @@ std::vector<domain::sandbox> sandbox_repository::read_all(const context& ctx,
 std::optional<domain::sandbox> sandbox_repository::read_at_version(const context& ctx,
                                                                    const std::string& id,
                                                                    std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading sandbox at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading sandbox at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<sandbox_entity>> |
@@ -394,9 +392,9 @@ std::vector<domain::sandbox> sandbox_repository::read_latest_by_anchor_portfolio
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::sandboxes_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sandboxes. anchor_portfolio_id: "
-                               << anchor_portfolio_id << " offset: " << offset
-                               << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sandboxes. anchor_portfolio_id: "
+                              << anchor_portfolio_id << " offset: " << offset
+                              << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_entity>> |
@@ -419,8 +417,8 @@ std::uint32_t sandbox_repository::get_total_sandbox_count_by_anchor_portfolio_id
     const context& ctx,
     const std::string& anchor_portfolio_id,
     const std::optional<messaging::sandboxes_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandboxes count. anchor_portfolio_id: "
-                               << anchor_portfolio_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active sandboxes count. anchor_portfolio_id: "
+                              << anchor_portfolio_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -441,7 +439,7 @@ std::uint32_t sandbox_repository::get_total_sandbox_count_by_anchor_portfolio_id
 sandbox_repository::remove_status sandbox_repository::remove(const context& ctx,
                                                              const std::string& id,
                                                              std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing sandbox. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing sandbox. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -479,8 +477,8 @@ sandbox_repository::read_latest(const context& ctx,
                                 const ores::utility::domain::order& order,
                                 const std::optional<messaging::sandboxes_filter>& filter,
                                 const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sandboxes with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sandboxes with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -500,7 +498,7 @@ std::uint32_t sandbox_repository::get_total_sandbox_count(
     const context& ctx,
     const std::optional<messaging::sandboxes_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandbox count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active sandbox count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_entity>> |

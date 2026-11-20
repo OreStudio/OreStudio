@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_PAIR_CLASSIFICATION_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/currency_pair_classification.hpp"
 #include "ores.refdata.api/messaging/currency_pair_classification_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

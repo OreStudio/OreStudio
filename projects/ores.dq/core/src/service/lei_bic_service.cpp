@@ -28,10 +28,8 @@
 #include "ores.dq.api/domain/lei_bic.hpp"
 #include "ores.dq.api/messaging/lei_bic_protocol.hpp"
 #include "ores.dq.core/repository/lei_bic_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <map>
@@ -178,18 +176,18 @@ lei_bic_service::get_many_lei_bic(const messaging::get_many_lei_bic_request& req
 
 std::vector<domain::lei_bic> lei_bic_service::list_lei_bic(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all LEI BIC";
+    ORES_LOG_SEV(lg(), debug) << "Listing all LEI BIC";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t lei_bic_service::count_lei_bic() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total LEI BIC count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total LEI BIC count";
     return repo_.get_total_lei_bic_count(ctx_);
 }
 
 
 std::optional<domain::lei_bic> lei_bic_service::get_lei_bic(const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting LEI BIC. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Getting LEI BIC. " << "lei: " << lei;
     auto results = repo_.read_latest(ctx_, lei);
     if (results.empty())
         return std::nullopt;
@@ -203,11 +201,11 @@ std::vector<domain::lei_bic> lei_bic_service::get_lei_bic(const std::vector<std:
 void lei_bic_service::save_lei_bic(const domain::lei_bic& v) {
     if (v.lei.empty())
         throw std::invalid_argument("LEI BIC lei cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving LEI BIC. " << "lei: " << v.lei;
+    ORES_LOG_SEV(lg(), debug) << "Saving LEI BIC. " << "lei: " << v.lei;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved LEI BIC. " << "lei: " << v.lei;
+    ORES_LOG_SEV(lg(), info) << "Saved LEI BIC. " << "lei: " << v.lei;
 }
 
 void lei_bic_service::save_lei_bic(const std::vector<domain::lei_bic>& lei_bic) {
@@ -215,7 +213,7 @@ void lei_bic_service::save_lei_bic(const std::vector<domain::lei_bic>& lei_bic) 
         if (e.lei.empty())
             throw std::invalid_argument("LEI BIC lei cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << lei_bic.size() << " LEI BIC";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << lei_bic.size() << " LEI BIC";
     auto ts = lei_bic;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -224,9 +222,9 @@ void lei_bic_service::save_lei_bic(const std::vector<domain::lei_bic>& lei_bic) 
 }
 
 void lei_bic_service::delete_lei_bic(const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing LEI BIC. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Removing LEI BIC. " << "lei: " << lei;
     repo_.remove(ctx_, lei);
-    BOOST_LOG_SEV(lg(), info) << "Removed LEI BIC. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), info) << "Removed LEI BIC. " << "lei: " << lei;
 }
 
 void lei_bic_service::delete_lei_bic(const std::vector<std::string>& leis) {

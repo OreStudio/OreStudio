@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -71,7 +71,7 @@ public:
         , verifier_(verifier) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_definition_template_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_definition_template_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -111,8 +111,7 @@ public:
             resp.message = e.what();
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(report_definition_template_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        ORES_LOG_SEV(report_definition_template_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

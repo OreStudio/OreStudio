@@ -20,8 +20,7 @@
 #ifndef ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 #define ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -232,9 +231,9 @@ private:
             outcome == ores::workflow::messaging::step_outcome::completed ? "completed" :
             outcome == ores::workflow::messaging::step_outcome::failed    ? "failed" :
                                                                             "completed with warnings";
-        BOOST_LOG_SEV(lg, info) << "Step " << step_id << " of run " << instance_id
-                                << " answers the engine: " << said
-                                << (error_msg.empty() ? std::string() : ": " + error_msg);
+        ORES_LOG_SEV(lg, info) << "Step " << step_id << " of run " << instance_id
+                               << " answers the engine: " << said
+                               << (error_msg.empty() ? std::string() : ": " + error_msg);
 
         const auto data = ores::nats::default_wire_codec().encode(event);
         // The attempt identifies the work, so the stream stores one completion
@@ -248,11 +247,11 @@ private:
                 data,
                 ores::nats::headers::publish_identity_headers(attempt.empty() ? step_id : attempt));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg, error) << "Step " << step_id << " could not publish its answer ("
-                                     << said << "): " << e.what();
+            ORES_LOG_SEV(lg, error) << "Step " << step_id << " could not publish its answer ("
+                                    << said << "): " << e.what();
             throw;
         }
-        BOOST_LOG_SEV(lg, info) << "Step " << step_id << " answer published (" << said << ")";
+        ORES_LOG_SEV(lg, info) << "Step " << step_id << " answer published (" << said << ")";
     }
 };
 

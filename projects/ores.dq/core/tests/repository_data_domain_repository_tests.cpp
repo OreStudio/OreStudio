@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/data_domain_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/data_domain_generator.hpp"
 #include "ores.dq.core/repository/data_domain_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -48,11 +48,11 @@ TEST_CASE("write_single_data_domain", "[repository]") {
     data_domain.tenant_id = h.tenant_id();
     data_domain.name = data_domain.name + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Data domain: " << data_domain;
+    ORES_LOG_SEV(lg, debug) << "Data domain: " << data_domain;
     repo.write(h.context(), data_domain);
 
     auto read_data_domains = repo.read_latest(h.context(), data_domain.name);
-    BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
+    ORES_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
 
     REQUIRE(read_data_domains.size() == 1);
     CHECK(read_data_domains[0].name == data_domain.name);
@@ -71,11 +71,11 @@ TEST_CASE("write_multiple_data_domains", "[repository]") {
         d.tenant_id = h.tenant_id();
         d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Data domains: " << data_domains;
+    ORES_LOG_SEV(lg, debug) << "Data domains: " << data_domains;
     repo.write(h.context(), data_domains);
 
     auto read_data_domains = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
+    ORES_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
 
     for (const auto& written : data_domains) {
         bool found = false;
@@ -101,12 +101,12 @@ TEST_CASE("read_latest_data_domains", "[repository]") {
         d.tenant_id = h.tenant_id();
         d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Written data domains: " << written_data_domains;
+    ORES_LOG_SEV(lg, debug) << "Written data domains: " << written_data_domains;
 
     repo.write(h.context(), written_data_domains);
 
     auto read_data_domains = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
+    ORES_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
 
     for (const auto& written : written_data_domains) {
         bool found = false;
@@ -134,13 +134,13 @@ TEST_CASE("read_latest_data_domain_by_name", "[repository]") {
     }
 
     const auto target = data_domains.front();
-    BOOST_LOG_SEV(lg, debug) << "Write data domains: " << data_domains;
+    ORES_LOG_SEV(lg, debug) << "Write data domains: " << data_domains;
     repo.write(h.context(), data_domains);
 
-    BOOST_LOG_SEV(lg, debug) << "Target data domain: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target data domain: " << target;
 
     auto read_data_domains = repo.read_latest(h.context(), target.name);
-    BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
+    ORES_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
 
     REQUIRE(read_data_domains.size() == 1);
     CHECK(read_data_domains[0].name == target.name);
@@ -158,7 +158,7 @@ TEST_CASE("read_nonexistent_data_domain", "[repository]") {
     auto data_domain = generate_synthetic_data_domain(ctx);
     data_domain.tenant_id = h.tenant_id();
     data_domain.name = data_domain.name + "_" + std::string(faker::string::alphanumeric(8));
-    BOOST_LOG_SEV(lg, debug) << "Data domain: " << data_domain;
+    ORES_LOG_SEV(lg, debug) << "Data domain: " << data_domain;
     repo.write(h.context(), data_domain);
 
     auto written_data_domains = repo.read_latest(h.context(), data_domain.name);
@@ -166,10 +166,10 @@ TEST_CASE("read_nonexistent_data_domain", "[repository]") {
     CHECK(written_data_domains[0].description == data_domain.description);
 
     const std::string nonexistent_name = "nonexistent.data_domain.12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent name: " << nonexistent_name;
+    ORES_LOG_SEV(lg, debug) << "Non-existent name: " << nonexistent_name;
 
     auto read_data_domains = repo.read_latest(h.context(), nonexistent_name);
-    BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
+    ORES_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
 
     CHECK(read_data_domains.size() == 0);
 }

@@ -25,7 +25,7 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http.core/export.hpp"
 #include "ores.http.core/stream/change_hub.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <chrono>
 #include <memory>

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http/routes/refdata/wire_cells.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/domain/convention_codec.hpp"
 #include "ores.refdata.api/domain/curve_definition_codec.hpp"
@@ -58,7 +58,7 @@ refdata_domain::convention grouped_convention() {
 
 TEST_CASE("a_grouped_row_states_its_columns_by_their_own_names", "[wire_cells]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the read of a column a row groups";
+    ORES_LOG_SEV(lg, info) << "Testing the read of a column a row groups";
 
     const auto row = grouped_convention();
     CHECK(find_cell(row, "party_id") == cell("00000000-0000-0000-0000-00000000000a"));
@@ -68,7 +68,7 @@ TEST_CASE("a_grouped_row_states_its_columns_by_their_own_names", "[wire_cells]")
 
 TEST_CASE("a_grouped_row_writes_a_column_through_the_group_that_holds_it", "[wire_cells]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the write of a column a row groups";
+    ORES_LOG_SEV(lg, info) << "Testing the write of a column a row groups";
 
     auto row = grouped_convention();
     CHECK(set_cell(row, "party_id", cell("00000000-0000-0000-0000-00000000000b")));
@@ -80,7 +80,7 @@ TEST_CASE("a_grouped_row_writes_a_column_through_the_group_that_holds_it", "[wir
 
 TEST_CASE("a_row_refuses_a_text_its_column_does_not_take", "[wire_cells]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the refusal of a text a column does not take";
+    ORES_LOG_SEV(lg, info) << "Testing the refusal of a text a column does not take";
 
     auto stated = refdata_domain::curve_definition{};
     CHECK(set_cell(stated, "position", cell("4")));
@@ -91,7 +91,7 @@ TEST_CASE("a_row_refuses_a_text_its_column_does_not_take", "[wire_cells]") {
 
 TEST_CASE("a_flat_row_reads_as_the_cells_its_columns_hold", "[wire_cells]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the flattening of a row with no groups";
+    ORES_LOG_SEV(lg, info) << "Testing the flattening of a row with no groups";
 
     refdata_domain::curve_definition stated;
     stated.id = party_id;

@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_REPOSITORY_SYNTHETIC_CDO_INSTRUMENT_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/synthetic_cdo_instrument.hpp"
 #include "ores.trading.api/messaging/synthetic_cdo_instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"

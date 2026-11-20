@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_VARIANCE_CALIBRATION_INPUT_POINT_MAPPER_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_VARIANCE_CALIBRATION_INPUT_POINT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/variance_calibration_input_point.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/variance_calibration_input_point_entity.hpp"

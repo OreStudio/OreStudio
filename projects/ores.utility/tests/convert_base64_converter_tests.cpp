@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -31,7 +31,7 @@ TEST_CASE("base64_encode_empty_input", "[convert]") {
     std::vector<uint8_t> input;
     auto result = base64_converter::convert(input);
 
-    BOOST_LOG_SEV(lg, info) << "Empty input encoded to: '" << result << "'";
+    ORES_LOG_SEV(lg, info) << "Empty input encoded to: '" << result << "'";
 
     CHECK(result.empty());
 }
@@ -43,7 +43,7 @@ TEST_CASE("base64_encode_hello", "[convert]") {
     std::vector<uint8_t> input(input_str.begin(), input_str.end());
     auto result = base64_converter::convert(input);
 
-    BOOST_LOG_SEV(lg, info) << "Input: '" << input_str << "', Result: " << result;
+    ORES_LOG_SEV(lg, info) << "Input: '" << input_str << "', Result: " << result;
 
     // Standard Base64 encoding of "Hello" is "SGVsbG8="
     CHECK(result == "SGVsbG8=");
@@ -56,7 +56,7 @@ TEST_CASE("base64_encode_hello_world", "[convert]") {
     std::vector<uint8_t> input(input_str.begin(), input_str.end());
     auto result = base64_converter::convert(input);
 
-    BOOST_LOG_SEV(lg, info) << "Input: '" << input_str << "', Result: " << result;
+    ORES_LOG_SEV(lg, info) << "Input: '" << input_str << "', Result: " << result;
 
     CHECK(result == "SGVsbG8sIFdvcmxkIQ==");
 }
@@ -68,7 +68,7 @@ TEST_CASE("base64_decode_hello", "[convert]") {
     auto result = base64_converter::convert(encoded);
 
     std::string result_str(result.begin(), result.end());
-    BOOST_LOG_SEV(lg, info) << "Encoded: '" << encoded << "', Decoded: '" << result_str << "'";
+    ORES_LOG_SEV(lg, info) << "Encoded: '" << encoded << "', Decoded: '" << result_str << "'";
 
     CHECK(result_str == "Hello");
 }
@@ -81,13 +81,13 @@ TEST_CASE("base64_roundtrip_conversion", "[convert]") {
 
     // Encode
     auto encoded = base64_converter::convert(input);
-    BOOST_LOG_SEV(lg, info) << "Original: '" << original << "'";
-    BOOST_LOG_SEV(lg, info) << "Encoded: '" << encoded << "'";
+    ORES_LOG_SEV(lg, info) << "Original: '" << original << "'";
+    ORES_LOG_SEV(lg, info) << "Encoded: '" << encoded << "'";
 
     // Decode
     auto decoded = base64_converter::convert(encoded);
     std::string decoded_str(decoded.begin(), decoded.end());
-    BOOST_LOG_SEV(lg, info) << "Decoded: '" << decoded_str << "'";
+    ORES_LOG_SEV(lg, info) << "Decoded: '" << decoded_str << "'";
 
     CHECK(decoded_str == original);
 }
@@ -98,7 +98,7 @@ TEST_CASE("base64_encode_binary_data", "[convert]") {
     std::vector<uint8_t> input = {0x00, 0x01, 0x02, 0xFF, 0xFE, 0xFD};
     auto result = base64_converter::convert(input);
 
-    BOOST_LOG_SEV(lg, info) << "Binary data encoded to: " << result;
+    ORES_LOG_SEV(lg, info) << "Binary data encoded to: " << result;
 
     // Verify result is valid Base64
     const std::string valid_chars =
@@ -132,13 +132,13 @@ TEST_CASE("base64_roundtrip_binary_data", "[convert]") {
 
     // Encode
     auto encoded = base64_converter::convert(original);
-    BOOST_LOG_SEV(lg, info) << "Binary data encoded to: " << encoded;
+    ORES_LOG_SEV(lg, info) << "Binary data encoded to: " << encoded;
 
     // Decode
     auto decoded = base64_converter::convert(encoded);
 
-    BOOST_LOG_SEV(lg, info) << "Original size: " << original.size()
-                            << ", Decoded size: " << decoded.size();
+    ORES_LOG_SEV(lg, info) << "Original size: " << original.size()
+                           << ", Decoded size: " << decoded.size();
 
     CHECK(decoded == original);
 }
@@ -148,7 +148,7 @@ TEST_CASE("base64_decode_empty_throws", "[convert]") {
 
     std::string empty;
 
-    BOOST_LOG_SEV(lg, info) << "Attempting to decode empty string";
+    ORES_LOG_SEV(lg, info) << "Attempting to decode empty string";
 
     CHECK_THROWS_AS(base64_converter::convert(empty), std::runtime_error);
 }
@@ -165,8 +165,8 @@ TEST_CASE("base64_encode_various_lengths", "[convert]") {
         auto decoded = base64_converter::convert(encoded);
         std::string decoded_str(decoded.begin(), decoded.end());
 
-        BOOST_LOG_SEV(lg, info) << "Input: '" << test << "', Encoded: '" << encoded
-                                << "', Decoded: '" << decoded_str << "'";
+        ORES_LOG_SEV(lg, info) << "Input: '" << test << "', Encoded: '" << encoded
+                               << "', Decoded: '" << decoded_str << "'";
 
         CHECK(decoded_str == test);
     }
@@ -182,7 +182,7 @@ TEST_CASE("base64_encode_long_text", "[convert]") {
     std::vector<uint8_t> input(original.begin(), original.end());
 
     auto encoded = base64_converter::convert(input);
-    BOOST_LOG_SEV(lg, info) << "Long text encoded, length: " << encoded.length();
+    ORES_LOG_SEV(lg, info) << "Long text encoded, length: " << encoded.length();
 
     auto decoded = base64_converter::convert(encoded);
     std::string decoded_str(decoded.begin(), decoded.end());
@@ -196,7 +196,7 @@ TEST_CASE("base64_encode_all_zeros", "[convert]") {
     std::vector<uint8_t> input(100, 0x00);
     auto encoded = base64_converter::convert(input);
 
-    BOOST_LOG_SEV(lg, info) << "100 zeros encoded to length: " << encoded.length();
+    ORES_LOG_SEV(lg, info) << "100 zeros encoded to length: " << encoded.length();
 
     auto decoded = base64_converter::convert(encoded);
 
@@ -210,7 +210,7 @@ TEST_CASE("base64_encode_all_ones", "[convert]") {
     std::vector<uint8_t> input(50, 0xFF);
     auto encoded = base64_converter::convert(input);
 
-    BOOST_LOG_SEV(lg, info) << "50 0xFF bytes encoded to: " << encoded;
+    ORES_LOG_SEV(lg, info) << "50 0xFF bytes encoded to: " << encoded;
 
     auto decoded = base64_converter::convert(encoded);
 

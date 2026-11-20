@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
@@ -70,10 +70,10 @@ TEST_CASE("verify_hash_with_correct_password", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "correct_password";
-    BOOST_LOG_SEV(lg, info) << "Password: " << password;
+    ORES_LOG_SEV(lg, info) << "Password: " << password;
 
     const std::string hash = password_hasher::hash(password);
-    BOOST_LOG_SEV(lg, info) << "Hash: " << hash;
+    ORES_LOG_SEV(lg, info) << "Hash: " << hash;
 
     CHECK(!hash.empty());
     CHECK(password_hasher::verify(password, hash));
@@ -83,13 +83,13 @@ TEST_CASE("verify_hash_with_incorrect_password", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "correct_password";
-    BOOST_LOG_SEV(lg, info) << "Password: " << password;
+    ORES_LOG_SEV(lg, info) << "Password: " << password;
 
     const std::string wrong_password = "wrong_password";
-    BOOST_LOG_SEV(lg, info) << "Wrong password: " << wrong_password;
+    ORES_LOG_SEV(lg, info) << "Wrong password: " << wrong_password;
 
     const std::string hash = password_hasher::hash(password);
-    BOOST_LOG_SEV(lg, info) << "Hash: " << hash;
+    ORES_LOG_SEV(lg, info) << "Hash: " << hash;
 
     CHECK(!hash.empty());
     CHECK(!password_hasher::verify(wrong_password, hash));
@@ -99,13 +99,13 @@ TEST_CASE("hash_is_not_deterministic", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "a_simple_password";
-    BOOST_LOG_SEV(lg, info) << "Password: " << password;
+    ORES_LOG_SEV(lg, info) << "Password: " << password;
 
     const std::string hash1 = password_hasher::hash(password);
-    BOOST_LOG_SEV(lg, info) << "Hash 1: " << hash1;
+    ORES_LOG_SEV(lg, info) << "Hash 1: " << hash1;
 
     const std::string hash2 = password_hasher::hash(password);
-    BOOST_LOG_SEV(lg, info) << "Hash 2: " << hash2;
+    ORES_LOG_SEV(lg, info) << "Hash 2: " << hash2;
 
     CHECK(!hash1.empty());
     CHECK(!hash2.empty());
@@ -116,10 +116,10 @@ TEST_CASE("invalid_hash_format_fails_verification", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "any_password";
-    BOOST_LOG_SEV(lg, info) << "Password: " << password;
+    ORES_LOG_SEV(lg, info) << "Password: " << password;
 
     const std::string malformed_hash = "this_is_not_a_valid_hash_format";
-    BOOST_LOG_SEV(lg, info) << "Malformed hash: " << malformed_hash;
+    ORES_LOG_SEV(lg, info) << "Malformed hash: " << malformed_hash;
 
     CHECK(!password_hasher::verify(password, malformed_hash));
 }
@@ -159,7 +159,7 @@ TEST_CASE("verify_rejects_a_downgraded_scrypt_cost", "[crypto]") {
     REQUIRE_FALSE(at_the_floor.empty());
     REQUIRE_FALSE(below_the_floor.empty());
 
-    BOOST_LOG_SEV(lg, info) << "Floor hash: " << at_the_floor;
+    ORES_LOG_SEV(lg, info) << "Floor hash: " << at_the_floor;
 
     // The control proves the hand-built hash is a real hash of the password,
     // so the case below cannot pass merely because the construction is wrong.
@@ -180,7 +180,7 @@ TEST_CASE("stored_hash_pins_the_format_and_the_production_cost", "[crypto]") {
     const std::string production_hash = password_hasher::hash(password);
     environment::set_value(fast_flag, "1");
 
-    BOOST_LOG_SEV(lg, info) << "Production hash: " << production_hash;
+    ORES_LOG_SEV(lg, info) << "Production hash: " << production_hash;
 
     CHECK(production_hash.starts_with("$scrypt$ln=14,r=8,p=1$"));
     CHECK(password_hasher::verify(password, production_hash));

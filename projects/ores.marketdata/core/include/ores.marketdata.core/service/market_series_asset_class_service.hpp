@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_SERVICE_MARKET_SERIES_ASSET_CLASS_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/messaging/market_series_asset_class_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"

@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -71,7 +71,7 @@ public:
 
     void clear_bootstrap_mode(ores::nats::message msg) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(operations_handler_lg(), debug) << "Handling " << msg.subject;
 
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -97,7 +97,7 @@ public:
                 "Tenant onboarding completed on tenant activation");
             ores::service::messaging::reply(nats_, msg, clear_bootstrap_mode_response{});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
             clear_bootstrap_mode_response resp;
             resp.result.outcome = ores::utility::domain::outcome::failed;
             resp.result.code = "operation_failed";
@@ -108,7 +108,7 @@ public:
 
     void complete_system_onboarding(ores::nats::message msg) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(operations_handler_lg(), debug) << "Handling " << msg.subject;
 
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -127,7 +127,7 @@ public:
                 "System onboarding completed on system provisioner wizard completion");
             ores::service::messaging::reply(nats_, msg, complete_system_onboarding_response{});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
             complete_system_onboarding_response resp;
             resp.result.outcome = ores::utility::domain::outcome::failed;
             resp.result.code = "operation_failed";
@@ -138,7 +138,7 @@ public:
 
     void complete_party_onboarding(ores::nats::message msg) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(operations_handler_lg(), debug) << "Handling " << msg.subject;
 
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -148,7 +148,7 @@ public:
 
         auto req = ores::service::messaging::decode<complete_party_onboarding_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(operations_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(operations_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             ores::service::messaging::error_reply(
                 nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -166,7 +166,7 @@ public:
                 "Party onboarding completed on party activation");
             ores::service::messaging::reply(nats_, msg, complete_party_onboarding_response{});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
             complete_party_onboarding_response resp;
             resp.result.outcome = ores::utility::domain::outcome::failed;
             resp.result.code = "operation_failed";
@@ -185,7 +185,7 @@ public:
      */
     void get_setting(ores::nats::message msg) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(operations_handler_lg(), debug) << "Handling " << msg.subject;
 
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -195,7 +195,7 @@ public:
 
         auto req = ores::service::messaging::decode<get_setting_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(operations_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(operations_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             ores::service::messaging::error_reply(
                 nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -226,7 +226,7 @@ public:
             }
             ores::service::messaging::reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_setting_response resp;
             resp.result.outcome = ores::utility::domain::outcome::failed;
             resp.result.code = "operation_failed";

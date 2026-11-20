@@ -26,7 +26,6 @@
 #include "ores.compute.api/domain/result.hpp"
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.core/repository/result_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -508,38 +506,38 @@ result_service::prepare_change(const messaging::result_change& change,
 
 std::vector<domain::result> result_service::list_results(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all compute results";
+    ORES_LOG_SEV(lg(), debug) << "Listing all compute results";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t result_service::count_results() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total compute results count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total compute results count";
     return repo_.get_total_result_count(ctx_);
 }
 
 
 std::vector<domain::result> result_service::list_results_by_workunit_id(
     const std::string& workunit_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing compute results by workunit_id: " << workunit_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing compute results by workunit_id: " << workunit_id;
     return repo_.read_latest_by_workunit_id(ctx_, workunit_id, offset, limit);
 }
 
 std::uint32_t result_service::count_results_by_workunit_id(const std::string& workunit_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total compute results count by workunit_id: "
-                               << workunit_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total compute results count by workunit_id: "
+                              << workunit_id;
     return repo_.get_total_result_count_by_workunit_id(ctx_, workunit_id);
 }
 
 
 std::optional<domain::result> result_service::get_result_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute result at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute result at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::result> result_service::get_result(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute result. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -553,11 +551,11 @@ std::vector<domain::result> result_service::get_results(const std::vector<std::s
 void result_service::save_result(const domain::result& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Result id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving compute result. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving compute result. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved compute result. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved compute result. " << "id: " << v.id;
 }
 
 void result_service::save_results(const std::vector<domain::result>& results) {
@@ -565,7 +563,7 @@ void result_service::save_results(const std::vector<domain::result>& results) {
         if (e.id.is_nil())
             throw std::invalid_argument("Result id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << results.size() << " compute results";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << results.size() << " compute results";
     auto ts = results;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -574,9 +572,9 @@ void result_service::save_results(const std::vector<domain::result>& results) {
 }
 
 void result_service::delete_result(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing compute result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing compute result. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed compute result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed compute result. " << "id: " << id;
 }
 
 void result_service::delete_results(const std::vector<std::string>& ids) {
@@ -584,12 +582,12 @@ void result_service::delete_results(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::result> result_service::get_result_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for compute result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for compute result. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 
 std::vector<domain::result> result_service::list_by_state(int server_state) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing results by state: " << server_state;
+    ORES_LOG_SEV(lg(), debug) << "Listing results by state: " << server_state;
     return repo_.read_by_state(ctx_, server_state);
 }
 }

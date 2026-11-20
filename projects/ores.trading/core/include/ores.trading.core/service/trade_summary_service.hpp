@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_TRADE_SUMMARY_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/trade_summary.hpp"
 #include "ores.trading.api/messaging/trade_summary_protocol.hpp"
 #include "ores.trading.core/export.hpp"

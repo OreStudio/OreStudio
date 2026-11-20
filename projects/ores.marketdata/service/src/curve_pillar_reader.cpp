@@ -18,7 +18,7 @@
  *
  */
 #include "curve_pillar_reader.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
@@ -144,7 +144,7 @@ read_pillar_rates(const ores::database::context& ctx,
         const auto series =
             series_repo.read_latest(ctx, boost::uuids::to_string(p.market_series_id));
         if (series.empty()) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
+            ORES_LOG_SEV(lg(), ores::logging::warn)
                 << "No market series " << boost::uuids::to_string(p.market_series_id)
                 << " holds the pillar " << p.end_tenor_code << " of curve config "
                 << boost::uuids::to_string(p.bootstrap_config_id);

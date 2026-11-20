@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/commodity_curve_direct.hpp"
 #include "ores.refdata.api/messaging/commodity_curve_direct_protocol.hpp"
 #include "ores.refdata.core/repository/commodity_curve_direct_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -466,12 +464,12 @@ ores::utility::domain::result commodity_curve_direct_service::prepare_change(
 
 std::vector<domain::commodity_curve_direct>
 commodity_curve_direct_service::list_directs(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all commodity curve directs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all commodity curve directs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t commodity_curve_direct_service::count_directs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total commodity curve directs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total commodity curve directs count";
     return repo_.get_total_direct_count(ctx_);
 }
 
@@ -479,14 +477,14 @@ std::uint32_t commodity_curve_direct_service::count_directs() {
 std::optional<domain::commodity_curve_direct>
 commodity_curve_direct_service::get_direct_at_version(const boost::uuids::uuid& id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting commodity curve direct at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting commodity curve direct at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::commodity_curve_direct>
 commodity_curve_direct_service::get_direct(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting commodity curve direct. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting commodity curve direct. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -501,11 +499,11 @@ commodity_curve_direct_service::get_directs(const std::vector<std::string>& ids)
 void commodity_curve_direct_service::save_direct(const domain::commodity_curve_direct& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Commodity Curve Direct id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving commodity curve direct. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving commodity curve direct. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved commodity curve direct. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved commodity curve direct. " << "id: " << v.id;
 }
 
 void commodity_curve_direct_service::save_directs(
@@ -514,7 +512,7 @@ void commodity_curve_direct_service::save_directs(
         if (e.id.is_nil())
             throw std::invalid_argument("Commodity Curve Direct id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << directs.size() << " commodity curve directs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << directs.size() << " commodity curve directs";
     auto ts = directs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -523,9 +521,9 @@ void commodity_curve_direct_service::save_directs(
 }
 
 void commodity_curve_direct_service::delete_direct(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing commodity curve direct. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing commodity curve direct. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed commodity curve direct. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed commodity curve direct. " << "id: " << id;
 }
 
 void commodity_curve_direct_service::delete_directs(const std::vector<std::string>& ids) {
@@ -534,7 +532,7 @@ void commodity_curve_direct_service::delete_directs(const std::vector<std::strin
 
 std::vector<domain::commodity_curve_direct>
 commodity_curve_direct_service::get_direct_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for commodity curve direct. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for commodity curve direct. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/feed_scope.hpp"
 #include "ores.marketdata.api/domain/feed_scope_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/messaging/feed_scope_protocol.hpp"
 #include "ores.marketdata.core/repository/feed_scope_entity.hpp"
 #include "ores.marketdata.core/repository/feed_scope_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -265,7 +263,7 @@ void feed_scope_repository::write(const context& ctx, const std::vector<domain::
 void feed_scope_repository::write(const context& ctx,
                                   const domain::feed_scope& v,
                                   const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing feed scope. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing feed scope. " << "id: " << v.id;
     const auto t = feed_scope_apply_claim(
         v,
         claim,
@@ -279,7 +277,7 @@ void feed_scope_repository::write(const context& ctx,
 void feed_scope_repository::write(const context& ctx,
                                   const std::vector<domain::feed_scope>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing feed scopes. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing feed scopes. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "feed_scope_repository::write: one claim is needed for each row");
@@ -316,7 +314,7 @@ std::vector<domain::feed_scope> feed_scope_repository::read_latest(const context
 
 std::vector<domain::feed_scope> feed_scope_repository::read_latest(const context& ctx,
                                                                    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest feed scope. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest feed scope. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -334,7 +332,7 @@ std::vector<domain::feed_scope> feed_scope_repository::read_latest(const context
 
 std::vector<domain::feed_scope>
 feed_scope_repository::read_latest_by_item(const context& ctx, const std::string& item) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest feed scope by item: " << item;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest feed scope by item: " << item;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -370,7 +368,7 @@ feed_scope_repository::read_latest_by_item(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest feed scopes by item. Count: " << items.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest feed scopes by item. Count: " << items.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -388,7 +386,7 @@ feed_scope_repository::read_latest_by_item(const context& ctx,
 
 std::vector<domain::feed_scope> feed_scope_repository::read_any_by_item(const context& ctx,
                                                                         const std::string& item) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any feed scope by item: " << item;
+    ORES_LOG_SEV(lg(), debug) << "Reading any feed scope by item: " << item;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -407,7 +405,7 @@ std::vector<domain::feed_scope> feed_scope_repository::read_any_by_item(const co
 
 std::vector<domain::feed_scope> feed_scope_repository::read_all(const context& ctx,
                                                                 const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all feed scope versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all feed scope versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -426,8 +424,8 @@ std::vector<domain::feed_scope> feed_scope_repository::read_all(const context& c
 std::optional<domain::feed_scope> feed_scope_repository::read_at_version(const context& ctx,
                                                                          const std::string& id,
                                                                          std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading feed scope at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading feed scope at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<feed_scope_entity>> |
@@ -450,7 +448,7 @@ std::optional<domain::feed_scope> feed_scope_repository::read_at_version(const c
 
 feed_scope_repository::remove_status feed_scope_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing feed scope. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing feed scope. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -488,8 +486,8 @@ feed_scope_repository::read_latest(const context& ctx,
                                    const ores::utility::domain::order& order,
                                    const std::optional<messaging::feed_scopes_filter>& filter,
                                    const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest feed scopes with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest feed scopes with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<feed_scope_entity>> |
@@ -511,7 +509,7 @@ std::uint32_t feed_scope_repository::get_total_scope_count(
     const context& ctx,
     const std::optional<messaging::feed_scopes_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active feed scope count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active feed scope count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

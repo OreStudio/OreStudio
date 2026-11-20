@@ -93,7 +93,10 @@ web server, and the web server is a client the installation trusts. So the check
 is made where a watch starts:
 
 - The server that serves a person's session asks the market data service which
-  feeds the session's party may watch for display, and subscribes only to those.
+  feeds the session's party may watch for display, and shows only those. Each web
+  server holds one board of the latest quote of each datum on every feed, filled by
+  one subscription, and every read of it asks the question again and answers those
+  feeds alone (=quote_routes.cpp= in =ores.http=, =quotes.ts= in the BFF).
 - A service that watches for a party asks the same question for its own use.
   Every new watcher asks it before it subscribes. A watcher that subscribes to a
   feed subject without the answer skips the entitlement, and that is a defect.

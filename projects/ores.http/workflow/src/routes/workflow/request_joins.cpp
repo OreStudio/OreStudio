@@ -25,7 +25,7 @@
 #include "ores.iam.api/messaging/role_request_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_decision_protocol.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/messaging/trade_authorisation_request_protocol.hpp"
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -81,7 +81,7 @@ std::string label_of(const http_request& req, nats_client& session, const std::s
             if (!identifier.id_value.empty())
                 return identifier.id_value;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(join_lg(), ores::logging::debug)
+        ORES_LOG_SEV(join_lg(), ores::logging::debug)
             << "The label of trade " << trade_id << " was not read: " << e.what();
     }
     return trade_id;
@@ -105,7 +105,7 @@ roles_of(const http_request& req, nats_client& session, const std::string& reque
             return {};
         return reply.roles;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(join_lg(), ores::logging::warn)
+        ORES_LOG_SEV(join_lg(), ores::logging::warn)
             << "The roles of request " << request_id << " were not read: " << e.what();
         return {};
     }
@@ -129,7 +129,7 @@ requesters_of(const http_request& req,
         for (const auto& grant : reply.role_grant_requests)
             requesters.emplace(rr::as_text(grant.request_id), rr::as_text(grant.account_id));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(join_lg(), ores::logging::warn)
+        ORES_LOG_SEV(join_lg(), ores::logging::warn)
             << "The accounts of the requests were not read: " << e.what();
         return requesters;
     }
@@ -163,7 +163,7 @@ std::map<std::string, std::string> usernames_of(const http_request& req,
         for (const auto& account : reply.accounts)
             usernames.emplace(rr::as_text(account.id), account.username);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(join_lg(), ores::logging::warn)
+        ORES_LOG_SEV(join_lg(), ores::logging::warn)
             << "The usernames of the accounts were not read: " << e.what();
         return usernames;
     }
@@ -193,7 +193,7 @@ decisions_of(const http_request& req,
             decisions.insert_or_assign(key, decision);
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(join_lg(), ores::logging::warn)
+        ORES_LOG_SEV(join_lg(), ores::logging::warn)
             << "The decisions on the requests were not read: " << e.what();
         return decisions;
     }
@@ -222,7 +222,7 @@ subjects_of_page(const http_request& req,
             links.emplace_back(rr::as_text(link.request_id),
                                std::pair{rr::as_text(link.trade_id), link.trade_version});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(join_lg(), ores::logging::warn)
+        ORES_LOG_SEV(join_lg(), ores::logging::warn)
             << "The trades of a page of requests were not read: " << e.what();
         return by_request;
     }
@@ -249,7 +249,7 @@ subjects_of_page(const http_request& req,
                     labels.emplace(trade_id, identifier.id_value);
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(join_lg(), ores::logging::warn)
+            ORES_LOG_SEV(join_lg(), ores::logging::warn)
                 << "The labels of a page of trades were not read: " << e.what();
         }
     }
@@ -294,7 +294,7 @@ parts_of(const http_request& req, nats_client& session, const std::string& reque
             return {};
         return reply.parts;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(join_lg(), ores::logging::warn)
+        ORES_LOG_SEV(join_lg(), ores::logging::warn)
             << "The parts of request " << request_id << " were not read: " << e.what();
         return {};
     }
@@ -320,7 +320,7 @@ subjects_of(const http_request& req, nats_client& session, const std::string& re
             subjects.push_back({trade_id, link.trade_version, label_of(req, session, trade_id)});
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(join_lg(), ores::logging::warn)
+        ORES_LOG_SEV(join_lg(), ores::logging::warn)
             << "The trades of request " << request_id << " were not read: " << e.what();
         return subjects;
     }

@@ -48,7 +48,7 @@
 #include "ores.iam.core/service/seed_profile_step_service.hpp"
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
@@ -310,7 +310,7 @@ public:
                 ores::nats::headers::with_publish_identity(
                     ores::nats::service::forwarded_caller_headers(msg), start.instance_id));
 
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "Started " << start.type << " for tenant " << req->tenant_code
                 << " (instance: " << instance_id << ")";
 
@@ -321,7 +321,7 @@ public:
                                                     .tenant_id = created.tenant_id,
                                                     .account_id = created.account_id});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
@@ -578,7 +578,7 @@ public:
                 ores::nats::headers::with_publish_identity(
                     ores::nats::service::forwarded_caller_headers(msg), start.instance_id));
 
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "Started " << start.type << " for party " << found.front() << " of tenant "
                 << code << " (instance: " << instance_id << ")";
 
@@ -587,7 +587,7 @@ public:
                   provision_party_command_response{
                       .success = true, .instance_id = instance_id, .party_id = found.front()});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
@@ -619,7 +619,7 @@ public:
             // A command that cannot be read will not read any better on a
             // second delivery, and it names no step to fail, so it is discarded
             // rather than retried.
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step: the step command could not be read, so the step is left "
                    "unanswered and the run will expire it. subject="
                 << msg.subject;
@@ -627,14 +627,14 @@ public:
             return;
         }
 
-        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+        ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "provision_step: step_id=" << wf->step_id << " instance=" << wf->instance_id
             << " tenant=" << wf->tenant_id;
 
         try {
             if (const auto cached = ores::service::messaging::check_step_idempotency(
                     nats_, wf->step_id, wf->tenant_id)) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "provision_step: replaying the recorded outcome of step " << wf->step_id;
                 ores::service::messaging::publish_step_completion(nats_,
                                                                   wf->step_id,
@@ -661,24 +661,24 @@ public:
             }
 
             const auto started = std::chrono::steady_clock::now();
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "provision_step " << parsed->kind << " started: step_id=" << wf->step_id
                 << " instance=" << wf->instance_id;
             execute_step(*wf, *parsed, correlation_id);
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "provision_step " << parsed->kind << " returned after "
                 << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count()
                 << "s: step_id=" << wf->step_id;
             std::move(delivery).commit();
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step failed: step_id=" << wf->step_id << ": " << e.what();
             wf->fail(e.what());
             std::move(delivery).commit();
         } catch (...) {
             // An exception of no standard type would otherwise leave the step with no answer and
             // no line saying why, so the run would wait out its deadline in silence.
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step failed with an exception of no standard type: step_id="
                 << wf->step_id;
             wf->fail("The step failed with an exception of no standard type.");
@@ -732,7 +732,7 @@ public:
             response.result.outcome = ores::utility::domain::outcome::ok;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             response.result.outcome = ores::utility::domain::outcome::failed;
             response.result.code = "internal_error";
@@ -994,7 +994,7 @@ private:
                 failure = std::move(action);
         };
         auto progress = [&label](const std::string& line) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "provision_step " << label << ": " << line;
         };
         if (!publish_bundle(client,
@@ -1158,7 +1158,7 @@ private:
                      .what = curve_work + " curve publish",
                      .note = attempts_recorded_in(step_log, wf)});
                 if (published.success && published.published_at) {
-                    BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                    ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
                         << label << ": published " << names.at(it->first) << " at "
                         << ores::platform::time::datetime::to_iso8601_utc(*published.published_at)
                         << " by " << published.published_by << ", " << computed.points.size()
@@ -1167,7 +1167,7 @@ private:
                         names.at(it->first) + " as of " +
                         ores::platform::time::datetime::to_iso8601_utc(as_of));
                 } else if (published.success) {
-                    BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                    ORES_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                         << label << ": " << names.at(it->first) << " waits for approval: request "
                         << published.approval_request_id << " is " << published.state_code;
                     outcome.not_published.push_back(
@@ -1176,7 +1176,7 @@ private:
                 } else {
                     // The preview passed and the publish did not, which no wait
                     // puts right: the reason is reported and the curve is done.
-                    BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                    ORES_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                         << label << ": did not publish " << names.at(it->first) << ": "
                         << published.message;
                     outcome.not_published.push_back(names.at(it->first) + ": " + published.message);
@@ -1193,7 +1193,7 @@ private:
                                  std::to_string(curve_quote_patience.count() * 60) +
                                  "s), asking again in " +
                                  std::to_string(curve_retry_interval.count()) + "s";
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info) << label << ": " << waiting;
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), info) << label << ": " << waiting;
             step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
                                 .message = waiting,
                                 .context = {}});
@@ -1201,7 +1201,7 @@ private:
         }
 
         for (const auto& [id, last_reason] : pending) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                 << label << ": did not publish " << names.at(id) << ": " << last_reason;
             outcome.not_published.push_back(names.at(id) + ": " + last_reason);
         }
@@ -1249,7 +1249,7 @@ private:
         ores::refdata::messaging::list_ir_curve_bootstrap_configs_request list;
         list.limit = 1000;
         const auto configs = client.request(list).bootstrap_configs;
-        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+        ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "publish_system_curves: " << configs.size() << " curve config(s) to publish";
 
         std::vector<std::pair<std::string, std::string>> curves;
@@ -1272,7 +1272,7 @@ private:
 
         const auto summary = std::string{"published "} + std::to_string(result.curves.size()) +
                              " of " + std::to_string(configs.size()) + " curve(s)";
-        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+        ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "publish_system_curves: " << summary;
         for (const auto& not_published : result.curves_not_published)
             step_log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
@@ -1761,7 +1761,7 @@ private:
                 schedule.scheduled = static_cast<std::uint32_t>(response.scheduled_count);
             }
 
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "schedule_reports: " << party_name << ": scheduled " << schedule.scheduled
                 << ", already scheduled " << schedule.already_scheduled << ", on demand "
                 << schedule.on_demand << ", not a cron " << schedule.not_a_cron;
@@ -1823,7 +1823,7 @@ private:
                        start,
                        start.instance_id);
 
-        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+        ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "Started " << start.type << " for tenant " << run.tenant_code
             << " (instance: " << instance_id << ")";
         wf.record("Started the setup of tenant " + run.tenant_code);
@@ -1850,7 +1850,7 @@ private:
             {command.tenant_id, actor.username},
             tenant_provisioning_handler_lg(),
             "complete_provisioning_step");
-        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+        ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "Tenant marked active: " << command.tenant_id;
         wf.record("Marked the tenant active");
 
@@ -1883,7 +1883,7 @@ private:
             using namespace ores::variability::messaging;
             const auto resp = client.request(clear_bootstrap_mode_request{});
             if (resp.result.outcome == ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                ORES_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "Bootstrap mode cleared for tenant: " << command.tenant_id;
                 wf.record("Took the tenant out of bootstrap mode");
                 wf.complete(result);
@@ -2029,7 +2029,7 @@ private:
         req.code = key;
         auto resp = client.request(req);
         if (resp.result.outcome != ores::utility::domain::outcome::ok || resp.image_id.empty()) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                 << "No tenant image for '" << key << "': " << resp.result.message;
             return std::nullopt;
         }
@@ -2049,7 +2049,7 @@ private:
             std::vector<std::string> images;
             attach_staff_photos(client, ctx, tenant_id, images);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                 << "attach_staff_photos did not complete for " << dataset_code << ": " << e.what();
         }
     }
@@ -2396,7 +2396,7 @@ private:
             if (set_default)
                 set_account_default_party(client, party.id);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+            ORES_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                 << "finish_party did not complete for " << party.full_name << ": " << e.what();
         }
     }

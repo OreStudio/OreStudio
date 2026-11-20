@@ -18,7 +18,6 @@
  *
  */
 #include "ores.logging/logging_options_validator.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/logging_exception.hpp"
 #include <boost/throw_exception.hpp>
 #include <string>

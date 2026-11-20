@@ -26,7 +26,7 @@
 #include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
 #include "ores.dq.core/service/publish_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -82,12 +82,12 @@ public:
         , verifier_(verifier) {}
 
     void publish_datasets(ores::nats::message msg) {
-        BOOST_LOG_SEV(publish_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(publish_handler_lg(), debug) << "Handling " << msg.subject;
         const auto correlation_id = ores::nats::extract_or_generate_correlation_id(msg);
 
         auto req = decode<publish_datasets_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(publish_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(publish_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -136,12 +136,12 @@ public:
             resp.success = true;
             resp.instance_id = instance_id;
             resp.datasets_dispatched = static_cast<int>(entries.size());
-            BOOST_LOG_SEV(publish_handler_lg(), info)
+            ORES_LOG_SEV(publish_handler_lg(), info)
                 << "Datasets publish workflow started: instance=" << instance_id
                 << " datasets=" << entries.size();
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(publish_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(publish_handler_lg(), error) << msg.subject << " failed: " << e.what();
             publish_datasets_response resp;
             resp.success = false;
             resp.message = e.what();
@@ -150,12 +150,12 @@ public:
     }
 
     void publish_bundle(ores::nats::message msg) {
-        BOOST_LOG_SEV(publish_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(publish_handler_lg(), debug) << "Handling " << msg.subject;
         const auto correlation_id = ores::nats::extract_or_generate_correlation_id(msg);
 
         auto req = decode<publish_bundle_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(publish_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(publish_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -195,7 +195,7 @@ public:
                                                               e.dataset_code) == allowed.end();
                                          }),
                           entries.end());
-            BOOST_LOG_SEV(publish_handler_lg(), debug)
+            ORES_LOG_SEV(publish_handler_lg(), debug)
                 << "optional-member filter applied: " << entries.size() << " datasets retained";
 
             if (entries.empty()) {
@@ -220,12 +220,12 @@ public:
             resp.success = true;
             resp.instance_id = instance_id;
             resp.datasets_dispatched = static_cast<int>(entries.size());
-            BOOST_LOG_SEV(publish_handler_lg(), info)
+            ORES_LOG_SEV(publish_handler_lg(), info)
                 << "Bundle publish workflow started: bundle=" << req->bundle_code
                 << " instance=" << instance_id << " datasets=" << entries.size();
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(publish_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(publish_handler_lg(), error) << msg.subject << " failed: " << e.what();
             publish_bundle_response resp;
             resp.success = false;
             resp.error_message = e.what();

@@ -28,7 +28,6 @@
 #include "ores.refdata.core/repository/counterparty_change_repository.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
 #include "ores.service/messaging/approval_gate.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -47,7 +46,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -634,12 +632,12 @@ counterparty_service::gate_delete(const std::vector<domain::counterparty>& live,
 
 std::vector<domain::counterparty> counterparty_service::list_counterparties(std::uint32_t offset,
                                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all counterparties";
+    ORES_LOG_SEV(lg(), debug) << "Listing all counterparties";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t counterparty_service::count_counterparties() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total counterparties count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total counterparties count";
     return repo_.get_total_counterparty_count(ctx_);
 }
 
@@ -647,14 +645,14 @@ std::uint32_t counterparty_service::count_counterparties() {
 std::optional<domain::counterparty>
 counterparty_service::get_counterparty_at_version(const boost::uuids::uuid& id,
                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting counterparty at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::counterparty>
 counterparty_service::get_counterparty(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting counterparty. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -663,7 +661,7 @@ counterparty_service::get_counterparty(const boost::uuids::uuid& id) {
 
 std::optional<domain::counterparty>
 counterparty_service::get_counterparty_by_short_code(const std::string& short_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty by short_code: " << short_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting counterparty by short_code: " << short_code;
     messaging::counterparty_key k;
     k.short_code = short_code;
     auto found = counterparty_read_one(repo_, ctx_, k);
@@ -674,7 +672,7 @@ counterparty_service::get_counterparty_by_short_code(const std::string& short_co
 
 std::optional<domain::counterparty>
 counterparty_service::find_counterparty(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding counterparty. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -683,7 +681,7 @@ counterparty_service::find_counterparty(const boost::uuids::uuid& id) {
 
 std::optional<domain::counterparty>
 counterparty_service::find_counterparty_by_code(const std::string& short_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty by short_code: " << short_code;
+    ORES_LOG_SEV(lg(), debug) << "Finding counterparty by short_code: " << short_code;
     auto results = repo_.read_latest_by_code(ctx_, short_code);
     if (results.empty())
         return std::nullopt;
@@ -717,7 +715,7 @@ void counterparty_service::delete_counterparties(const std::vector<std::string>&
 
 std::vector<domain::counterparty>
 counterparty_service::get_counterparty_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for counterparty. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -739,13 +737,13 @@ counterparty_service::get_counterparty_history(const std::string& key) {
 
 std::vector<domain::counterparty>
 counterparty_service::get_counterparty_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for counterparty. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 
 std::vector<ores::utility::domain::hierarchy_node>
 counterparty_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting hierarchy for counterparty root: " << root_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting hierarchy for counterparty root: " << root_id;
     auto rows = repo_.get_hierarchy(ctx_, root_id, from_root);
     return ores::utility::domain::build_tree(rows);
 }

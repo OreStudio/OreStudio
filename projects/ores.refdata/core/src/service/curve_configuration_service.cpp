@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_configuration.hpp"
 #include "ores.refdata.api/messaging/curve_configuration_protocol.hpp"
 #include "ores.refdata.core/repository/curve_configuration_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -460,12 +458,12 @@ curve_configuration_service::prepare_change(const messaging::curve_configuration
 
 std::vector<domain::curve_configuration>
 curve_configuration_service::list_configurations(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve configurations";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve configurations";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_configuration_service::count_configurations() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve configurations count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve configurations count";
     return repo_.get_total_configuration_count(ctx_);
 }
 
@@ -473,14 +471,14 @@ std::uint32_t curve_configuration_service::count_configurations() {
 std::optional<domain::curve_configuration>
 curve_configuration_service::get_configuration_at_version(const boost::uuids::uuid& id,
                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve configuration at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve configuration at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_configuration>
 curve_configuration_service::get_configuration(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve configuration. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -495,11 +493,11 @@ curve_configuration_service::get_configurations(const std::vector<std::string>& 
 void curve_configuration_service::save_configuration(const domain::curve_configuration& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Configuration id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve configuration. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve configuration. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve configuration. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve configuration. " << "id: " << v.id;
 }
 
 void curve_configuration_service::save_configurations(
@@ -508,7 +506,7 @@ void curve_configuration_service::save_configurations(
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Configuration id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << configurations.size() << " curve configurations";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << configurations.size() << " curve configurations";
     auto ts = configurations;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -517,9 +515,9 @@ void curve_configuration_service::save_configurations(
 }
 
 void curve_configuration_service::delete_configuration(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve configuration. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve configuration. " << "id: " << id;
 }
 
 void curve_configuration_service::delete_configurations(const std::vector<std::string>& ids) {
@@ -528,7 +526,7 @@ void curve_configuration_service::delete_configurations(const std::vector<std::s
 
 std::vector<domain::curve_configuration>
 curve_configuration_service::get_configuration_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve configuration. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

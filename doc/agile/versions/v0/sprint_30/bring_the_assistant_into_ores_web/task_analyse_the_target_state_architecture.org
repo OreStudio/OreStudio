@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: E3102699-58F9-4EF2-94BE-BCDBC1FA14BE
+:END:
+#+title: Task: Analyse the assistant's target-state architecture
+#+description: Design the assistant's target architecture before any code moves: where the chat, the agent loop and the tool catalogue run, whether the model needs an ORE service or plain llama.cpp, how the assistant acts for a user and is told apart from the user, and what happens to the ores.agent prototype.
+#+type: task
+#+level: s1
+#+filetags: :bring_the_assistant_into_ores_web:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A design the product owner approves, which settles each question below
+with the options considered, a recommendation and its reason, and which
+ends in the ordered list of tasks that build it. No production code
+changes in this task.
+
+* Questions to settle
+
+1. *The chat in ores.web.* Which part of ores.web hosts it, and how a
+   reply streams to the browser through ores.http. Does ores.http stream
+   today (server-sent events or WebSocket), or must it learn to?
+2. *Where the agent loop runs.* A new C++ service on NATS (for example
+   =ores.assistant.service=), a module of ores.http, or a Node service.
+   The loop turns a message into model calls and tool calls. Weigh fit
+   with the other services, the codegen, and the prototype code that can
+   be kept.
+3. *The tool catalogue.* How the model sees every operation a user can
+   call, derived from the codegen models and the generated wire protocol
+   rather than written by hand. How a catalogue of hundreds of operations
+   fits a small model's context: search, grouping by component, or a
+   two-step pick. How results are cut down before they reach the model.
+4. *User and machine operations.* How a call is marked as made by the
+   assistant for a person. Candidates: an actor claim in the token beside
+   the subject, as in RFC 8693 token exchange; a separate principal per
+   assistant session; or a field on each request. Where the mark is
+   recorded: the audit trail, the =modified_by= columns, the history
+   screens and the event stream. How it relates to [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]] and [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]].
+   Whether some operations should refuse a machine caller outright.
+5. *Confirmation of changes.* How an operation that writes is shown to
+   the person and confirmed before it runs, and how ORE knows from the
+   protocol which operations write.
+6. *The inference server.* Whether the model needs an ORE service at
+   all. Compare at least:
+   - plain llama.cpp: its own =llama-server= with its OpenAI-compatible
+     HTTP API, run beside ORE as a third-party process, as NATS and
+     PostgreSQL are;
+   - a thin ORE service in front of =llama-server=, which adds NATS
+     subjects, ORE logging, telemetry and authentication;
+   - an ORE service that builds the llama.cpp library in.
+   For each, state how the agent loop reaches the model, how
+   =compass services= and the deployment start it, how health and load
+   are seen, how the model files are fetched and pinned (the prototype's
+   =inference-lock.json=), CPU and GPU, concurrency and queueing, whether
+   one model serves every tenant, and what each costs to build and keep.
+   Prefer the plain server unless an ORE service earns its place.
+
+   Settle how it scales before choosing, because the answer may decide
+   the choice:
+   - Does each user get a server, or do all users share a pool?
+     =llama-server= can serve several requests at once through parallel
+     slots with continuous batching, but each slot holds its own context
+     in memory. Measure what one server holds, and how the per-slot
+     context length trades against the number of slots.
+   - How many people can one server serve on a given CPU or GPU, at an
+     acceptable time to first token and tokens per second? Measure it
+     with a realistic conversation load, not one request.
+   - How a large setup grows: more replicas of the server behind a
+     router or queue, and how a request finds a free slot. What happens
+     when every slot is busy: queue, refuse, or tell the person to wait.
+   - Fairness between users and tenants: quotas, rate limits, and one
+     heavy user starving the rest.
+   - Whether a conversation must stay on one server to reuse its cached
+     context, or whether any replica can take any turn.
+   - Start-up time and memory of loading a model, and whether replicas
+     can start on demand or must run all the time.
+   - Whether every tenant shares one model, or a tenant can bring its
+     own.
+7. *Tenancy and data.* Which data the model may see, how a conversation
+   is stored and for how long, and whether conversations are tenant
+   records.
+8. *The prototype.* What to keep from =projects/ores.agent=: the
+   evaluations and their datasets, the prompts, the Wasmtime Python
+   sandbox, the decimal handling. What to retire, and when.
+9. *Evaluation and gates.* How the assistant is evaluated in CI with a
+   real model, and how the new code joins =compass check=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- An analysis page beside this task answers each question above with
+  the options, a recommendation and the evidence, with a diagram of the
+  target state.
+- The page lists the tasks that build the design, in order, each with
+  its acceptance.
+- The product owner has reviewed the design, and the story's
+  =* Decisions= records what was decided.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

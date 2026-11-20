@@ -19,7 +19,6 @@
  */
 #include "ores.refdata.core/messaging/configuration_document_handler.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
@@ -28,7 +27,6 @@
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/authorise.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -82,7 +80,7 @@ void configuration_document_handler::save_curve_configuration_document(ores::nat
               save_curve_configuration_document_response{
                   .success = true, .id = boost::uuids::to_string(req->document.config.id)});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, save_curve_configuration_document_response{.message = e.what()});
     }
 }
@@ -111,7 +109,7 @@ void configuration_document_handler::get_curve_configuration_document(ores::nats
               msg,
               get_curve_configuration_document_response{.success = true, .document = svc.get(*id)});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, get_curve_configuration_document_response{.message = e.what()});
     }
 }
@@ -132,7 +130,7 @@ void configuration_document_handler::delete_curve_configuration_document(ores::n
             svc.remove(*id);
         reply(nats_, msg, delete_curve_configuration_document_response{.success = true});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, delete_curve_configuration_document_response{.message = e.what()});
     }
 }

@@ -24,13 +24,11 @@
  */
 #include "ores.marketdata.core/repository/market_input_value_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_input_value.hpp"
 #include "ores.marketdata.api/domain/market_input_value_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.core/repository/market_input_value_entity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -44,7 +42,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::market_input_value market_input_value_mapper::map(const market_input_value_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::market_input_value r;
     r.tenant_id = v.tenant_id;
@@ -61,12 +59,12 @@ domain::market_input_value market_input_value_mapper::map(const market_input_val
     r.value = v.value;
     r.payment_date = v.payment_date;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 market_input_value_entity market_input_value_mapper::map(const domain::market_input_value& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     market_input_value_entity r;
     r.id = v.id;
@@ -83,7 +81,7 @@ market_input_value_entity market_input_value_mapper::map(const domain::market_in
     r.value = v.value;
     r.payment_date = v.payment_date;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

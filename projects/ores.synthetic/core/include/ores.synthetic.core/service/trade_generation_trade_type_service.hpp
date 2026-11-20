@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_SERVICE_TRADE_GENERATION_TRADE_TYPE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/trade_generation_trade_type.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_trade_type_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

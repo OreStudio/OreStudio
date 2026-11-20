@@ -45,7 +45,7 @@
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/service_session_service.hpp"
 #include "ores.iam.core/service/signup_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/concurrency/atomic_shared_ptr.hpp"
@@ -168,7 +168,7 @@ inline std::string auth_lookup_tenant_name(const ores::database::context& ctx,
             return tenants.front().name;
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to look up tenant name: " << e.what();
+        ORES_LOG_SEV(auth_handler_lg(), warn) << "Failed to look up tenant name: " << e.what();
     }
     return {};
 }
@@ -181,7 +181,7 @@ auth_lookup_tenant_by_hostname(const ores::database::context& ctx, const std::st
             return tenants.front();
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), warn)
+        ORES_LOG_SEV(auth_handler_lg(), warn)
             << "Failed to look up tenant by hostname: " << e.what();
     }
     return std::nullopt;
@@ -199,7 +199,7 @@ inline bool auth_is_tenant_bootstrap_mode(const ores::database::context& ctx,
         return sfs.is_bootstrap_mode_enabled();
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), warn)
+        ORES_LOG_SEV(auth_handler_lg(), warn)
             << "Failed to check tenant bootstrap mode: " << e.what();
     }
     return false;
@@ -224,7 +224,7 @@ inline bool auth_is_tenant_bootstrapping(const ores::database::context& ctx,
             return tenants.front().status == "bootstrapping";
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to read tenant status: " << e.what();
+        ORES_LOG_SEV(auth_handler_lg(), warn) << "Failed to read tenant status: " << e.what();
     }
     return false;
 }
@@ -246,7 +246,7 @@ inline bool auth_is_party_onboarding_complete(const ores::database::context& ctx
         return sfs.is_onboarding_party_complete();
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), warn)
+        ORES_LOG_SEV(auth_handler_lg(), warn)
             << "Failed to check party onboarding completion: " << e.what();
     }
     return false;
@@ -313,7 +313,7 @@ auth_registration_refusal(const ores::database::context& ctx) {
                                          flags.is_signup_requires_authorization_enabled());
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), error)
+        ORES_LOG_SEV(auth_handler_lg(), error)
             << "Failed to read the registration flags, closing the door: " << e.what();
         return std::make_pair(
             std::string("signup_disabled"),
@@ -442,7 +442,7 @@ public:
                 std::make_shared<const domain::token_settings>(domain::token_settings::load(svc)));
         } catch (const std::exception& e) {
             using namespace ores::logging;
-            BOOST_LOG_SEV(auth_handler_lg(), warn)
+            ORES_LOG_SEV(auth_handler_lg(), warn)
                 << "Failed to load token settings, using defaults: " << e.what();
         }
     }
@@ -451,7 +451,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
         auto req = decode<signup_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
 
@@ -462,7 +462,7 @@ public:
          * branches on.
          */
         if (const auto refusal = auth_registration_refusal(ctx_)) {
-            BOOST_LOG_SEV(auth_handler_lg(), warn)
+            ORES_LOG_SEV(auth_handler_lg(), warn)
                 << "Signup refused for " << req->principal << ": " << refusal->first;
             record_auth_event(ctx_, "signup_failure", [&](auto& ev_repo) {
                 ev_repo.record_signup_failure(
@@ -484,7 +484,7 @@ public:
          */
         const auto tenant_ctx = auth_registration_context(ctx_, req->hostname);
         if (!tenant_ctx) {
-            BOOST_LOG_SEV(auth_handler_lg(), warn)
+            ORES_LOG_SEV(auth_handler_lg(), warn)
                 << "Signup refused for " << req->principal << ": no_registration_destination";
             record_auth_event(ctx_, "signup_failure", [&](auto& ev_repo) {
                 ev_repo.record_signup_failure(
@@ -523,7 +523,7 @@ public:
 
             if (!result.success) {
                 const auto code = ores::utility::serialization::to_string(result.error_code);
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                ORES_LOG_SEV(auth_handler_lg(), warn)
                     << "Signup refused for " << req->principal << ": " << code;
                 record_auth_event(*tenant_ctx, "signup_failure", [&](auto& ev_repo) {
                     ev_repo.record_signup_failure(std::chrono::system_clock::now(),
@@ -538,7 +538,7 @@ public:
                 return;
             }
 
-            BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
             record_auth_event(*tenant_ctx, "signup_success", [&](auto& ev_repo) {
                 ev_repo.record_signup_success(std::chrono::system_clock::now(),
                                               tenant_ctx->tenant_id().to_string(),
@@ -554,7 +554,7 @@ public:
                       .party_id = result.party_id ? boost::uuids::to_string(*result.party_id) : "",
                       .role_id = result.role_id ? boost::uuids::to_string(*result.role_id) : ""});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
             record_auth_event(*tenant_ctx, "signup_failure", [&](auto& ev_repo) {
                 ev_repo.record_signup_failure(std::chrono::system_clock::now(),
                                               tenant_ctx->tenant_id().to_string(),
@@ -595,7 +595,7 @@ public:
             resp.signups_enabled = flags.is_user_signups_enabled();
             resp.authorization_required = flags.is_signup_requires_authorization_enabled();
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error)
+            ORES_LOG_SEV(auth_handler_lg(), error)
                 << "Failed to read the registration flags, closing the door: " << e.what();
             resp.message = "The deployment could not say whether it accepts registrations, so it "
                            "does not.";
@@ -658,7 +658,7 @@ public:
 
         resp.usable_now = !resp.party_id.empty();
         resp.success = true;
-        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
@@ -666,7 +666,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
         auto req = decode<login_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         /*
@@ -729,7 +729,7 @@ public:
              * administrator already working on it.
              */
             if (acct.account_status == "pending") {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                ORES_LOG_SEV(auth_handler_lg(), warn)
                     << "Login rejected for " << username << ": account is pending";
                 throw service::login_error(
                     ores::utility::serialization::error_code::account_pending,
@@ -737,7 +737,7 @@ public:
             }
 
             if (account_parties.empty()) {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                ORES_LOG_SEV(auth_handler_lg(), warn)
                     << "Login rejected for " << username << ": account has no party assignment";
                 throw service::login_error(
                     ores::utility::serialization::error_code::no_party_assignment,
@@ -769,7 +769,7 @@ public:
                     sess.country_code = located->country_code;
                 }
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                ORES_LOG_SEV(auth_handler_lg(), warn)
                     << "Failed to resolve the session's country: " << e.what();
             }
             // party_id set below once we know which party is active
@@ -777,7 +777,7 @@ public:
                 repository::session_repository sess_repo;
                 sess_repo.write(login_ctx, sess);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                ORES_LOG_SEV(auth_handler_lg(), warn)
                     << "Failed to create session record: " << e.what();
             }
             const auto session_id_str = boost::uuids::to_string(sess.id);
@@ -857,17 +857,17 @@ public:
                     login_ctx, acct.tenant_id.to_string(), boost::uuids::to_string(party_id));
                 resp.party_setup_required = !onboarding_complete;
                 if (resp.party_setup_required) {
-                    BOOST_LOG_SEV(auth_handler_lg(), info)
+                    ORES_LOG_SEV(auth_handler_lg(), info)
                         << "login: party_setup_required=true for party "
                         << boost::uuids::to_string(party_id);
                 } else if (selected && selected->status == "Inactive") {
                     resp.party_setup_warning =
                         "Party setup completed, but the party is still marked Inactive.";
-                    BOOST_LOG_SEV(auth_handler_lg(), warn)
+                    ORES_LOG_SEV(auth_handler_lg(), warn)
                         << "login: onboarding.party complete but party "
                         << boost::uuids::to_string(party_id) << " still Inactive";
                 }
-                BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
+                ORES_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
                 record_auth_event(login_ctx, "login_success", [&](auto& ev_repo) {
                     ev_repo.record_login_success(now,
                                                  acct.tenant_id.to_string(),
@@ -924,12 +924,12 @@ public:
                     if (is_available)
                         resp.default_party_id = boost::uuids::to_string(default_id);
                 }
-                BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
+                ORES_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
                 // Multi-party: login_success recorded after party selection
                 reply(nats_, msg, resp);
             }
         } catch (const service::login_error& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), warn)
+            ORES_LOG_SEV(auth_handler_lg(), warn)
                 << "Login refused for " << req->principal << ": "
                 << ores::utility::serialization::to_string(e.code);
             record_auth_event(login_ctx, "login_failure", [&](auto& ev_repo) {
@@ -955,7 +955,7 @@ public:
             resp.database = db_info;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
             record_auth_event(login_ctx, "login_failure", [&](auto& ev_repo) {
                 ev_repo.record_login_failure(std::chrono::system_clock::now(),
                                              login_ctx.tenant_id().to_string(),
@@ -1011,9 +1011,9 @@ public:
             const auto json =
                 std::string("{\"public_key\":") + ores::utility::codec::json::write(pub_key) + "}";
             nats_.publish(msg.reply_subject, ores::nats::as_bytes(json));
-            BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
         }
     }
 
@@ -1031,7 +1031,7 @@ public:
                         service::account_operations_service svc(ctx_);
                         svc.logout(account_id);
                     } catch (const std::exception& e) {
-                        BOOST_LOG_SEV(auth_handler_lg(), warn)
+                        ORES_LOG_SEV(auth_handler_lg(), warn)
                             << "Failed to update logout state: " << e.what();
                     }
                     // Persist session end time using the IDs embedded in
@@ -1051,7 +1051,7 @@ public:
                                                   ended ? ended->bytes_sent : 0,
                                                   ended ? ended->bytes_received : 0);
                         } catch (const std::exception& e) {
-                            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                            ORES_LOG_SEV(auth_handler_lg(), warn)
                                 << "Failed to end session record: " << e.what();
                         }
                     }
@@ -1070,10 +1070,10 @@ public:
                     });
                 }
             }
-            BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, logout_response{.success = true, .message = "Logged out"});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, logout_response{.success = false, .message = e.what()});
         }
     }
@@ -1102,7 +1102,7 @@ public:
                 return;
             }
             if (const auto closed = auth_tenant_refusal(ctx_, *claims_result)) {
-                BOOST_LOG_SEV(auth_handler_lg(), info)
+                ORES_LOG_SEV(auth_handler_lg(), info)
                     << "Refresh refused for subject " << claims_result->subject << ": " << *closed;
                 reply(nats_, msg, refresh_response{.success = false, .message = *closed});
                 return;
@@ -1115,7 +1115,7 @@ public:
                 const auto session_age = now - *claims_result->session_start_time;
                 const auto max_session = std::chrono::seconds(token_settings()->max_session_s);
                 if (session_age >= max_session) {
-                    BOOST_LOG_SEV(auth_handler_lg(), info)
+                    ORES_LOG_SEV(auth_handler_lg(), info)
                         << "Max session exceeded for subject: " << claims_result->subject;
                     record_auth_event(ctx_, "max_session_exceeded", [&](auto& ev_repo) {
                         ev_repo.record_max_session_exceeded(now,
@@ -1155,7 +1155,7 @@ public:
                 return;
             }
 
-            BOOST_LOG_SEV(auth_handler_lg(), debug)
+            ORES_LOG_SEV(auth_handler_lg(), debug)
                 << "Completed " << msg.subject << " for subject: " << claims_result->subject;
             record_auth_event(ctx_, "token_refresh", [&](auto& ev_repo) {
                 ev_repo.record_token_refresh(now,
@@ -1171,7 +1171,7 @@ public:
                                    .access_lifetime_s = token_settings()->access_lifetime_s});
 
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, refresh_response{.success = false, .message = e.what()});
         }
     }
@@ -1180,7 +1180,7 @@ public:
         [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
         auto req = decode<service_login_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             reply(nats_,
                   msg,
                   service_login_response{.success = false, .message = "Failed to decode request"});
@@ -1191,7 +1191,7 @@ public:
             const auto account_id =
                 account_svc.verify_service_credentials(req->username, req->password);
             if (!account_id) {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                ORES_LOG_SEV(auth_handler_lg(), warn)
                     << "Service login failed: invalid credentials for " << req->username;
                 reply(nats_,
                       msg,
@@ -1202,7 +1202,7 @@ public:
             service::service_session_service sess_svc(ctx_);
             auto sess = sess_svc.start_service_session(req->username, "ores.service.binary");
             if (!sess) {
-                BOOST_LOG_SEV(auth_handler_lg(), error)
+                ORES_LOG_SEV(auth_handler_lg(), error)
                     << "Failed to start service session for " << req->username;
                 reply(nats_,
                       msg,
@@ -1227,7 +1227,7 @@ public:
                 service::authorization_service auth_svc(ctx_);
                 claims.roles = auth_svc.get_effective_permissions(sess->account_id);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                ORES_LOG_SEV(auth_handler_lg(), warn)
                     << "Failed to load permissions for service account " << req->username << ": "
                     << e.what();
             }
@@ -1240,7 +1240,7 @@ public:
                 return;
             }
 
-            BOOST_LOG_SEV(auth_handler_lg(), info)
+            ORES_LOG_SEV(auth_handler_lg(), info)
                 << "Service login successful for " << req->username;
             reply(nats_,
                   msg,
@@ -1248,7 +1248,7 @@ public:
                                          .token = std::move(token),
                                          .access_lifetime_s = token_settings()->access_lifetime_s});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, service_login_response{.success = false, .message = e.what()});
         }
     }
@@ -1266,7 +1266,7 @@ private:
             fn(ev_repo);
         } catch (const std::exception& ev_err) {
             using namespace ores::logging;
-            BOOST_LOG_SEV(auth_handler_lg(), warn)
+            ORES_LOG_SEV(auth_handler_lg(), warn)
                 << "Failed to record " << event_name << " event: " << ev_err.what();
         }
     }

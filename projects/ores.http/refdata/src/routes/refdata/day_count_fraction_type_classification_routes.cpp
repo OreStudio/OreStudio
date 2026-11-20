@@ -68,7 +68,7 @@ day_count_fraction_type_classification_rows(const http_request& req, nats_client
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
     if (reply.total > reply.types.size())
-        BOOST_LOG_SEV(day_count_fraction_type_classification_routes_lg(), warn)
+        ORES_LOG_SEV(day_count_fraction_type_classification_routes_lg(), warn)
             << "The day-count-fraction-type list holds " << reply.total << " rows; one page read "
             << reply.types.size();
     return std::move(reply.types);
@@ -108,9 +108,9 @@ day_count_fraction_type_classification_routes::handle_list(const http_request& r
         try {
             labels = classification_routes::labels_of(req, session, "day_count_fraction_type");
         } catch (const rr::refusal& refusal) {
-            BOOST_LOG_SEV(lg(), warn) << "Labels could not be read: " << refusal.message;
+            ORES_LOG_SEV(lg(), warn) << "Labels could not be read: " << refusal.message;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Labels could not be read: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Labels could not be read: " << e.what();
         }
         cr::sort_rows(rows);
         std::string out = "{\"rows\":[";
@@ -123,7 +123,7 @@ day_count_fraction_type_classification_routes::handle_list(const http_request& r
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -151,7 +151,7 @@ day_count_fraction_type_classification_routes::handle_create(const http_request&
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -181,7 +181,7 @@ day_count_fraction_type_classification_routes::handle_update(const http_request&
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -219,7 +219,7 @@ day_count_fraction_type_classification_routes::handle_order(const http_request& 
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -245,7 +245,7 @@ day_count_fraction_type_classification_routes::handle_delete(const http_request&
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -275,7 +275,7 @@ day_count_fraction_type_classification_routes::handle_label(const http_request& 
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -285,7 +285,7 @@ void day_count_fraction_type_classification_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering the day-count-fraction-type classification routes";
+    ORES_LOG_SEV(lg(), info) << "Registering the day-count-fraction-type classification routes";
 
     auto list_route =
         router->get("/api/classifications/day-count-fraction-type")

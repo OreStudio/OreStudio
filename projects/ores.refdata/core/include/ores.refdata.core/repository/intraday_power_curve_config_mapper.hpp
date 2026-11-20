@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_INTRADAY_POWER_CURVE_CONFIG_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_INTRADAY_POWER_CURVE_CONFIG_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/intraday_power_curve_config_entity.hpp"

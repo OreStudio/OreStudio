@@ -27,8 +27,6 @@
 #include "ores.dq.api/domain/treatment_dimension.hpp"
 #include "ores.dq.api/domain/treatment_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/treatment_dimension_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::dq::repository {
@@ -37,7 +35,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::treatment_dimension treatment_dimension_mapper::map(const treatment_dimension_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::treatment_dimension r;
     r.version = v.version;
@@ -51,12 +49,12 @@ domain::treatment_dimension treatment_dimension_mapper::map(const treatment_dime
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 treatment_dimension_entity treatment_dimension_mapper::map(const domain::treatment_dimension& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     treatment_dimension_entity r;
     r.code = v.code;
@@ -69,7 +67,7 @@ treatment_dimension_entity treatment_dimension_mapper::map(const domain::treatme
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

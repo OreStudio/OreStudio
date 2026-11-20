@@ -19,7 +19,7 @@
  */
 #include "ores.http/routes/refdata/curve_document_cells.hpp"
 #include "ores.http/routes/refdata/curve_document_edit.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -76,7 +76,7 @@ refdata_messaging::curve_configuration_document two_curves() {
 
 TEST_CASE("a_curve_change_writes_one_column_of_the_row_it_names", "[curve_document_edit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the write of one leaf of one curve entry";
+    ORES_LOG_SEV(lg, info) << "Testing the write of one leaf of one curve entry";
 
     auto document = two_curves();
     CHECK(write_column(document,
@@ -110,7 +110,7 @@ TEST_CASE("a_curve_change_writes_one_column_of_the_row_it_names", "[curve_docume
 
 TEST_CASE("a_curve_change_unsets_a_column_it_states_as_nothing", "[curve_document_edit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the unset of one curve leaf";
+    ORES_LOG_SEV(lg, info) << "Testing the unset of one curve leaf";
 
     auto document = two_curves();
     CHECK(write_column(document,
@@ -126,7 +126,7 @@ TEST_CASE("a_curve_change_unsets_a_column_it_states_as_nothing", "[curve_documen
 
 TEST_CASE("a_curve_change_answers_the_rows_it_cannot_write", "[curve_document_edit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the rows and columns a change cannot write";
+    ORES_LOG_SEV(lg, info) << "Testing the rows and columns a change cannot write";
 
     auto document = two_curves();
     CHECK_FALSE(write_column(document,
@@ -158,7 +158,7 @@ TEST_CASE("a_curve_change_answers_the_rows_it_cannot_write", "[curve_document_ed
 
 TEST_CASE("a_curve_save_copies_only_the_tables_it_touched", "[curve_document_edit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the tables a curve save writes back";
+    ORES_LOG_SEV(lg, info) << "Testing the tables a curve save writes back";
 
     const auto document = two_curves();
     refdata_messaging::curve_configuration_document saved;

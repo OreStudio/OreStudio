@@ -20,7 +20,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -476,7 +476,7 @@ TEST_CASE("workflow_engine starts nothing for a type it does not know", "[engine
         as_delivery(start_for("test_known_workflow", f.tenant(), accepted_id)));
     CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
     CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
-    BOOST_LOG_SEV(lg, debug) << "Unregistered type created nothing.";
+    ORES_LOG_SEV(lg, debug) << "Unregistered type created nothing.";
 }
 
 TEST_CASE("workflow_engine refuses a chain that reads a step it does not contain",
@@ -517,7 +517,7 @@ TEST_CASE("workflow_engine refuses a chain that reads a step it does not contain
         as_delivery(start_for("test_well_formed_workflow", f.tenant(), accepted_id)));
     CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
     CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
-    BOOST_LOG_SEV(lg, debug) << "A chain that cannot deliver its inputs created nothing.";
+    ORES_LOG_SEV(lg, debug) << "A chain that cannot deliver its inputs created nothing.";
 }
 
 TEST_CASE("workflow_engine starts nothing for a definition with no steps",
@@ -546,7 +546,7 @@ TEST_CASE("workflow_engine starts nothing for a definition with no steps",
         as_delivery(start_for("test_one_step_workflow", f.tenant(), accepted_id)));
     CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
     CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
-    BOOST_LOG_SEV(lg, debug) << "Empty definition created nothing.";
+    ORES_LOG_SEV(lg, debug) << "Empty definition created nothing.";
 }
 
 TEST_CASE("workflow_engine stores the target a start names", "[engine][integration]") {
@@ -578,7 +578,7 @@ TEST_CASE("workflow_engine stores the target a start names", "[engine][integrati
     REQUIRE(untargeted.size() == 1);
     CHECK(untargeted.front().target_kind.empty());
     CHECK(untargeted.front().target_id == boost::uuids::uuid{});
-    BOOST_LOG_SEV(lg, debug) << "Target stored as named.";
+    ORES_LOG_SEV(lg, debug) << "Target stored as named.";
 }
 
 TEST_CASE("workflow_engine refuses a start that names half a target", "[engine][integration]") {
@@ -621,7 +621,7 @@ TEST_CASE("workflow_engine refuses a start that names half a target", "[engine][
     whole.target_id = boost::uuids::to_string(boost::uuids::random_generator()());
     f.engine->on_start_workflow(as_delivery(whole));
     CHECK(instances.read_latest(f.h.context(), whole.instance_id).size() == 1);
-    BOOST_LOG_SEV(lg, debug) << "Half targets refused.";
+    ORES_LOG_SEV(lg, debug) << "Half targets refused.";
 }
 
 TEST_CASE("workflow_engine advances once when a step completes twice", "[engine][integration]") {
@@ -661,7 +661,7 @@ TEST_CASE("workflow_engine advances once when a step completes twice", "[engine]
     rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     CHECK(rows.size() == 2);
     CHECK(wait_for_instance(commands, instance_id, 3, std::chrono::milliseconds(300)).size() == 2);
-    BOOST_LOG_SEV(lg, debug) << "Duplicate completion advanced nothing.";
+    ORES_LOG_SEV(lg, debug) << "Duplicate completion advanced nothing.";
 }
 
 TEST_CASE("workflow_engine recovery re-dispatches the step that was in progress",
@@ -697,7 +697,7 @@ TEST_CASE("workflow_engine recovery re-dispatches the step that was in progress"
     workflow_step_repository steps;
     const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     CHECK(rows.size() == 1);
-    BOOST_LOG_SEV(lg, debug) << "Recovery re-dispatched step " << step_id;
+    ORES_LOG_SEV(lg, debug) << "Recovery re-dispatched step " << step_id;
 }
 
 TEST_CASE("a definition that declares stop keeps its completed steps on a failure",
@@ -749,7 +749,7 @@ TEST_CASE("a definition that declares stop keeps its completed steps on a failur
     // A stop is not a rollback: nothing else was dispatched, which is what
     // tells this policy from the default.
     CHECK(wait_for_instance(commands, instance_id, 3, std::chrono::milliseconds(300)).size() == 2);
-    BOOST_LOG_SEV(lg, debug) << "Stop policy left the run on its failed step.";
+    ORES_LOG_SEV(lg, debug) << "Stop policy left the run on its failed step.";
 }
 
 TEST_CASE("a retry re-dispatches the failed step under its own identity", "[engine][integration]") {
@@ -836,7 +836,7 @@ TEST_CASE("a retry re-dispatches the failed step under its own identity", "[engi
     }
     CHECK(f.engine->expire_overdue_steps() == 1);
 
-    BOOST_LOG_SEV(lg, debug) << "Retry re-dispatched step " << failed_step_id;
+    ORES_LOG_SEV(lg, debug) << "Retry re-dispatched step " << failed_step_id;
 }
 
 TEST_CASE("a retry refuses a run that has not stopped", "[engine][integration]") {
@@ -862,7 +862,7 @@ TEST_CASE("a retry refuses a run that has not stopped", "[engine][integration]")
         f.engine->retry_instance(boost::uuids::random_generator{}(), "", f.h.context().tenant_id());
     CHECK_FALSE(unknown.resumed);
     CHECK(unknown.reason == "Workflow instance not found.");
-    BOOST_LOG_SEV(lg, debug) << "Retry refused runs that had not stopped.";
+    ORES_LOG_SEV(lg, debug) << "Retry refused runs that had not stopped.";
 }
 
 TEST_CASE("a retry refuses a step the run does not hold", "[engine][integration]") {
@@ -888,7 +888,7 @@ TEST_CASE("a retry refuses a step the run does not hold", "[engine][integration]
         boost::uuids::string_generator{}(instance_id), "three", f.h.context().tenant_id());
     CHECK_FALSE(refused.resumed);
     CHECK(refused.reason.find("'three'") != std::string::npos);
-    BOOST_LOG_SEV(lg, debug) << "Retry refused a step the run does not hold.";
+    ORES_LOG_SEV(lg, debug) << "Retry refused a step the run does not hold.";
 }
 
 TEST_CASE("a retry refuses a stopped run that has no failed step", "[engine][integration]") {
@@ -927,7 +927,7 @@ TEST_CASE("a retry refuses a stopped run that has no failed step", "[engine][int
         boost::uuids::string_generator{}(instance_id), "", f.h.context().tenant_id());
     CHECK_FALSE(refused.resumed);
     CHECK(refused.reason == "The run holds no failed step to resume from.");
-    BOOST_LOG_SEV(lg, debug) << "Retry refused a stopped run with no failed step.";
+    ORES_LOG_SEV(lg, debug) << "Retry refused a stopped run with no failed step.";
 }
 
 TEST_CASE("a retry is confined to the caller's own tenant", "[engine][integration]") {
@@ -969,7 +969,7 @@ TEST_CASE("a retry is confined to the caller's own tenant", "[engine][integratio
         boost::uuids::string_generator{}(instance_id), "", f.h.context().tenant_id());
     CHECK(accepted.resumed);
     CHECK(accepted.step_index == 0);
-    BOOST_LOG_SEV(lg, debug) << "Retry confined to the caller's tenant.";
+    ORES_LOG_SEV(lg, debug) << "Retry confined to the caller's tenant.";
 }
 
 TEST_CASE("the workflow service user starts and advances a three step apply run",
@@ -1010,7 +1010,7 @@ TEST_CASE("the workflow service user starts and advances a three step apply run"
     const auto instance = instances.read_latest(service_ctx, instance_id);
     REQUIRE(instance.size() == 1);
     CHECK(instance.front().state_id == f.instance_states.require("completed"));
-    BOOST_LOG_SEV(lg, debug) << "The workflow service user ran a run to the end.";
+    ORES_LOG_SEV(lg, debug) << "The workflow service user ran a run to the end.";
 }
 
 TEST_CASE("the workflow service user stops a run on a failure and resumes it",
@@ -1044,7 +1044,7 @@ TEST_CASE("the workflow service user stops a run on a failure and resumes it",
         boost::uuids::string_generator{}(instance_id), "", f.service_context().tenant_id());
     CHECK(resumed.resumed);
     CHECK(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
-    BOOST_LOG_SEV(lg, debug) << "The workflow service user stopped and resumed a run.";
+    ORES_LOG_SEV(lg, debug) << "The workflow service user stopped and resumed a run.";
 }
 
 TEST_CASE("a start that names a run the engine holds changes nothing", "[engine][integration]") {
@@ -1066,7 +1066,7 @@ TEST_CASE("a start that names a run the engine holds changes nothing", "[engine]
 
     workflow_step_repository steps;
     CHECK(steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100).size() == 1);
-    BOOST_LOG_SEV(lg, debug) << "A repeated start dispatched nothing and stored nothing.";
+    ORES_LOG_SEV(lg, debug) << "A repeated start dispatched nothing and stored nothing.";
 }
 
 TEST_CASE("a retry from the system tenant reaches a run of any tenant", "[engine][integration]") {
@@ -1095,7 +1095,7 @@ TEST_CASE("a retry from the system tenant reaches a run of any tenant", "[engine
         boost::uuids::string_generator{}(instance_id), "", f.service_context().tenant_id());
     CHECK(resumed.resumed);
     CHECK(resumed.step_index == 0);
-    BOOST_LOG_SEV(lg, debug) << "A system tenant caller resumed another tenant's run.";
+    ORES_LOG_SEV(lg, debug) << "A system tenant caller resumed another tenant's run.";
 }
 
 TEST_CASE("a definition that declares compensate still rolls its work back",
@@ -1140,7 +1140,7 @@ TEST_CASE("a definition that declares compensate still rolls its work back",
         if (s.step_index < 0)
             compensation_command = s.command_json;
     CHECK(compensation_command == R"({"failure":"two broke"})");
-    BOOST_LOG_SEV(lg, debug) << "Default policy still compensates.";
+    ORES_LOG_SEV(lg, debug) << "Default policy still compensates.";
 }
 
 TEST_CASE("a rollback settles the forward steps it abandoned", "[engine][integration]") {
@@ -1205,7 +1205,7 @@ TEST_CASE("a rollback settles the forward steps it abandoned", "[engine][integra
     CHECK(state_at(2) == f.step_states.require("failed"));
     for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000))
         CHECK(s.state_id != f.step_states.require("in_progress"));
-    BOOST_LOG_SEV(lg, debug) << "A compensated run has no step left running.";
+    ORES_LOG_SEV(lg, debug) << "A compensated run has no step left running.";
 }
 
 TEST_CASE("workflow_engine drives a run that belongs to another tenant", "[engine][integration]") {
@@ -1268,7 +1268,7 @@ TEST_CASE("workflow_engine drives a run that belongs to another tenant", "[engin
 
     // Two steps, two commands: running to the end must not mean running twice.
     CHECK(wait_for_instance(commands, instance_id, 3, std::chrono::milliseconds(300)).size() == 2);
-    BOOST_LOG_SEV(lg, debug) << "Cross-tenant run completed.";
+    ORES_LOG_SEV(lg, debug) << "Cross-tenant run completed.";
 }
 
 TEST_CASE("workflow_engine recovery finds a run in another tenant", "[engine][integration]") {
@@ -1310,7 +1310,7 @@ TEST_CASE("workflow_engine recovery finds a run in another tenant", "[engine][in
     const auto rows = instances.read_latest(f.service_context(), instance_id);
     REQUIRE(rows.size() == 1);
     CHECK(rows.front().tenant_id == f.h.context().tenant_id());
-    BOOST_LOG_SEV(lg, debug) << "Recovery re-dispatched " << step_id << " in another tenant.";
+    ORES_LOG_SEV(lg, debug) << "Recovery re-dispatched " << step_id << " in another tenant.";
 }
 
 TEST_CASE("workflow_query_handler answers for the tenant a request names",
@@ -1379,7 +1379,7 @@ TEST_CASE("workflow_query_handler answers for the tenant a request names",
     const auto unnamed = ask("");
     REQUIRE(unnamed.has_value());
     CHECK_FALSE(unnamed->found);
-    BOOST_LOG_SEV(lg, debug) << "Step result confined to the requested tenant.";
+    ORES_LOG_SEV(lg, debug) << "Step result confined to the requested tenant.";
 }
 
 TEST_CASE("workflow_query_handler lists a definition that builds its steps from its request",
@@ -1451,7 +1451,7 @@ TEST_CASE("workflow_query_handler lists a definition that builds its steps from 
     const auto defective = find("test_listed_broken_workflow");
     REQUIRE(defective != answer->definitions.end());
     CHECK(defective->step_count == 0);
-    BOOST_LOG_SEV(lg, debug) << "Definitions listed: " << answer->definitions.size();
+    ORES_LOG_SEV(lg, debug) << "Definitions listed: " << answer->definitions.size();
 }
 
 TEST_CASE("workflow_query_handler filters runs by type and by target", "[engine][integration]") {
@@ -1537,7 +1537,7 @@ TEST_CASE("workflow_query_handler filters runs by type and by target", "[engine]
     CHECK(has(type_ids, a_second));
     CHECK(has(type_ids, a_none));
     CHECK_FALSE(has(type_ids, b_party));
-    BOOST_LOG_SEV(lg, debug) << "Filters checked over " << type_runs.size() << " run(s).";
+    ORES_LOG_SEV(lg, debug) << "Filters checked over " << type_runs.size() << " run(s).";
 }
 
 TEST_CASE("a listed run says when it last did anything", "[engine][integration]") {
@@ -1608,7 +1608,7 @@ TEST_CASE("a listed run says when it last did anything", "[engine][integration]"
     REQUIRE(finished.completed_at.has_value());
     REQUIRE(finished.last_event_at.has_value());
     CHECK_FALSE(finished.last_event_at->empty());
-    BOOST_LOG_SEV(lg, debug) << "A listed run carries its activity and its completion.";
+    ORES_LOG_SEV(lg, debug) << "A listed run carries its activity and its completion.";
 }
 
 TEST_CASE("workflow_handler retries a run only for a permitted caller in its tenant",
@@ -1682,7 +1682,7 @@ TEST_CASE("workflow_handler retries a run only for a permitted caller in its ten
     CHECK(resumed.success);
     CHECK(resumed.step_name == "one");
     CHECK(resumed.step_index == 0);
-    BOOST_LOG_SEV(lg, debug) << "Retry refused twice, then resumed.";
+    ORES_LOG_SEV(lg, debug) << "Retry refused twice, then resumed.";
 }
 
 TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for the service",
@@ -1736,7 +1736,7 @@ TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for
     // The count follows the list, so the wider view is not list-only.
     CHECK(instances.get_total_instance_count(f.service_context()) >
           instances.get_total_instance_count(f.h.context()));
-    BOOST_LOG_SEV(lg, debug) << "List and count follow the reading tenant.";
+    ORES_LOG_SEV(lg, debug) << "List and count follow the reading tenant.";
 }
 
 /**
@@ -1795,7 +1795,7 @@ TEST_CASE("workflow_engine stops a run whose step outlives its deadline", "[engi
     // A second pass finds nothing: the step it failed is no longer running, so
     // a pass that ran twice cannot fail the same step twice.
     CHECK(f.engine->expire_overdue_steps() == 0);
-    BOOST_LOG_SEV(lg, debug) << "An overdue step stopped its run.";
+    ORES_LOG_SEV(lg, debug) << "An overdue step stopped its run.";
 }
 
 TEST_CASE("a step that is not essential and fails ends with warnings and the run goes on",
@@ -1835,7 +1835,7 @@ TEST_CASE("a step that is not essential and fails ends with warnings and the run
     const auto instance = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(instance.size() == 1);
     CHECK(instance.front().state_id == f.instance_states.require("completed"));
-    BOOST_LOG_SEV(lg, debug) << "A failed optional step left the run going.";
+    ORES_LOG_SEV(lg, debug) << "A failed optional step left the run going.";
 }
 
 TEST_CASE("an overdue step that is not essential ends with warnings and the run goes on",
@@ -1869,7 +1869,7 @@ TEST_CASE("an overdue step that is not essential ends with warnings and the run 
     const auto instance = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(instance.size() == 1);
     CHECK(instance.front().state_id != f.instance_states.require("failed"));
-    BOOST_LOG_SEV(lg, debug) << "An overdue optional step left the run going.";
+    ORES_LOG_SEV(lg, debug) << "An overdue optional step left the run going.";
 }
 
 TEST_CASE("a step of a completed run that ended with warnings runs again as a new attempt",
@@ -1930,7 +1930,7 @@ TEST_CASE("a step of a completed run that ended with warnings runs again as a ne
     REQUIRE(instance.size() == 1);
     CHECK(instance.front().state_id == f.instance_states.require("completed"));
     CHECK(instance.front().completed_at.has_value());
-    BOOST_LOG_SEV(lg, debug) << "The warned step ran again and the run completed again.";
+    ORES_LOG_SEV(lg, debug) << "The warned step ran again and the run completed again.";
 }
 
 TEST_CASE("a completed run refuses to run again a step that did not end with warnings or is "
@@ -1983,7 +1983,7 @@ TEST_CASE("a completed run refuses to run again a step that did not end with war
     const auto unknown = f.engine->retry_instance(id, "four", tenant);
     CHECK_FALSE(unknown.resumed);
     CHECK(unknown.reason.find("no step named") != std::string::npos);
-    BOOST_LOG_SEV(lg, debug) << "A completed run refused every step it may not run again.";
+    ORES_LOG_SEV(lg, debug) << "A completed run refused every step it may not run again.";
 }
 
 TEST_CASE("workflow_engine leaves a queued step alone", "[engine][integration]") {
@@ -2150,7 +2150,7 @@ TEST_CASE("workflow_engine keeps a failure when the step answers later", "[engin
     REQUIRE(retried.size() == 1);
     CHECK(retried.front().state_id == f.step_states.require("in_progress"));
     CHECK(retried.front().error.empty());
-    BOOST_LOG_SEV(lg, debug) << "A late answer left the failure standing, and a retry resumed it.";
+    ORES_LOG_SEV(lg, debug) << "A late answer left the failure standing, and a retry resumed it.";
 }
 
 TEST_CASE("workflow_engine starts nothing for a definition whose step states no deadline",
@@ -2181,7 +2181,7 @@ TEST_CASE("workflow_engine starts nothing for a definition whose step states no 
         as_delivery(start_for("test_deadlined_workflow", f.tenant(), accepted_id)));
     CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
     CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
-    BOOST_LOG_SEV(lg, debug) << "A definition with no deadline started nothing.";
+    ORES_LOG_SEV(lg, debug) << "A definition with no deadline started nothing.";
 }
 
 TEST_CASE("a consumer of two producers waits for both while the producers run together",
@@ -2246,7 +2246,7 @@ TEST_CASE("a consumer of two producers waits for both while the producers run to
     REQUIRE(instance.size() == 1);
     CHECK(instance.front().state_id == f.instance_states.require("completed"));
     CHECK(wait_for_instance(commands, instance_id, 3, std::chrono::seconds(5)).size() == 3);
-    BOOST_LOG_SEV(lg, debug) << "A consumer of two producers waited for both.";
+    ORES_LOG_SEV(lg, debug) << "A consumer of two producers waited for both.";
 }
 
 TEST_CASE("a finished run carries the times it ran and was last touched", "[engine][integration]") {
@@ -2352,7 +2352,7 @@ TEST_CASE("a finished run carries the times it ran and was last touched", "[engi
     REQUIRE(after_duplicate.front().completed_at.has_value());
     CHECK(*after_duplicate.front().completed_at == completed_at);
 
-    BOOST_LOG_SEV(lg, debug) << "A finished run carried " << rows.size() << " stamped steps.";
+    ORES_LOG_SEV(lg, debug) << "A finished run carried " << rows.size() << " stamped steps.";
 }
 
 TEST_CASE("a live run's activity time moves on while it runs", "[engine][integration]") {
@@ -2395,7 +2395,7 @@ TEST_CASE("a live run's activity time moves on while it runs", "[engine][integra
     CHECK(now.front().state_id == f.instance_states.require("in_progress"));
     CHECK_FALSE(now.front().completed_at.has_value());
 
-    BOOST_LOG_SEV(lg, debug) << "Activity moved from the start to the second dispatch.";
+    ORES_LOG_SEV(lg, debug) << "Activity moved from the start to the second dispatch.";
 }
 
 TEST_CASE("a retry takes the failure's completion time off the step it resumes",
@@ -2475,5 +2475,5 @@ TEST_CASE("a retry takes the failure's completion time off the step it resumes",
     CHECK(rows.back().state_id == f.step_states.require("completed"));
     REQUIRE(rows.back().completed_at.has_value());
 
-    BOOST_LOG_SEV(lg, debug) << "The retry cleared the stopped step's completion time.";
+    ORES_LOG_SEV(lg, debug) << "The retry cleared the stopped step's completion time.";
 }

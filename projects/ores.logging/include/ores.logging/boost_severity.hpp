@@ -38,32 +38,15 @@ namespace ores::logging {
  * @note This is an implementation detail and should not be used directly
  * by client code.
  */
+namespace backend {
+
+/**
+ * @brief The severity type Boost.Log's severity feature carries.
+ *
+ * It sits in =backend= because its enumerators spell the same words as the
+ * constants a call site writes, and both cannot live in =ores::logging=.
+ */
 enum boost_severity { trace, debug, info, warn, error };
-
-/**
- * @brief Converts a string to boost_severity.
- *
- * @param s String representation (trace, debug, info, warn, error).
- * @return Corresponding boost_severity value.
- * @throws std::invalid_argument if the string is not a valid severity.
- */
-ORES_LOGGING_EXPORT boost_severity to_boost_severity(const std::string& s);
-
-/**
- * @brief Converts domain severity_level to internal boost_severity.
- *
- * @param level The domain severity level.
- * @return Corresponding boost_severity value.
- */
-ORES_LOGGING_EXPORT boost_severity to_boost_severity(severity_level level);
-
-/**
- * @brief Converts internal boost_severity to domain severity_level.
- *
- * @param sev The boost severity.
- * @return Corresponding domain severity_level value.
- */
-ORES_LOGGING_EXPORT severity_level to_domain_severity(boost_severity sev);
 
 /**
  * @brief Inserter for boost_severity enum.
@@ -95,6 +78,34 @@ inline std::basic_ostream<CharT, TraitsT>& operator<<(std::basic_ostream<CharT, 
     }
     return stream;
 }
+
+}
+
+/**
+ * @brief Converts a string to boost_severity.
+ *
+ * @param s String representation (trace, debug, info, warn, error).
+ * @return Corresponding boost_severity value.
+ * @throws std::invalid_argument if the string is not a valid severity.
+ */
+ORES_LOGGING_EXPORT backend::boost_severity to_boost_severity(const std::string& s);
+
+/**
+ * @brief Converts domain severity_level to internal boost_severity.
+ *
+ * @param level The domain severity level.
+ * @return Corresponding boost_severity value.
+ */
+ORES_LOGGING_EXPORT backend::boost_severity to_boost_severity(severity_level level);
+
+/**
+ * @brief Converts internal boost_severity to domain severity_level.
+ *
+ * @param sev The boost severity.
+ * @return Corresponding domain severity_level value.
+ */
+ORES_LOGGING_EXPORT severity_level to_domain_severity(backend::boost_severity sev);
+
 
 }
 

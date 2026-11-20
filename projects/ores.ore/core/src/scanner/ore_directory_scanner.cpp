@@ -38,13 +38,13 @@ bool ore_directory_scanner::is_excluded(const std::filesystem::path& relative_pa
 }
 
 scan_result ore_directory_scanner::scan() {
-    BOOST_LOG_SEV(lg(), debug) << "Scanning directory: " << root_;
+    ORES_LOG_SEV(lg(), debug) << "Scanning directory: " << root_;
 
     scan_result result;
     result.root = root_;
 
     if (!std::filesystem::exists(root_)) {
-        BOOST_LOG_SEV(lg(), warn) << "Directory does not exist: " << root_;
+        ORES_LOG_SEV(lg(), warn) << "Directory does not exist: " << root_;
         return result;
     }
 
@@ -71,20 +71,20 @@ scan_result ore_directory_scanner::scan() {
         // keyword inside a comment, so the root element is parsed.
         const auto kind = xml::detect_document_kind(entry.path());
         if (kind == xml::document_kind::portfolio) {
-            BOOST_LOG_SEV(lg(), debug) << "Portfolio file: " << entry.path();
+            ORES_LOG_SEV(lg(), debug) << "Portfolio file: " << entry.path();
             result.portfolio_files.push_back(entry.path());
         } else if (kind == xml::document_kind::currency_config) {
-            BOOST_LOG_SEV(lg(), debug) << "Currency file: " << entry.path();
+            ORES_LOG_SEV(lg(), debug) << "Currency file: " << entry.path();
             result.currency_files.push_back(entry.path());
         } else {
             result.ignored_files.push_back(entry.path());
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Scan complete: " << result.currency_files.size()
-                              << " currency files, " << result.portfolio_files.size()
-                              << " portfolio files, " << result.ignored_files.size()
-                              << " ignored files";
+    ORES_LOG_SEV(lg(), info) << "Scan complete: " << result.currency_files.size()
+                             << " currency files, " << result.portfolio_files.size()
+                             << " portfolio files, " << result.ignored_files.size()
+                             << " ignored files";
     return result;
 }
 

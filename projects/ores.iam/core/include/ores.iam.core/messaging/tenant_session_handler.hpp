@@ -25,7 +25,7 @@
 #include "ores.iam.api/messaging/tenant_session_protocol.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/tenant_session_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -90,7 +90,7 @@ public:
             reply(nats_, msg, service().enter(*caller, *req));
         } catch (const std::exception& e) {
             using namespace ores::logging;
-            BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
             reply(
                 nats_,
                 msg,
@@ -116,7 +116,7 @@ public:
             reply(nats_, msg, service().enter_as_service(*caller, *req));
         } catch (const std::exception& e) {
             using namespace ores::logging;
-            BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   enter_tenant_as_service_response{.success = false,
@@ -136,7 +136,7 @@ public:
             reply(nats_, msg, service().leave(*caller));
         } catch (const std::exception& e) {
             using namespace ores::logging;
-            BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   leave_tenant_response{.success = false, .message = "The exit was not recorded."});

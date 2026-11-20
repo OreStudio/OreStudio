@@ -157,7 +157,7 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
 void accounts_commands::process_list_accounts(std::ostream& out,
                                               nats_client& session,
                                               pagination_context& pagination) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list account request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list account request.";
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to list accounts." << std::endl;
@@ -180,8 +180,8 @@ void accounts_commands::process_list_accounts(std::ostream& out,
     state.total_count = result->total;
     pagination.set_last_entity("accounts");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->accounts.size()
-                              << " accounts.";
+    ORES_LOG_SEV(lg(), info) << "Successfully retrieved " << result->accounts.size()
+                             << " accounts.";
     out << result->accounts << std::endl;
 
     // Display pagination info
@@ -292,7 +292,7 @@ void accounts_commands::process_logout(std::ostream& out, nats_client& session) 
 void accounts_commands::process_get_account_history(std::ostream& out,
                                                     nats_client& session,
                                                     std::string username) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get account history for: " << username;
+    ORES_LOG_SEV(lg(), debug) << "Initiating get account history for: " << username;
     /*
      * One generic history request serves every entity, so an account's history
      * is read the way any other entity's is. The account's own hand-shaped
@@ -345,10 +345,10 @@ void accounts_commands::process_set_default_party(std::ostream& out,
         return;
 
     if (result->success) {
-        BOOST_LOG_SEV(lg(), info) << "Default party set to: " << party->full_name;
+        ORES_LOG_SEV(lg(), info) << "Default party set to: " << party->full_name;
         out << "✓ Default party set to '" << party->full_name << "'." << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to set default party: " << result->message;
+        ORES_LOG_SEV(lg(), warn) << "Failed to set default party: " << result->message;
         fail(out) << "Failed to set default party: " << result->message << std::endl;
     }
 }
@@ -356,7 +356,7 @@ void accounts_commands::process_set_default_party(std::ostream& out,
 void accounts_commands::process_account_info(std::ostream& out,
                                              nats_client& session,
                                              std::string username) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting comprehensive account info for: " << username;
+    ORES_LOG_SEV(lg(), debug) << "Getting comprehensive account info for: " << username;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to view account info." << std::endl;
@@ -488,7 +488,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     }
 
     out << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Successfully displayed account info for: " << username;
+    ORES_LOG_SEV(lg(), info) << "Successfully displayed account info for: " << username;
 }
 
 }

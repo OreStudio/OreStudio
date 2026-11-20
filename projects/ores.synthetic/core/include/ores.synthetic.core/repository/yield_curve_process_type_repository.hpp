@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_REPOSITORY_YIELD_CURVE_PROCESS_TYPE_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_type.hpp"
 #include "ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

@@ -28,7 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/artefact_type_protocol.hpp"
 #include "ores.dq.core/service/artefact_type_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -73,7 +73,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_artefact_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -88,20 +88,20 @@ public:
         }
         auto req = decode<list_artefact_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::artefact_type_service svc(req_ctx);
         try {
             auto response = svc.list_artefact_types(*req);
-            BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(artefact_type_handler_lg(), error)
+            ORES_LOG_SEV(artefact_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_artefact_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -121,7 +121,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_artefact_type(ores::nats::message msg) {
-        BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -136,20 +136,20 @@ public:
         }
         auto req = decode<get_artefact_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::artefact_type_service svc(req_ctx);
         try {
             auto response = svc.get_artefact_type(*req);
-            BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(artefact_type_handler_lg(), error)
+            ORES_LOG_SEV(artefact_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_artefact_type_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -169,7 +169,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_artefact_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -184,20 +184,20 @@ public:
         }
         auto req = decode<get_many_artefact_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::artefact_type_service svc(req_ctx);
         try {
             auto response = svc.get_many_artefact_types(*req);
-            BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(artefact_type_handler_lg(), error)
+            ORES_LOG_SEV(artefact_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_artefact_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -217,7 +217,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_artefact_type(ores::nats::message msg) {
-        BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -232,20 +232,20 @@ public:
         }
         auto req = decode<put_artefact_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::artefact_type_service svc(req_ctx);
         try {
             auto response = svc.put_artefact_type(*req);
-            BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(artefact_type_handler_lg(), error)
+            ORES_LOG_SEV(artefact_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_artefact_type_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -265,7 +265,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_artefact_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -280,20 +280,20 @@ public:
         }
         auto req = decode<put_many_artefact_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::artefact_type_service svc(req_ctx);
         try {
             auto response = svc.put_many_artefact_types(*req);
-            BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(artefact_type_handler_lg(), error)
+            ORES_LOG_SEV(artefact_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_artefact_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -313,7 +313,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_artefact_type(ores::nats::message msg) {
-        BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -328,20 +328,20 @@ public:
         }
         auto req = decode<delete_artefact_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::artefact_type_service svc(req_ctx);
         try {
             auto response = svc.delete_artefact_type(*req);
-            BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(artefact_type_handler_lg(), error)
+            ORES_LOG_SEV(artefact_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_artefact_type_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -361,7 +361,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_artefact_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -376,20 +376,20 @@ public:
         }
         auto req = decode<delete_many_artefact_types_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::artefact_type_service svc(req_ctx);
         try {
             auto response = svc.delete_many_artefact_types(*req);
-            BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(artefact_type_handler_lg(), error)
+            ORES_LOG_SEV(artefact_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_artefact_types_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -409,7 +409,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_artefact_type_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -424,20 +424,20 @@ public:
         }
         auto req = decode<list_artefact_type_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::artefact_type_service svc(req_ctx);
         try {
             auto response = svc.list_artefact_type_versions(*req);
-            BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(artefact_type_handler_lg(), error)
+            ORES_LOG_SEV(artefact_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_artefact_type_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -457,7 +457,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_artefact_type_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -472,20 +472,20 @@ public:
         }
         auto req = decode<get_artefact_type_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::artefact_type_service svc(req_ctx);
         try {
             auto response = svc.get_artefact_type_version(*req);
-            BOOST_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(artefact_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(artefact_type_handler_lg(), error)
+            ORES_LOG_SEV(artefact_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_artefact_type_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

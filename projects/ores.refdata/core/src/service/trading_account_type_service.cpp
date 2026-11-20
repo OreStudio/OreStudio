@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/trading_account_type.hpp"
 #include "ores.refdata.api/messaging/trading_account_type_protocol.hpp"
 #include "ores.refdata.core/repository/trading_account_type_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -459,29 +457,29 @@ ores::utility::domain::result trading_account_type_service::prepare_change(
 
 std::vector<domain::trading_account_type>
 trading_account_type_service::list_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trading account types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trading account types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trading_account_type_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trading account types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trading account types count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::trading_account_type> trading_account_type_service::get_type_at_version(
     const std::string& code, const std::string& coding_scheme_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trading account type at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trading account type at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::trading_account_type>
 trading_account_type_service::get_type(const std::string& code,
                                        const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trading account type. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting trading account type. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -499,13 +497,13 @@ void trading_account_type_service::save_type(const domain::trading_account_type&
         throw std::invalid_argument("Trading Account Type code cannot be empty.");
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument("Trading Account Type coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trading account type. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving trading account type. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trading account type. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved trading account type. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void trading_account_type_service::save_types(
@@ -516,7 +514,7 @@ void trading_account_type_service::save_types(
         if (e.coding_scheme_code.empty())
             throw std::invalid_argument("Trading Account Type coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " trading account types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " trading account types";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -526,11 +524,11 @@ void trading_account_type_service::save_types(
 
 void trading_account_type_service::delete_type(const std::string& code,
                                                const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trading account type. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed trading account type. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing trading account type. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed trading account type. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void trading_account_type_service::delete_types(
@@ -541,8 +539,8 @@ void trading_account_type_service::delete_types(
 std::vector<domain::trading_account_type>
 trading_account_type_service::get_type_history(const std::string& code,
                                                const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trading account type. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trading account type. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

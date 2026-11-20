@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_SERIES_EVOLUTION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/messaging/party_required.hpp"
 #include "ores.marketdata.core/service/series_evolution_reader.hpp"
@@ -64,7 +64,7 @@ public:
         , verifier_(verifier) {}
 
     void get_evolution(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_evolution_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_evolution_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,16 +89,16 @@ public:
             try {
                 resp = service::series_evolution_reader::read(req_ctx, *req);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(series_evolution_handler_lg(), error)
+                ORES_LOG_SEV(series_evolution_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }
-            BOOST_LOG_SEV(series_evolution_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(series_evolution_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
             return;
         }
-        BOOST_LOG_SEV(series_evolution_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        ORES_LOG_SEV(series_evolution_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         error_reply(nats_, msg, ores::service::error_code::bad_request);
     }
 

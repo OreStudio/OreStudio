@@ -61,7 +61,7 @@ void geo_operations_operations_commands::register_commands(cli::Menu& root_menu,
 
 void geo_operations_operations_commands::process_lookup_country(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating lookup-country request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating lookup-country request.";
 
     using request_type = ores::iam::messaging::lookup_country_request;
 

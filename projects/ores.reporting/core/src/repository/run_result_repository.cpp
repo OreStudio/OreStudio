@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/run_result.hpp"
 #include "ores.reporting.api/domain/run_result_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/run_result_protocol.hpp"
 #include "ores.reporting.core/repository/run_result_entity.hpp"
 #include "ores.reporting.core/repository/run_result_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -274,7 +272,7 @@ void run_result_repository::write(const context& ctx, const std::vector<domain::
 void run_result_repository::write(const context& ctx,
                                   const domain::run_result& v,
                                   const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing run result. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing run result. " << "id: " << v.id;
     const auto t = run_result_apply_claim(v,
                                           claim,
                                           run_result_claim_reads_current(claim) ?
@@ -289,7 +287,7 @@ void run_result_repository::write(const context& ctx,
 void run_result_repository::write(const context& ctx,
                                   const std::vector<domain::run_result>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing run results. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing run results. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "run_result_repository::write: one claim is needed for each row");
@@ -324,7 +322,7 @@ std::vector<domain::run_result> run_result_repository::read_latest(const context
 
 std::vector<domain::run_result> run_result_repository::read_latest(const context& ctx,
                                                                    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest run result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest run result. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_result_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id);
@@ -340,7 +338,7 @@ std::vector<domain::run_result> run_result_repository::read_latest(const context
 
 std::vector<domain::run_result> run_result_repository::read_all(const context& ctx,
                                                                 const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all run result versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all run result versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_result_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -357,7 +355,7 @@ std::vector<domain::run_result> run_result_repository::read_all(const context& c
 
 run_result_repository::remove_status run_result_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing run result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing run result. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -383,8 +381,8 @@ run_result_repository::read_latest(const context& ctx,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
                                    const std::optional<messaging::run_results_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest run results with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest run results with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_result_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -402,7 +400,7 @@ run_result_repository::read_latest(const context& ctx,
 
 std::uint32_t run_result_repository::get_total_result_count(
     const context& ctx, const std::optional<messaging::run_results_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active run result count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active run result count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_result_entity>> |

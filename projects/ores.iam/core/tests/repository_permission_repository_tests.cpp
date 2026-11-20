@@ -21,7 +21,7 @@
 #include "ores.iam.api/domain/permission_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/permission_generator.hpp"
 #include "ores.iam.core/repository/permission_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -45,7 +45,7 @@ TEST_CASE("write_single_permission", "[repository]") {
     permission_repository repo;
     auto p = generate_synthetic_permission(gen_ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Permission: " << p;
+    ORES_LOG_SEV(lg, debug) << "Permission: " << p;
     CHECK_NOTHROW(repo.write(h.context(), p));
 }
 
@@ -58,11 +58,11 @@ TEST_CASE("read_latest_permissions", "[repository]") {
     permission_repository repo;
     auto p = generate_synthetic_permission(gen_ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Permission: " << p;
+    ORES_LOG_SEV(lg, debug) << "Permission: " << p;
     repo.write(h.context(), p);
 
     auto read_perms = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read permissions: " << read_perms;
+    ORES_LOG_SEV(lg, debug) << "Read permissions: " << read_perms;
 
     CHECK(!read_perms.empty());
 }
@@ -77,13 +77,13 @@ TEST_CASE("read_latest_permission_by_id", "[repository]") {
     auto p = generate_synthetic_permission(gen_ctx);
     const auto target_id = p.id;
 
-    BOOST_LOG_SEV(lg, debug) << "Permission: " << p;
+    ORES_LOG_SEV(lg, debug) << "Permission: " << p;
     repo.write(h.context(), p);
 
-    BOOST_LOG_SEV(lg, debug) << "Target ID: " << target_id;
+    ORES_LOG_SEV(lg, debug) << "Target ID: " << target_id;
 
     auto read_perms = repo.read_latest(h.context(), boost::uuids::to_string(target_id));
-    BOOST_LOG_SEV(lg, debug) << "Read permissions: " << read_perms;
+    ORES_LOG_SEV(lg, debug) << "Read permissions: " << read_perms;
 
     REQUIRE(read_perms.size() == 1);
     CHECK(read_perms[0] == p);
@@ -97,10 +97,10 @@ TEST_CASE("read_nonexistent_permission", "[repository]") {
     permission_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_perms = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read permissions: " << read_perms;
+    ORES_LOG_SEV(lg, debug) << "Read permissions: " << read_perms;
 
     CHECK(read_perms.size() == 0);
 }

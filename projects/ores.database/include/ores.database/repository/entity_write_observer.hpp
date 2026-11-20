@@ -21,7 +21,7 @@
 #define ORES_DATABASE_REPOSITORY_ENTITY_WRITE_OBSERVER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <vector>
 
 namespace ores::database::repository {

@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/reporting/run_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -43,7 +43,7 @@ const auto runs_run = "00000000-0000-0000-0000-0000000000c1";
 
 TEST_CASE("reports_refuse_a_run_address_that_names_no_definition", "[report]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the run routes' addresses";
+    ORES_LOG_SEV(lg, info) << "Testing the run routes' addresses";
 
     const auto status =
         [](http_method method, const std::string& address, const std::string& pattern) {
@@ -62,7 +62,7 @@ TEST_CASE("reports_refuse_a_run_address_that_names_no_definition", "[report]") {
 
 TEST_CASE("reports_refuse_a_run_started_by_a_token_that_names_no_tenant", "[report]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a run start without a tenant";
+    ORES_LOG_SEV(lg, info) << "Testing a run start without a tenant";
 
     http_request req;
     req.authenticated_user.emplace();
@@ -76,7 +76,7 @@ TEST_CASE("reports_refuse_a_run_started_by_a_token_that_names_no_tenant", "[repo
 
 TEST_CASE("reports_refuse_a_run_page_for_an_address_that_is_no_id", "[report]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a run's page and its problems";
+    ORES_LOG_SEV(lg, info) << "Testing a run's page and its problems";
 
     const auto status = [](const std::string& address, const std::string& pattern) {
         return answer_at<run_routes>(http_method::get, address, http_request{}, pattern).status;
@@ -93,7 +93,7 @@ TEST_CASE("reports_refuse_a_run_page_for_an_address_that_is_no_id", "[report]") 
 
 TEST_CASE("runs_read_newest_first_and_a_run_with_no_start_last", "[run]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the order the runs of a report are read in";
+    ORES_LOG_SEV(lg, info) << "Testing the order the runs of a report are read in";
 
     const auto at = [](int day) {
         return std::optional<std::chrono::system_clock::time_point>{

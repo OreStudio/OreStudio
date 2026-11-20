@@ -29,7 +29,7 @@
 #include "ores.dq.api/domain/publication.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>

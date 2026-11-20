@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/swap_leg_indexing.hpp"
 #include "ores.trading.api/messaging/swap_leg_indexing_protocol.hpp"
 #include "ores.trading.core/repository/swap_leg_indexing_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -526,12 +524,12 @@ swap_leg_indexing_service::prepare_change(const messaging::swap_leg_indexing_cha
 
 std::vector<domain::swap_leg_indexing>
 swap_leg_indexing_service::list_swap_leg_indexings(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all swap leg indexings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all swap leg indexings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t swap_leg_indexing_service::count_swap_leg_indexings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total swap leg indexings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total swap leg indexings count";
     return repo_.get_total_swap_leg_indexing_count(ctx_);
 }
 
@@ -540,14 +538,13 @@ std::vector<domain::swap_leg_indexing>
 swap_leg_indexing_service::list_swap_leg_indexings_by_trade_id(const std::string& trade_id,
                                                                std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing swap leg indexings by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing swap leg indexings by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t
 swap_leg_indexing_service::count_swap_leg_indexings_by_trade_id(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total swap leg indexings count by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total swap leg indexings count by trade_id: " << trade_id;
     return repo_.get_total_swap_leg_indexing_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -557,10 +554,9 @@ swap_leg_indexing_service::get_swap_leg_indexing_at_version(const std::string& t
                                                             const std::string& leg_number,
                                                             const std::string& sequence_number,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting swap leg indexing at version. "
-                               << "trade_id: " << trade_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting swap leg indexing at version. "
+                              << "trade_id: " << trade_id << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, leg_number, sequence_number, version);
 }
 
@@ -568,9 +564,9 @@ std::optional<domain::swap_leg_indexing>
 swap_leg_indexing_service::get_swap_leg_indexing(const std::string& trade_id,
                                                  const std::string& leg_number,
                                                  const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting swap leg indexing. " << "trade_id: " << trade_id
-                               << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting swap leg indexing. " << "trade_id: " << trade_id
+                              << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, leg_number, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -587,15 +583,15 @@ std::vector<domain::swap_leg_indexing> swap_leg_indexing_service::get_swap_leg_i
 void swap_leg_indexing_service::save_swap_leg_indexing(const domain::swap_leg_indexing& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Swap Leg Indexing trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving swap leg indexing. " << "trade_id: " << v.trade_id
-                               << " leg_number: " << v.leg_number
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving swap leg indexing. " << "trade_id: " << v.trade_id
+                              << " leg_number: " << v.leg_number
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved swap leg indexing. " << "trade_id: " << v.trade_id
-                              << " leg_number: " << v.leg_number
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved swap leg indexing. " << "trade_id: " << v.trade_id
+                             << " leg_number: " << v.leg_number
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void swap_leg_indexing_service::save_swap_leg_indexings(
@@ -604,7 +600,7 @@ void swap_leg_indexing_service::save_swap_leg_indexings(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Swap Leg Indexing trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << swap_leg_indexings.size() << " swap leg indexings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << swap_leg_indexings.size() << " swap leg indexings";
     auto ts = swap_leg_indexings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -615,13 +611,13 @@ void swap_leg_indexing_service::save_swap_leg_indexings(
 void swap_leg_indexing_service::delete_swap_leg_indexing(const std::string& trade_id,
                                                          const std::string& leg_number,
                                                          const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing swap leg indexing. " << "trade_id: " << trade_id
-                               << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, leg_number, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed swap leg indexing. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing swap leg indexing. " << "trade_id: " << trade_id
                               << " leg_number: " << leg_number
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, leg_number, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed swap leg indexing. " << "trade_id: " << trade_id
+                             << " leg_number: " << leg_number
+                             << " sequence_number: " << sequence_number;
 }
 
 void swap_leg_indexing_service::delete_swap_leg_indexings(
@@ -635,9 +631,9 @@ std::vector<domain::swap_leg_indexing>
 swap_leg_indexing_service::get_swap_leg_indexing_history(const std::string& trade_id,
                                                          const std::string& leg_number,
                                                          const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for swap leg indexing. "
-                               << "trade_id: " << trade_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for swap leg indexing. "
+                              << "trade_id: " << trade_id << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, leg_number, sequence_number);
 }
 

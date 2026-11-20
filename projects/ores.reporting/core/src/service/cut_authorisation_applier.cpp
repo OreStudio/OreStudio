@@ -158,7 +158,7 @@ int cut_authorisation_applier::apply() {
             if (ctx.service_account().empty()) {
                 // The service account names the system as the writer; falling
                 // back to the decider hides that, so at least say so.
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "No service account on the apply context for request " << decision.request_id
                     << "; the decider is recorded as the applier.";
             }
@@ -202,10 +202,10 @@ int cut_authorisation_applier::apply() {
 
             uow.commit();
             ++applied;
-            BOOST_LOG_SEV(lg(), info) << "Applied the " << decision.decision_code << " of request "
-                                      << decision.request_id << " to cut " << decision.cut_id;
+            ORES_LOG_SEV(lg(), info) << "Applied the " << decision.decision_code << " of request "
+                                     << decision.request_id << " to cut " << decision.cut_id;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Applying request " << row[1].value_or("") << " to cut " << row[3].value_or("")
                 << " failed; the next run tries again: " << e.what();
         }

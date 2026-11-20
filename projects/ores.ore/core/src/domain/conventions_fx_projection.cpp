@@ -40,7 +40,7 @@ std::string fx_convention_id(const std::string& base_currency, const std::string
 }
 
 ores::refdata::messaging::fx_convention conventions_mapper::map_fx(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping FX convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping FX convention: " << text_of(v, "Id");
 
     ores::refdata::messaging::fx_convention r;
     r.id = text_of(v, "Id");
@@ -198,7 +198,7 @@ fx_conventions(const std::vector<fx_pair_source>& sources,
         if (source == nullptr) {
             static auto lg =
                 ores::logging::make_logger("ores.ore.core.domain.conventions_fx_projection");
-            BOOST_LOG_SEV(lg, warn)
+            ORES_LOG_SEV(lg, warn)
                 << "The conventions document names the FX convention " << name
                 << ", and no currency pair spells it, so the document will not state it.";
             continue;

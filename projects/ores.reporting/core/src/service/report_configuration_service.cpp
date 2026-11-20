@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/report_configuration.hpp"
 #include "ores.reporting.api/messaging/report_configuration_protocol.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -664,12 +662,12 @@ ores::utility::domain::result report_configuration_service::prepare_change(
 std::vector<domain::report_configuration>
 report_configuration_service::list_report_configurations(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all report configurations";
+    ORES_LOG_SEV(lg(), debug) << "Listing all report configurations";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t report_configuration_service::count_report_configurations() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report configurations count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total report configurations count";
     return repo_.get_total_report_configuration_count(ctx_);
 }
 
@@ -677,14 +675,14 @@ std::uint32_t report_configuration_service::count_report_configurations() {
 std::vector<domain::report_configuration>
 report_configuration_service::list_report_configurations_by_report_definition_id(
     const std::string& report_definition_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing report configurations by report_definition_id: "
-                               << report_definition_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing report configurations by report_definition_id: "
+                              << report_definition_id;
     return repo_.read_latest_by_report_definition_id(ctx_, report_definition_id, offset, limit);
 }
 
 std::uint32_t report_configuration_service::count_report_configurations_by_report_definition_id(
     const std::string& report_definition_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total report configurations count by report_definition_id: "
         << report_definition_id;
     return repo_.get_total_report_configuration_count_by_report_definition_id(ctx_,
@@ -695,15 +693,15 @@ std::uint32_t report_configuration_service::count_report_configurations_by_repor
 std::vector<domain::report_configuration>
 report_configuration_service::list_report_configurations_by_configuration_type_code(
     const std::string& configuration_type_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing report configurations by configuration_type_code: "
-                               << configuration_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing report configurations by configuration_type_code: "
+                              << configuration_type_code;
     return repo_.read_latest_by_configuration_type_code(
         ctx_, configuration_type_code, offset, limit);
 }
 
 std::uint32_t report_configuration_service::count_report_configurations_by_configuration_type_code(
     const std::string& configuration_type_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total report configurations count by configuration_type_code: "
         << configuration_type_code;
     return repo_.get_total_report_configuration_count_by_configuration_type_code(
@@ -714,15 +712,15 @@ std::uint32_t report_configuration_service::count_report_configurations_by_confi
 std::vector<domain::report_configuration>
 report_configuration_service::list_report_configurations_by_configuration_id(
     const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing report configurations by configuration_id: "
-                               << configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing report configurations by configuration_id: "
+                              << configuration_id;
     return repo_.read_latest_by_configuration_id(ctx_, configuration_id, offset, limit);
 }
 
 std::uint32_t report_configuration_service::count_report_configurations_by_configuration_id(
     const std::string& configuration_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report configurations count by configuration_id: "
-                               << configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total report configurations count by configuration_id: "
+                              << configuration_id;
     return repo_.get_total_report_configuration_count_by_configuration_id(ctx_, configuration_id);
 }
 
@@ -730,14 +728,14 @@ std::uint32_t report_configuration_service::count_report_configurations_by_confi
 std::optional<domain::report_configuration>
 report_configuration_service::get_report_configuration_at_version(const boost::uuids::uuid& id,
                                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report configuration at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting report configuration at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::report_configuration>
 report_configuration_service::get_report_configuration(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting report configuration. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -747,8 +745,8 @@ report_configuration_service::get_report_configuration(const boost::uuids::uuid&
 std::optional<domain::report_configuration>
 report_configuration_service::get_report_configuration_by_configuration_type_code(
     const std::string& configuration_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report configuration by configuration_type_code: "
-                               << configuration_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting report configuration by configuration_type_code: "
+                              << configuration_type_code;
     messaging::report_configuration_key k;
     k.configuration_type_code = configuration_type_code;
     auto found = report_configuration_read_one(repo_, ctx_, k);
@@ -766,11 +764,11 @@ void report_configuration_service::save_report_configuration(
     const domain::report_configuration& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Report Configuration id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report configuration. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving report configuration. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved report configuration. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved report configuration. " << "id: " << v.id;
 }
 
 void report_configuration_service::save_report_configurations(
@@ -779,8 +777,8 @@ void report_configuration_service::save_report_configurations(
         if (e.id.is_nil())
             throw std::invalid_argument("Report Configuration id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << report_configurations.size()
-                               << " report configurations";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << report_configurations.size()
+                              << " report configurations";
     auto ts = report_configurations;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -789,9 +787,9 @@ void report_configuration_service::save_report_configurations(
 }
 
 void report_configuration_service::delete_report_configuration(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing report configuration. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed report configuration. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed report configuration. " << "id: " << id;
 }
 
 void report_configuration_service::delete_report_configurations(
@@ -801,7 +799,7 @@ void report_configuration_service::delete_report_configurations(
 
 std::vector<domain::report_configuration>
 report_configuration_service::get_report_configuration_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for report configuration. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for report configuration. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

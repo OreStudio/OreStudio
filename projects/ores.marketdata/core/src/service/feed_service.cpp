@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/feed.hpp"
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.core/repository/feed_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -503,25 +501,25 @@ feed_service::prepare_change(const messaging::feed_change& change,
 
 
 std::vector<domain::feed> feed_service::list_feeds(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all market data feeds";
+    ORES_LOG_SEV(lg(), debug) << "Listing all market data feeds";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t feed_service::count_feeds() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total market data feeds count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total market data feeds count";
     return repo_.get_total_feed_count(ctx_);
 }
 
 
 std::optional<domain::feed> feed_service::get_feed_at_version(const boost::uuids::uuid& id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data feed at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data feed at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::feed> feed_service::get_feed(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data feed. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data feed. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -529,7 +527,7 @@ std::optional<domain::feed> feed_service::get_feed(const boost::uuids::uuid& id)
 }
 
 std::optional<domain::feed> feed_service::get_feed_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data feed by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data feed by name: " << name;
     messaging::feed_key k;
     k.name = name;
     auto found = feed_read_one(repo_, ctx_, k);
@@ -545,11 +543,11 @@ std::vector<domain::feed> feed_service::get_feeds(const std::vector<std::string>
 void feed_service::save_feed(const domain::feed& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Feed id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market data feed. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving market data feed. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market data feed. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved market data feed. " << "id: " << v.id;
 }
 
 void feed_service::save_feeds(const std::vector<domain::feed>& feeds) {
@@ -557,7 +555,7 @@ void feed_service::save_feeds(const std::vector<domain::feed>& feeds) {
         if (e.id.is_nil())
             throw std::invalid_argument("Feed id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << feeds.size() << " market data feeds";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << feeds.size() << " market data feeds";
     auto ts = feeds;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -566,9 +564,9 @@ void feed_service::save_feeds(const std::vector<domain::feed>& feeds) {
 }
 
 void feed_service::delete_feed(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market data feed. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market data feed. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed market data feed. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed market data feed. " << "id: " << id;
 }
 
 void feed_service::delete_feeds(const std::vector<std::string>& ids) {
@@ -576,7 +574,7 @@ void feed_service::delete_feeds(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::feed> feed_service::get_feed_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market data feed. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for market data feed. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

@@ -18,8 +18,7 @@
  *
  */
 #include "ores.database/repository/repository_exception.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/domain/currency_country.hpp"
 #include "ores.refdata.api/domain/currency_country_json_io.hpp" // IWYU pragma: keep.
@@ -32,7 +31,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
@@ -92,7 +90,7 @@ TEST_CASE("write_single_currency_country", "[repository][currency_country]") {
     cty_repo.write(h.context(), {countries[0]});
 
     auto cc = make_currency_country(h, currencies[0].iso_code, countries[0].alpha2_code);
-    BOOST_LOG_SEV(lg, debug) << "Currency country: " << cc;
+    ORES_LOG_SEV(lg, debug) << "Currency country: " << cc;
     repo.write(cc);
 
     const auto read_ccs = repo.read_latest(cc.currency_iso_code, cc.country_alpha2_code);
@@ -124,7 +122,7 @@ TEST_CASE("write_multiple_currency_countries", "[repository][currency_country]")
         ccs.push_back(make_currency_country(h, currencies[1].iso_code, c.alpha2_code));
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Currency countries: " << ccs;
+    ORES_LOG_SEV(lg, debug) << "Currency countries: " << ccs;
     repo.write(ccs);
 
     const auto read_ccs = repo.read_latest();
@@ -159,7 +157,7 @@ TEST_CASE("read_latest_currency_countries_by_currency", "[repository][currency_c
     repo.write(cc);
 
     auto read_ccs = repo.read_latest_by_currency(currencies[3].iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency countries: " << read_ccs;
+    ORES_LOG_SEV(lg, debug) << "Read currency countries: " << read_ccs;
 
     REQUIRE(!read_ccs.empty());
     bool found = false;
@@ -193,7 +191,7 @@ TEST_CASE("read_latest_currency_countries_by_country", "[repository][currency_co
     repo.write(cc);
 
     auto read_ccs = repo.read_latest_by_country(countries[4].alpha2_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency countries: " << read_ccs;
+    ORES_LOG_SEV(lg, debug) << "Read currency countries: " << read_ccs;
 
     // The country is a shared catalogue, so the read lists the system tenant's
     // pairings for it beside the caller's own.
@@ -303,7 +301,7 @@ TEST_CASE("read_nonexistent_currency_country", "[repository][currency_country]")
     repo.write(keeper);
 
     auto read_ccs = repo.read_latest_by_currency("ZZZ");
-    BOOST_LOG_SEV(lg, debug) << "Read currency countries: " << read_ccs;
+    ORES_LOG_SEV(lg, debug) << "Read currency countries: " << read_ccs;
 
     const auto answered_with_nonexistent_key = std::ranges::any_of(
         read_ccs, [&](const currency_country& r) { return r.currency_iso_code == "ZZZ"; });
@@ -342,7 +340,7 @@ TEST_CASE("a_duplicate_currency_country_create_is_refused_and_writes_nothing",
         repo.write(cc, create);
         FAIL("a create over a live link was not refused");
     } catch (const ores::database::repository::repository_exception& e) {
-        BOOST_LOG_SEV(lg, info) << "Refused: " << e.what();
+        ORES_LOG_SEV(lg, info) << "Refused: " << e.what();
         CHECK(e.sqlstate() == "23505");
     }
 
@@ -425,7 +423,7 @@ TEST_CASE("a_batch_write_with_a_stale_version_is_refused_and_writes_nothing",
         repo.write(std::vector<currency_country>{live, added}, claims);
         FAIL("a batch with a stale version was not refused");
     } catch (const ores::database::repository::repository_exception& e) {
-        BOOST_LOG_SEV(lg, info) << "Refused: " << e.what();
+        ORES_LOG_SEV(lg, info) << "Refused: " << e.what();
     }
 
     const auto live_rows = repo.read_latest(live.currency_iso_code, live.country_alpha2_code);

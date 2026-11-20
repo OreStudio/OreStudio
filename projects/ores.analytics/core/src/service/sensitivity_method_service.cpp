@@ -29,10 +29,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -453,26 +451,26 @@ sensitivity_method_service::prepare_change(const messaging::sensitivity_method_c
 
 std::vector<domain::sensitivity_method>
 sensitivity_method_service::list_methods(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all sensitivity methods";
+    ORES_LOG_SEV(lg(), debug) << "Listing all sensitivity methods";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t sensitivity_method_service::count_methods() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total sensitivity methods count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total sensitivity methods count";
     return repo_.get_total_method_count(ctx_);
 }
 
 
 std::optional<domain::sensitivity_method>
 sensitivity_method_service::get_method_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting sensitivity method at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting sensitivity method at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::sensitivity_method>
 sensitivity_method_service::get_method(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting sensitivity method. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting sensitivity method. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -487,11 +485,11 @@ sensitivity_method_service::get_methods(const std::vector<std::string>& codes) {
 void sensitivity_method_service::save_method(const domain::sensitivity_method& v) {
     if (v.code.empty())
         throw std::invalid_argument("Sensitivity Method code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving sensitivity method. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving sensitivity method. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved sensitivity method. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved sensitivity method. " << "code: " << v.code;
 }
 
 void sensitivity_method_service::save_methods(
@@ -500,7 +498,7 @@ void sensitivity_method_service::save_methods(
         if (e.code.empty())
             throw std::invalid_argument("Sensitivity Method code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << methods.size() << " sensitivity methods";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << methods.size() << " sensitivity methods";
     auto ts = methods;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -509,9 +507,9 @@ void sensitivity_method_service::save_methods(
 }
 
 void sensitivity_method_service::delete_method(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing sensitivity method. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing sensitivity method. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed sensitivity method. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed sensitivity method. " << "code: " << code;
 }
 
 void sensitivity_method_service::delete_methods(const std::vector<std::string>& codes) {
@@ -520,7 +518,7 @@ void sensitivity_method_service::delete_methods(const std::vector<std::string>& 
 
 std::vector<domain::sensitivity_method>
 sensitivity_method_service::get_method_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for sensitivity method. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for sensitivity method. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

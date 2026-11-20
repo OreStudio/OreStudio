@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Read the quotes by series prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#1c2b3f;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}h3{font-size:.95rem}
+p{margin:0}a{color:var(--accent);text-decoration:none;cursor:pointer}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1440px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.lead{color:var(--ink-dim);font-size:.86rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px;min-width:0;overflow-x:auto}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px}.field>span{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:150px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;position:sticky;top:0;background:var(--panel)}
+th.num,td.num{text-align:right}
+td.cell-off{color:var(--ink-faint);text-align:center}
+tr.click td{cursor:pointer}tr.click:hover td{background:#1d1d22}
+tr.pick td{background:var(--accent-dim)}
+tr.section td{background:#17171b;font-weight:600;cursor:pointer;border-top:1px solid var(--line)}
+tr.section td .sub{font-weight:400;color:var(--ink-faint);margin-left:8px;font-size:.78rem}
+td.stale,span.stale{color:var(--ink-faint)}
+td.out,span.out{color:var(--warn)}
+td.out::after{content:" ⚠";font-family:inherit}
+td.flash{animation:flash .9s ease-out}
+@keyframes flash{from{background:#1f3a5f}to{background:transparent}}
+.up{color:var(--ok)}.down{color:var(--bad)}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:5px 12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:var(--panel-2);border:none;padding:5px 12px;color:var(--ink-dim)}
+.seg button.on{background:var(--accent-dim);color:var(--ink)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px;vertical-align:1px}
+.dot.stale{background:var(--warn)}.dot.off{background:transparent;border:1px solid var(--line)}
+.split{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;align-items:start}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:8px;display:grid;gap:2px}
+.rail label{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-radius:6px;cursor:pointer}
+.rail label:hover{background:var(--panel-2)}
+.rail small{color:var(--ink-faint);font-size:.72rem}
+.rail .head{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:4px 8px}
+.rail .hint{font-size:.74rem;color:var(--ink-faint);padding:6px 8px 2px}
+.scroll{overflow:auto;max-height:560px;border:1px solid var(--line-soft);border-radius:6px}
+.grid td.num{min-width:76px}
+.heat-1{background:rgba(210,153,34,.10)}.heat-2{background:rgba(210,153,34,.22)}.heat-3{background:rgba(210,153,34,.38)}
+.chart{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.empty{color:var(--ink-faint);padding:20px;text-align:center;border:1px dashed var(--line);border-radius:6px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:none;border-bottom:2px solid transparent;padding:8px 14px;color:var(--ink-dim)}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs small{color:var(--ink-faint);margin-left:6px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .sep{color:var(--line);padding:0 4px}
+@media (max-width:900px){.split,.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The second round of "Watch the vendors' quotes". The first round
+  (../watch-the-vendors-quotes/) settled how a person chooses vendors: the
+  source rail. Built, the screen had one row for each vendor's quote of each
+  point, so a 65-point vol surface quoted by four vendors became 260 rows, and
+  the board held 4,373 rows. This round asks how the screen shows a series.
+
+  The rules every variant shares:
+  - points sort by tenor (1W before 1M before 1Y), not as text;
+  - each quote type has its unit: FX spot to the pair's decimals and changes in
+    pips, rates in % and changes in bp, vols in vol points;
+  - a vendor is a column, not a row, so more vendors widen a row and never
+    multiply the rows;
+  - a quote far from the others is flagged, and a stale vendor is dimmed;
+  - the rail includes or excludes a vendor rather than picking one.
+
+  ?variant=a|b|c, three ways to show a series:
+  a  series list and detail: one row for each series, and the picked series
+     opens above the list in its own shape (a pair's vendors and their last
+     minutes, a curve's tenor strip, a surface's tenor by strike grid).
+  b  datum rows under series headings: the closest to the built screen, each
+     point one row with a column for each vendor; a surface opens as a grid
+     instead of its 65 rows.
+  c  boards by asset class: tabs, each with the board its desk reads: an FX
+     spot board, the rates curves side by side, and a vol surface picker.
+-->
+<div class="proto-note">Prototype · mock data · round 2 of watch the vendors' quotes · switch variant with the bar at the foot</div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const choose = (v, allowed) => allowed.includes(v) ? v : allowed[0];
+let variant = choose(params.get('variant'), ['a','b','c']);
+
+/* ---------- the model ---------- */
+const VENDORS = [
+  {code:'bloomberg', colour:'#58a6ff', cadence:1500},
+  {code:'ice', colour:'#bc8cff', cadence:6000},
+  {code:'tradeweb', colour:'#3fb950', cadence:4000},
+  {code:'demo', colour:'#d29922', cadence:1200},
+  {code:'derived', colour:'#8b949e', cadence:null, ageMs:63*60000},
+];
+const vendor = c => VENDORS.find(v => v.code === c);
+const included = new Set(['bloomberg','tradeweb','ice','demo','derived']);
+
+const DAYS = {D:1, W:7, M:30.4, Y:365};
+const tenorDays = t => { const m = /^(\d+)([DWMY])$/.exec(t); return m ? +m[1] * DAYS[m[2]] : 1e9; };
+const byTenor = (a, b) => tenorDays(a) - tenorDays(b);
+
+let seed = 7;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const gauss = () => (rnd() + rnd() + rnd() - 1.5) / 1.5;
+
+/* each quote is one vendor's value of one point: {v, prev, at} */
+const SERIES = [];
+function quoteOf(v, value) {
+  const ven = vendor(v);
+  const at = Date.now() - (ven.ageMs ?? Math.floor(rnd() * (ven.cadence || 1000)));
+  return {v:value, prev:value, at, hist:[]};
+}
+
+const PAIRS = [
+  ['EUR','USD',1.10618],['GBP','USD',1.39669],['USD','JPY',154.212],['USD','CHF',0.77885],
+  ['AUD','USD',0.71242],['USD','CAD',1.51913],['NZD','USD',0.48314],['USD','NOK',11.9388],
+  ['USD','SEK',10.6421],['USD','SGD',1.30463],['USD','HKD',7.90713],['USD','CNH',7.99932],
+  ['USD','BRL',8.33708],['USD','MXN',19.4417],['USD','ZAR',18.0321],['EUR','GBP',0.79233],
+];
+const DEMO_BAD = {'EUR/USD':0.86676, 'USD/CHF':164.3705};
+for (const [b, q, mid] of PAIRS) {
+  const name = `${b}/${q}`;
+  const quotes = {bloomberg: quoteOf('bloomberg', mid)};
+  if (DEMO_BAD[name] || rnd() < .6) quotes.demo = quoteOf('demo', DEMO_BAD[name] ?? mid * (1 + gauss() * .0004));
+  if (['EUR/USD','GBP/USD','USD/JPY','EUR/GBP'].includes(name)) {
+    quotes.ice = quoteOf('ice', mid * (1 + gauss() * .00008));
+    quotes.tradeweb = quoteOf('tradeweb', mid * (1 + gauss() * .00008));
+  }
+  SERIES.push({id:`spot-${b}${q}`, ac:'FX', type:'fx_spot', kind:'spot', shape:'spot',
+    name, raw:`${b} ${q}`, dp: q === 'JPY' || mid > 50 ? 3 : 5, pip: q === 'JPY' ? .01 : .0001,
+    points:[{label:'', quotes}]});
+}
+
+const TERMS = ['1M','3M','6M','1Y','2Y','3Y','5Y','7Y','10Y','15Y','20Y','30Y'];
+const CURVES = [
+  ['USD','SOFR','1D', .0395, .0005, ['bloomberg','tradeweb','demo']],
+  ['EUR','€STR','1D', .0212, .0004, ['bloomberg','tradeweb']],
+  ['GBP','SONIA','1D', .0401, .0003, ['bloomberg','tradeweb','ice']],
+  ['JPY','TONA','1D', .0029, .0009, ['tradeweb']],
+  ['USD','Term SOFR 3M','3M', .0402, .0004, ['bloomberg']],
+  ['EUR','EURIBOR 6M','6M', .0238, .0004, ['bloomberg','ice','derived']],
+];
+for (const [ccy, index, tenor, short, slope, vs] of CURVES) {
+  const points = TERMS.map((t, i) => {
+    const base = short + slope * Math.log1p(tenorDays(t) / 365) * 4 + (i > 6 ? -.0002 * (i - 6) : 0);
+    const quotes = {};
+    for (const v of vs) quotes[v] = quoteOf(v, base + gauss() * .00004 + (v === 'demo' && t === '10Y' ? .0031 : 0));
+    return {label:t, quotes};
+  });
+  SERIES.push({id:`swap-${ccy}-${tenor}`, ac:'Interest Rate', type:'ir_swap', kind:'rate', shape:'curve',
+    name:`${ccy} swaps · ${index}`, raw:`${ccy} 0D ${tenor}`, points});
+}
+
+const VTENORS = ['1W','1M','2M','3M','6M','9M','1Y','18M','2Y','3Y','5Y','7Y','10Y'];
+const STRIKES = ['10P','25P','ATM','25C','10C'];
+const QUOTED = ['ATM','25RR','25BF','10RR','10BF'];
+/* how each vendor's surface leans, in vol: tradeweb's short end sits higher, ice's
+   long-dated skew is steeper and its wings richer, derived is an hour old */
+const BIAS = {
+  bloomberg: () => 0,
+  tradeweb: (t, q, term) => q === 'ATM' ? .0018 * Math.exp(-term * 3) : 0,
+  ice: (t, q, term) => q.endsWith('RR') ? -.0012 * term * (q === '10RR' ? 1.8 : 1) : q.endsWith('BF') ? .0006 * term : 0,
+  derived: (t, q) => q === 'ATM' ? -.0025 : 0,
+  demo: () => 0,
+};
+const SURFACES = [
+  ['EUR/USD', .072, ['bloomberg','ice','tradeweb','derived']],
+  ['GBP/USD', .081, ['bloomberg','ice','tradeweb']],
+  ['USD/JPY', .098, ['bloomberg','tradeweb','derived']],
+  ['AUD/USD', .091, ['bloomberg','ice']],
+  ['EUR/GBP', .058, ['derived']],
+];
+for (const [name, atm, vs] of SURFACES) {
+  const points = [];
+  for (const t of VTENORS) {
+    const term = Math.log1p(tenorDays(t) / 365);
+    const vals = {ATM: atm + term * .009, '25RR': -.004 - term * .002, '25BF': .0021 + term * .0006,
+                  '10RR': -.0075 - term * .0035, '10BF': .0068 + term * .0018};
+    for (const q of QUOTED) {
+      const quotes = {};
+      for (const v of vs) quotes[v] = quoteOf(v, vals[q] + gauss() * (q === 'ATM' ? .0003 : .00015) + BIAS[v](t, q, term) + (v === 'ice' && t === '3M' && q === '25RR' ? .006 : 0));
+      points.push({label:`${t} ${q}`, tenor:t, quote:q, quotes});
+    }
+  }
+  SERIES.push({id:`vol-${name}`, ac:'FX', type:'fx_option', kind:'vol', shape:'surface',
+    name:`${name} vol surface`, raw:name.replace('/',' '), points});
+}
+
+/* ---------- reading the model ---------- */
+const liveVendors = s => VENDORS.filter(v => included.has(v.code) && s.points.some(p => p.quotes[v.code]));
+const valuesOf = p => Object.entries(p.quotes).filter(([v]) => included.has(v) && !isStale(p.quotes[v])).map(([, q]) => q.v);
+/* what a quote is measured against: the median of three or more live vendors, or with
+   fewer the highest-ranked vendor's, by the providers' precedence (the rail's order) */
+function referenceOf(p) {
+  const live = VENDORS.filter(v => included.has(v.code) && p.quotes[v.code] && !isStale(p.quotes[v.code]));
+  if (!live.length) return null;
+  return live.length >= 3 ? median(live.map(v => p.quotes[v.code].v)) : p.quotes[live[0].code].v;
+}
+const isStale = q => Date.now() - q.at > 60000;
+const median = xs => { const s = [...xs].sort((a,b) => a-b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2; };
+function stats(s, p) {
+  const xs = valuesOf(p);
+  if (!xs.length) return {mid:null, spread:null};
+  const med = referenceOf(p);
+  const kept = xs.filter(x => !outlierOf(s, x, med));
+  const mid = (kept.length ? kept : xs).reduce((a,b) => a+b, 0) / (kept.length || xs.length);
+  return {mid, spread: Math.max(...kept) - Math.min(...kept), med};
+}
+/* far from the median of the others: 50 pips, 25 bp or 1.5 vol points */
+const LIMIT = {spot:null, rate:.0025, vol:.004};
+function outlierOf(s, x, med) {
+  if (med == null) return false;
+  if (s.kind === 'spot') return Math.abs(x - med) / med > .005;
+  return Math.abs(x - med) > LIMIT[s.kind];
+}
+function fmt(s, x) {
+  if (x == null) return '—';
+  if (s.kind === 'spot') return x.toFixed(s.dp);
+  if (s.kind === 'rate') return (x * 100).toFixed(3) + '%';
+  return (x * 100).toFixed(2);
+}
+function fmtDelta(s, d) {
+  const n = d == null ? 0 : s.kind === 'spot' ? d / s.pip : s.kind === 'rate' ? d * 1e4 : d * 100;
+  if (Math.abs(n) < (s.kind === 'vol' ? .005 : .05)) return '<span class="faint">0</span>';
+  const unit = s.kind === 'spot' ? ' pip' : s.kind === 'rate' ? ' bp' : '';
+  const txt = (n > 0 ? '+' : '') + (s.kind === 'vol' ? n.toFixed(2) : n.toFixed(1)) + unit;
+  return `<span class="${n > 0 ? 'up' : 'down'}">${txt}</span>`;
+}
+const spreadUnit = s => s.kind === 'spot' ? 'pips' : s.kind === 'rate' ? 'bp' : 'vol pts';
+const spreadN = (s, d) => d == null ? null : s.kind === 'spot' ? d / s.pip : s.kind === 'rate' ? d * 1e4 : d * 100;
+function age(at) {
+  const sec = (Date.now() - at) / 1000;
+  return sec < 60 ? sec.toFixed(0) + 's' : Math.round(sec / 60) + 'm';
+}
+const newest = s => Math.max(...s.points.flatMap(p => Object.entries(p.quotes).filter(([v]) => included.has(v)).map(([, q]) => q.at)), 0);
+const shapeOf = s => s.shape === 'spot' ? 'spot' : s.shape === 'curve' ? `curve · ${s.points.length} tenors` : `surface · ${VTENORS.length}×${QUOTED.length}`;
+function cell(s, p, v, med) {
+  const q = p.quotes[v.code];
+  if (!q) return `<td class="cell-off">·</td>`;
+  const cls = ['num', isStale(q) ? 'stale' : '', !isStale(q) && outlierOf(s, q.v, med) ? 'out' : '', q.fresh ? 'flash' : ''].join(' ');
+  const title = `${v.code} ${fmt(s, q.v)} · ${age(q.at)} ago`;
+  return `<td class="${cls}" title="${title}">${fmt(s, q.v)}</td>`;
+}
+
+/* ---------- filters and sort ---------- */
+const ui = {ac:'', find:'', sort:'live', pick:null, open:new Set(), tab:'FX spot', surfaceMode:'mid', cmpA:'ice', cmpB:'consensus', cmpForm:'strike', cmpTenor:'1Y', cmpCol:null, cmpTerm:'ATM', chart:'level', curveVendor:'mid'};
+function shownSeries() {
+  const f = ui.find.trim().toLowerCase().replace('/', '');
+  let xs = SERIES.filter(s => liveVendors(s).length)
+    .filter(s => !ui.ac || s.ac === ui.ac)
+    .filter(s => !f || (s.name + ' ' + s.raw).toLowerCase().replace(/\//g, '').includes(f));
+  if (ui.sort === 'live') xs.sort((a, b) => newest(b) - newest(a) > 60000 ? 1 : newest(a) - newest(b) > 60000 ? -1 : a.name.localeCompare(b.name));
+  else xs.sort((a, b) => a.ac.localeCompare(b.ac) || a.type.localeCompare(b.type) || a.name.localeCompare(b.name));
+  if (ui.sort === 'live') {
+    const live = xs.filter(s => Date.now() - newest(s) <= 60000), stale = xs.filter(s => Date.now() - newest(s) > 60000);
+    xs = [...live, ...stale];
+  }
+  return xs;
+}
+
+/* ---------- pieces ---------- */
+function rail() {
+  return `<div class="rail"><div class="head">Sources</div>
+    ${VENDORS.map(v => {
+      const stale = v.ageMs > 60000;
+      const ages = SERIES.flatMap(s => s.points.flatMap(p => p.quotes[v.code] ? [p.quotes[v.code].at] : []));
+      const last = Math.max(...ages);
+      return `<label><span><input type="checkbox" data-vendor="${v.code}" ${included.has(v.code) ? 'checked' : ''}>
+        <span class="dot ${stale ? 'stale' : ''}"></span>${v.code}</span><small class="${stale ? 'out' : ''}">${age(last)}</small></label>`;
+    }).join('')}
+    <p class="hint">Untick a source to leave it out of every row, every mid and every chart.</p></div>`;
+}
+function filters(extra = '') {
+  return `<div class="row">
+    <label class="field"><span>Asset class</span><select data-f="ac"><option value="">all</option>
+      ${['FX','Interest Rate'].map(a => `<option ${ui.ac === a ? 'selected' : ''}>${a}</option>`).join('')}</select></label>
+    <label class="field"><span>Find</span><input data-f="find" value="${ui.find}" placeholder="EUR/USD, SOFR, vol…"></label>
+    <div class="field"><span>Order</span><div class="seg">
+      <button data-sort="live" class="${ui.sort === 'live' ? 'on' : ''}">Live first</button>
+      <button data-sort="az" class="${ui.sort === 'az' ? 'on' : ''}">A–Z</button></div></div>
+    ${extra}</div>`;
+}
+function vendorHead(vs) { return vs.map(v => `<th class="num"><span class="dot" style="background:${v.colour}"></span>${v.code}</th>`).join(''); }
+
+/* a time chart of each vendor's last minutes, as a level or as the distance to the mid */
+function timeChart(s, p) {
+  const vs = VENDORS.filter(v => included.has(v.code) && p.quotes[v.code]);
+  const now = Date.now(), from = now - 5 * 60000;
+  const mids = [];
+  const lines = vs.map(v => {
+    const q = p.quotes[v.code];
+    const pts = [...q.hist, {at:q.at, v:q.v}].filter(h => h.at >= from);
+    return {v, pts};
+  });
+  const st = stats(s, p);
+  const y = h => ui.chart === 'mid' && st.mid != null ? h.v - st.mid : h.v;
+  const ys = lines.flatMap(l => l.pts.filter(h => !outlierOf(s, h.v, st.med)).map(y));
+  if (!ys.length) return '';
+  let lo = Math.min(...ys), hi = Math.max(...ys); if (hi === lo) { hi += 1e-6; lo -= 1e-6; }
+  const W = 900, H = 200, L = 8, R = 92, T = 10, B = 22;
+  const X = t => L + (t - from) / (now - from) * (W - L - R);
+  const Y = val => T + (1 - (Math.max(lo, Math.min(hi, val)) - lo) / (hi - lo)) * (H - T - B);
+  const lab = val => ui.chart === 'mid' ? fmtDelta(s, val).replace(/<[^>]+>/g, '') : fmt(s, val);
+  const grid = [0, .5, 1].map(k => lo + (hi - lo) * k).map(val =>
+    `<line x1="${L}" x2="${W - R}" y1="${Y(val)}" y2="${Y(val)}" stroke="#30363d"/><text x="${W - R + 6}" y="${Y(val) + 4}" fill="#71717a" font-size="11" font-family="monospace">${lab(val)}</text>`).join('');
+  const paths = lines.map(l => {
+    const off = ui.chart === 'level' && outlierOf(s, l.pts.at(-1)?.v, st.med);
+    if (off) return '';
+    const d = l.pts.map((h, i) => `${i ? 'L' : 'M'}${X(h.at).toFixed(1)},${Y(y(h)).toFixed(1)}`).join(' ');
+    return `<path d="${d}" fill="none" stroke="${l.v.colour}" stroke-width="1.6" ${isStale(p.quotes[l.v.code]) ? 'stroke-dasharray="3 3" opacity=".6"' : ''}/>`;
+  }).join('');
+  const off = lines.filter(l => outlierOf(s, l.pts.at(-1)?.v, st.med)).map(l => l.v.code);
+  const ticks = [5,4,3,2,1,0].map(m => `<text x="${X(now - m * 60000)}" y="${H - 6}" fill="#71717a" font-size="11" text-anchor="middle">${m ? '-' + m + 'm' : 'now'}</text>`).join('');
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${s.name} ${p.label} last five minutes">${grid}${paths}${ticks}</svg></div>
+    ${off.length && ui.chart === 'level' ? `<p class="faint" style="font-size:.78rem">Not drawn: ${off.join(', ')}, too far from the others to share an axis. Switch to "to the mid" to see how far.</p>` : ''}`;
+}
+
+/* every vendor's quote of one point: the all-quotes table */
+function allQuotes(s, p) {
+  const st = stats(s, p);
+  const vs = VENDORS.filter(v => p.quotes[v.code]);
+  return `<table><thead><tr><th>Vendor</th><th class="num">Value</th><th class="num">To the mid</th><th class="num">Change</th><th class="num">Age</th></tr></thead><tbody>
+    ${vs.map(v => { const q = p.quotes[v.code]; const out = outlierOf(s, q.v, st.med) && !isStale(q); const off = !included.has(v.code);
+      return `<tr class="${off ? 'faint' : ''}"><td><span class="dot" style="background:${v.colour}"></span>${v.code}${off ? ' <span class="tag">left out</span>' : ''}${out ? ' <span class="tag warn">outlier · left out of the mid</span>' : ''}${isStale(q) ? ' <span class="tag warn">stale</span>' : ''}</td>
+      <td class="num ${out ? 'out' : ''}">${fmt(s, q.v)}</td><td class="num">${st.mid == null ? '—' : fmtDelta(s, q.v - st.mid)}</td><td class="num">${fmtDelta(s, q.v - q.prev)}</td><td class="num ${isStale(q) ? 'stale' : ''}">${age(q.at)}</td></tr>`; }).join('')}
+    <tr><td class="muted">Mid of ${valuesOf(p).filter(x => !outlierOf(s, x, st.med)).length}</td><td class="num">${fmt(s, st.mid)}</td><td class="num muted">spread ${st.spread == null ? '—' : spreadN(s, st.spread).toFixed(s.kind === 'vol' ? 2 : 1) + ' ' + spreadUnit(s)}</td><td></td><td></td></tr>
+  </tbody></table>`;
+}
+function chartToggle() {
+  return `<div class="seg"><button data-chart="level" class="${ui.chart === 'level' ? 'on' : ''}">Level</button><button data-chart="mid" class="${ui.chart === 'mid' ? 'on' : ''}">To the mid</button></div>`;
+}
+
+/* a curve: tenors down, vendors across, the mid and the spread, and the curve drawn by tenor */
+function curveStrip(s) {
+  const vs = liveVendors(s);
+  const rows = s.points.map(p => { const st = stats(s, p); return `<tr class="click" data-point="${p.label}"><td class="mono">${p.label}</td>${vs.map(v => cell(s, p, v, st.med)).join('')}<td class="num">${fmt(s, st.mid)}</td><td class="num muted">${st.spread == null ? '—' : spreadN(s, st.spread).toFixed(1)}</td></tr>`; }).join('');
+  return `<div class="two"><div class="scroll"><table><thead><tr><th>Tenor</th>${vendorHead(vs)}<th class="num">Mid</th><th class="num">Spread bp</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div>${curveChart(s, vs)}<div class="legend">${vs.map(v => `<span><i style="background:${v.colour}"></i>${v.code}</span>`).join('')}</div></div></div>`;
+}
+function curveChart(s, vs) {
+  const W = 520, H = 260, L = 8, R = 64, T = 10, B = 24;
+  const all = s.points.flatMap(p => { const st = stats(s, p); return vs.map(v => p.quotes[v.code]).filter(q => q && !outlierOf(s, q.v, st.med)).map(q => q.v); });
+  const lo = Math.min(...all), hi = Math.max(...all);
+  const X = i => L + i / (s.points.length - 1) * (W - L - R);
+  const Y = v => T + (1 - (v - lo) / (hi - lo || 1)) * (H - T - B);
+  const lines = vs.map(v => {
+    const pts = s.points.map((p, i) => [i, p.quotes[v.code], stats(s, p).med]).filter(([, q, m]) => q && !outlierOf(s, q.v, m));
+    const d = pts.map(([i, q], k) => `${k ? 'L' : 'M'}${X(i).toFixed(1)},${Y(q.v).toFixed(1)}`).join(' ');
+    return `<path d="${d}" fill="none" stroke="${v.colour}" stroke-width="1.6" ${v.ageMs > 60000 ? 'stroke-dasharray="3 3" opacity=".6"' : ''}/>`;
+  }).join('');
+  const labels = s.points.map((p, i) => i % 2 ? '' : `<text x="${X(i)}" y="${H - 6}" fill="#71717a" font-size="11" text-anchor="middle">${p.label}</text>`).join('');
+  const levels = [lo, (lo + hi) / 2, hi].map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#30363d"/><text x="${W - R + 6}" y="${Y(v) + 4}" fill="#71717a" font-size="11" font-family="monospace">${fmt(s, v)}</text>`).join('');
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${s.name} by tenor">${levels}${lines}${labels}</svg></div>`;
+}
+
+/* a surface: tenors down, the quoted strategies across, for one vendor, the mid or the spread */
+function surfaceGrid(s) {
+  const vs = liveVendors(s);
+  const mode = ['mid','spread','compare'].includes(ui.surfaceMode) || vs.some(v => v.code === ui.surfaceMode) ? ui.surfaceMode : 'mid';
+  const modes = `<div class="seg">${['mid', ...vs.map(v => v.code), 'spread', 'compare'].map(m => `<button data-surface="${m}" class="${mode === m ? 'on' : ''}">${m === 'mid' ? 'Mid' : m === 'spread' ? 'Spread' : m === 'compare' ? 'Compare ⇄' : m}</button>`).join('')}</div>`;
+  if (mode === 'compare') return modes + compareView(s);
+  const at = (t, q) => s.points.find(p => p.tenor === t && p.quote === q);
+  const val = p => {
+    const st = stats(s, p);
+    if (mode === 'mid') return {txt: fmt(s, st.mid), heat: 0};
+    if (mode === 'spread') { const n = spreadN(s, st.spread); return {txt: n == null ? '—' : n.toFixed(2), heat: n == null ? 0 : n > .5 ? 3 : n > .25 ? 2 : n > .1 ? 1 : 0}; }
+    const q = p.quotes[mode]; if (!q) return {txt:'·', heat:0};
+    return {txt: fmt(s, q.v), out: outlierOf(s, q.v, st.med), stale: isStale(q)};
+  };
+  const seg = modes;
+  const rows = VTENORS.map(t => `<tr><td class="mono">${t}</td>${QUOTED.map(q => { const p = at(t, q); const c = val(p);
+    return `<td class="num ${c.heat ? 'heat-' + c.heat : ''} ${c.out ? 'out' : ''} ${c.stale ? 'stale' : ''} click" data-point="${p.label}">${c.txt}</td>`; }).join('')}</tr>`).join('');
+  const note = mode === 'spread' ? 'Spread between the vendors in vol points; the darker the cell, the more they disagree.' : mode === 'mid' ? 'Mid of the included vendors in vol points, outliers left out.' : `${mode}'s quotes in vol points; ⚠ marks a quote far from the others.`;
+  return `<div class="row" style="justify-content:space-between">${seg}<span class="faint" style="font-size:.78rem">${note}</span></div>
+    <div class="scroll grid"><table><thead><tr><th>Tenor</th>${QUOTED.map(q => `<th class="num">${q}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+
+/* ---------- comparing two sources of a surface ---------- */
+/* a source is a vendor, or the consensus: the mid of the included live vendors, outliers left out */
+/* the consensus leaves out the source it is compared with, so a vendor is never measured against itself */
+const sourceName = c => c === 'consensus' ? (ui.cmpA !== 'consensus' && ui.cmpB === 'consensus' || ui.cmpB !== 'consensus' && ui.cmpA === 'consensus' ? 'Consensus of the others' : 'Consensus') : c;
+const sourceColour = c => c === 'consensus' ? '#e3e3e6' : vendor(c).colour;
+function quotedOf(s, src, t, q) {
+  const p = s.points.find(x => x.tenor === t && x.quote === q);
+  if (!p) return null;
+  if (src === 'consensus') {
+    const other = ui.cmpA === 'consensus' ? ui.cmpB : ui.cmpA;
+    const ref = referenceOf(p);
+    const xs = VENDORS.filter(v => v.code !== other && included.has(v.code) && p.quotes[v.code] && !isStale(p.quotes[v.code]))
+      .map(v => p.quotes[v.code].v).filter(x => !outlierOf(s, x, ref));
+    return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+  }
+  if (!included.has(src)) return null;
+  return p.quotes[src]?.v ?? null;
+}
+/* the smile by delta. In the product the server supplies it: the conversion needs the
+   pair's delta convention (spot or forward, premium-adjusted or not, which ATM) and a
+   fitted smile. The prototype stands in with the simple strangle approximation:
+   25C = ATM + 25BF + 25RR/2, 25P = ATM + 25BF - 25RR/2, and the same for 10 delta */
+function smileOf(s, src, t) {
+  const g = q => quotedOf(s, src, t, q);
+  const atm = g('ATM'), r25 = g('25RR'), b25 = g('25BF'), r10 = g('10RR'), b10 = g('10BF');
+  if ([atm, r25, b25, r10, b10].some(x => x == null)) return null;
+  return {'10P': atm + b10 - r10 / 2, '25P': atm + b25 - r25 / 2, ATM: atm, '25C': atm + b25 + r25 / 2, '10C': atm + b10 + r10 / 2};
+}
+const columnsOf = () => ui.cmpForm === 'strike' ? STRIKES : QUOTED;
+function cellOf(s, src, t, c) {
+  if (ui.cmpForm === 'quoted') return quotedOf(s, src, t, c);
+  return smileOf(s, src, t)?.[c] ?? null;
+}
+/* a vol-point difference as a diverging colour: blue where A is above B, red where below */
+const BREACH = .4;
+function diffStyle(d) {
+  if (d == null || Math.abs(d) < .02) return '';
+  const k = Math.min(1, Math.abs(d) / .5);
+  const rgb = d > 0 ? '88,166,255' : '248,81,73';
+  return `background:rgba(${rgb},${(.08 + k * .5).toFixed(2)})`;
+}
+function catChart(labels, lines, fmtY, title, pickIndex) {
+  const W = 560, H = 230, L = 8, R = 56, T = 12, B = 24;
+  const ys = lines.flatMap(l => l.vals.filter(v => v != null));
+  if (!ys.length) return '<div class="empty">Nothing to draw.</div>';
+  let lo = Math.min(...ys), hi = Math.max(...ys); const pad = (hi - lo || .001) * .08; lo -= pad; hi += pad;
+  const X = i => L + i / (labels.length - 1) * (W - L - R);
+  const Y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  const grid = [lo + pad, (lo + hi) / 2, hi - pad].map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#30363d"/><text x="${W - R + 6}" y="${Y(v) + 4}" fill="#71717a" font-size="11" font-family="monospace">${fmtY(v)}</text>`).join('');
+  const mark = pickIndex == null ? '' : `<line x1="${X(pickIndex)}" x2="${X(pickIndex)}" y1="${T}" y2="${H - B}" stroke="#58a6ff" stroke-opacity=".35" stroke-dasharray="2 3"/>`;
+  const paths = lines.map(l => {
+    let d = '', pen = false;
+    l.vals.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)} `; pen = true; });
+    const dots = l.strong ? l.vals.map((v, i) => v == null ? '' : `<circle cx="${X(i)}" cy="${Y(v)}" r="2.6" fill="${l.colour}"/>`).join('') : '';
+    return `<path d="${d}" fill="none" stroke="${l.colour}" stroke-width="${l.strong ? 2.4 : 1.2}" stroke-opacity="${l.strong ? 1 : .45}" ${l.dashed ? 'stroke-dasharray="4 3"' : ''}/>${dots}`;
+  }).join('');
+  const xl = labels.map((n, i) => `<text x="${X(i)}" y="${H - 6}" fill="#71717a" font-size="11" text-anchor="middle">${n}</text>`).join('');
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">${grid}${mark}${paths}${xl}</svg></div>`;
+}
+function compareView(s) {
+  const vs = liveVendors(s).filter(v => !(v.ageMs > 60000));
+  const stale = liveVendors(s).filter(v => v.ageMs > 60000);
+  const sources = ['consensus', ...liveVendors(s).map(v => v.code)];
+  if (!sources.includes(ui.cmpA)) ui.cmpA = vs[1]?.code ?? vs[0]?.code ?? 'consensus';
+  if (!sources.includes(ui.cmpB)) ui.cmpB = 'consensus';
+  const A = ui.cmpA, B = ui.cmpB, cols = columnsOf();
+  const pickSel = (k, v) => `<select data-cmp="${k}">${sources.map(x => `<option value="${x}" ${x === v ? 'selected' : ''}>${sourceName(x)}${stale.some(y => y.code === x) ? ' (stale)' : ''}</option>`).join('')}</select>`;
+  const diffs = [];
+  const rows = VTENORS.map(t => `<tr class="${t === ui.cmpTenor ? 'pick' : ''}"><td class="mono click" data-cmptenor="${t}" style="cursor:pointer">${t}</td>${cols.map(c => {
+    const a = cellOf(s, A, t, c), b = cellOf(s, B, t, c);
+    const d = a == null || b == null ? null : (a - b) * 100;
+    if (d != null) diffs.push({t, c, d});
+    const breach = d != null && Math.abs(d) > BREACH;
+    const on = t === ui.cmpTenor && c === ui.cmpCol;
+    return `<td class="num click" data-cmpcell="${t}|${c}" style="cursor:pointer;${diffStyle(d)}${on ? ';outline:2px solid var(--accent);outline-offset:-2px' : ''}${breach ? ';font-weight:700' : ''}" title="${sourceName(A)} ${a == null ? '—' : (a * 100).toFixed(2)} · ${sourceName(B)} ${b == null ? '—' : (b * 100).toFixed(2)}">${d == null ? '·' : Math.abs(d) < .005 ? '0.00' : (d > 0 ? '+' : '') + d.toFixed(2)}${breach ? ' ⚠' : ''}</td>`;
+  }).join('')}</tr>`).join('');
+  const worst = diffs.reduce((w, x) => Math.abs(x.d) > Math.abs(w?.d ?? 0) ? x : w, null);
+  const meanBy = pred => { const xs = diffs.filter(pred).map(x => x.d); return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null; };
+  const atmBias = meanBy(x => x.c === 'ATM');
+  const breaches = diffs.filter(x => Math.abs(x.d) > BREACH).length;
+  const sgn = x => x == null ? '—' : (x > 0 ? '+' : '') + x.toFixed(2);
+  const summary = `<div class="row" style="gap:22px;font-size:.84rem">
+    <span><span class="faint">ATM level, on average</span> <b class="mono">${sgn(atmBias)}</b></span>
+    <span><span class="faint">Widest</span> <b class="mono">${worst ? sgn(worst.d) + ' at ' + worst.t + ' ' + worst.c : '—'}</b></span>
+    <span><span class="faint">Over ${BREACH} vol pts</span> <b class="mono ${breaches ? 'out' : ''}">${breaches} of ${diffs.length}</b></span></div>`;
+
+  /* the smile of the picked tenor and the term structure of the picked measure, every source drawn, A and B strong */
+  const drawn = ['consensus', ...vs.map(v => v.code), ...stale.map(v => v.code)];
+  const lineOf = (src, vals) => ({colour: sourceColour(src), vals, strong: src === A || src === B, dashed: src === 'consensus' || stale.some(v => v.code === src)});
+  const smile = catChart(STRIKES, drawn.map(src => lineOf(src, STRIKES.map(k => { const sm = smileOf(s, src, ui.cmpTenor); return sm ? sm[k] * 100 : null; }))),
+    v => v.toFixed(2), `${s.name} ${ui.cmpTenor} smile by source`, ui.cmpForm === 'strike' && ui.cmpCol ? STRIKES.indexOf(ui.cmpCol) : null);
+  const termVals = src => VTENORS.map(t => { const v = quotedOf(s, src, t, ui.cmpTerm); return v == null ? null : v * 100; });
+  const term = catChart(VTENORS, drawn.map(src => lineOf(src, termVals(src))), v => v.toFixed(2), `${s.name} ${ui.cmpTerm} term structure by source`, VTENORS.indexOf(ui.cmpTenor));
+  const legend = `<div class="legend">${drawn.map(src => `<span style="${src === A || src === B ? 'color:var(--ink)' : ''}"><i style="background:${sourceColour(src)};${src === A || src === B ? '' : 'opacity:.45'}"></i>${sourceName(src)}${src === A ? ' (A)' : src === B ? ' (B)' : ''}</span>`).join('')}</div>`;
+
+  /* one cell, every source's value of it */
+  let cellPanel = '';
+  if (ui.cmpCol && cols.includes(ui.cmpCol)) {
+    const b = cellOf(s, B, ui.cmpTenor, ui.cmpCol);
+    cellPanel = `<div class="panel" style="padding:10px"><h3 style="font-size:.85rem">${ui.cmpTenor} ${ui.cmpCol}${ui.cmpForm === 'strike' ? ' <span class="faint" style="font-weight:400">· converted by the server from each source’s ATM, RR and BF</span>' : ''}</h3>
+      <table><thead><tr><th>Source</th><th class="num">Vol</th><th class="num">To ${sourceName(B)}</th><th class="num">Age</th></tr></thead><tbody>
+      ${drawn.map(src => { const v = cellOf(s, src, ui.cmpTenor, ui.cmpCol); const d = v == null || b == null ? null : (v - b) * 100;
+        const at = src === 'consensus' ? null : s.points.find(p => p.tenor === ui.cmpTenor)?.quotes[src]?.at;
+        return `<tr><td><span class="dot" style="background:${sourceColour(src)}"></span>${sourceName(src)}${src === A ? ' (A)' : src === B ? ' (B)' : ''}</td><td class="num">${v == null ? '—' : (v * 100).toFixed(2)}</td><td class="num ${d != null && Math.abs(d) > BREACH ? 'out' : ''}">${src === B ? '' : sgn(d)}</td><td class="num ${at && Date.now() - at > 60000 ? 'stale' : ''}">${at ? age(at) : ''}</td></tr>`; }).join('')}
+      </tbody></table></div>`;
+  }
+
+  return `<div class="row" style="justify-content:space-between;align-items:flex-end">
+      <div class="row">
+        <label class="field"><span>A</span>${pickSel('A', A)}</label>
+        <button class="btn" data-cmpswap title="Swap A and B" style="margin-bottom:1px">⇄</button>
+        <label class="field"><span>B</span>${pickSel('B', B)}</label>
+        <div class="field"><span>Read as</span><div class="seg">
+          <button data-cmpform="strike" class="${ui.cmpForm === 'strike' ? 'on' : ''}">Vol by delta</button>
+          <button data-cmpform="quoted" class="${ui.cmpForm === 'quoted' ? 'on' : ''}">As quoted</button></div></div>
+        ${ui.cmpForm === 'strike' ? '<span class="tag" title="The server converts each source by the pair\u2019s delta convention; the prototype approximates it.">vols by delta from the server</span>' : ''}
+      </div>
+      <span class="faint" style="font-size:.78rem;max-width:420px">Each cell is A − B in vol points: blue where A is above B, red where below, bold over ${BREACH}. Click a tenor for its smile, a cell for every source's value.</span>
+    </div>
+    ${summary}
+    <div class="two" style="grid-template-columns:minmax(0,5fr) minmax(0,4fr)">
+      <div style="display:grid;gap:10px;align-content:start">
+        <div class="scroll grid"><table><thead><tr><th>Tenor</th>${cols.map(c => `<th class="num">${c}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+        ${cellPanel}
+      </div>
+      <div style="display:grid;gap:10px;align-content:start">
+        <div class="panel-head"><h3 style="font-size:.85rem">${ui.cmpTenor} smile</h3><span class="faint" style="font-size:.78rem">vol by delta</span></div>
+        ${smile}
+        <div class="panel-head"><h3 style="font-size:.85rem">Term structure</h3><div class="seg">${QUOTED.map(q => `<button data-cmpterm="${q}" class="${ui.cmpTerm === q ? 'on' : ''}">${q}</button>`).join('')}</div></div>
+        ${term}
+        ${legend}
+      </div>
+    </div>`;
+}
+
+/* the detail of the picked series, in its own shape */
+function detail(s) {
+  if (!s) return `<div class="empty">Pick a series to see it in its own shape: a pair's vendors over the last minutes, a curve's tenors, a surface's grid.</div>`;
+  const head = `<div class="panel-head"><div><h3>${s.name}</h3><span class="faint" style="font-size:.78rem">${s.type} · ${shapeOf(s)} · ${s.raw}</span></div>${s.shape === 'spot' ? chartToggle() : ''}</div>`;
+  if (s.shape === 'spot') return head + allQuotes(s, s.points[0]) + timeChart(s, s.points[0]);
+  if (s.shape === 'curve') return head + curveStrip(s);
+  return head + surfaceGrid(s) + (ui.point && ui.surfaceMode !== 'compare' ? pointDetail(s) : '');
+}
+function pointDetail(s) {
+  const p = s.points.find(x => x.label === ui.point); if (!p) return '';
+  return `<div class="panel-head"><h3 style="font-size:.85rem">${s.name} · ${p.label}</h3>${chartToggle()}</div>${allQuotes(s, p)}${timeChart(s, p)}`;
+}
+
+/* ---------- variant a: series list and detail ---------- */
+function variantA() {
+  const xs = shownSeries();
+  const vs = VENDORS.filter(v => included.has(v.code));
+  const pick = SERIES.find(s => s.id === ui.pick);
+  const rows = xs.map(s => {
+    const cov = vs.map(v => {
+      const qs = s.points.map(p => p.quotes[v.code]).filter(Boolean);
+      if (!qs.length) return `<td class="cell-off">·</td>`;
+      if (s.shape === 'spot') { const st = stats(s, s.points[0]); return cell(s, s.points[0], v, st.med); }
+      const last = Math.max(...qs.map(q => q.at)), stale = Date.now() - last > 60000;
+      const outs = s.points.filter(p => p.quotes[v.code] && outlierOf(s, p.quotes[v.code].v, stats(s, p).med)).length;
+      return `<td class="num ${stale ? 'stale' : ''}" title="${v.code} quotes ${qs.length} of ${s.points.length} points">${qs.length === s.points.length ? '●' : qs.length + '/' + s.points.length} ${age(last)}${outs && !stale ? ` <span class="out">⚠${outs}</span>` : ''}</td>`;
+    }).join('');
+    const worst = Math.max(...s.points.map(p => spreadN(s, stats(s, p).spread) ?? 0));
+    const st0 = s.shape === 'spot' ? stats(s, s.points[0]) : null;
+    return `<tr class="click ${s.id === ui.pick ? 'pick' : ''}" data-series="${s.id}"><td>${s.name}</td><td class="faint">${shapeOf(s)}</td>
+      <td class="num">${st0 ? fmt(s, st0.mid) : ''}</td>${cov}<td class="num muted">${worst ? worst.toFixed(s.kind === 'vol' ? 2 : 1) + ' ' + spreadUnit(s) : '—'}</td><td class="num ${Date.now() - newest(s) > 60000 ? 'stale' : ''}">${age(newest(s))}</td></tr>`;
+  }).join('');
+  return `<div class="split">${rail()}<div style="display:grid;gap:14px;min-width:0">
+    <div class="panel">${filters()}</div>
+    <div class="panel">${detail(pick)}</div>
+    <div class="panel"><div class="panel-head"><h2>Series · ${xs.length}</h2><span class="faint" style="font-size:.78rem">A spot shows each vendor's value; a curve or surface shows how much of it each vendor quotes and how fresh. Widest spread is the most two vendors disagree on any point.</span></div>
+      <div class="scroll"><table><thead><tr><th>Series</th><th>Shape</th><th class="num">Mid</th>${vendorHead(vs)}<th class="num">Widest spread</th><th class="num">Last tick</th></tr></thead><tbody>${rows || '<tr><td colspan="9" class="faint">No series matches.</td></tr>'}</tbody></table></div></div>
+  </div></div>`;
+}
+
+/* ---------- variant b: datum rows under series headings ---------- */
+function variantB() {
+  const xs = shownSeries();
+  const vs = VENDORS.filter(v => included.has(v.code));
+  let pickS = SERIES.find(s => s.id === ui.pick);
+  const body = xs.map(s => {
+    const open = ui.open.has(s.id) || s.shape === 'spot';
+    if (s.shape === 'spot') {
+      const p = s.points[0], st = stats(s, p);
+      return `<tr class="click ${ui.pick === s.id ? 'pick' : ''}" data-series="${s.id}"><td>${s.name}</td><td class="faint">spot</td>${vs.map(v => cell(s, p, v, st.med)).join('')}<td class="num">${fmt(s, st.mid)}</td><td class="num muted">${st.spread == null ? '—' : spreadN(s, st.spread).toFixed(1) + ' ' + spreadUnit(s)}</td><td class="num">${age(newest(s))}</td></tr>`;
+    }
+    const head = `<tr class="section" data-toggle="${s.id}"><td colspan="${vs.length + 5}">${open ? '▾' : '▸'} ${s.name}<span class="sub">${shapeOf(s)} · ${liveVendors(s).map(v => v.code).join(', ')} · last tick ${age(newest(s))}</span></td></tr>`;
+    if (!open) return head;
+    if (s.shape === 'surface') return head + `<tr><td colspan="${vs.length + 5}" style="padding:10px 8px 14px 24px">${surfaceGrid(s)}</td></tr>`;
+    return head + s.points.map(p => { const st = stats(s, p); return `<tr class="click ${ui.pick === s.id && ui.point === p.label ? 'pick' : ''}" data-series="${s.id}" data-point="${p.label}"><td style="padding-left:24px" class="mono">${p.label}</td><td class="faint">${s.type}</td>${vs.map(v => cell(s, p, v, st.med)).join('')}<td class="num">${fmt(s, st.mid)}</td><td class="num muted">${st.spread == null ? '—' : spreadN(s, st.spread).toFixed(1) + ' ' + spreadUnit(s)}</td><td class="num">${age(Math.max(...Object.values(p.quotes).map(q => q.at)))}</td></tr>`; }).join('');
+  }).join('');
+  let top = `<div class="empty">Pick a row to see every vendor's quote of it and their last minutes.</div>`;
+  if (pickS) {
+    const p = pickS.shape === 'spot' ? pickS.points[0] : pickS.points.find(x => x.label === ui.point);
+    if (p) top = `<div class="panel-head"><h3>${pickS.name}${p.label ? ' · ' + p.label : ''}</h3>${chartToggle()}</div>${allQuotes(pickS, p)}${timeChart(pickS, p)}`;
+  }
+  return `<div class="split">${rail()}<div style="display:grid;gap:14px;min-width:0">
+    <div class="panel">${filters(`<div class="field"><span>Series</span><div class="seg"><button data-all="open">Open all</button><button data-all="close">Close all</button></div></div>`)}</div>
+    <div class="panel">${top}</div>
+    <div class="panel"><div class="scroll" style="max-height:640px"><table><thead><tr><th>Datum</th><th>Type</th>${vendorHead(vs)}<th class="num">Mid</th><th class="num">Spread</th><th class="num">Last tick</th></tr></thead><tbody>${body}</tbody></table></div></div>
+  </div></div>`;
+}
+
+/* ---------- variant c: boards by asset class ---------- */
+function variantC() {
+  const TABS = {'FX spot': s => s.type === 'fx_spot', 'Rates curves': s => s.type === 'ir_swap', 'FX vol surfaces': s => s.type === 'fx_option'};
+  const xs = shownSeries().filter(TABS[ui.tab]);
+  const tabs = `<div class="tabs">${Object.keys(TABS).map(t => `<button data-tab="${t}" class="${ui.tab === t ? 'on' : ''}">${t}<small>${shownSeries().filter(TABS[t]).length}</small></button>`).join('')}</div>`;
+  let board = '';
+  if (ui.tab === 'FX spot') {
+    const vs = VENDORS.filter(v => included.has(v.code) && xs.some(s => s.points[0].quotes[v.code]));
+    const pick = xs.find(s => s.id === ui.pick);
+    board = `<div class="two" style="grid-template-columns:minmax(0,3fr) minmax(0,2fr)"><div class="scroll" style="max-height:620px"><table><thead><tr><th>Pair</th>${vendorHead(vs)}<th class="num">Mid</th><th class="num">Spread pips</th><th class="num">Change</th></tr></thead><tbody>
+      ${xs.map(s => { const p = s.points[0], st = stats(s, p), b = p.quotes.bloomberg; return `<tr class="click ${ui.pick === s.id ? 'pick' : ''}" data-series="${s.id}"><td>${s.name}</td>${vs.map(v => cell(s, p, v, st.med)).join('')}<td class="num">${fmt(s, st.mid)}</td><td class="num muted">${st.spread == null ? '—' : spreadN(s, st.spread).toFixed(1)}</td><td class="num">${b ? fmtDelta(s, b.v - b.prev) : ''}</td></tr>`; }).join('')}
+      </tbody></table></div><div class="panel" style="align-content:start">${pick ? `<div class="panel-head"><h3>${pick.name}</h3>${chartToggle()}</div>${allQuotes(pick, pick.points[0])}${timeChart(pick, pick.points[0])}` : '<div class="empty">Pick a pair.</div>'}</div></div>`;
+  } else if (ui.tab === 'Rates curves') {
+    const vs = VENDORS.filter(v => included.has(v.code) && xs.some(s => liveVendors(s).includes(v)));
+    const mode = ui.curveVendor;
+    const seg = `<div class="seg">${['mid', ...vs.map(v => v.code)].map(m => `<button data-curvev="${m}" class="${mode === m ? 'on' : ''}">${m === 'mid' ? 'Mid' : m}</button>`).join('')}</div>`;
+    const pick = xs.find(s => s.id === ui.pick);
+    board = `<div class="row" style="justify-content:space-between">${seg}<span class="faint" style="font-size:.78rem">Every curve's tenors side by side, in %. Pick a column to compare its vendors.</span></div>
+      <div class="scroll"><table><thead><tr><th>Tenor</th>${xs.map(s => `<th class="num click" data-series="${s.id}" style="cursor:pointer;${ui.pick === s.id ? 'color:var(--accent)' : ''}">${s.name.replace(' swaps · ', ' ')}</th>`).join('')}</tr></thead><tbody>
+      ${TERMS.map(t => `<tr><td class="mono">${t}</td>${xs.map(s => { const p = s.points.find(x => x.label === t); const st = stats(s, p);
+        if (mode === 'mid') return `<td class="num">${fmt(s, st.mid)}</td>`;
+        const q = p.quotes[mode]; return q ? `<td class="num ${outlierOf(s, q.v, st.med) ? 'out' : ''} ${isStale(q) ? 'stale' : ''}">${fmt(s, q.v)}</td>` : `<td class="cell-off">·</td>`; }).join('')}</tr>`).join('')}
+      </tbody></table></div>${pick ? `<div class="panel"><h3>${pick.name}</h3>${curveStrip(pick)}</div>` : ''}`;
+  } else {
+    const pick = xs.find(s => s.id === ui.pick) ?? xs[0];
+    board = `<div class="split" style="grid-template-columns:220px minmax(0,1fr)"><div class="rail"><div class="head">Surfaces</div>
+      ${xs.map(s => `<label data-series="${s.id}" style="${pick === s ? 'background:var(--accent-dim)' : ''}"><span>${s.name.replace(' vol surface', '')}</span><small class="${Date.now() - newest(s) > 60000 ? 'out' : ''}">${age(newest(s))}</small></label>`).join('')}</div>
+      <div class="panel">${pick ? `<h3>${pick.name}</h3>${surfaceGrid(pick)}${ui.point && ui.surfaceMode !== 'compare' ? pointDetail(pick) : ''}` : '<div class="empty">No surface.</div>'}</div></div>`;
+  }
+  return `<div class="split">${rail()}<div style="display:grid;gap:14px;min-width:0">
+    <div class="panel">${filters()}</div>${tabs}<div>${board}</div></div></div>`;
+}
+
+/* ---------- render, ticks and events ---------- */
+const app = document.getElementById('app');
+function render() {
+  const focus = document.activeElement?.dataset?.f;
+  const scrolls = [...app.querySelectorAll('.scroll')].map(el => el.scrollTop);
+  const page = window.scrollY;
+  app.innerHTML = `<div class="top"><div><h1>Quotes</h1><p class="lead">The market as the vendors quote it, as it ticks: one row for each series, each vendor a column.</p></div>
+    <div class="row"><span class="tag ${paused ? 'warn' : 'ok'}">${paused ? 'paused' : 'live'}</span><button class="btn" data-pause>${paused ? 'Resume' : 'Pause'}</button></div></div>
+    ${variant === 'a' ? variantA() : variant === 'b' ? variantB() : variantC()}`;
+  if (focus) { const el = app.querySelector(`[data-f="${focus}"]`); el?.focus(); if (el?.setSelectionRange) el.setSelectionRange(el.value.length, el.value.length); }
+  app.querySelectorAll('.scroll').forEach((el, i) => { el.scrollTop = scrolls[i] ?? 0; });
+  window.scrollTo(0, page);
+  for (const s of SERIES) for (const p of s.points) for (const q of Object.values(p.quotes)) q.fresh = false;
+  bar();
+}
+let paused = false;
+function tick() {
+  if (paused) return;
+  const t = Date.now();
+  for (const s of SERIES) for (const p of s.points) for (const [v, q] of Object.entries(p.quotes)) {
+    const ven = vendor(v); if (!ven.cadence) continue;
+    if (rnd() > 1000 / ven.cadence * (s.kind === 'spot' ? .9 : .08)) continue;
+    const step = s.kind === 'spot' ? q.v * .00004 : s.kind === 'rate' ? .000015 : .0003;
+    q.hist.push({at:q.at, v:q.v}); if (q.hist.length > 400) q.hist.shift();
+    q.prev = q.v; q.v += gauss() * step; q.at = t; q.fresh = true;
+  }
+  if (document.activeElement?.tagName !== 'SELECT') render();
+}
+/* an hour behind each live quote, so a picked chart has a shape at once */
+for (const s of SERIES) for (const p of s.points) for (const [v, q] of Object.entries(p.quotes)) {
+  const ven = vendor(v); if (!ven.cadence || s.kind !== 'spot' && rnd() > .2) continue;
+  let x = q.v; const step = s.kind === 'spot' ? q.v * .00004 : s.kind === 'rate' ? .000015 : .0003;
+  const back = [];
+  for (let t = Date.now() - 300000; t < q.at; t += ven.cadence) { x += gauss() * step; back.push({at:t, v:x}); }
+  const shift = q.v - x; q.hist = back.map(h => ({at:h.at, v:h.v + shift}));
+}
+setInterval(tick, 1000);
+
+app.addEventListener('click', e => {
+  const t = e.target.closest('[data-cmpswap],[data-cmpform],[data-cmptenor],[data-cmpcell],[data-cmpterm],[data-series],[data-toggle],[data-sort],[data-surface],[data-chart],[data-tab],[data-curvev],[data-all],[data-pause]');
+  if (!t) return;
+  const d = t.dataset;
+  if (d.cmpswap !== undefined) [ui.cmpA, ui.cmpB] = [ui.cmpB, ui.cmpA];
+  else if (d.cmpform) { ui.cmpForm = d.cmpform; ui.cmpCol = null; }
+  else if (d.cmptenor) ui.cmpTenor = d.cmptenor;
+  else if (d.cmpcell) { [ui.cmpTenor, ui.cmpCol] = d.cmpcell.split('|'); }
+  else if (d.cmpterm) ui.cmpTerm = d.cmpterm;
+  else if (d.pause !== undefined) paused = !paused;
+  else if (d.sort) ui.sort = d.sort;
+  else if (d.surface) ui.surfaceMode = d.surface;
+  else if (d.chart) ui.chart = d.chart;
+  else if (d.curvev) ui.curveVendor = d.curvev;
+  else if (d.tab) { ui.tab = d.tab; ui.pick = null; ui.point = null; }
+  else if (d.all) { ui.open = d.all === 'open' ? new Set(SERIES.map(s => s.id)) : new Set(); }
+  else if (d.toggle) { ui.open.has(d.toggle) ? ui.open.delete(d.toggle) : ui.open.add(d.toggle); ui.open = new Set(ui.open); }
+  else if (d.series) { ui.pick = d.series; ui.point = d.point ?? null; }
+  if (d.point && !d.series) { const s = SERIES.find(x => x.id === ui.pick) ?? SERIES.find(x => x.points.some(p => p.label === d.point)); ui.point = d.point; if (s && variant === 'b') ui.pick = s.id; }
+  render();
+});
+app.addEventListener('change', e => {
+  if (e.target.dataset.vendor) { e.target.checked ? included.add(e.target.dataset.vendor) : included.delete(e.target.dataset.vendor); render(); }
+  if (e.target.dataset.f === 'ac') { ui.ac = e.target.value; render(); }
+  if (e.target.dataset.cmp) { ui['cmp' + e.target.dataset.cmp] = e.target.value; render(); }
+});
+app.addEventListener('input', e => { if (e.target.dataset.f === 'find') { ui.find = e.target.value; render(); } });
+
+function bar() {
+  const names = {a:'A · series list and detail', b:'B · datum rows, series headings', c:'C · boards by asset class'};
+  document.getElementById('bar').innerHTML = Object.entries(names).map(([k, n]) => `<button data-v="${k}" class="${variant === k ? 'on' : ''}">${n}</button>`).join('');
+}
+document.getElementById('bar').addEventListener('click', e => {
+  const k = e.target.dataset.v; if (!k) return;
+  variant = k; ui.pick = null; ui.point = null;
+  const u = new URL(location); u.searchParams.set('variant', k); history.replaceState(null, '', u);
+  render();
+});
+if (params.get('pick')) { ui.pick = params.get('pick'); ui.point = params.get('point'); }
+if (params.get('tab')) ui.tab = params.get('tab');
+if (params.get('surface')) ui.surfaceMode = params.get('surface');
+render();
+</script>
+</body>
+</html>

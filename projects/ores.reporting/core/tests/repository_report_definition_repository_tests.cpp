@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
@@ -83,7 +83,7 @@ TEST_CASE("write_single_report_definition", "[repository]") {
     rd.party_id = party_id;
     rd.report_type = report_type;
 
-    BOOST_LOG_SEV(lg, debug) << "Report definition: " << rd;
+    ORES_LOG_SEV(lg, debug) << "Report definition: " << rd;
     CHECK_NOTHROW(repo.write(h.context(), rd));
 }
 
@@ -101,7 +101,7 @@ TEST_CASE("write_multiple_report_definitions", "[repository]") {
         d.party_id = party_id;
         d.report_type = report_type;
     }
-    BOOST_LOG_SEV(lg, debug) << "Report definitions: " << definitions;
+    ORES_LOG_SEV(lg, debug) << "Report definitions: " << definitions;
 
     CHECK_NOTHROW(repo.write(h.context(), definitions));
 }
@@ -120,11 +120,11 @@ TEST_CASE("read_latest_report_definitions", "[repository]") {
         d.party_id = party_id;
         d.report_type = report_type;
     }
-    BOOST_LOG_SEV(lg, debug) << "Written definitions: " << written;
+    ORES_LOG_SEV(lg, debug) << "Written definitions: " << written;
     repo.write(h.context(), written);
 
     auto read = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read definitions: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read definitions: " << read;
 
     CHECK(!read.empty());
     CHECK(read.size() >= written.size());
@@ -145,11 +145,11 @@ TEST_CASE("read_latest_report_definition_by_id", "[repository]") {
         d.report_type = report_type;
     }
     const auto target = definitions.front();
-    BOOST_LOG_SEV(lg, debug) << "Written definitions: " << definitions;
+    ORES_LOG_SEV(lg, debug) << "Written definitions: " << definitions;
     repo.write(h.context(), definitions);
 
     auto read = repo.read_latest(h.context(), boost::uuids::to_string(target.id));
-    BOOST_LOG_SEV(lg, debug) << "Read definitions: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read definitions: " << read;
 
     REQUIRE(read.size() == 1);
     CHECK(read[0].id == target.id);
@@ -175,7 +175,7 @@ TEST_CASE("read_all_versions_of_report_definition", "[repository]") {
     repo.write(h.context(), rd);
 
     auto all = repo.read_all(h.context(), boost::uuids::to_string(rd.id));
-    BOOST_LOG_SEV(lg, debug) << "All versions: " << all;
+    ORES_LOG_SEV(lg, debug) << "All versions: " << all;
 
     CHECK(all.size() >= 2);
 }
@@ -201,7 +201,7 @@ TEST_CASE("remove_report_definition", "[repository]") {
     CHECK_NOTHROW(repo.remove(h.context(), rd_id));
 
     auto after = repo.read_latest(h.context(), rd_id);
-    BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
+    ORES_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.empty());
 }
 
@@ -213,10 +213,10 @@ TEST_CASE("read_nonexistent_report_definition", "[repository]") {
     report_definition_repository repo;
     // Use a valid nil UUID — the column type is uuid so must be valid syntax.
     const std::string nonexistent = "00000000-0000-0000-0000-000000000000";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent id: " << nonexistent;
+    ORES_LOG_SEV(lg, debug) << "Non-existent id: " << nonexistent;
 
     auto read = repo.read_latest(h.context(), nonexistent);
-    BOOST_LOG_SEV(lg, debug) << "Read definitions: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read definitions: " << read;
 
     CHECK(read.empty());
 }

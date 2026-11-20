@@ -18,9 +18,8 @@
  *
  */
 #include "ores.marketdata.core/repository/manual_point_guard.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -73,7 +72,7 @@ manual_point_guard::unshadowed(const ores::database::context& ctx,
     kept.reserve(observations.size());
     for (const auto& obs : observations) {
         if (owned.at(obs.series_id).contains({obs.oresmd_uri, key_of(obs.observation_datetime)})) {
-            BOOST_LOG_SEV(guard_lg(), debug)
+            ORES_LOG_SEV(guard_lg(), debug)
                 << "Dropped an automatic write to a manual point. Series: " << obs.series_id
                 << " coordinate: " << obs.oresmd_uri;
             continue;
@@ -81,7 +80,7 @@ manual_point_guard::unshadowed(const ores::database::context& ctx,
         kept.push_back(obs);
     }
     if (kept.size() != observations.size())
-        BOOST_LOG_SEV(guard_lg(), info)
+        ORES_LOG_SEV(guard_lg(), info)
             << "Dropped " << observations.size() - kept.size() << " of " << observations.size()
             << " automatic writes to coordinates an operator owns.";
     return kept;

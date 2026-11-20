@@ -24,13 +24,11 @@
  */
 #include "ores.reporting.core/repository/report_cashflow_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/domain/report_cashflow.hpp"
 #include "ores.reporting.api/domain/report_cashflow_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/report_cashflow_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -44,7 +42,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::report_cashflow report_cashflow_mapper::map(const report_cashflow_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::report_cashflow r;
     r.tenant_id = v.tenant_id;
@@ -68,12 +66,12 @@ domain::report_cashflow report_cashflow_mapper::map(const report_cashflow_entity
     r.value = v.value;
     r.source = v.source;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 report_cashflow_entity report_cashflow_mapper::map(const domain::report_cashflow& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     report_cashflow_entity r;
     r.id = v.id;
@@ -97,7 +95,7 @@ report_cashflow_entity report_cashflow_mapper::map(const domain::report_cashflow
     r.value = v.value;
     r.source = v.source;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

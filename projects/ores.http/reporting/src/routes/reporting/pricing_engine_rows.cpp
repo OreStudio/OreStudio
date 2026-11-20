@@ -26,7 +26,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -157,7 +157,7 @@ std::string bound_reports_json_of(const http_request& req,
             req, session, configuration_type, boost::uuids::string_generator()(configuration_id));
     } catch (const std::exception&) {
         // A binding that cannot be read must not hide the document.
-        BOOST_LOG_SEV(pricing_rows_lg(), ores::logging::debug)
+        ORES_LOG_SEV(pricing_rows_lg(), ores::logging::debug)
             << "The reports that bind configuration " << configuration_id
             << " could not be read, so the page states them as unknown.";
         return "null";

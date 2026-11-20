@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.ore.core/xml/generated/conventions.hpp"
@@ -174,5 +174,5 @@ TEST_CASE("every seeded configuration type the codec carries names its root elem
         }
         CHECK(opens_with_element("<" + written->second + "/>", type.ore_root_element));
     }
-    BOOST_LOG_SEV(lg, info) << "Checked " << types.size() << " configuration types";
+    ORES_LOG_SEV(lg, info) << "Checked " << types.size() << " configuration types";
 }

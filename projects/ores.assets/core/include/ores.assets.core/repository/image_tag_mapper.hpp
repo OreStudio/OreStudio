@@ -28,7 +28,7 @@
 #include "ores.assets.api/domain/image_tag.hpp"
 #include "ores.assets.core/export.hpp"
 #include "ores.assets.core/repository/image_tag_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::assets::repository {
 

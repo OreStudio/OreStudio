@@ -25,7 +25,7 @@
 #include "ores.compute.core/repository/grid_sample_repository.hpp"
 #include "ores.compute.core/repository/node_sample_repository.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -216,16 +216,16 @@ TEST_CASE("read_latest_node_samples_sees_own_and_system_tenants_but_not_a_third"
     repo.write(h.context().with_tenant(system, h.db_user()), system_row);
     repo.write(h.context().with_tenant(third, h.db_user()), third_row);
 
-    BOOST_LOG_SEV(lg, debug) << "Own host: " << boost::uuids::to_string(own_row.host_id)
-                             << " system host: " << boost::uuids::to_string(system_row.host_id)
-                             << " third host: " << boost::uuids::to_string(third_row.host_id);
+    ORES_LOG_SEV(lg, debug) << "Own host: " << boost::uuids::to_string(own_row.host_id)
+                            << " system host: " << boost::uuids::to_string(system_row.host_id)
+                            << " third host: " << boost::uuids::to_string(third_row.host_id);
 
     compute_telemetry_repository telemetry;
     const auto hosts = host_ids_of(telemetry.latest_node_samples(h.context()));
-    BOOST_LOG_SEV(lg, info) << "The fleet read returned " << hosts.size()
-                            << " host(s); it must include the session's own "
-                            << "tenant and the system tenant, and no third tenant.";
-    BOOST_LOG_SEV(lg, debug) << "Read host count: " << hosts.size();
+    ORES_LOG_SEV(lg, info) << "The fleet read returned " << hosts.size()
+                           << " host(s); it must include the session's own "
+                           << "tenant and the system tenant, and no third tenant.";
+    ORES_LOG_SEV(lg, debug) << "Read host count: " << hosts.size();
 
     CHECK(std::ranges::contains(hosts, boost::uuids::to_string(own_row.host_id)));
     CHECK(std::ranges::contains(hosts, boost::uuids::to_string(system_row.host_id)));
@@ -276,17 +276,17 @@ TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant
     repo.write(h.context().with_tenant(system, h.db_user()), system_row);
     repo.write(h.context().with_tenant(third, h.db_user()), third_row);
 
-    BOOST_LOG_SEV(lg, debug) << "Own id: " << boost::uuids::to_string(own_row.id)
-                             << " system id: " << boost::uuids::to_string(system_row.id)
-                             << " third id: " << boost::uuids::to_string(third_row.id);
+    ORES_LOG_SEV(lg, debug) << "Own id: " << boost::uuids::to_string(own_row.id)
+                            << " system id: " << boost::uuids::to_string(system_row.id)
+                            << " third id: " << boost::uuids::to_string(third_row.id);
 
     const auto newest = repo.read_newest(h.context());
     REQUIRE(newest.has_value());
-    BOOST_LOG_SEV(lg, info) << "The newest grid sample belongs to tenant "
-                            << newest->tenant_id.to_string()
-                            << "; it must be the system tenant's, not a newer "
-                            << "third tenant's row.";
-    BOOST_LOG_SEV(lg, debug) << "Newest id: " << boost::uuids::to_string(newest->id);
+    ORES_LOG_SEV(lg, info) << "The newest grid sample belongs to tenant "
+                           << newest->tenant_id.to_string()
+                           << "; it must be the system tenant's, not a newer "
+                           << "third tenant's row.";
+    ORES_LOG_SEV(lg, debug) << "Newest id: " << boost::uuids::to_string(newest->id);
 
     CHECK(newest->id != own_row.id);
     CHECK(newest->id != third_row.id);
@@ -361,9 +361,9 @@ TEST_CASE("grid_series_holds_the_newest_sample_of_each_bucket_and_marks_the_gaps
     compute_telemetry_repository telemetry;
     const auto series = telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(240), 60);
 
-    BOOST_LOG_SEV(lg, info) << "The series has " << series.bucket_count
-                            << " bucket(s); each column must hold the newest sample of its "
-                               "bucket, and the empty buckets must say they hold no sample.";
+    ORES_LOG_SEV(lg, info) << "The series has " << series.bucket_count
+                           << " bucket(s); each column must hold the newest sample of its "
+                              "bucket, and the empty buckets must say they hold no sample.";
 
     CHECK(series.start == t0);
     CHECK(series.bucket_seconds == 60);
@@ -656,8 +656,8 @@ TEST_CASE("node_series_sums_the_interval_counters_and_orders_the_nodes_by_machin
     compute_telemetry_repository telemetry;
     const auto series = telemetry.node_series_in_range(h.context(), t0, t0 + seconds(180), 60);
 
-    BOOST_LOG_SEV(lg, info) << "The node series lists " << series.nodes.size() << " node(s) over "
-                            << series.bucket_count << " bucket(s).";
+    ORES_LOG_SEV(lg, info) << "The node series lists " << series.nodes.size() << " node(s) over "
+                           << series.bucket_count << " bucket(s).";
 
     REQUIRE(series.bucket_count == 3);
     REQUIRE(series.nodes.size() == 2);

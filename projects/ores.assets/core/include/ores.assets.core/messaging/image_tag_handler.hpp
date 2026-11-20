@@ -28,7 +28,7 @@
 #include "ores.assets.api/messaging/image_tag_protocol.hpp"
 #include "ores.assets.core/service/image_tag_service.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -73,7 +73,7 @@ public:
      * @brief Serves assets.v1.image_tags.list.
      */
     void list_image_tags(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -88,20 +88,20 @@ public:
         }
         auto req = decode<list_image_tags_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::image_tag_service svc(req_ctx);
         try {
             auto response = svc.list_image_tags(*req);
-            BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
             list_image_tags_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -114,7 +114,7 @@ public:
      * @brief Serves assets.v1.image_tags.get.
      */
     void get_image_tag(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -129,20 +129,20 @@ public:
         }
         auto req = decode<get_image_tag_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::image_tag_service svc(req_ctx);
         try {
             auto response = svc.get_image_tag(*req);
-            BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_image_tag_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -155,7 +155,7 @@ public:
      * @brief Serves assets.v1.image_tags.get_many.
      */
     void get_many_image_tags(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -170,20 +170,20 @@ public:
         }
         auto req = decode<get_many_image_tags_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::image_tag_service svc(req_ctx);
         try {
             auto response = svc.get_many_image_tags(*req);
-            BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_many_image_tags_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -196,7 +196,7 @@ public:
      * @brief Serves assets.v1.image_tags.put.
      */
     void put_image_tag(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -211,20 +211,20 @@ public:
         }
         auto req = decode<put_image_tag_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::image_tag_service svc(req_ctx);
         try {
             auto response = svc.put_image_tag(*req);
-            BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
             put_image_tag_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -237,7 +237,7 @@ public:
      * @brief Serves assets.v1.image_tags.put_many.
      */
     void put_many_image_tags(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -252,20 +252,20 @@ public:
         }
         auto req = decode<put_many_image_tags_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::image_tag_service svc(req_ctx);
         try {
             auto response = svc.put_many_image_tags(*req);
-            BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
             put_many_image_tags_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -278,7 +278,7 @@ public:
      * @brief Serves assets.v1.image_tags.delete.
      */
     void delete_image_tag(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -293,20 +293,20 @@ public:
         }
         auto req = decode<delete_image_tag_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::image_tag_service svc(req_ctx);
         try {
             auto response = svc.delete_image_tag(*req);
-            BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
             delete_image_tag_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -319,7 +319,7 @@ public:
      * @brief Serves assets.v1.image_tags.delete_many.
      */
     void delete_many_image_tags(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -334,20 +334,20 @@ public:
         }
         auto req = decode<delete_many_image_tags_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::image_tag_service svc(req_ctx);
         try {
             auto response = svc.delete_many_image_tags(*req);
-            BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
             delete_many_image_tags_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -360,7 +360,7 @@ public:
      * @brief Serves assets.v1.image_tags.list_by_image_id.
      */
     void list_by_image_id_image_tags(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -375,20 +375,20 @@ public:
         }
         auto req = decode<list_by_image_id_image_tags_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::image_tag_service svc(req_ctx);
         try {
             auto response = svc.list_by_image_id_image_tags(*req);
-            BOOST_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(image_tag_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(image_tag_handler_lg(), error) << msg.subject << " failed: " << e.what();
             list_by_image_id_image_tags_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";

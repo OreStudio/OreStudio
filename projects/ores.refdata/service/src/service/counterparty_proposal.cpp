@@ -637,7 +637,7 @@ counterparty_apply counterparty_proposal_service::apply(const std::string& reque
         out.lines_applied = 0;
         out.refusal = e.what();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(counterparty_proposal_log(), error)
+        ORES_LOG_SEV(counterparty_proposal_log(), error)
             << "Applying request " << request_id << " failed: " << e.what();
         return {.transient = true, .refusal = e.what()};
     }
@@ -649,14 +649,14 @@ counterparty_apply counterparty_proposal_service::apply(const std::string& reque
         const auto moved = lifecycle.fail_apply(
             request_id, "Line " + std::to_string(out.failed_line) + ": " + out.refusal);
         if (moved.outcome != "ok") {
-            BOOST_LOG_SEV(counterparty_proposal_log(), warn)
+            ORES_LOG_SEV(counterparty_proposal_log(), warn)
                 << "Request " << request_id << " was refused but is " << moved.state_code
                 << ", not apply_failed: " << moved.message;
         }
     } catch (const std::exception& e) {
         // Nothing was written and the request is still approved, so the apply may
         // run again and meet the same refusal.
-        BOOST_LOG_SEV(counterparty_proposal_log(), error)
+        ORES_LOG_SEV(counterparty_proposal_log(), error)
             << "Request " << request_id << " could not be moved to apply_failed: " << e.what();
         return {.transient = true, .refusal = e.what()};
     }

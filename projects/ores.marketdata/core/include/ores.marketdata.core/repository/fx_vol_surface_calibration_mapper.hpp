@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_FX_VOL_SURFACE_CALIBRATION_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_FX_VOL_SURFACE_CALIBRATION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/fx_vol_surface_calibration.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_calibration_entity.hpp"

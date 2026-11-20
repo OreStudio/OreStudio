@@ -29,7 +29,7 @@
 #include "ores.iam.api/domain/account_type.hpp"
 #include "ores.iam.api/messaging/account_type_protocol.hpp"
 #include "ores.iam.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>

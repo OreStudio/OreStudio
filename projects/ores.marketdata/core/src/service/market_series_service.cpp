@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -459,12 +457,12 @@ market_series_service::prepare_change(const messaging::market_series_change& cha
 
 std::vector<domain::market_series> market_series_service::list_market_series(std::uint32_t offset,
                                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all market series";
+    ORES_LOG_SEV(lg(), debug) << "Listing all market series";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t market_series_service::count_market_series() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total market series count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total market series count";
     return repo_.get_total_market_series_count(ctx_);
 }
 
@@ -472,14 +470,14 @@ std::uint32_t market_series_service::count_market_series() {
 std::optional<domain::market_series>
 market_series_service::get_market_series_at_version(const boost::uuids::uuid& id,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market series at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting market series at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::market_series>
 market_series_service::get_market_series(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market series. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting market series. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -494,11 +492,11 @@ market_series_service::get_market_series(const std::vector<std::string>& ids) {
 void market_series_service::save_market_series(const domain::market_series& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Market Series id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market series. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving market series. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market series. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved market series. " << "id: " << v.id;
 }
 
 void market_series_service::save_market_series(
@@ -507,7 +505,7 @@ void market_series_service::save_market_series(
         if (e.id.is_nil())
             throw std::invalid_argument("Market Series id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << market_series.size() << " market series";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << market_series.size() << " market series";
     auto ts = market_series;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -516,9 +514,9 @@ void market_series_service::save_market_series(
 }
 
 void market_series_service::delete_market_series(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market series. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market series. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed market series. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed market series. " << "id: " << id;
 }
 
 void market_series_service::delete_market_series(const std::vector<std::string>& ids) {
@@ -527,7 +525,7 @@ void market_series_service::delete_market_series(const std::vector<std::string>&
 
 std::vector<domain::market_series>
 market_series_service::get_market_series_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market series. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for market series. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

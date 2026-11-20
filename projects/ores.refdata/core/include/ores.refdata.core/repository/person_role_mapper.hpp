@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PERSON_ROLE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PERSON_ROLE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/person_role.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/person_role_entity.hpp"

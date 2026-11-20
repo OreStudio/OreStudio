@@ -18,8 +18,7 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/business_unit_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/business_unit_generator.hpp"
@@ -31,7 +30,6 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -84,7 +82,7 @@ TEST_CASE("write_single_business_unit", "[repository]") {
     auto bu = generate_synthetic_business_unit(ctx);
     bu.change_reason_code = "system.test";
     bu.party_id = *party_ctx.party_id();
-    BOOST_LOG_SEV(lg, debug) << "Business unit: " << bu;
+    ORES_LOG_SEV(lg, debug) << "Business unit: " << bu;
 
     business_unit_repository repo;
     repo.write(party_ctx, bu);
@@ -106,7 +104,7 @@ TEST_CASE("write_multiple_business_units", "[repository]") {
         bu.change_reason_code = "system.test";
         bu.party_id = *party_ctx.party_id();
     }
-    BOOST_LOG_SEV(lg, debug) << "Business units: " << units;
+    ORES_LOG_SEV(lg, debug) << "Business units: " << units;
 
     business_unit_repository repo;
     repo.write(party_ctx, units);
@@ -131,13 +129,13 @@ TEST_CASE("read_latest_business_units", "[repository]") {
         bu.change_reason_code = "system.test";
         bu.party_id = *party_ctx.party_id();
     }
-    BOOST_LOG_SEV(lg, debug) << "Written business units: " << written;
+    ORES_LOG_SEV(lg, debug) << "Written business units: " << written;
 
     business_unit_repository repo;
     repo.write(party_ctx, written);
 
     auto read = repo.read_latest(party_ctx);
-    BOOST_LOG_SEV(lg, debug) << "Read business units: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read business units: " << read;
 
     for (const auto& expected : written) {
         const auto it =
@@ -163,7 +161,7 @@ TEST_CASE("read_latest_business_units_paginated", "[repository]") {
     repo.write(party_ctx, written);
 
     auto page = repo.read_latest(party_ctx, 0, 2);
-    BOOST_LOG_SEV(lg, debug) << "Paginated business units: " << page;
+    ORES_LOG_SEV(lg, debug) << "Paginated business units: " << page;
 
     REQUIRE(page.size() == 2);
     for (const auto& row : page) {
@@ -190,7 +188,7 @@ TEST_CASE("get_total_business_unit_count", "[repository]") {
     repo.write(party_ctx, written);
 
     const auto count = repo.get_total_business_unit_count(party_ctx);
-    BOOST_LOG_SEV(lg, debug) << "Total business unit count: " << count;
+    ORES_LOG_SEV(lg, debug) << "Total business unit count: " << count;
 
     CHECK(count >= written.size());
 }
@@ -205,7 +203,7 @@ TEST_CASE("read_latest_business_unit_by_id", "[repository]") {
     bu.change_reason_code = "system.test";
     bu.party_id = *party_ctx.party_id();
     const auto original_name = bu.unit_name;
-    BOOST_LOG_SEV(lg, debug) << "Business unit: " << bu;
+    ORES_LOG_SEV(lg, debug) << "Business unit: " << bu;
 
     business_unit_repository repo;
     repo.write(party_ctx, bu);
@@ -215,7 +213,7 @@ TEST_CASE("read_latest_business_unit_by_id", "[repository]") {
 
     const auto id_str = boost::uuids::to_string(bu.id);
     auto read = repo.read_latest(party_ctx, id_str);
-    BOOST_LOG_SEV(lg, debug) << "Read business units by id: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read business units by id: " << read;
 
     REQUIRE(read.size() == 1);
     CHECK(read[0].id == bu.id);
@@ -232,7 +230,7 @@ TEST_CASE("read_all_business_unit_versions", "[repository]") {
     bu.change_reason_code = "system.test";
     bu.party_id = *party_ctx.party_id();
     const auto original_name = bu.unit_name;
-    BOOST_LOG_SEV(lg, debug) << "Business unit: " << bu;
+    ORES_LOG_SEV(lg, debug) << "Business unit: " << bu;
 
     business_unit_repository repo;
     repo.write(party_ctx, bu);
@@ -242,7 +240,7 @@ TEST_CASE("read_all_business_unit_versions", "[repository]") {
 
     const auto id_str = boost::uuids::to_string(bu.id);
     auto all_versions = repo.read_all(party_ctx, id_str);
-    BOOST_LOG_SEV(lg, debug) << "All versions: " << all_versions;
+    ORES_LOG_SEV(lg, debug) << "All versions: " << all_versions;
 
     const auto v1 =
         std::ranges::find_if(all_versions, [](const business_unit& b) { return b.version == 1; });
@@ -265,7 +263,7 @@ TEST_CASE("read_business_unit_at_version", "[repository]") {
     bu.change_reason_code = "system.test";
     bu.party_id = *party_ctx.party_id();
     const auto original_name = bu.unit_name;
-    BOOST_LOG_SEV(lg, debug) << "Business unit: " << bu;
+    ORES_LOG_SEV(lg, debug) << "Business unit: " << bu;
 
     business_unit_repository repo;
     repo.write(party_ctx, bu);
@@ -275,8 +273,8 @@ TEST_CASE("read_business_unit_at_version", "[repository]") {
 
     const auto id_str = boost::uuids::to_string(bu.id);
     auto v1 = repo.read_at_version(party_ctx, id_str, 1);
-    BOOST_LOG_SEV(lg, debug) << "Business unit at version 1: "
-                             << (v1 ? v1->unit_name : "(not found)");
+    ORES_LOG_SEV(lg, debug) << "Business unit at version 1: "
+                            << (v1 ? v1->unit_name : "(not found)");
 
     REQUIRE(v1.has_value());
     CHECK(v1->unit_name == original_name);
@@ -295,7 +293,7 @@ TEST_CASE("remove_business_unit", "[repository]") {
     auto keeper = generate_synthetic_business_unit(ctx);
     keeper.change_reason_code = "system.test";
     keeper.party_id = *party_ctx.party_id();
-    BOOST_LOG_SEV(lg, debug) << "Business unit: " << bu;
+    ORES_LOG_SEV(lg, debug) << "Business unit: " << bu;
 
     business_unit_repository repo;
     repo.write(party_ctx, bu);
@@ -309,7 +307,7 @@ TEST_CASE("remove_business_unit", "[repository]") {
     repo.remove(party_ctx, id_str);
 
     auto after_remove = repo.read_latest(party_ctx, id_str);
-    BOOST_LOG_SEV(lg, debug) << "After remove: " << after_remove;
+    ORES_LOG_SEV(lg, debug) << "After remove: " << after_remove;
 
     // The removed row is gone from the read, and the same read still answers
     // for the row that was not removed.

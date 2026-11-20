@@ -24,11 +24,9 @@
  */
 #include "ores.trading.core/repository/activity_category_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/activity_category.hpp"
 #include "ores.trading.api/domain/activity_category_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/activity_category_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <vector>
 
@@ -38,7 +36,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::activity_category activity_category_mapper::map(const activity_category_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::activity_category r;
     r.version = v.version;
@@ -51,12 +49,12 @@ domain::activity_category activity_category_mapper::map(const activity_category_
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 activity_category_entity activity_category_mapper::map(const domain::activity_category& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     activity_category_entity r;
     r.code = v.code;
@@ -68,7 +66,7 @@ activity_category_entity activity_category_mapper::map(const domain::activity_ca
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

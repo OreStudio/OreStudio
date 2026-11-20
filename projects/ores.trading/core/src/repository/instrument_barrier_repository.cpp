@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/instrument_barrier.hpp"
 #include "ores.trading.api/domain/instrument_barrier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/instrument_barrier_protocol.hpp"
 #include "ores.trading.core/repository/instrument_barrier_entity.hpp"
 #include "ores.trading.core/repository/instrument_barrier_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -238,9 +236,9 @@ void instrument_barrier_repository::write(const context& ctx,
 void instrument_barrier_repository::write(const context& ctx,
                                           const domain::instrument_barrier& v,
                                           const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing instrument barrier. " << "trade_id: " << v.trade_id
-                               << " barrier_role: " << v.barrier_role
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Writing instrument barrier. " << "trade_id: " << v.trade_id
+                              << " barrier_role: " << v.barrier_role
+                              << " sequence_number: " << v.sequence_number;
     const auto t =
         instrument_barrier_apply_claim(v,
                                        claim,
@@ -258,7 +256,7 @@ void instrument_barrier_repository::write(
     const context& ctx,
     const std::vector<domain::instrument_barrier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing instrument barriers. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing instrument barriers. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "instrument_barrier_repository::write: one claim is needed for each row");
@@ -300,9 +298,9 @@ instrument_barrier_repository::read_latest(const context& ctx,
                                            const std::string& trade_id,
                                            const std::string& barrier_role,
                                            const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument barrier. " << "trade_id: " << trade_id
-                               << " barrier_role: " << barrier_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest instrument barrier. " << "trade_id: " << trade_id
+                              << " barrier_role: " << barrier_role
+                              << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -325,9 +323,9 @@ instrument_barrier_repository::read_all(const context& ctx,
                                         const std::string& trade_id,
                                         const std::string& barrier_role,
                                         const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all instrument barrier versions. "
-                               << "trade_id: " << trade_id << " barrier_role: " << barrier_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading all instrument barrier versions. "
+                              << "trade_id: " << trade_id << " barrier_role: " << barrier_role
+                              << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_barrier_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
@@ -349,10 +347,9 @@ instrument_barrier_repository::read_at_version(const context& ctx,
                                                const std::string& barrier_role,
                                                const std::string& sequence_number,
                                                std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading instrument barrier at version. "
-                               << "trade_id: " << trade_id << " barrier_role: " << barrier_role
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading instrument barrier at version. "
+                              << "trade_id: " << trade_id << " barrier_role: " << barrier_role
+                              << " sequence_number: " << sequence_number << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<instrument_barrier_entity>> |
@@ -381,8 +378,8 @@ std::vector<domain::instrument_barrier> instrument_barrier_repository::read_late
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::instrument_barriers_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument barriers. trade_id: " << trade_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest instrument barriers. trade_id: " << trade_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_barrier_entity>> |
@@ -406,8 +403,8 @@ std::uint32_t instrument_barrier_repository::get_total_instrument_barrier_count_
     const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::instrument_barriers_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument barriers count. trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active instrument barriers count. trade_id: "
+                              << trade_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -430,9 +427,9 @@ instrument_barrier_repository::remove(const context& ctx,
                                       const std::string& barrier_role,
                                       const std::string& sequence_number,
                                       std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument barrier. " << "trade_id: " << trade_id
-                               << " barrier_role: " << barrier_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Removing instrument barrier. " << "trade_id: " << trade_id
+                              << " barrier_role: " << barrier_role
+                              << " sequence_number: " << sequence_number;
     const auto current = read_latest(ctx, trade_id, barrier_role, sequence_number);
     if (current.empty())
         return remove_status::missing;
@@ -476,8 +473,8 @@ std::vector<domain::instrument_barrier> instrument_barrier_repository::read_late
     const ores::utility::domain::order& order,
     const std::optional<messaging::instrument_barriers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument barriers with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest instrument barriers with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_barrier_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -500,7 +497,7 @@ std::uint32_t instrument_barrier_repository::get_total_instrument_barrier_count(
     const context& ctx,
     const std::optional<messaging::instrument_barriers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument barrier count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active instrument barrier count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_barrier_entity>> |

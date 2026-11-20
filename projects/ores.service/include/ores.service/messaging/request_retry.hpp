@@ -20,8 +20,7 @@
 #ifndef ORES_SERVICE_MESSAGING_REQUEST_RETRY_HPP
 #define ORES_SERVICE_MESSAGING_REQUEST_RETRY_HPP
 
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_connect_error.hpp"
 #include "ores.nats/service/timeouts.hpp"
 #include "ores.service/messaging/service_error.hpp"
@@ -214,7 +213,7 @@ auto call_with_retry(Operation&& operation, const retry_call_options& options)
             const auto line = options.what + ": attempt " + std::to_string(attempt) + " failed (" +
                               failure.what() + "); asking again in " +
                               std::to_string(wait_for.count()) + " ms";
-            BOOST_LOG_SEV(lg, ores::logging::warn) << line;
+            ORES_LOG_SEV(lg, ores::logging::warn) << line;
             // The step's own record carries the attempt, so the person
             // watching the run reads it without a service log.
             if (options.note)
@@ -241,9 +240,8 @@ auto call_with_retry(Operation&& operation, const retry_call_options& options)
  * @param work Does the work and answers its result.
  */
 template <typename ReadBack, typename Work>
-auto do_unless_already_done(const retry_attempt& attempt,
-                            ReadBack&& read_back,
-                            Work&& work) -> std::invoke_result_t<Work> {
+auto do_unless_already_done(const retry_attempt& attempt, ReadBack&& read_back, Work&& work)
+    -> std::invoke_result_t<Work> {
     if (attempt.number > 1) {
         if (auto found = read_back())
             return std::move(*found);

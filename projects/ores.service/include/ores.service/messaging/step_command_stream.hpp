@@ -20,7 +20,7 @@
 #ifndef ORES_SERVICE_MESSAGING_STEP_COMMAND_STREAM_HPP
 #define ORES_SERVICE_MESSAGING_STEP_COMMAND_STREAM_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -312,8 +312,8 @@ serve_step_commands(ores::nats::service::client& nats,
     // takes names one identity rather than one per delivery.
     const std::string claim_owner = ores::workflow::messaging::step_claim_owner(service_name);
 
-    BOOST_LOG_SEV(detail::lg(), info) << "Serving " << subjects.size() << " step command(s) on '"
-                                      << stream << "' as '" << durable << "'";
+    ORES_LOG_SEV(detail::lg(), info) << "Serving " << subjects.size() << " step command(s) on '"
+                                     << stream << "' as '" << durable << "'";
 
     // The workers belong to the subscription's callback, so they are joined
     // when the subscription is: no step outlives the service that took it.
@@ -346,7 +346,7 @@ serve_step_commands(ores::nats::service::client& nats,
                     // and come back after a pause: an immediate redelivery
                     // lands on the same live lease, loses the same race,
                     // and spends the delivery budget in a loop.
-                    BOOST_LOG_SEV(detail::lg(), info)
+                    ORES_LOG_SEV(detail::lg(), info)
                         << "Step " << wf->step_id << " is held by another delivery; retrying "
                         << msg.subject << " in "
                         << ores::workflow::messaging::step_claim_hold_off.count() << "ms";
@@ -363,7 +363,7 @@ serve_step_commands(ores::nats::service::client& nats,
                 }
                 if (outcome == step_claim_outcome::unknown) {
                     // No such step, and nothing can ever serve it.
-                    BOOST_LOG_SEV(detail::lg(), warn)
+                    ORES_LOG_SEV(detail::lg(), warn)
                         << "Step " << wf->step_id << " is not a workflow step; rejecting "
                         << msg.subject;
                     std::move(delivery).reject();
@@ -377,7 +377,7 @@ serve_step_commands(ores::nats::service::client& nats,
                     // retry burns the whole delivery budget in a burst,
                     // so the bound would be seconds rather than the
                     // minutes it is written to be.
-                    BOOST_LOG_SEV(detail::lg(), warn)
+                    ORES_LOG_SEV(detail::lg(), warn)
                         << "Could not claim step " << wf->step_id << " for " << msg.subject
                         << "; retrying in "
                         << ores::workflow::messaging::step_claim_hold_off.count()
@@ -387,7 +387,7 @@ serve_step_commands(ores::nats::service::client& nats,
                     return;
                 }
                 claimed_step = wf->step_id;
-                BOOST_LOG_SEV(detail::lg(), info)
+                ORES_LOG_SEV(detail::lg(), info)
                     << "Step " << claimed_step << " claimed by " << claim_owner
                     << "; running its handler for " << msg.subject;
 
@@ -420,19 +420,19 @@ serve_step_commands(ores::nats::service::client& nats,
                                               std::chrono::steady_clock::now() - claimed_at)
                                               .count();
                         if (outcome == step_renewal_outcome::renewed) {
-                            BOOST_LOG_SEV(detail::lg(), info)
+                            ORES_LOG_SEV(detail::lg(), info)
                                 << "Step " << step << " still running after " << held
                                 << "s; its claim's lease is renewed";
                             return true;
                         }
                         if (outcome == step_renewal_outcome::lost) {
-                            BOOST_LOG_SEV(detail::lg(), error)
+                            ORES_LOG_SEV(detail::lg(), error)
                                 << "Step " << step << " lost its claim after " << held
                                 << "s while its handler still runs (" << state
                                 << "); another delivery may now run its work";
                             return false;
                         }
-                        BOOST_LOG_SEV(detail::lg(), warn)
+                        ORES_LOG_SEV(detail::lg(), warn)
                             << "Step " << step << " could not renew its claim after " << held
                             << "s (" << state << "); trying again in "
                             << step_claim_renew_interval.count() << "s";
@@ -468,19 +468,19 @@ serve_step_commands(ores::nats::service::client& nats,
                     handler(std::move(delivery));
                 } catch (const std::exception& e) {
                     if (!claimed_step.empty())
-                        BOOST_LOG_SEV(detail::lg(), error)
+                        ORES_LOG_SEV(detail::lg(), error)
                             << "Step " << claimed_step << " handler for " << served
                             << " threw after " << ran_for() << "s: " << e.what();
                     throw;
                 } catch (...) {
                     if (!claimed_step.empty())
-                        BOOST_LOG_SEV(detail::lg(), error)
+                        ORES_LOG_SEV(detail::lg(), error)
                             << "Step " << claimed_step << " handler for " << served
                             << " threw a non-standard exception after " << ran_for() << "s";
                     throw;
                 }
                 if (!claimed_step.empty())
-                    BOOST_LOG_SEV(detail::lg(), info)
+                    ORES_LOG_SEV(detail::lg(), info)
                         << "Step " << claimed_step << " handler for " << served
                         << " returned after " << ran_for() << "s";
             };
@@ -496,10 +496,10 @@ serve_step_commands(ores::nats::service::client& nats,
                 try {
                     run();
                 } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(detail::lg(), error)
+                    ORES_LOG_SEV(detail::lg(), error)
                         << "A step handler threw on a worker: " << e.what();
                 } catch (...) {
-                    BOOST_LOG_SEV(detail::lg(), error)
+                    ORES_LOG_SEV(detail::lg(), error)
                         << "A step handler threw a non-standard exception on a worker";
                 }
             });
@@ -509,7 +509,7 @@ serve_step_commands(ores::nats::service::client& nats,
         // that matches none is a programming error. Reject it, because
         // nothing can ever serve it and the server would otherwise
         // redeliver it until the bound.
-        BOOST_LOG_SEV(detail::lg(), error)
+        ORES_LOG_SEV(detail::lg(), error)
             << "No step-command handler for delivered subject " << served;
         std::move(delivery).reject();
     };

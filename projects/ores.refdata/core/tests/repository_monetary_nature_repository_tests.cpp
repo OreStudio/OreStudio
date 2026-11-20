@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/monetary_nature_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/monetary_nature_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -49,7 +47,7 @@ TEST_CASE("write_single_monetary_nature", "[repository]") {
     auto mn = generate_synthetic_monetary_nature(ctx);
     mn.code = mn.code + "_" + std::string(faker::string::alphanumeric(8));
     mn.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Monetary nature: " << mn;
+    ORES_LOG_SEV(lg, debug) << "Monetary nature: " << mn;
 
     monetary_nature_repository repo;
     repo.write(h.context(), mn);
@@ -75,7 +73,7 @@ TEST_CASE("read_latest_monetary_natures_no_duplicate_codes", "[repository]") {
     // system-tenant seed rows appear alongside the tenant's provisioned
     // copies, duplicating every code in the UI.
     auto read_monetary_natures = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read monetary natures: " << read_monetary_natures;
+    ORES_LOG_SEV(lg, debug) << "Read monetary natures: " << read_monetary_natures;
 
     // The read answers for the row that was written.
     const auto keeper_it = std::ranges::find_if(
@@ -98,7 +96,7 @@ TEST_CASE("read_latest_monetary_nature_by_code", "[repository]") {
     mn.code = mn.code + "_" + std::string(faker::string::alphanumeric(8));
     mn.change_reason_code = "system.test";
     const auto original_name = mn.name;
-    BOOST_LOG_SEV(lg, debug) << "Monetary nature: " << mn;
+    ORES_LOG_SEV(lg, debug) << "Monetary nature: " << mn;
 
     monetary_nature_repository repo;
     repo.write(h.context(), mn);
@@ -107,7 +105,7 @@ TEST_CASE("read_latest_monetary_nature_by_code", "[repository]") {
     repo.write(h.context(), mn);
 
     auto read_monetary_natures = repo.read_latest(h.context(), mn.code);
-    BOOST_LOG_SEV(lg, debug) << "Read monetary natures: " << read_monetary_natures;
+    ORES_LOG_SEV(lg, debug) << "Read monetary natures: " << read_monetary_natures;
 
     REQUIRE(read_monetary_natures.size() == 1);
     CHECK(read_monetary_natures[0].code == mn.code);
@@ -129,10 +127,10 @@ TEST_CASE("read_nonexistent_monetary_nature_code", "[repository]") {
     repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_monetary_natures = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read monetary natures: " << read_monetary_natures;
+    ORES_LOG_SEV(lg, debug) << "Read monetary natures: " << read_monetary_natures;
 
     const auto answered_with_another_key = std::ranges::any_of(
         read_monetary_natures, [&](const auto& mn) { return mn.code == nonexistent_code; });

@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/fx_volatility_smile.hpp"
 #include "ores.refdata.api/messaging/fx_volatility_smile_protocol.hpp"
 #include "ores.refdata.core/repository/fx_volatility_smile_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -465,12 +463,12 @@ fx_volatility_smile_service::prepare_change(const messaging::fx_volatility_smile
 
 std::vector<domain::fx_volatility_smile>
 fx_volatility_smile_service::list_fx_volatility_smiles(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all FX volatility smiles";
+    ORES_LOG_SEV(lg(), debug) << "Listing all FX volatility smiles";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t fx_volatility_smile_service::count_fx_volatility_smiles() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total FX volatility smiles count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total FX volatility smiles count";
     return repo_.get_total_fx_volatility_smile_count(ctx_);
 }
 
@@ -478,14 +476,14 @@ std::uint32_t fx_volatility_smile_service::count_fx_volatility_smiles() {
 std::optional<domain::fx_volatility_smile>
 fx_volatility_smile_service::get_fx_volatility_smile_at_version(const boost::uuids::uuid& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX volatility smile at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX volatility smile at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::fx_volatility_smile>
 fx_volatility_smile_service::get_fx_volatility_smile(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX volatility smile. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX volatility smile. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -500,11 +498,11 @@ fx_volatility_smile_service::get_fx_volatility_smiles(const std::vector<std::str
 void fx_volatility_smile_service::save_fx_volatility_smile(const domain::fx_volatility_smile& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("FX Volatility Smile id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving FX volatility smile. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving FX volatility smile. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved FX volatility smile. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved FX volatility smile. " << "id: " << v.id;
 }
 
 void fx_volatility_smile_service::save_fx_volatility_smiles(
@@ -513,8 +511,8 @@ void fx_volatility_smile_service::save_fx_volatility_smiles(
         if (e.id.is_nil())
             throw std::invalid_argument("FX Volatility Smile id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_volatility_smiles.size()
-                               << " FX volatility smiles";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << fx_volatility_smiles.size()
+                              << " FX volatility smiles";
     auto ts = fx_volatility_smiles;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -523,9 +521,9 @@ void fx_volatility_smile_service::save_fx_volatility_smiles(
 }
 
 void fx_volatility_smile_service::delete_fx_volatility_smile(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX volatility smile. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing FX volatility smile. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed FX volatility smile. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed FX volatility smile. " << "id: " << id;
 }
 
 void fx_volatility_smile_service::delete_fx_volatility_smiles(const std::vector<std::string>& ids) {
@@ -534,7 +532,7 @@ void fx_volatility_smile_service::delete_fx_volatility_smiles(const std::vector<
 
 std::vector<domain::fx_volatility_smile>
 fx_volatility_smile_service::get_fx_volatility_smile_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for FX volatility smile. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for FX volatility smile. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

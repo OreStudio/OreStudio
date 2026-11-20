@@ -336,7 +336,7 @@ boost::asio::awaitable<http_response> party_routes::handle_version(const http_re
 void party_routes::register_routes(std::shared_ptr<ores::http::net::router> router,
                                    std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                    nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering parties routes";
+    ORES_LOG_SEV(lg(), info) << "Registering parties routes";
 
     auto list_route =
         router->get("/api/v1/reference-data/parties")
@@ -482,7 +482,7 @@ void party_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "parties routes registered: " << 10 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "parties routes registered: " << 10 << " endpoint(s)";
 }
 
 }

@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/messaging/permission_protocol.hpp"
 #include "ores.iam.core/repository/permission_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -42,7 +41,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -404,18 +402,18 @@ permission_service::prepare_change(const messaging::permission_change& change,
 
 std::vector<domain::permission> permission_service::list_permissions(std::uint32_t offset,
                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all permissions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all permissions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t permission_service::count_permissions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total permissions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total permissions count";
     return repo_.get_total_permission_count(ctx_);
 }
 
 
 std::optional<domain::permission> permission_service::get_permission(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting permission. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting permission. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -424,7 +422,7 @@ std::optional<domain::permission> permission_service::get_permission(const boost
 
 std::optional<domain::permission>
 permission_service::get_permission_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting permission by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting permission by code: " << code;
     messaging::permission_key k;
     k.code = code;
     auto found = permission_read_one(repo_, ctx_, k);
@@ -435,7 +433,7 @@ permission_service::get_permission_by_code(const std::string& code) {
 
 std::optional<domain::permission>
 permission_service::find_permission_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding permission by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding permission by code: " << code;
     auto results = repo_.read_latest_by_code(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -450,11 +448,11 @@ permission_service::get_permissions(const std::vector<std::string>& ids) {
 void permission_service::save_permission(const domain::permission& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Permission id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving permission. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving permission. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved permission. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved permission. " << "id: " << v.id;
 }
 
 void permission_service::save_permissions(const std::vector<domain::permission>& permissions) {
@@ -462,7 +460,7 @@ void permission_service::save_permissions(const std::vector<domain::permission>&
         if (e.id.is_nil())
             throw std::invalid_argument("Permission id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << permissions.size() << " permissions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << permissions.size() << " permissions";
     auto ts = permissions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -471,9 +469,9 @@ void permission_service::save_permissions(const std::vector<domain::permission>&
 }
 
 void permission_service::delete_permission(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing permission. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing permission. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed permission. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed permission. " << "id: " << id;
 }
 
 void permission_service::delete_permissions(const std::vector<std::string>& ids) {
@@ -481,7 +479,7 @@ void permission_service::delete_permissions(const std::vector<std::string>& ids)
 }
 
 std::vector<domain::permission> permission_service::get_permission_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for permission. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for permission. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

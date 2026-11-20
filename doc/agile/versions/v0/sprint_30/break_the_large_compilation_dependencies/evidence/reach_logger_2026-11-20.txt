@@ -1,0 +1,11 @@
+objects 981, targets 228
+
+ objects  targets  header
+     631      201  ores.logging/logger.hpp
+     125      125  ores.logging/boost_severity.hpp
+     633      203  ores.logging/severity_level.hpp
+       1        1  boost/log/sources/severity_channel_logger.hpp
+       2        2  boost/log/sources/severity_feature.hpp
+
+commit: 9d168e0cc15d659dd20b2f593f5f947fc898dd62
+command: header_blast_radius.parse_deps over `ninja -t deps` of build/output/linux-clang-release-ninja

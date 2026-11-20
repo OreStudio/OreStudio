@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/bond_leg_amount.hpp"
 #include "ores.trading.api/domain/bond_leg_amount_json_io.hpp" // IWYU pragma: keep.
@@ -34,7 +33,6 @@
 #include "ores.trading.core/repository/bond_leg_amount_entity.hpp"
 #include "ores.trading.core/repository/bond_leg_amount_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -255,10 +253,10 @@ void bond_leg_amount_repository::write(const context& ctx,
 void bond_leg_amount_repository::write(const context& ctx,
                                        const domain::bond_leg_amount& v,
                                        const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond leg amount. " << "trade_id: " << v.trade_id
-                               << " leg_role: " << v.leg_role << " leg_number: " << v.leg_number
-                               << " amount_role: " << v.amount_role
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Writing bond leg amount. " << "trade_id: " << v.trade_id
+                              << " leg_role: " << v.leg_role << " leg_number: " << v.leg_number
+                              << " amount_role: " << v.amount_role
+                              << " sequence_number: " << v.sequence_number;
     const auto t = bond_leg_amount_apply_claim(v,
                                                claim,
                                                bond_leg_amount_claim_reads_current(claim) ?
@@ -277,7 +275,7 @@ void bond_leg_amount_repository::write(
     const context& ctx,
     const std::vector<domain::bond_leg_amount>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond leg amounts. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing bond leg amounts. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "bond_leg_amount_repository::write: one claim is needed for each row");
@@ -320,10 +318,10 @@ bond_leg_amount_repository::read_latest(const context& ctx,
                                         const std::string& leg_number,
                                         const std::string& amount_role,
                                         const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond leg amount. " << "trade_id: " << trade_id
-                               << " leg_role: " << leg_role << " leg_number: " << leg_number
-                               << " amount_role: " << amount_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond leg amount. " << "trade_id: " << trade_id
+                              << " leg_role: " << leg_role << " leg_number: " << leg_number
+                              << " amount_role: " << amount_role
+                              << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -349,10 +347,10 @@ bond_leg_amount_repository::read_all(const context& ctx,
                                      const std::string& leg_number,
                                      const std::string& amount_role,
                                      const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all bond leg amount versions. "
-                               << "trade_id: " << trade_id << " leg_role: " << leg_role
-                               << " leg_number: " << leg_number << " amount_role: " << amount_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading all bond leg amount versions. "
+                              << "trade_id: " << trade_id << " leg_role: " << leg_role
+                              << " leg_number: " << leg_number << " amount_role: " << amount_role
+                              << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<bond_leg_amount_entity>> |
@@ -378,11 +376,10 @@ bond_leg_amount_repository::read_at_version(const context& ctx,
                                             const std::string& amount_role,
                                             const std::string& sequence_number,
                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading bond leg amount at version. " << "trade_id: " << trade_id
-                               << " leg_role: " << leg_role << " leg_number: " << leg_number
-                               << " amount_role: " << amount_role
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading bond leg amount at version. " << "trade_id: " << trade_id
+                              << " leg_role: " << leg_role << " leg_number: " << leg_number
+                              << " amount_role: " << amount_role
+                              << " sequence_number: " << sequence_number << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<bond_leg_amount_entity>> |
@@ -412,8 +409,8 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest_by_
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::bond_leg_amounts_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond leg amounts. trade_id: " << trade_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond leg amounts. trade_id: " << trade_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_leg_amount_entity>> |
@@ -437,8 +434,8 @@ std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count_by_tra
     const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::bond_leg_amounts_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amounts count. trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amounts count. trade_id: "
+                              << trade_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -460,7 +457,7 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_by_trade_i
     const std::string& trade_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading bond leg amounts as of window. trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading bond leg amounts as of window. trade_id: " << trade_id;
 
     const auto vf(valid_from_bound);
     const auto vt(valid_to_bound);
@@ -489,10 +486,10 @@ bond_leg_amount_repository::remove(const context& ctx,
                                    const std::string& amount_role,
                                    const std::string& sequence_number,
                                    std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond leg amount. " << "trade_id: " << trade_id
-                               << " leg_role: " << leg_role << " leg_number: " << leg_number
-                               << " amount_role: " << amount_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond leg amount. " << "trade_id: " << trade_id
+                              << " leg_role: " << leg_role << " leg_number: " << leg_number
+                              << " amount_role: " << amount_role
+                              << " sequence_number: " << sequence_number;
     const auto current =
         read_latest(ctx, trade_id, leg_role, leg_number, amount_role, sequence_number);
     if (current.empty())
@@ -542,8 +539,8 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::bond_leg_amounts_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond leg amounts with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond leg amounts with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_leg_amount_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -566,7 +563,7 @@ std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count(
     const context& ctx,
     const std::optional<messaging::bond_leg_amounts_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amount count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amount count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_leg_amount_entity>> |

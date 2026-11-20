@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_REPOSITORY_SCRIPT_CALIBRATION_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/script_calibration.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"

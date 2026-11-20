@@ -28,7 +28,7 @@
 #include "ores.compute.api/domain/platform.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/platform_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::compute::repository {
 

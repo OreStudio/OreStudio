@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_SERIES_CLASSIFICATION_RULE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/series_classification_rule_protocol.hpp"
 #include "ores.marketdata.core/service/series_classification_rule_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -75,7 +75,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_series_classification_rules(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -90,7 +90,7 @@ public:
         }
         auto req = decode<list_series_classification_rules_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -98,14 +98,14 @@ public:
         service::series_classification_rule_service svc(req_ctx);
         try {
             auto response = svc.list_series_classification_rules(*req);
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), error)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_series_classification_rules_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -125,7 +125,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_series_classification_rule(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -140,7 +140,7 @@ public:
         }
         auto req = decode<get_series_classification_rule_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -148,14 +148,14 @@ public:
         service::series_classification_rule_service svc(req_ctx);
         try {
             auto response = svc.get_series_classification_rule(*req);
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), error)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_series_classification_rule_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -175,7 +175,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_series_classification_rules(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -190,7 +190,7 @@ public:
         }
         auto req = decode<get_many_series_classification_rules_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -198,14 +198,14 @@ public:
         service::series_classification_rule_service svc(req_ctx);
         try {
             auto response = svc.get_many_series_classification_rules(*req);
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), error)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_series_classification_rules_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -225,7 +225,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_series_classification_rule(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -240,7 +240,7 @@ public:
         }
         auto req = decode<put_series_classification_rule_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -248,14 +248,14 @@ public:
         service::series_classification_rule_service svc(req_ctx);
         try {
             auto response = svc.put_series_classification_rule(*req);
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), error)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_series_classification_rule_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -275,7 +275,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_series_classification_rules(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -290,7 +290,7 @@ public:
         }
         auto req = decode<put_many_series_classification_rules_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -298,14 +298,14 @@ public:
         service::series_classification_rule_service svc(req_ctx);
         try {
             auto response = svc.put_many_series_classification_rules(*req);
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), error)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_series_classification_rules_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -325,7 +325,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_series_classification_rule(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -340,7 +340,7 @@ public:
         }
         auto req = decode<delete_series_classification_rule_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -348,14 +348,14 @@ public:
         service::series_classification_rule_service svc(req_ctx);
         try {
             auto response = svc.delete_series_classification_rule(*req);
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), error)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_series_classification_rule_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -375,7 +375,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_series_classification_rules(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -390,7 +390,7 @@ public:
         }
         auto req = decode<delete_many_series_classification_rules_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -398,14 +398,14 @@ public:
         service::series_classification_rule_service svc(req_ctx);
         try {
             auto response = svc.delete_many_series_classification_rules(*req);
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), error)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_series_classification_rules_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -425,7 +425,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_series_classification_rule_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -440,7 +440,7 @@ public:
         }
         auto req = decode<list_series_classification_rule_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -448,14 +448,14 @@ public:
         service::series_classification_rule_service svc(req_ctx);
         try {
             auto response = svc.list_series_classification_rule_versions(*req);
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), error)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_series_classification_rule_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -475,7 +475,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_series_classification_rule_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_classification_rule_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -490,7 +490,7 @@ public:
         }
         auto req = decode<get_series_classification_rule_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -498,14 +498,14 @@ public:
         service::series_classification_rule_service svc(req_ctx);
         try {
             auto response = svc.get_series_classification_rule_version(*req);
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), debug)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(series_classification_rule_handler_lg(), error)
+            ORES_LOG_SEV(series_classification_rule_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_series_classification_rule_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

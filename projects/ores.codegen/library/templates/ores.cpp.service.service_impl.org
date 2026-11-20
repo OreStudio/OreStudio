@@ -60,7 +60,6 @@ The full template source. Edit here and re-tangle with
 {{#service_lists_by_as_of}}
 #include <chrono>
 {{/service_lists_by_as_of}}
-#include <boost/log/sources/severity_feature.hpp>
 {{#service_uses_uuid}}
 #include <boost/uuid/uuid.hpp>
 {{/service_uses_uuid}}
@@ -81,7 +80,6 @@ The full template source. Edit here and re-tangle with
 {{/domain_entity.has_range_filter}}
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/boost_severity.hpp"
 {{#service_uses_datetime}}
 #include "ores.platform/time/datetime.hpp"
 {{/service_uses_datetime}}
@@ -946,27 +944,27 @@ std::optional<ores::utility::domain::result>
 {{/protocol_derived}}
 
 std::vector<domain::{{entity_singular}}> {{entity_singular}}_service::list_{{entity_plural_short}}(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all {{entity_plural_words}}";
+    ORES_LOG_SEV(lg(), debug) << "Listing all {{entity_plural_words}}";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 {{#list_filter_column}}
 std::vector<domain::{{entity_singular}}> {{entity_singular}}_service::list_{{entity_plural_short}}(
     std::uint32_t offset, std::uint32_t limit, const std::string& {{list_filter_column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{list_filter_column}}"
+    ORES_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{list_filter_column}}"
         << " offset=" << offset << ", limit=" << limit;
     return repo_.read_latest_for_{{list_filter_column}}(ctx_, offset, limit, {{list_filter_column}});
 }
 
 std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}(
     const std::string& {{list_filter_column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Counting {{entity_plural_words}} by {{list_filter_column}}";
+    ORES_LOG_SEV(lg(), debug) << "Counting {{entity_plural_words}} by {{list_filter_column}}";
     return repo_.count_latest_for_{{list_filter_column}}(ctx_, {{list_filter_column}});
 }
 
 {{/list_filter_column}}
 std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total {{entity_plural_words}} count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total {{entity_plural_words}} count";
     return repo_.get_total_{{entity_singular_short}}_count(ctx_);
 }
 
@@ -977,12 +975,12 @@ std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}() {
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::list_{{entity_plural_short}}_by_{{column}}(const std::string& {{column}},
                                                                        std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{column}}: " << {{column}};
+    ORES_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{column}}: " << {{column}};
     return repo_.read_latest_by_{{column}}(ctx_, {{column}}, offset, limit);
 }
 
 std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}_by_{{column}}(const std::string& {{column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total {{entity_plural_words}} count by {{column}}: " << {{column}};
+    ORES_LOG_SEV(lg(), debug) << "Getting total {{entity_plural_words}} count by {{column}}: " << {{column}};
     return repo_.get_total_{{entity_singular_short}}_count_by_{{column}}(ctx_, {{column}});
 }
 {{#list_by_uuid}}
@@ -990,12 +988,12 @@ std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}_by_{{co
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::list_{{entity_plural_short}}_by_{{column}}(const boost::uuids::uuid& {{column}},
                                                                        std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{column}}: " << {{column}};
+    ORES_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{column}}: " << {{column}};
     return repo_.read_latest_by_{{column}}(ctx_, boost::uuids::to_string({{column}}), offset, limit);
 }
 
 std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}_by_{{column}}(const boost::uuids::uuid& {{column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total {{entity_plural_words}} count by {{column}}: " << {{column}};
+    ORES_LOG_SEV(lg(), debug) << "Getting total {{entity_plural_words}} count by {{column}}: " << {{column}};
     return repo_.get_total_{{entity_singular_short}}_count_by_{{column}}(ctx_, boost::uuids::to_string({{column}}));
 }
 {{/list_by_uuid}}
@@ -1008,7 +1006,7 @@ std::vector<domain::{{entity_singular}}>
     const std::string& {{column}},
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{column}} as of window: " << {{column}};
+    ORES_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{column}} as of window: " << {{column}};
     return repo_.read_by_{{column}}_as_of(ctx_, {{column}}, valid_from_bound, valid_to_bound);
 }
 {{/list_by_as_of}}
@@ -1018,7 +1016,7 @@ std::vector<domain::{{entity_singular}}>
 std::optional<domain::{{entity_singular}}>
 {{entity_singular}}_service::get_{{entity_singular_short}}_at_version({{{primary_key.typed_params}}},
                                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}} at version. " << {{{primary_key.log_fields}}}
+    ORES_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}} at version. " << {{{primary_key.log_fields}}}
                                << " version: " << version;
     return repo_.read_at_version(ctx_, {{{primary_key.typed_args}}}, version);
 }
@@ -1026,7 +1024,7 @@ std::optional<domain::{{entity_singular}}>
 
 std::optional<domain::{{entity_singular}}>
 {{entity_singular}}_service::{{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}({{{primary_key.typed_params}}}) {
-    BOOST_LOG_SEV(lg(), debug) << "{{#service_find_prefix}}Finding{{/service_find_prefix}}{{^service_find_prefix}}Getting{{/service_find_prefix}} {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+    ORES_LOG_SEV(lg(), debug) << "{{#service_find_prefix}}Finding{{/service_find_prefix}}{{^service_find_prefix}}Getting{{/service_find_prefix}} {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
     auto results = repo_.read_latest(ctx_, {{{primary_key.typed_args}}});
     if (results.empty()) return std::nullopt;
     return results.front();
@@ -1035,7 +1033,7 @@ std::optional<domain::{{entity_singular}}>
 
 std::optional<domain::{{entity_singular}}>
 {{entity_singular}}_service::get_{{entity_singular_short}}_by_{{declared_key}}(const std::string& {{declared_key}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}} by {{declared_key}}: " << {{declared_key}};
+    ORES_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}} by {{declared_key}}: " << {{declared_key}};
     messaging::{{entity_singular}}_key k;
 {{#declared_key_is_uuid}}
     k.{{declared_key}} = boost::lexical_cast<boost::uuids::uuid>({{declared_key}});
@@ -1053,7 +1051,7 @@ std::optional<domain::{{entity_singular}}>
 
 std::optional<domain::{{entity_singular}}>
 {{entity_singular}}_service::find_{{entity_singular_short}}(const boost::uuids::uuid& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
+    ORES_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string({{primary_key.column}}));
     if (results.empty()) return std::nullopt;
     return results.front();
@@ -1063,7 +1061,7 @@ std::optional<domain::{{entity_singular}}>
 
 std::optional<domain::{{entity_singular}}>
 {{entity_singular}}_service::find_{{entity_singular_short}}_by_code({{{service_params}}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}} by {{log_label}}: "
+    ORES_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}} by {{log_label}}: "
                                << {{{log_fields}}};
     auto results = repo_.read_latest_by_code(ctx_, {{{service_call_args}}});
     if (results.empty()) return std::nullopt;
@@ -1091,7 +1089,7 @@ void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{
 {{/is_timestamp}}
 {{/is_int}}
 {{/primary_key.columns}}
-    BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
+    ORES_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
     auto t = v;
 {{#has_domain_groups}}
 {{#domain_entity.stamp_members}}
@@ -1102,7 +1100,7 @@ void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{
     stamp(t, ctx_);
 {{/has_domain_groups}}
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
+    ORES_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
 {{/gated}}
 }
 
@@ -1124,7 +1122,7 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
 {{/is_int}}
 {{/primary_key.columns}}
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()
+    ORES_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()
         << " {{entity_plural_words}}";
     auto ts = {{entity_plural_short}};
     for (auto& e : ts) {
@@ -1146,9 +1144,9 @@ void {{entity_singular}}_service::delete_{{entity_singular_short}}({{#gated}}{{{
     {{entity_singular}}_refuse_direct_write();
 {{/gated}}
 {{^gated}}
-    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+    ORES_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
     repo_.remove(ctx_, {{{primary_key.typed_args}}});
-    BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+    ORES_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
 {{/gated}}
 }
 {{#service_find_by_uuid}}
@@ -1158,9 +1156,9 @@ void {{entity_singular}}_service::remove_{{entity_singular_short}}(const boost::
     {{entity_singular}}_refuse_direct_write();
 {{/gated}}
 {{^gated}}
-    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
+    ORES_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
     repo_.remove(ctx_, boost::uuids::to_string({{primary_key.column}}));
-    BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
+    ORES_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
 {{/gated}}
 }
 {{/service_find_by_uuid}}
@@ -1178,14 +1176,14 @@ void {{entity_singular}}_service::delete_{{entity_plural_short}}({{#gated}}{{{pr
 {{#key_is_primary}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::get_{{entity_singular_short}}_history({{{primary_key.params}}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+    ORES_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
     return repo_.read_all(ctx_, {{{primary_key.args}}});
 }
 {{/key_is_primary}}
 {{^key_is_primary}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::get_{{entity_singular_short}}_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -1227,7 +1225,7 @@ std::vector<domain::{{entity_singular}}>
 
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::get_{{entity_singular_short}}_history(const boost::uuids::uuid& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
+    ORES_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
     return repo_.read_all(ctx_, boost::uuids::to_string({{primary_key.column}}));
 }
 {{/service_find_by_uuid}}
@@ -1236,7 +1234,7 @@ std::vector<domain::{{entity_singular}}>
 
 std::vector<ores::utility::domain::hierarchy_node>
 {{entity_singular}}_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting hierarchy for {{entity_singular}} root: " << root_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting hierarchy for {{entity_singular}} root: " << root_id;
     auto rows = repo_.get_hierarchy(ctx_, root_id, from_root);
     return ores::utility::domain::build_tree(rows);
 }

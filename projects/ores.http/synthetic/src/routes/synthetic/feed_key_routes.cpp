@@ -59,7 +59,7 @@ auto feed_key_one(const http_request& req,
                   nats_client& session,
                   const boost::uuids::uuid& id,
                   const std::string& resource,
-                  Rows Request::response_type::*rows) {
+                  Rows Request::response_type::* rows) {
     Request msg;
     msg.offset = 0;
     msg.limit = 1;
@@ -84,7 +84,7 @@ template <typename Request, typename Filter, typename Rows>
 boost::asio::awaitable<http_response> feed_key_read(const http_request& req,
                                                     nats_client& session,
                                                     std::string resource,
-                                                    Rows Request::response_type::*rows) {
+                                                    Rows Request::response_type::* rows) {
     try {
         const auto id = rr::read<boost::uuids::uuid>(
             rr::code(req.get_path_param("key"), "A row is named by a code of 1 to 100 characters."),
@@ -124,7 +124,7 @@ boost::asio::awaitable<http_response> feed_key_read(const http_request& req,
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(feed_key_lg(), error) << e.what();
+        ORES_LOG_SEV(feed_key_lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -156,7 +156,7 @@ void feed_key_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering the feed key reads";
+    ORES_LOG_SEV(lg(), info) << "Registering the feed key reads";
 
     auto fx_route =
         router->get("/api/synthetic/fx-feeds/key/{key}")

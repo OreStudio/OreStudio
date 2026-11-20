@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.core/repository/business_unit_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -527,36 +525,36 @@ business_unit_service::prepare_change(const messaging::business_unit_change& cha
 
 std::vector<domain::business_unit> business_unit_service::list_business_units(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all business units";
+    ORES_LOG_SEV(lg(), debug) << "Listing all business units";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t business_unit_service::count_business_units() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total business units count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total business units count";
     return repo_.get_total_business_unit_count(ctx_);
 }
 
 
 std::vector<domain::business_unit> business_unit_service::list_business_units_by_party_id(
     const std::string& party_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing business units by party_id: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing business units by party_id: " << party_id;
     return repo_.read_latest_by_party_id(ctx_, party_id, offset, limit);
 }
 
 std::uint32_t business_unit_service::count_business_units_by_party_id(const std::string& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total business units count by party_id: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total business units count by party_id: " << party_id;
     return repo_.get_total_business_unit_count_by_party_id(ctx_, party_id);
 }
 
 std::vector<domain::business_unit> business_unit_service::list_business_units_by_party_id(
     const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing business units by party_id: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing business units by party_id: " << party_id;
     return repo_.read_latest_by_party_id(ctx_, boost::uuids::to_string(party_id), offset, limit);
 }
 
 std::uint32_t
 business_unit_service::count_business_units_by_party_id(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total business units count by party_id: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total business units count by party_id: " << party_id;
     return repo_.get_total_business_unit_count_by_party_id(ctx_, boost::uuids::to_string(party_id));
 }
 
@@ -564,14 +562,14 @@ business_unit_service::count_business_units_by_party_id(const boost::uuids::uuid
 std::optional<domain::business_unit>
 business_unit_service::get_business_unit_at_version(const boost::uuids::uuid& id,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business unit at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting business unit at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::business_unit>
 business_unit_service::get_business_unit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business unit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting business unit. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -580,7 +578,7 @@ business_unit_service::get_business_unit(const boost::uuids::uuid& id) {
 
 std::optional<domain::business_unit>
 business_unit_service::get_business_unit_by_unit_code(const std::string& unit_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business unit by unit_code: " << unit_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting business unit by unit_code: " << unit_code;
     messaging::business_unit_key k;
     k.unit_code = unit_code;
     auto found = business_unit_read_one(repo_, ctx_, k);
@@ -591,7 +589,7 @@ business_unit_service::get_business_unit_by_unit_code(const std::string& unit_co
 
 std::optional<domain::business_unit>
 business_unit_service::find_business_unit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding business unit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding business unit. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -601,8 +599,8 @@ business_unit_service::find_business_unit(const boost::uuids::uuid& id) {
 std::optional<domain::business_unit>
 business_unit_service::find_business_unit_by_code(const boost::uuids::uuid& party_id,
                                                   const std::string& unit_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding business unit by party_id/unit_name: " << party_id << "/"
-                               << unit_name;
+    ORES_LOG_SEV(lg(), debug) << "Finding business unit by party_id/unit_name: " << party_id << "/"
+                              << unit_name;
     auto results = repo_.read_latest_by_code(ctx_, boost::uuids::to_string(party_id), unit_name);
     if (results.empty())
         return std::nullopt;
@@ -617,11 +615,11 @@ business_unit_service::get_business_units(const std::vector<std::string>& ids) {
 void business_unit_service::save_business_unit(const domain::business_unit& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Business Unit id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving business unit. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving business unit. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved business unit. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved business unit. " << "id: " << v.id;
 }
 
 void business_unit_service::save_business_units(
@@ -630,7 +628,7 @@ void business_unit_service::save_business_units(
         if (e.id.is_nil())
             throw std::invalid_argument("Business Unit id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << business_units.size() << " business units";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << business_units.size() << " business units";
     auto ts = business_units;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -639,15 +637,15 @@ void business_unit_service::save_business_units(
 }
 
 void business_unit_service::delete_business_unit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing business unit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing business unit. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed business unit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed business unit. " << "id: " << id;
 }
 
 void business_unit_service::remove_business_unit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing business unit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing business unit. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed business unit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed business unit. " << "id: " << id;
 }
 
 void business_unit_service::delete_business_units(const std::vector<std::string>& ids) {
@@ -656,7 +654,7 @@ void business_unit_service::delete_business_units(const std::vector<std::string>
 
 std::vector<domain::business_unit>
 business_unit_service::get_business_unit_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for business unit. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for business unit. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -678,13 +676,13 @@ business_unit_service::get_business_unit_history(const std::string& key) {
 
 std::vector<domain::business_unit>
 business_unit_service::get_business_unit_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for business unit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for business unit. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 
 std::vector<ores::utility::domain::hierarchy_node>
 business_unit_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting hierarchy for business_unit root: " << root_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting hierarchy for business_unit root: " << root_id;
     auto rows = repo_.get_hierarchy(ctx_, root_id, from_root);
     return ores::utility::domain::build_tree(rows);
 }

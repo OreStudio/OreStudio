@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/asset_class.hpp"
 #include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 #include "ores.refdata.core/repository/asset_class_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -448,29 +446,29 @@ asset_class_service::prepare_change(const messaging::asset_class_change& change,
 
 std::vector<domain::asset_class> asset_class_service::list_asset_classes(std::uint32_t offset,
                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all asset classes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all asset classes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t asset_class_service::count_asset_classes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total asset classes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total asset classes count";
     return repo_.get_total_asset_class_count(ctx_);
 }
 
 
 std::optional<domain::asset_class> asset_class_service::get_asset_class_at_version(
     const std::string& code, const std::string& coding_scheme_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting asset class at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting asset class at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::asset_class>
 asset_class_service::get_asset_class(const std::string& code,
                                      const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting asset class. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting asset class. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -488,13 +486,13 @@ void asset_class_service::save_asset_class(const domain::asset_class& v) {
         throw std::invalid_argument("Asset Class code cannot be empty.");
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument("Asset Class coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving asset class. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving asset class. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved asset class. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved asset class. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void asset_class_service::save_asset_classes(
@@ -505,7 +503,7 @@ void asset_class_service::save_asset_classes(
         if (e.coding_scheme_code.empty())
             throw std::invalid_argument("Asset Class coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << asset_classes.size() << " asset classes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << asset_classes.size() << " asset classes";
     auto ts = asset_classes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -515,11 +513,11 @@ void asset_class_service::save_asset_classes(
 
 void asset_class_service::delete_asset_class(const std::string& code,
                                              const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing asset class. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed asset class. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing asset class. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed asset class. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void asset_class_service::delete_asset_classes(
@@ -530,8 +528,8 @@ void asset_class_service::delete_asset_classes(
 std::vector<domain::asset_class>
 asset_class_service::get_asset_class_history(const std::string& code,
                                              const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for asset class. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for asset class. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

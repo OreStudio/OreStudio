@@ -22,7 +22,7 @@
  * Template: cpp_shell_operation_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/iam/authorization_operations_commands.hpp"
@@ -76,7 +76,7 @@ TEST_CASE("authorization_operations_registers_every_declared_command", "[command
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 14 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 14 command(s).";
 }
 
 TEST_CASE("authorization_operations_process_assign_role_requires_a_session", "[commands]") {
@@ -95,7 +95,7 @@ TEST_CASE("authorization_operations_process_assign_role_requires_a_session", "[c
                                                                "sample",
                                                            });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -113,7 +113,7 @@ TEST_CASE("authorization_operations_process_assign_role_reports_the_expected_cou
     command_feedback::reset();
     authorization_operations_commands::process_assign_role(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -138,7 +138,7 @@ TEST_CASE("authorization_operations_process_assign_role_reaches_the_transport", 
                                                                "sample",
                                                            });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -159,7 +159,7 @@ TEST_CASE("authorization_operations_process_assign_role_by_name_requires_a_sessi
                                                                        "sample",
                                                                    });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -178,7 +178,7 @@ TEST_CASE("authorization_operations_process_assign_role_by_name_reports_the_expe
     command_feedback::reset();
     authorization_operations_commands::process_assign_role_by_name(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -202,7 +202,7 @@ TEST_CASE("authorization_operations_process_assign_role_by_name_reaches_the_tran
                                                                        "sample",
                                                                    });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -223,7 +223,7 @@ TEST_CASE("authorization_operations_process_revoke_role_requires_a_session", "[c
                                                                "sample",
                                                            });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -241,7 +241,7 @@ TEST_CASE("authorization_operations_process_revoke_role_reports_the_expected_cou
     command_feedback::reset();
     authorization_operations_commands::process_revoke_role(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -264,7 +264,7 @@ TEST_CASE("authorization_operations_process_revoke_role_reaches_the_transport", 
                                                                "sample",
                                                            });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -285,7 +285,7 @@ TEST_CASE("authorization_operations_process_revoke_role_by_name_requires_a_sessi
                                                                        "sample",
                                                                    });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -304,7 +304,7 @@ TEST_CASE("authorization_operations_process_revoke_role_by_name_reports_the_expe
     command_feedback::reset();
     authorization_operations_commands::process_revoke_role_by_name(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -328,7 +328,7 @@ TEST_CASE("authorization_operations_process_revoke_role_by_name_reaches_the_tran
                                                                        "sample",
                                                                    });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -348,7 +348,7 @@ TEST_CASE("authorization_operations_process_get_account_roles_requires_a_session
                                                                      "sample",
                                                                  });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -367,7 +367,7 @@ TEST_CASE("authorization_operations_process_get_account_roles_reports_the_expect
     command_feedback::reset();
     authorization_operations_commands::process_get_account_roles(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 1 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -390,7 +390,7 @@ TEST_CASE("authorization_operations_process_get_account_roles_reaches_the_transp
                                                                      "sample",
                                                                  });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -407,7 +407,7 @@ TEST_CASE("authorization_operations_process_get_my_roles_requires_a_session", "[
     authorization_operations_commands::process_get_my_roles(
         out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -426,7 +426,7 @@ TEST_CASE("authorization_operations_process_get_my_roles_reaches_the_transport",
     authorization_operations_commands::process_get_my_roles(
         out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -449,7 +449,7 @@ TEST_CASE("authorization_operations_process_list_account_permissions_requires_a_
                                                                             "sample",
                                                                         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -468,7 +468,7 @@ TEST_CASE("authorization_operations_process_list_account_permissions_reports_the
     command_feedback::reset();
     authorization_operations_commands::process_list_account_permissions(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -493,7 +493,7 @@ TEST_CASE("authorization_operations_process_list_account_permissions_reaches_the
                                                                             "sample",
                                                                         });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -514,7 +514,7 @@ TEST_CASE("authorization_operations_process_list_my_permissions_requires_a_sessi
                                                                        "sample",
                                                                    });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -533,7 +533,7 @@ TEST_CASE("authorization_operations_process_list_my_permissions_reports_the_expe
     command_feedback::reset();
     authorization_operations_commands::process_list_my_permissions(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -557,7 +557,7 @@ TEST_CASE("authorization_operations_process_list_my_permissions_reaches_the_tran
                                                                        "sample",
                                                                    });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -580,7 +580,7 @@ TEST_CASE("authorization_operations_process_list_role_permissions_page_requires_
                                                                               "sample",
                                                                           });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -599,7 +599,7 @@ TEST_CASE("authorization_operations_process_list_role_permissions_page_reports_t
     command_feedback::reset();
     authorization_operations_commands::process_list_role_permissions_page(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -624,7 +624,7 @@ TEST_CASE("authorization_operations_process_list_role_permissions_page_reaches_t
                                                                               "sample",
                                                                           });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -646,7 +646,7 @@ TEST_CASE("authorization_operations_process_list_roles_page_requires_a_session",
                                                                    "sample",
                                                                });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -665,7 +665,7 @@ TEST_CASE("authorization_operations_process_list_roles_page_reports_the_expected
     command_feedback::reset();
     authorization_operations_commands::process_list_roles_page(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -689,7 +689,7 @@ TEST_CASE("authorization_operations_process_list_roles_page_reaches_the_transpor
                                                                    "sample",
                                                                });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -709,7 +709,7 @@ TEST_CASE("authorization_operations_process_list_role_holders_requires_a_session
                                                                      "sample",
                                                                  });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -728,7 +728,7 @@ TEST_CASE("authorization_operations_process_list_role_holders_reports_the_expect
     command_feedback::reset();
     authorization_operations_commands::process_list_role_holders(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 1 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -751,7 +751,7 @@ TEST_CASE("authorization_operations_process_list_role_holders_reaches_the_transp
                                                                      "sample",
                                                                  });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -772,7 +772,7 @@ TEST_CASE("authorization_operations_process_get_role_permissions_requires_a_sess
                                                                         "sample",
                                                                     });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -791,7 +791,7 @@ TEST_CASE("authorization_operations_process_get_role_permissions_reports_the_exp
     command_feedback::reset();
     authorization_operations_commands::process_get_role_permissions(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 1 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -814,7 +814,7 @@ TEST_CASE("authorization_operations_process_get_role_permissions_reaches_the_tra
                                                                         "sample",
                                                                     });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -838,7 +838,7 @@ TEST_CASE("authorization_operations_process_put_role_permissions_requires_a_sess
                                                                         "sample",
                                                                     });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -857,7 +857,7 @@ TEST_CASE("authorization_operations_process_put_role_permissions_reports_the_exp
     command_feedback::reset();
     authorization_operations_commands::process_put_role_permissions(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -883,7 +883,7 @@ TEST_CASE("authorization_operations_process_put_role_permissions_reaches_the_tra
                                                                         "sample",
                                                                     });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -906,7 +906,7 @@ TEST_CASE("authorization_operations_process_suggest_role_commands_requires_a_ses
                                                                          "sample",
                                                                      });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -925,7 +925,7 @@ TEST_CASE("authorization_operations_process_suggest_role_commands_reports_the_ex
     command_feedback::reset();
     authorization_operations_commands::process_suggest_role_commands(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -950,7 +950,7 @@ TEST_CASE("authorization_operations_process_suggest_role_commands_reaches_the_tr
                                                                          "sample",
                                                                      });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);

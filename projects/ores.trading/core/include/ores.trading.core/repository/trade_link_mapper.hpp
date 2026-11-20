@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_LINK_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_TRADE_LINK_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/trade_link.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/trade_link_entity.hpp"

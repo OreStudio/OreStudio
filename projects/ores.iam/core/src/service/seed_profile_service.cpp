@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/seed_profile.hpp"
 #include "ores.iam.api/messaging/seed_profile_protocol.hpp"
 #include "ores.iam.core/repository/seed_profile_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -458,12 +456,12 @@ seed_profile_service::prepare_change(const messaging::seed_profile_change& chang
 
 std::vector<domain::seed_profile> seed_profile_service::list_seed_profiles(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all seed profiles";
+    ORES_LOG_SEV(lg(), debug) << "Listing all seed profiles";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t seed_profile_service::count_seed_profiles() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total seed profiles count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total seed profiles count";
     return repo_.get_total_seed_profile_count(ctx_);
 }
 
@@ -471,14 +469,14 @@ std::uint32_t seed_profile_service::count_seed_profiles() {
 std::optional<domain::seed_profile>
 seed_profile_service::get_seed_profile_at_version(const boost::uuids::uuid& id,
                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting seed profile at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting seed profile at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::seed_profile>
 seed_profile_service::get_seed_profile(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting seed profile. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting seed profile. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -493,11 +491,11 @@ seed_profile_service::get_seed_profiles(const std::vector<std::string>& ids) {
 void seed_profile_service::save_seed_profile(const domain::seed_profile& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Seed Profile id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving seed profile. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving seed profile. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved seed profile. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved seed profile. " << "id: " << v.id;
 }
 
 void seed_profile_service::save_seed_profiles(
@@ -506,7 +504,7 @@ void seed_profile_service::save_seed_profiles(
         if (e.id.is_nil())
             throw std::invalid_argument("Seed Profile id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << seed_profiles.size() << " seed profiles";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << seed_profiles.size() << " seed profiles";
     auto ts = seed_profiles;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -515,9 +513,9 @@ void seed_profile_service::save_seed_profiles(
 }
 
 void seed_profile_service::delete_seed_profile(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing seed profile. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing seed profile. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed seed profile. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed seed profile. " << "id: " << id;
 }
 
 void seed_profile_service::delete_seed_profiles(const std::vector<std::string>& ids) {
@@ -526,7 +524,7 @@ void seed_profile_service::delete_seed_profiles(const std::vector<std::string>& 
 
 std::vector<domain::seed_profile>
 seed_profile_service::get_seed_profile_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for seed profile. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for seed profile. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/credit_limit.hpp"
 #include "ores.refdata.api/messaging/credit_limit_protocol.hpp"
 #include "ores.refdata.core/repository/credit_limit_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -523,40 +521,40 @@ credit_limit_service::prepare_change(const messaging::credit_limit_change& chang
 
 std::vector<domain::credit_limit> credit_limit_service::list_credit_limits(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all credit limits";
+    ORES_LOG_SEV(lg(), debug) << "Listing all credit limits";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t credit_limit_service::count_credit_limits() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total credit limits count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total credit limits count";
     return repo_.get_total_credit_limit_count(ctx_);
 }
 
 
 std::vector<domain::credit_limit> credit_limit_service::list_credit_limits_by_counterparty_id(
     const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing credit limits by counterparty_id: " << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing credit limits by counterparty_id: " << counterparty_id;
     return repo_.read_latest_by_counterparty_id(ctx_, counterparty_id, offset, limit);
 }
 
 std::uint32_t
 credit_limit_service::count_credit_limits_by_counterparty_id(const std::string& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total credit limits count by counterparty_id: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total credit limits count by counterparty_id: "
+                              << counterparty_id;
     return repo_.get_total_credit_limit_count_by_counterparty_id(ctx_, counterparty_id);
 }
 
 std::vector<domain::credit_limit> credit_limit_service::list_credit_limits_by_counterparty_id(
     const boost::uuids::uuid& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing credit limits by counterparty_id: " << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing credit limits by counterparty_id: " << counterparty_id;
     return repo_.read_latest_by_counterparty_id(
         ctx_, boost::uuids::to_string(counterparty_id), offset, limit);
 }
 
 std::uint32_t credit_limit_service::count_credit_limits_by_counterparty_id(
     const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total credit limits count by counterparty_id: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total credit limits count by counterparty_id: "
+                              << counterparty_id;
     return repo_.get_total_credit_limit_count_by_counterparty_id(
         ctx_, boost::uuids::to_string(counterparty_id));
 }
@@ -565,14 +563,14 @@ std::uint32_t credit_limit_service::count_credit_limits_by_counterparty_id(
 std::optional<domain::credit_limit>
 credit_limit_service::get_credit_limit_at_version(const boost::uuids::uuid& id,
                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting credit limit at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting credit limit at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::credit_limit>
 credit_limit_service::get_credit_limit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting credit limit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting credit limit. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -581,7 +579,7 @@ credit_limit_service::get_credit_limit(const boost::uuids::uuid& id) {
 
 std::optional<domain::credit_limit>
 credit_limit_service::get_credit_limit_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting credit limit by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting credit limit by code: " << code;
     messaging::credit_limit_key k;
     k.code = code;
     auto found = credit_limit_read_one(repo_, ctx_, k);
@@ -592,7 +590,7 @@ credit_limit_service::get_credit_limit_by_code(const std::string& code) {
 
 std::optional<domain::credit_limit>
 credit_limit_service::find_credit_limit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding credit limit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding credit limit. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -607,11 +605,11 @@ credit_limit_service::get_credit_limits(const std::vector<std::string>& ids) {
 void credit_limit_service::save_credit_limit(const domain::credit_limit& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Credit Limit id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving credit limit. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving credit limit. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved credit limit. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved credit limit. " << "id: " << v.id;
 }
 
 void credit_limit_service::save_credit_limits(
@@ -620,7 +618,7 @@ void credit_limit_service::save_credit_limits(
         if (e.id.is_nil())
             throw std::invalid_argument("Credit Limit id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << credit_limits.size() << " credit limits";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << credit_limits.size() << " credit limits";
     auto ts = credit_limits;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -629,15 +627,15 @@ void credit_limit_service::save_credit_limits(
 }
 
 void credit_limit_service::delete_credit_limit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing credit limit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing credit limit. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed credit limit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed credit limit. " << "id: " << id;
 }
 
 void credit_limit_service::remove_credit_limit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing credit limit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing credit limit. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed credit limit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed credit limit. " << "id: " << id;
 }
 
 void credit_limit_service::delete_credit_limits(const std::vector<std::string>& ids) {
@@ -646,7 +644,7 @@ void credit_limit_service::delete_credit_limits(const std::vector<std::string>& 
 
 std::vector<domain::credit_limit>
 credit_limit_service::get_credit_limit_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for credit limit. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for credit limit. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -668,7 +666,7 @@ credit_limit_service::get_credit_limit_history(const std::string& key) {
 
 std::vector<domain::credit_limit>
 credit_limit_service::get_credit_limit_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for credit limit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for credit limit. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

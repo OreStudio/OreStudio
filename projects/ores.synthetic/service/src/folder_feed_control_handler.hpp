@@ -25,7 +25,7 @@
 #include "generator_fleet.hpp"
 #include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -138,11 +138,11 @@ public:
             resp.message = std::to_string(resp.started) + " started, " +
                            std::to_string(resp.already_running) + " already running, " +
                            std::to_string(resp.skipped) + " skipped";
-            BOOST_LOG_SEV(folder_feed_control_handler_lg(), info)
+            ORES_LOG_SEV(folder_feed_control_handler_lg(), info)
                 << msg.subject << " (folder=" << req->folder_id << ") — " << resp.message;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(folder_feed_control_handler_lg(), error)
+            ORES_LOG_SEV(folder_feed_control_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
@@ -183,11 +183,11 @@ public:
             resp.stopped = outcome.stopped;
             resp.stopped_by_kind = outcome.by_kind;
             resp.message = std::to_string(resp.stopped) + " feed(s) stopped";
-            BOOST_LOG_SEV(folder_feed_control_handler_lg(), info)
+            ORES_LOG_SEV(folder_feed_control_handler_lg(), info)
                 << msg.subject << " (folder=" << req->folder_id << ") — " << resp.message;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(folder_feed_control_handler_lg(), error)
+            ORES_LOG_SEV(folder_feed_control_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
@@ -203,7 +203,7 @@ private:
                                                                  const ores::nats::message& msg) {
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
-            BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
+            ORES_LOG_SEV(folder_feed_control_handler_lg(), warn)
                 << "Rejecting " << verb
                 << " request: auth failed: " << static_cast<int>(ctx_expected.error());
             error_reply(nats_, msg, ctx_expected.error());
@@ -211,7 +211,7 @@ private:
         }
         if (!registry_.permits_all_configs(*ctx_expected) ||
             !feed_kind_registry::permits_run(*ctx_expected)) {
-            BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
+            ORES_LOG_SEV(folder_feed_control_handler_lg(), warn)
                 << "Rejecting " << verb
                 << " request: missing a feed config read permission or the run permission.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);

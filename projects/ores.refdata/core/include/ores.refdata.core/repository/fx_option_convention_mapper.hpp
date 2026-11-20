@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_FX_OPTION_CONVENTION_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_FX_OPTION_CONVENTION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/fx_option_convention_entity.hpp"

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/domain/party_scope.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
@@ -54,7 +54,7 @@ using ores::testing::scoped_database_helper;
 TEST_CASE("a party sees only its own run settings",
           "[reporting][run_document][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "a party sees only its own run settings";
+    ORES_LOG_SEV(lg, info) << "a party sees only its own run settings";
     scoped_database_helper h;
     // A run document names its parameters, and the system tenant describes them.
     auto generation = ores::testing::make_generation_context(h);

@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CREDIT_LIMIT_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CREDIT_LIMIT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/credit_limit.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/credit_limit_entity.hpp"

@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -469,12 +467,12 @@ ores::utility::domain::result currency_pair_convention_service::prepare_change(
 
 std::vector<domain::currency_pair_convention>
 currency_pair_convention_service::list_conventions(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all currency pair conventions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all currency pair conventions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t currency_pair_convention_service::count_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total currency pair conventions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total currency pair conventions count";
     return repo_.get_total_convention_count(ctx_);
 }
 
@@ -482,15 +480,14 @@ std::uint32_t currency_pair_convention_service::count_conventions() {
 std::optional<domain::currency_pair_convention>
 currency_pair_convention_service::get_convention_at_version(const std::string& pair_code,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting currency pair convention at version. "
-                               << "pair_code: " << pair_code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting currency pair convention at version. "
+                              << "pair_code: " << pair_code << " version: " << version;
     return repo_.read_at_version(ctx_, pair_code, version);
 }
 
 std::optional<domain::currency_pair_convention>
 currency_pair_convention_service::get_convention(const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting currency pair convention. "
-                               << "pair_code: " << pair_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting currency pair convention. " << "pair_code: " << pair_code;
     auto results = repo_.read_latest(ctx_, pair_code);
     if (results.empty())
         return std::nullopt;
@@ -505,12 +502,12 @@ currency_pair_convention_service::get_conventions(const std::vector<std::string>
 void currency_pair_convention_service::save_convention(const domain::currency_pair_convention& v) {
     if (v.pair_code.empty())
         throw std::invalid_argument("Currency Pair Convention pair_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving currency pair convention. "
-                               << "pair_code: " << v.pair_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving currency pair convention. "
+                              << "pair_code: " << v.pair_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved currency pair convention. " << "pair_code: " << v.pair_code;
+    ORES_LOG_SEV(lg(), info) << "Saved currency pair convention. " << "pair_code: " << v.pair_code;
 }
 
 void currency_pair_convention_service::save_conventions(
@@ -519,7 +516,7 @@ void currency_pair_convention_service::save_conventions(
         if (e.pair_code.empty())
             throw std::invalid_argument("Currency Pair Convention pair_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << conventions.size() << " currency pair conventions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << conventions.size() << " currency pair conventions";
     auto ts = conventions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -528,10 +525,10 @@ void currency_pair_convention_service::save_conventions(
 }
 
 void currency_pair_convention_service::delete_convention(const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair convention. "
-                               << "pair_code: " << pair_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing currency pair convention. "
+                              << "pair_code: " << pair_code;
     repo_.remove(ctx_, pair_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed currency pair convention. " << "pair_code: " << pair_code;
+    ORES_LOG_SEV(lg(), info) << "Removed currency pair convention. " << "pair_code: " << pair_code;
 }
 
 void currency_pair_convention_service::delete_conventions(
@@ -541,8 +538,8 @@ void currency_pair_convention_service::delete_conventions(
 
 std::vector<domain::currency_pair_convention>
 currency_pair_convention_service::get_convention_history(const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for currency pair convention. "
-                               << "pair_code: " << pair_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for currency pair convention. "
+                              << "pair_code: " << pair_code;
     return repo_.read_all(ctx_, pair_code);
 }
 

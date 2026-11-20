@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument_json_io.hpp" // IWYU pragma: keep.
@@ -80,7 +80,7 @@ TEST_CASE("fx_digital_option_instrument_write_and_read_latest",
 
     auto instr = repository_fx_digital_option_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
-    BOOST_LOG_SEV(lg, debug) << "Writing FX digital option instrument: " << instr;
+    ORES_LOG_SEV(lg, debug) << "Writing FX digital option instrument: " << instr;
 
     fx_digital_option_instrument_repository repo;
     CHECK_NOTHROW(repo.write(ctx, instr));
@@ -99,7 +99,7 @@ TEST_CASE("fx_digital_option_instrument_write_and_read_latest",
     CHECK(*read[0].strike == ores::utility::decimal::decimal::from_string("1.1").value());
     CHECK(!read[0].lower_barrier.has_value());
     CHECK(!read[0].upper_barrier.has_value());
-    BOOST_LOG_SEV(lg, debug) << "Read FX digital option instrument: " << read[0];
+    ORES_LOG_SEV(lg, debug) << "Read FX digital option instrument: " << read[0];
 }
 
 TEST_CASE("fx_digital_option_instrument_read_nonexistent", "[repository][fx][fx_digital_option]") {
@@ -141,6 +141,6 @@ TEST_CASE("fx_digital_option_instrument_remove", "[repository][fx][fx_digital_op
     CHECK_NOTHROW(repo.remove(ctx, id_str));
 
     const auto after = repo.read_latest(ctx, id_str);
-    BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
+    ORES_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.size() == before.size() - 1);
 }

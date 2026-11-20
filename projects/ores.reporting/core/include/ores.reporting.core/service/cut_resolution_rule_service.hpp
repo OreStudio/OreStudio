@@ -26,7 +26,7 @@
 #define ORES_REPORTING_CORE_SERVICE_CUT_RESOLUTION_RULE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/cut_resolution_rule.hpp"
 #include "ores.reporting.api/messaging/cut_resolution_rule_protocol.hpp"
 #include "ores.reporting.core/export.hpp"

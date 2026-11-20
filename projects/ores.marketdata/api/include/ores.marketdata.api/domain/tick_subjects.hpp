@@ -31,6 +31,7 @@
 #include <string>
 #include <string_view>
 #include <variant>
+#include <vector>
 
 namespace ores::marketdata::domain {
 
@@ -55,14 +56,6 @@ inline constexpr std::string_view synthetic_sandbox_tick_subject = "synthetic.v1
 /// The subject a producer publishes @p source_name's ticks on.
 inline std::string synthetic_tick_subject_for(std::string_view source_name) {
     return std::string(synthetic_tick_subject).append(".").append(source_name);
-}
-
-/// The subject a feed publishes its ticks on for a screen to tail.
-inline constexpr std::string_view feed_display_subject = "synthetic.v1.ops.feed_tick";
-
-/// The subject @p source_name's ticks travel on for a screen to tail.
-inline std::string feed_display_subject_for(std::string_view source_name) {
-    return std::string(feed_display_subject).append(".").append(source_name);
 }
 
 /**
@@ -200,6 +193,35 @@ inline std::expected<std::string, std::string> feed_tick_watch_subject(
     if (!datum.is_series())
         return feed_tick_subject(provider_code, feed_id, datum, *series);
     return feed_series_subject(provider_code, feed_id, datum.type(), *series).append(".*");
+}
+
+/// The feed token that stands for every feed of a provider in a watch subject.
+inline constexpr std::string_view any_feed = "*";
+
+/**
+ * @brief The subjects a watcher of @p series_uris subscribes to, on every feed of
+ * @p provider_code: each series' token with a wildcard for the feed and for the
+ * coordinate.
+ *
+ * A producer that publishes through a provider's adapter does not know the feed the
+ * ingest delivers its ticks on, but it knows the provider and the series it quotes,
+ * which is enough to name where its ticks land. A series URI the codec cannot read
+ * is left out.
+ */
+inline std::vector<std::string>
+provider_series_watch_subjects(std::string_view provider_code,
+                               const std::vector<std::string>& series_uris) {
+    std::vector<std::string> out;
+    out.reserve(series_uris.size());
+    for (const auto& uri : series_uris) {
+        const auto series = datum::oresmd_uri_codec::read(uri);
+        if (!series)
+            continue;
+        auto subject = feed_tick_watch_subject(provider_code, any_feed, *series);
+        if (subject)
+            out.push_back(std::move(*subject));
+    }
+    return out;
 }
 
 }

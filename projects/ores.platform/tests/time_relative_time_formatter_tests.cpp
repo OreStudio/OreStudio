@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/relative_time_formatter.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -47,7 +47,7 @@ TEST_CASE("format_value_unit_automatic_zero_values", "[time][relative_time_forma
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
-    BOOST_LOG_SEV(lg, info) << "Testing automatic style with zero values";
+    ORES_LOG_SEV(lg, info) << "Testing automatic style with zero values";
 
     CHECK(fmt.format(0, time_unit::second) == "now");
     CHECK(fmt.format(0, time_unit::minute) == "now");
@@ -63,7 +63,7 @@ TEST_CASE("format_value_unit_automatic_past_singular", "[time][relative_time_for
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
-    BOOST_LOG_SEV(lg, info) << "Testing automatic style with -1 values (past)";
+    ORES_LOG_SEV(lg, info) << "Testing automatic style with -1 values (past)";
 
     CHECK(fmt.format(-1, time_unit::second) == "1 second ago");
     CHECK(fmt.format(-1, time_unit::minute) == "1 minute ago");
@@ -79,7 +79,7 @@ TEST_CASE("format_value_unit_automatic_future_singular", "[time][relative_time_f
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
-    BOOST_LOG_SEV(lg, info) << "Testing automatic style with +1 values (future)";
+    ORES_LOG_SEV(lg, info) << "Testing automatic style with +1 values (future)";
 
     CHECK(fmt.format(1, time_unit::second) == "in 1 second");
     CHECK(fmt.format(1, time_unit::minute) == "in 1 minute");
@@ -95,7 +95,7 @@ TEST_CASE("format_value_unit_automatic_past_plural", "[time][relative_time_forma
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
-    BOOST_LOG_SEV(lg, info) << "Testing automatic style with negative plural values";
+    ORES_LOG_SEV(lg, info) << "Testing automatic style with negative plural values";
 
     CHECK(fmt.format(-5, time_unit::second) == "5 seconds ago");
     CHECK(fmt.format(-10, time_unit::minute) == "10 minutes ago");
@@ -111,7 +111,7 @@ TEST_CASE("format_value_unit_automatic_future_plural", "[time][relative_time_for
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
-    BOOST_LOG_SEV(lg, info) << "Testing automatic style with positive plural values";
+    ORES_LOG_SEV(lg, info) << "Testing automatic style with positive plural values";
 
     CHECK(fmt.format(5, time_unit::second) == "in 5 seconds");
     CHECK(fmt.format(10, time_unit::minute) == "in 10 minutes");
@@ -131,7 +131,7 @@ TEST_CASE("format_value_unit_always_zero_values", "[time][relative_time_formatte
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::always);
 
-    BOOST_LOG_SEV(lg, info) << "Testing always style with zero values";
+    ORES_LOG_SEV(lg, info) << "Testing always style with zero values";
 
     CHECK(fmt.format(0, time_unit::second) == "now");
     CHECK(fmt.format(0, time_unit::minute) == "now");
@@ -142,7 +142,7 @@ TEST_CASE("format_value_unit_always_past_singular", "[time][relative_time_format
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::always);
 
-    BOOST_LOG_SEV(lg, info) << "Testing always style with -1 values (past)";
+    ORES_LOG_SEV(lg, info) << "Testing always style with -1 values (past)";
 
     CHECK(fmt.format(-1, time_unit::second) == "1 second ago");
     CHECK(fmt.format(-1, time_unit::minute) == "1 minute ago");
@@ -158,7 +158,7 @@ TEST_CASE("format_value_unit_always_future_singular", "[time][relative_time_form
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::always);
 
-    BOOST_LOG_SEV(lg, info) << "Testing always style with +1 values (future)";
+    ORES_LOG_SEV(lg, info) << "Testing always style with +1 values (future)";
 
     CHECK(fmt.format(1, time_unit::second) == "in 1 second");
     CHECK(fmt.format(1, time_unit::minute) == "in 1 minute");
@@ -183,7 +183,7 @@ TEST_CASE("format_time_point_just_now", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "5 seconds ago (automatic): " << result;
+    ORES_LOG_SEV(lg, info) << "5 seconds ago (automatic): " << result;
 
     CHECK(result == "just now");
 }
@@ -197,7 +197,7 @@ TEST_CASE("format_time_point_seconds_ago", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "30 seconds ago: " << result;
+    ORES_LOG_SEV(lg, info) << "30 seconds ago: " << result;
 
     CHECK(result == "30 seconds ago");
 }
@@ -211,7 +211,7 @@ TEST_CASE("format_time_point_minutes_ago", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "5 minutes ago: " << result;
+    ORES_LOG_SEV(lg, info) << "5 minutes ago: " << result;
 
     CHECK(result == "5 minutes ago");
 }
@@ -225,7 +225,7 @@ TEST_CASE("format_time_point_one_minute_ago", "[time][relative_time_formatter]")
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "1 minute ago: " << result;
+    ORES_LOG_SEV(lg, info) << "1 minute ago: " << result;
 
     CHECK(result == "1 minute ago");
 }
@@ -239,7 +239,7 @@ TEST_CASE("format_time_point_hours_ago", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "3 hours ago: " << result;
+    ORES_LOG_SEV(lg, info) << "3 hours ago: " << result;
 
     CHECK(result == "3 hours ago");
 }
@@ -253,7 +253,7 @@ TEST_CASE("format_time_point_one_hour_ago", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "1 hour ago: " << result;
+    ORES_LOG_SEV(lg, info) << "1 hour ago: " << result;
 
     CHECK(result == "1 hour ago");
 }
@@ -267,7 +267,7 @@ TEST_CASE("format_time_point_yesterday", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "yesterday: " << result;
+    ORES_LOG_SEV(lg, info) << "yesterday: " << result;
 
     CHECK(result == "yesterday");
 }
@@ -281,7 +281,7 @@ TEST_CASE("format_time_point_days_ago", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "3 days ago: " << result;
+    ORES_LOG_SEV(lg, info) << "3 days ago: " << result;
 
     CHECK(result == "3 days ago");
 }
@@ -295,7 +295,7 @@ TEST_CASE("format_time_point_last_week", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "last week: " << result;
+    ORES_LOG_SEV(lg, info) << "last week: " << result;
 
     CHECK(result == "last week");
 }
@@ -309,7 +309,7 @@ TEST_CASE("format_time_point_weeks_ago", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "3 weeks ago: " << result;
+    ORES_LOG_SEV(lg, info) << "3 weeks ago: " << result;
 
     CHECK(result == "3 weeks ago");
 }
@@ -324,7 +324,7 @@ TEST_CASE("format_time_point_last_month", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "last month: " << result;
+    ORES_LOG_SEV(lg, info) << "last month: " << result;
 
     CHECK(result == "last month");
 }
@@ -339,7 +339,7 @@ TEST_CASE("format_time_point_months_ago", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "2 months ago: " << result;
+    ORES_LOG_SEV(lg, info) << "2 months ago: " << result;
 
     CHECK(result == "2 months ago");
 }
@@ -354,7 +354,7 @@ TEST_CASE("format_time_point_last_year", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "last year: " << result;
+    ORES_LOG_SEV(lg, info) << "last year: " << result;
 
     CHECK(result == "last year");
 }
@@ -369,7 +369,7 @@ TEST_CASE("format_time_point_years_ago", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "3 years ago: " << result;
+    ORES_LOG_SEV(lg, info) << "3 years ago: " << result;
 
     CHECK(result == "3 years ago");
 }
@@ -387,7 +387,7 @@ TEST_CASE("format_time_point_in_seconds", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(future, reference);
 
-    BOOST_LOG_SEV(lg, info) << "in 30 seconds: " << result;
+    ORES_LOG_SEV(lg, info) << "in 30 seconds: " << result;
 
     CHECK(result == "in 30 seconds");
 }
@@ -401,7 +401,7 @@ TEST_CASE("format_time_point_in_minutes", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(future, reference);
 
-    BOOST_LOG_SEV(lg, info) << "in 10 minutes: " << result;
+    ORES_LOG_SEV(lg, info) << "in 10 minutes: " << result;
 
     CHECK(result == "in 10 minutes");
 }
@@ -415,7 +415,7 @@ TEST_CASE("format_time_point_tomorrow", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(future, reference);
 
-    BOOST_LOG_SEV(lg, info) << "tomorrow: " << result;
+    ORES_LOG_SEV(lg, info) << "tomorrow: " << result;
 
     CHECK(result == "tomorrow");
 }
@@ -429,7 +429,7 @@ TEST_CASE("format_time_point_next_week", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(future, reference);
 
-    BOOST_LOG_SEV(lg, info) << "next week: " << result;
+    ORES_LOG_SEV(lg, info) << "next week: " << result;
 
     CHECK(result == "next week");
 }
@@ -443,7 +443,7 @@ TEST_CASE("format_time_point_next_month", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(future, reference);
 
-    BOOST_LOG_SEV(lg, info) << "next month: " << result;
+    ORES_LOG_SEV(lg, info) << "next month: " << result;
 
     CHECK(result == "next month");
 }
@@ -457,7 +457,7 @@ TEST_CASE("format_time_point_next_year", "[time][relative_time_formatter]") {
 
     auto result = fmt.format(future, reference);
 
-    BOOST_LOG_SEV(lg, info) << "next year: " << result;
+    ORES_LOG_SEV(lg, info) << "next year: " << result;
 
     CHECK(result == "next year");
 }
@@ -475,7 +475,7 @@ TEST_CASE("format_time_point_numeric_style_yesterday", "[time][relative_time_for
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "1 day ago (always style): " << result;
+    ORES_LOG_SEV(lg, info) << "1 day ago (always style): " << result;
 
     CHECK(result == "1 day ago");
 }
@@ -489,7 +489,7 @@ TEST_CASE("format_time_point_numeric_style_tomorrow", "[time][relative_time_form
 
     auto result = fmt.format(future, reference);
 
-    BOOST_LOG_SEV(lg, info) << "in 1 day (always style): " << result;
+    ORES_LOG_SEV(lg, info) << "in 1 day (always style): " << result;
 
     CHECK(result == "in 1 day");
 }
@@ -503,7 +503,7 @@ TEST_CASE("format_time_point_numeric_style_short_time", "[time][relative_time_fo
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "5 seconds ago (always style): " << result;
+    ORES_LOG_SEV(lg, info) << "5 seconds ago (always style): " << result;
 
     // With always style, should show numeric even for small values
     CHECK(result == "5 seconds ago");
@@ -543,8 +543,8 @@ TEST_CASE("format_value_unit_table_driven", "[time][relative_time_formatter]") {
         auto result_auto = fmt_auto.format(tc.value, tc.unit);
         auto result_always = fmt_always.format(tc.value, tc.unit);
 
-        BOOST_LOG_SEV(lg, info) << "Value: " << tc.value << ", Unit: " << static_cast<int>(tc.unit)
-                                << ", Auto: " << result_auto << ", Always: " << result_always;
+        ORES_LOG_SEV(lg, info) << "Value: " << tc.value << ", Unit: " << static_cast<int>(tc.unit)
+                               << ", Auto: " << result_auto << ", Always: " << result_always;
 
         CHECK(result_auto == tc.expected_auto);
         CHECK(result_always == tc.expected_always);

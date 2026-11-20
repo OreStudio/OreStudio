@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.api/domain/counterparty_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
@@ -35,7 +34,6 @@
 #include "ores.utility/domain/hierarchy.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -214,7 +212,7 @@ void counterparty_repository::write(const context& ctx,
 void counterparty_repository::write(const context& ctx,
                                     const domain::counterparty& v,
                                     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing counterparty. " << "id: " << v.id;
     const auto t = counterparty_apply_claim(v,
                                             claim,
                                             counterparty_claim_reads_current(claim) ?
@@ -228,7 +226,7 @@ void counterparty_repository::write(
     const context& ctx,
     const std::vector<domain::counterparty>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparties. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing counterparties. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "counterparty_repository::write: one claim is needed for each row");
@@ -264,7 +262,7 @@ std::vector<domain::counterparty> counterparty_repository::read_latest(const con
 
 std::vector<domain::counterparty> counterparty_repository::read_latest(const context& ctx,
                                                                        const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -281,7 +279,7 @@ std::vector<domain::counterparty> counterparty_repository::read_latest(const con
 
 std::vector<domain::counterparty>
 counterparty_repository::read_latest_by_code(const context& ctx, const std::string& short_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty by short_code: " << short_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty by short_code: " << short_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_entity>> |
@@ -298,7 +296,7 @@ counterparty_repository::read_latest_by_code(const context& ctx, const std::stri
 std::vector<domain::counterparty>
 counterparty_repository::read_latest_by_short_code(const context& ctx,
                                                    const std::string& short_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty by short_code: " << short_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty by short_code: " << short_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_entity>> |
@@ -334,8 +332,8 @@ counterparty_repository::read_latest_by_short_code(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparties by short_code. Count: "
-                               << short_codes.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparties by short_code. Count: "
+                              << short_codes.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_entity>> |
@@ -352,7 +350,7 @@ counterparty_repository::read_latest_by_short_code(const context& ctx,
 
 std::vector<domain::counterparty>
 counterparty_repository::read_any_by_short_code(const context& ctx, const std::string& short_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any counterparty by short_code: " << short_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading any counterparty by short_code: " << short_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_entity>> |
                        query_builder::where("tenant_id"_c == tid && "short_code"_c == short_code) |
@@ -369,7 +367,7 @@ counterparty_repository::read_any_by_short_code(const context& ctx, const std::s
 
 std::vector<domain::counterparty> counterparty_repository::read_all(const context& ctx,
                                                                     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all counterparty versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -385,8 +383,8 @@ std::vector<domain::counterparty> counterparty_repository::read_all(const contex
 
 std::optional<domain::counterparty> counterparty_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading counterparty at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_entity>> |
@@ -409,7 +407,7 @@ std::optional<domain::counterparty> counterparty_repository::read_at_version(
 
 counterparty_repository::remove_status counterparty_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -447,8 +445,8 @@ counterparty_repository::read_latest(const context& ctx,
                                      const ores::utility::domain::order& order,
                                      const std::optional<messaging::counterparties_filter>& filter,
                                      const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparties with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparties with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -469,7 +467,7 @@ std::uint32_t counterparty_repository::get_total_counterparty_count(
     const context& ctx,
     const std::optional<messaging::counterparties_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active counterparty count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_entity>> |
@@ -536,8 +534,8 @@ void counterparty_repository::remove(const context& ctx, const std::vector<std::
 
 std::vector<ores::utility::domain::hierarchy_flat_row> counterparty_repository::get_hierarchy(
     const context& ctx, const boost::uuids::uuid& root_id, bool from_root) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty hierarchy. Root: " << root_id
-                               << " from_root: " << from_root;
+    ORES_LOG_SEV(lg(), debug) << "Reading counterparty hierarchy. Root: " << root_id
+                              << " from_root: " << from_root;
 
     const auto tenant_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
     const auto root_str = boost::uuids::to_string(root_id);
@@ -562,7 +560,7 @@ std::vector<ores::utility::domain::hierarchy_flat_row> counterparty_repository::
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " counterparty hierarchy rows.";
+    ORES_LOG_SEV(lg(), debug) << "Read " << result.size() << " counterparty hierarchy rows.";
     return result;
 }
 

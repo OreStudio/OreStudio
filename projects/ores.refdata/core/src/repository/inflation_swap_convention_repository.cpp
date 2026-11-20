@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/inflation_swap_convention.hpp"
 #include "ores.refdata.api/domain/inflation_swap_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/inflation_swap_convention_protocol.hpp"
 #include "ores.refdata.core/repository/inflation_swap_convention_entity.hpp"
 #include "ores.refdata.core/repository/inflation_swap_convention_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -218,7 +216,7 @@ void inflation_swap_convention_repository::write(
 void inflation_swap_convention_repository::write(const context& ctx,
                                                  const domain::inflation_swap_convention& v,
                                                  const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing inflation swap convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing inflation swap convention. " << "id: " << v.id;
     const auto t =
         inflation_swap_convention_apply_claim(v,
                                               claim,
@@ -235,7 +233,7 @@ void inflation_swap_convention_repository::write(
     const context& ctx,
     const std::vector<domain::inflation_swap_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing inflation swap conventions. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing inflation swap conventions. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "inflation_swap_convention_repository::write: one claim is needed for each row");
@@ -275,7 +273,7 @@ inflation_swap_convention_repository::read_latest(const context& ctx) {
 
 std::vector<domain::inflation_swap_convention>
 inflation_swap_convention_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest inflation swap convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest inflation swap convention. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -310,8 +308,7 @@ inflation_swap_convention_repository::read_latest(const context& ctx, const std:
 
 std::vector<domain::inflation_swap_convention>
 inflation_swap_convention_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all inflation swap convention versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all inflation swap convention versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<inflation_swap_convention_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -330,8 +327,8 @@ std::optional<domain::inflation_swap_convention>
 inflation_swap_convention_repository::read_at_version(const context& ctx,
                                                       const std::string& id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading inflation swap convention at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading inflation swap convention at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<inflation_swap_convention_entity>> |
@@ -353,7 +350,7 @@ inflation_swap_convention_repository::read_at_version(const context& ctx,
 
 inflation_swap_convention_repository::remove_status inflation_swap_convention_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing inflation swap convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing inflation swap convention. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -400,8 +397,8 @@ std::vector<domain::inflation_swap_convention> inflation_swap_convention_reposit
     const ores::utility::domain::order& order,
     const std::optional<messaging::inflation_swap_conventions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest inflation swap conventions with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest inflation swap conventions with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<inflation_swap_convention_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -423,7 +420,7 @@ std::uint32_t inflation_swap_convention_repository::get_total_inflation_swap_con
     const context& ctx,
     const std::optional<messaging::inflation_swap_conventions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active inflation swap convention count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active inflation swap convention count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<inflation_swap_convention_entity>> |

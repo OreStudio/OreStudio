@@ -50,8 +50,8 @@ void lease_reaper::sweep() {
 
     const auto returned = ledger.requeue_expired(ctx_);
     if (returned > 0) {
-        BOOST_LOG_SEV(lg(), warn) << returned
-                                  << " job(s) lost their lease and went back to the queue";
+        ORES_LOG_SEV(lg(), warn) << returned
+                                 << " job(s) lost their lease and went back to the queue";
         // The jobs wait again, so idle nodes are told as for new work.
         const ores::compute::messaging::work_available_event bell{.queued =
                                                                       static_cast<int>(returned)};
@@ -87,21 +87,20 @@ void lease_reaper::end_exhausted() {
                 ended.change_commentary = ended.error_message;
                 ores::service::messaging::stamp(ended, tenant_ctx);
                 result_svc.save_result(ended);
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "Result " << result_id << " ended with no reply: " << ended.error_message;
             }
             ledger.remove_expired(ctx_, entry.result_id);
         } catch (const std::exception& e) {
             // The entry stays, and the next sweep tries again.
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Could not end the expired job " << result_id << ": " << e.what();
         }
     }
 }
 
 boost::asio::awaitable<void> lease_reaper::run() {
-    BOOST_LOG_SEV(lg(), info) << "Lease reaper started. Sweeping every " << interval_seconds_
-                              << "s";
+    ORES_LOG_SEV(lg(), info) << "Lease reaper started. Sweeping every " << interval_seconds_ << "s";
 
     auto executor = co_await boost::asio::this_coro::executor;
     boost::asio::steady_timer timer(executor);
@@ -111,7 +110,7 @@ boost::asio::awaitable<void> lease_reaper::run() {
             try {
                 sweep();
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "Lease reaper sweep failed: " << e.what();
+                ORES_LOG_SEV(lg(), warn) << "Lease reaper sweep failed: " << e.what();
             }
 
             timer.expires_after(std::chrono::seconds(interval_seconds_));
@@ -119,11 +118,11 @@ boost::asio::awaitable<void> lease_reaper::run() {
         }
     } catch (const boost::system::system_error& e) {
         if (e.code() != boost::asio::error::operation_aborted) {
-            BOOST_LOG_SEV(lg(), warn) << "Lease reaper timer error: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Lease reaper timer error: " << e.what();
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Lease reaper stopped.";
+    ORES_LOG_SEV(lg(), info) << "Lease reaper stopped.";
 }
 
 }

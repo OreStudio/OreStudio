@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.testing/project_root.hpp"
 #include "test_suite.hpp"
@@ -90,7 +90,7 @@ const std::vector<document_kind>& every_kind() {
 
 TEST_CASE("every_document_kind_the_generator_emits_has_a_family", family_tags) {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "generated families";
+    ORES_LOG_SEV(lg, info) << "generated families";
     const auto roots = generated_roots();
 
     CAPTURE(roots.size());
@@ -105,7 +105,7 @@ TEST_CASE("every_document_kind_the_generator_emits_has_a_family", family_tags) {
 
 TEST_CASE("every_document_kind_has_one_row_in_the_table", family_tags) {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "one row per kind";
+    ORES_LOG_SEV(lg, info) << "one row per kind";
     CHECK(document_families().size() == every_kind().size());
     for (const auto kind : every_kind()) {
         INFO("kind: " << static_cast<int>(kind));
@@ -116,7 +116,7 @@ TEST_CASE("every_document_kind_has_one_row_in_the_table", family_tags) {
 
 TEST_CASE("a_family_nothing_converts_says_so", family_tags) {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "unsupported families";
+    ORES_LOG_SEV(lg, info) << "unsupported families";
     const auto& counterparty = family_of(document_kind::counterparty_information);
 
     CHECK_FALSE(counterparty.read);
@@ -130,7 +130,7 @@ TEST_CASE("a_family_nothing_converts_says_so", family_tags) {
 
 TEST_CASE("every_schema_in_the_ore_xsd_tree_is_recorded", family_tags) {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "schemas";
+    ORES_LOG_SEV(lg, info) << "schemas";
     // Which schema a family comes from, or that a schema declares no document of
     // ours. A new schema fails this case until it is said which it is.
     const std::map<std::string, document_kind> document_schemas{

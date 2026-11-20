@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/xml/record.hpp"
@@ -124,8 +124,8 @@ TEST_CASE("fx_convention_roundtrip_real_example_file_field_values",
         // "EUR-USD-FX-CONVENTIONS"). Documented, not asserted equal.
     }
 
-    BOOST_LOG_SEV(lg, info) << "Field-by-field FX convention round-trip passed for "
-                            << entries.size() << " entries";
+    ORES_LOG_SEV(lg, info) << "Field-by-field FX convention round-trip passed for "
+                           << entries.size() << " entries";
 }
 
 // =============================================================================
@@ -153,7 +153,7 @@ TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented",
     for (const auto& [pair, count] : pair_counts) {
         if (count > 1) {
             ++duplicated_pairs;
-            BOOST_LOG_SEV(lg, info)
+            ORES_LOG_SEV(lg, info)
                 << "Colliding FX convention pair: " << pair.first << "/" << pair.second << " ("
                 << count << " entries in source XML, " << "only 1 survives import)";
         }

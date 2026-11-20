@@ -29,7 +29,7 @@
 #include "ores.dq.api/domain/treatment_dimension.hpp"
 #include "ores.dq.api/messaging/treatment_dimension_protocol.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>

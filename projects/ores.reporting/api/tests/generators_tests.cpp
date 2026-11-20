@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/generators/concurrency_policy_generator.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
@@ -38,7 +38,7 @@ TEST_CASE("concurrency_policy_generator_produces_valid_instance", "[generators]"
     generation_context ctx;
     auto sut = generate_synthetic_concurrency_policy(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated concurrency_policy code: " << sut.code;
+    ORES_LOG_SEV(lg, info) << "Generated concurrency_policy code: " << sut.code;
 
     CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
@@ -66,7 +66,7 @@ TEST_CASE("report_type_generator_produces_valid_instance", "[generators]") {
     generation_context ctx;
     auto sut = generate_synthetic_report_type(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated report_type code: " << sut.code;
+    ORES_LOG_SEV(lg, info) << "Generated report_type code: " << sut.code;
 
     CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
@@ -94,7 +94,7 @@ TEST_CASE("report_definition_generator_produces_valid_instance", "[generators]")
     generation_context ctx;
     auto sut = generate_synthetic_report_definition(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated report_definition id: " << sut.id;
+    ORES_LOG_SEV(lg, info) << "Generated report_definition id: " << sut.id;
 
     CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());
@@ -122,7 +122,7 @@ TEST_CASE("report_instance_generator_produces_valid_instance", "[generators]") {
     generation_context ctx;
     auto sut = generate_synthetic_report_instance(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated report_instance id: " << sut.id;
+    ORES_LOG_SEV(lg, info) << "Generated report_instance id: " << sut.id;
 
     CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());

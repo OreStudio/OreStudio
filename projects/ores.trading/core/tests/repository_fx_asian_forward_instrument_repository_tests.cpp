@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument_json_io.hpp" // IWYU pragma: keep.
@@ -78,7 +78,7 @@ TEST_CASE("fx_asian_forward_instrument_write_and_read_latest",
 
     auto instr = repository_fx_asian_forward_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
-    BOOST_LOG_SEV(lg, debug) << "Writing FX asian forward instrument: " << instr;
+    ORES_LOG_SEV(lg, debug) << "Writing FX asian forward instrument: " << instr;
 
     fx_asian_forward_instrument_repository repo;
     CHECK_NOTHROW(repo.write(ctx, instr));
@@ -95,7 +95,7 @@ TEST_CASE("fx_asian_forward_instrument_write_and_read_latest",
     CHECK(read[0].settlement_notional->to_double() == 10000.0);
     CHECK(read[0].payment_date == ores::platform::time::datetime::from_iso8601_date("2025-09-30"));
     CHECK(read[0].long_short == "Long");
-    BOOST_LOG_SEV(lg, debug) << "Read FX asian forward instrument: " << read[0];
+    ORES_LOG_SEV(lg, debug) << "Read FX asian forward instrument: " << read[0];
 }
 
 TEST_CASE("fx_asian_forward_instrument_read_nonexistent", "[repository][fx][fx_asian_forward]") {
@@ -137,6 +137,6 @@ TEST_CASE("fx_asian_forward_instrument_remove", "[repository][fx][fx_asian_forwa
     CHECK_NOTHROW(repo.remove(ctx, id_str));
 
     const auto after = repo.read_latest(ctx, id_str);
-    BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
+    ORES_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.size() == before.size() - 1);
 }

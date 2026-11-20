@@ -20,7 +20,7 @@
 #include "ores.assets.api/domain/image_tag.hpp"         // IWYU pragma: keep.
 #include "ores.assets.api/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets.api/generators/image_tag_generator.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
@@ -37,7 +37,7 @@ TEST_CASE("generate_single_image_tag", "[generators]") {
 
     generation_context ctx;
     auto image_tag = generate_synthetic_image_tag(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated image_tag: " << image_tag;
+    ORES_LOG_SEV(lg, debug) << "Generated image_tag: " << image_tag;
 
     CHECK(!image_tag.image_id.is_nil());
     CHECK(!image_tag.tag_id.is_nil());
@@ -50,7 +50,7 @@ TEST_CASE("generate_multiple_image_tags", "[generators]") {
 
     generation_context ctx;
     auto image_tags = generate_synthetic_image_tags(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated image_tags: " << image_tags;
+    ORES_LOG_SEV(lg, debug) << "Generated image_tags: " << image_tags;
 
     CHECK(image_tags.size() == 3);
 

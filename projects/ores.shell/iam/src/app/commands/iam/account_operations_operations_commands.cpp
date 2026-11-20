@@ -236,7 +236,7 @@ void account_operations_operations_commands::register_commands(cli::Menu& root_m
 
 void account_operations_operations_commands::process_save_account(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating save-account request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating save-account request.";
 
     using request_type = ores::iam::messaging::save_account_request;
 
@@ -293,7 +293,7 @@ void account_operations_operations_commands::process_save_account(
 
 void account_operations_operations_commands::process_update_account(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating update-account request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating update-account request.";
 
     using request_type = ores::iam::messaging::update_account_request;
 
@@ -355,7 +355,7 @@ void account_operations_operations_commands::process_update_account(
 
 void account_operations_operations_commands::process_delete_account(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete-account request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete-account request.";
 
     using request_type = ores::iam::messaging::delete_account_request;
 
@@ -409,7 +409,7 @@ void account_operations_operations_commands::process_delete_account(
 
 void account_operations_operations_commands::process_lock_account(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating lock-account request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating lock-account request.";
 
     using request_type = ores::iam::messaging::lock_account_request;
 
@@ -463,7 +463,7 @@ void account_operations_operations_commands::process_lock_account(
 
 void account_operations_operations_commands::process_unlock_account(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating unlock-account request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating unlock-account request.";
 
     using request_type = ores::iam::messaging::unlock_account_request;
 
@@ -517,7 +517,7 @@ void account_operations_operations_commands::process_unlock_account(
 
 void account_operations_operations_commands::process_reset_password(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating reset-password request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating reset-password request.";
 
     using request_type = ores::iam::messaging::reset_password_request;
 
@@ -572,7 +572,7 @@ void account_operations_operations_commands::process_reset_password(
 
 void account_operations_operations_commands::process_update_my_email(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating update-my-email request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating update-my-email request.";
 
     using request_type = ores::iam::messaging::update_my_email_request;
 
@@ -626,7 +626,7 @@ void account_operations_operations_commands::process_update_my_email(
 
 void account_operations_operations_commands::process_set_my_default_party(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating set-my-default-party request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating set-my-default-party request.";
 
     using request_type = ores::iam::messaging::set_my_default_party_request;
 
@@ -680,7 +680,7 @@ void account_operations_operations_commands::process_set_my_default_party(
 
 void account_operations_operations_commands::process_select_party(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating select-party request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating select-party request.";
 
     using request_type = ores::iam::messaging::select_party_request;
 
@@ -744,7 +744,7 @@ void account_operations_operations_commands::process_select_party(
 
 void account_operations_operations_commands::process_switch_party(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating switch-party request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating switch-party request.";
 
     using request_type = ores::iam::messaging::switch_party_request;
 
@@ -808,7 +808,7 @@ void account_operations_operations_commands::process_switch_party(
 
 void account_operations_operations_commands::process_change_password(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating change-password request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating change-password request.";
 
     using request_type = ores::iam::messaging::change_password_request_typed;
 
@@ -863,7 +863,7 @@ void account_operations_operations_commands::process_change_password(
 
 void account_operations_operations_commands::process_update_self_account(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating update-self-account request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating update-self-account request.";
 
     using request_type = ores::iam::messaging::update_self_account_request;
 
@@ -924,7 +924,7 @@ void account_operations_operations_commands::process_update_self_account(
 
 void account_operations_operations_commands::process_update_self_account_contact_information(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating update-self-account-contact-information request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating update-self-account-contact-information request.";
 
     using request_type = ores::iam::messaging::update_self_account_contact_information_request;
 
@@ -990,7 +990,7 @@ void account_operations_operations_commands::process_update_self_account_contact
 
 void account_operations_operations_commands::process_get_my_account_contact_information(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-my-account-contact-information request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-my-account-contact-information request.";
 
     using request_type = ores::iam::messaging::get_my_account_contact_information_request;
 
@@ -1043,7 +1043,7 @@ void account_operations_operations_commands::process_get_my_account_contact_info
 
 void account_operations_operations_commands::process_get_my_account(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-my-account request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-my-account request.";
 
     using request_type = ores::iam::messaging::get_my_account_request;
 
@@ -1095,7 +1095,7 @@ void account_operations_operations_commands::process_get_my_account(
 
 void account_operations_operations_commands::process_get_my_login_info(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-my-login-info request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-my-login-info request.";
 
     using request_type = ores::iam::messaging::get_my_login_info_request;
 
@@ -1147,7 +1147,7 @@ void account_operations_operations_commands::process_get_my_login_info(
 
 void account_operations_operations_commands::process_get_my_sessions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-my-sessions request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-my-sessions request.";
 
     using request_type = ores::iam::messaging::get_my_sessions_request;
 
@@ -1199,7 +1199,7 @@ void account_operations_operations_commands::process_get_my_sessions(
 
 void account_operations_operations_commands::process_get_my_parties(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-my-parties request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-my-parties request.";
 
     using request_type = ores::iam::messaging::get_my_parties_request;
 
@@ -1251,7 +1251,7 @@ void account_operations_operations_commands::process_get_my_parties(
 
 void account_operations_operations_commands::process_set_reporting_line(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating set-reporting-line request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating set-reporting-line request.";
 
     using request_type = ores::iam::messaging::set_reporting_line_request;
 
@@ -1309,7 +1309,7 @@ void account_operations_operations_commands::process_set_reporting_line(
 
 void account_operations_operations_commands::process_get_reporting_tree(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-reporting-tree request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-reporting-tree request.";
 
     using request_type = ores::iam::messaging::get_reporting_tree_request;
 
@@ -1363,7 +1363,7 @@ void account_operations_operations_commands::process_get_reporting_tree(
 
 void account_operations_operations_commands::process_attach_account_pictures(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating attach-account-pictures request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating attach-account-pictures request.";
 
     using request_type = ores::iam::messaging::attach_account_pictures_request;
 

@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_TENOR_BASIS_SWAP_PAY_RECEIVE_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
 #include "ores.refdata.api/messaging/tenor_basis_swap_pay_receive_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

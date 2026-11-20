@@ -51,8 +51,8 @@ simulator_adapter::~simulator_adapter() {
 
 void simulator_adapter::start() {
     const auto subject = domain::adapter_demand_subject(adapter_id_);
-    BOOST_LOG_SEV(lg(), info) << "Starting adapter '" << adapter_id_ << "' of provider '"
-                              << provider_code_ << "': demand on '" << subject << "'";
+    ORES_LOG_SEV(lg(), info) << "Starting adapter '" << adapter_id_ << "' of provider '"
+                             << provider_code_ << "': demand on '" << subject << "'";
     demand_sub_ =
         nats_.subscribe(subject, [this](ores::nats::message msg) { demand_message(msg); });
     thread_ = std::thread(&simulator_adapter::loop, this);
@@ -99,8 +99,8 @@ void simulator_adapter::demand_message(const ores::nats::message& msg) {
     auto request = ores::nats::default_wire_codec()
                        .decode<simulator_adapter_messaging::adapter_demand_request>(msg.data);
     if (!request) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to decode a demand on '" << msg.subject
-                                  << "': " << request.error().what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to decode a demand on '" << msg.subject
+                                 << "': " << request.error().what();
         return;
     }
     ores::service::messaging::reply(nats_, msg, on_demand(*request));
@@ -118,22 +118,22 @@ bool simulator_adapter::announce() {
             ores::nats::default_wire_codec()
                 .decode<simulator_adapter_messaging::adapter_announce_response>(reply.data);
         if (!response) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Failed to decode the announce reply: " << response.error().what();
             return false;
         }
         if (!response->success) {
-            BOOST_LOG_SEV(lg(), warn) << "The service refused the announce of '" << adapter_id_
-                                      << "': " << response->message;
+            ORES_LOG_SEV(lg(), warn) << "The service refused the announce of '" << adapter_id_
+                                     << "': " << response->message;
             return false;
         }
-        BOOST_LOG_SEV(lg(), info) << "Announced '" << adapter_id_ << "' with "
-                                  << request.universe.size() << " id(s): " << response->served_count
-                                  << " served, " << response->unknown_count << " unknown";
+        ORES_LOG_SEV(lg(), info) << "Announced '" << adapter_id_ << "' with "
+                                 << request.universe.size() << " id(s): " << response->served_count
+                                 << " served, " << response->unknown_count << " unknown";
         return true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "The announce of '" << adapter_id_ << "' got no answer: " << e.what();
+        ORES_LOG_SEV(lg(), debug) << "The announce of '" << adapter_id_
+                                  << "' got no answer: " << e.what();
         return false;
     }
 }
@@ -171,7 +171,7 @@ void simulator_adapter::loop() {
                 nats_.publish(domain::adapter_heartbeat_subject(adapter_id_),
                               ores::nats::default_wire_codec().encode(beat));
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "Failed to send a heartbeat: " << e.what();
+                ORES_LOG_SEV(lg(), warn) << "Failed to send a heartbeat: " << e.what();
             }
             next_heartbeat = clock::now() + timing_.heartbeat_interval;
         }

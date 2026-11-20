@@ -18,7 +18,7 @@
  *
  */
 #include "ores.compute.wrapper/app/log_publisher.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.core/log/engine_log.hpp"
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
@@ -58,7 +58,7 @@ void publish_ore_logs(ores::nats::service::client& nats,
     const auto log_path = job_dir / "Output" / "log.txt";
     std::ifstream f(log_path);
     if (!f.is_open()) {
-        BOOST_LOG_SEV(log_publisher_lg(), debug) << "ORE log not found: " << log_path;
+        ORES_LOG_SEV(log_publisher_lg(), debug) << "ORE log not found: " << log_path;
         return;
     }
 
@@ -92,8 +92,8 @@ void publish_ore_logs(ores::nats::service::client& nats,
     }
     publish_batch(nats, req);
 
-    BOOST_LOG_SEV(log_publisher_lg(), debug) << "Published " << parsed << " ORE log entries ("
-                                             << skipped << " skipped) for result " << result_id;
+    ORES_LOG_SEV(log_publisher_lg(), debug) << "Published " << parsed << " ORE log entries ("
+                                            << skipped << " skipped) for result " << result_id;
 }
 
 void publish_engine_logs(ores::nats::service::client& nats,
@@ -102,7 +102,7 @@ void publish_engine_logs(ores::nats::service::client& nats,
     const auto log_path = job_dir / "engine.log";
     std::ifstream f(log_path);
     if (!f.is_open()) {
-        BOOST_LOG_SEV(log_publisher_lg(), debug) << "Engine log not found: " << log_path;
+        ORES_LOG_SEV(log_publisher_lg(), debug) << "Engine log not found: " << log_path;
         return;
     }
 
@@ -134,7 +134,7 @@ void publish_engine_logs(ores::nats::service::client& nats,
     }
     publish_batch(nats, req);
 
-    BOOST_LOG_SEV(log_publisher_lg(), debug)
+    ORES_LOG_SEV(log_publisher_lg(), debug)
         << "Published " << count << " engine log lines for result " << result_id;
 }
 

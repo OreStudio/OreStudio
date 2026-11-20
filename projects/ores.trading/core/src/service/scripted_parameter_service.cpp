@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/scripted_parameter.hpp"
 #include "ores.trading.api/messaging/scripted_parameter_protocol.hpp"
 #include "ores.trading.core/repository/scripted_parameter_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -517,12 +515,12 @@ scripted_parameter_service::prepare_change(const messaging::scripted_parameter_c
 
 std::vector<domain::scripted_parameter>
 scripted_parameter_service::list_scripted_parameters(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all scripted parameters";
+    ORES_LOG_SEV(lg(), debug) << "Listing all scripted parameters";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t scripted_parameter_service::count_scripted_parameters() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total scripted parameters count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total scripted parameters count";
     return repo_.get_total_scripted_parameter_count(ctx_);
 }
 
@@ -531,14 +529,14 @@ std::vector<domain::scripted_parameter>
 scripted_parameter_service::list_scripted_parameters_by_trade_id(const std::string& trade_id,
                                                                  std::uint32_t offset,
                                                                  std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing scripted parameters by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing scripted parameters by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t
 scripted_parameter_service::count_scripted_parameters_by_trade_id(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total scripted parameters count by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total scripted parameters count by trade_id: "
+                              << trade_id;
     return repo_.get_total_scripted_parameter_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -547,18 +545,17 @@ std::optional<domain::scripted_parameter>
 scripted_parameter_service::get_scripted_parameter_at_version(const std::string& trade_id,
                                                               const std::string& sequence_number,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting scripted parameter at version. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting scripted parameter at version. "
+                              << "trade_id: " << trade_id << " sequence_number: " << sequence_number
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::scripted_parameter>
 scripted_parameter_service::get_scripted_parameter(const std::string& trade_id,
                                                    const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting scripted parameter. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting scripted parameter. " << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -573,13 +570,13 @@ std::vector<domain::scripted_parameter> scripted_parameter_service::get_scripted
 void scripted_parameter_service::save_scripted_parameter(const domain::scripted_parameter& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Scripted Parameter trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving scripted parameter. " << "trade_id: " << v.trade_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving scripted parameter. " << "trade_id: " << v.trade_id
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved scripted parameter. " << "trade_id: " << v.trade_id
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved scripted parameter. " << "trade_id: " << v.trade_id
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void scripted_parameter_service::save_scripted_parameters(
@@ -588,7 +585,7 @@ void scripted_parameter_service::save_scripted_parameters(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Scripted Parameter trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << scripted_parameters.size() << " scripted parameters";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << scripted_parameters.size() << " scripted parameters";
     auto ts = scripted_parameters;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -598,11 +595,11 @@ void scripted_parameter_service::save_scripted_parameters(
 
 void scripted_parameter_service::delete_scripted_parameter(const std::string& trade_id,
                                                            const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing scripted parameter. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed scripted parameter. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing scripted parameter. " << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed scripted parameter. " << "trade_id: " << trade_id
+                             << " sequence_number: " << sequence_number;
 }
 
 void scripted_parameter_service::delete_scripted_parameters(
@@ -613,9 +610,9 @@ void scripted_parameter_service::delete_scripted_parameters(
 std::vector<domain::scripted_parameter>
 scripted_parameter_service::get_scripted_parameter_history(const std::string& trade_id,
                                                            const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for scripted parameter. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for scripted parameter. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 

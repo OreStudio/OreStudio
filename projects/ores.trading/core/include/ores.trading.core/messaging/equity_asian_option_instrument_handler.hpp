@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_MESSAGING_EQUITY_ASIAN_OPTION_INSTRUMENT_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -75,7 +75,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_equity_asian_option_instruments(ores::nats::message msg) {
-        BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+        ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -91,7 +91,7 @@ public:
         }
         auto req = decode<list_equity_asian_option_instruments_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -99,14 +99,14 @@ public:
         service::equity_asian_option_instrument_service svc(req_ctx);
         try {
             auto response = svc.list_equity_asian_option_instruments(*req);
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_equity_asian_option_instruments_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -126,7 +126,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_equity_asian_option_instrument(ores::nats::message msg) {
-        BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+        ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -142,7 +142,7 @@ public:
         }
         auto req = decode<get_equity_asian_option_instrument_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -150,14 +150,14 @@ public:
         service::equity_asian_option_instrument_service svc(req_ctx);
         try {
             auto response = svc.get_equity_asian_option_instrument(*req);
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_equity_asian_option_instrument_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -177,7 +177,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_equity_asian_option_instruments(ores::nats::message msg) {
-        BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+        ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -193,7 +193,7 @@ public:
         }
         auto req = decode<get_many_equity_asian_option_instruments_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -201,14 +201,14 @@ public:
         service::equity_asian_option_instrument_service svc(req_ctx);
         try {
             auto response = svc.get_many_equity_asian_option_instruments(*req);
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_equity_asian_option_instruments_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -228,7 +228,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_equity_asian_option_instrument(ores::nats::message msg) {
-        BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+        ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -244,7 +244,7 @@ public:
         }
         auto req = decode<put_equity_asian_option_instrument_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -252,14 +252,14 @@ public:
         service::equity_asian_option_instrument_service svc(req_ctx);
         try {
             auto response = svc.put_equity_asian_option_instrument(*req);
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_equity_asian_option_instrument_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -279,7 +279,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_equity_asian_option_instruments(ores::nats::message msg) {
-        BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+        ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -295,7 +295,7 @@ public:
         }
         auto req = decode<put_many_equity_asian_option_instruments_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -303,14 +303,14 @@ public:
         service::equity_asian_option_instrument_service svc(req_ctx);
         try {
             auto response = svc.put_many_equity_asian_option_instruments(*req);
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_equity_asian_option_instruments_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -330,7 +330,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_equity_asian_option_instrument(ores::nats::message msg) {
-        BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+        ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -346,7 +346,7 @@ public:
         }
         auto req = decode<delete_equity_asian_option_instrument_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -354,14 +354,14 @@ public:
         service::equity_asian_option_instrument_service svc(req_ctx);
         try {
             auto response = svc.delete_equity_asian_option_instrument(*req);
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_equity_asian_option_instrument_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -381,7 +381,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_equity_asian_option_instruments(ores::nats::message msg) {
-        BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+        ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -397,7 +397,7 @@ public:
         }
         auto req = decode<delete_many_equity_asian_option_instruments_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -405,14 +405,14 @@ public:
         service::equity_asian_option_instrument_service svc(req_ctx);
         try {
             auto response = svc.delete_many_equity_asian_option_instruments(*req);
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_equity_asian_option_instruments_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -432,7 +432,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_equity_asian_option_instrument_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+        ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -448,7 +448,7 @@ public:
         }
         auto req = decode<list_equity_asian_option_instrument_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -456,14 +456,14 @@ public:
         service::equity_asian_option_instrument_service svc(req_ctx);
         try {
             auto response = svc.list_equity_asian_option_instrument_versions(*req);
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_equity_asian_option_instrument_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -483,7 +483,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_equity_asian_option_instrument_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+        ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -499,7 +499,7 @@ public:
         }
         auto req = decode<get_equity_asian_option_instrument_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -507,14 +507,14 @@ public:
         service::equity_asian_option_instrument_service svc(req_ctx);
         try {
             auto response = svc.get_equity_asian_option_instrument_version(*req);
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
+            ORES_LOG_SEV(equity_asian_option_instrument_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_equity_asian_option_instrument_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

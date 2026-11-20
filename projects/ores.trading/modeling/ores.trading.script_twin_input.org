@@ -144,9 +144,8 @@ std::string("product.strike")
 :economic: true
 :END:
 
-How the value is turned into the one the script reads: =sign= turns =Long=,
-=Call= or =true= into =1= and =Short=, =Put= or =false= into =-1=; =flag= turns
-=true= into =1= and =false= into =0=.
+How the value is turned into the code the script reads, as the
+=Scripted twin transforms= table of the trade type catalogue states.
 
 #+begin_src cpp :name generator
 std::optional<std::string>(std::string("sign"))
@@ -178,7 +177,7 @@ The script the row belongs to.
 | expression |
 |------------|
 | "data_type" in ('Number', 'Event', 'Index', 'Currency', 'Daycounter') |
-| "transform" is null or "transform" in ('sign', 'flag') |
+| "transform" is null or "transform" in ('barrier', 'flag', 'sign') |
 | "source" <> '' |
 
 * C++

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -32,7 +32,7 @@ TEST_CASE("make_object_path_uses_the_storage_api_prefix", "[net]") {
 
     const auto path = storage_paths::make_object_path("ores", "abc/def");
 
-    BOOST_LOG_SEV(lg, info) << "Object path: " << path;
+    ORES_LOG_SEV(lg, info) << "Object path: " << path;
     CHECK(path == "/api/v1/storage/ores/abc/def");
 }
 
@@ -41,14 +41,14 @@ TEST_CASE("make_object_url_prepends_the_base_url", "[net]") {
 
     const auto url = storage_paths::make_object_url("http://localhost:51000", "b", "k");
 
-    BOOST_LOG_SEV(lg, info) << "Object URL: " << url;
+    ORES_LOG_SEV(lg, info) << "Object URL: " << url;
     CHECK(url == "http://localhost:51000/api/v1/storage/b/k");
 }
 
 TEST_CASE("prefix_matches_the_storage_api_path", "[net]") {
     auto lg(make_logger(test_suite));
 
-    BOOST_LOG_SEV(lg, info) << "Prefix: " << storage_paths::prefix;
+    ORES_LOG_SEV(lg, info) << "Prefix: " << storage_paths::prefix;
     CHECK(storage_paths::prefix == "/api/v1/storage");
 }
 
@@ -59,7 +59,7 @@ TEST_CASE("key_with_slashes_survives_unchanged", "[net]") {
     const auto path = storage_paths::make_object_path("ores", key);
     const auto url = storage_paths::make_object_url("http://localhost:51000", "ores", key);
 
-    BOOST_LOG_SEV(lg, info) << "Hierarchical key path: " << path;
+    ORES_LOG_SEV(lg, info) << "Hierarchical key path: " << path;
     CHECK(path == "/api/v1/storage/ores/releases/1.2.3/oscar-1.2.3.tar.gz");
     CHECK(url == "http://localhost:51000/api/v1/storage/ores/"
                  "releases/1.2.3/oscar-1.2.3.tar.gz");
@@ -74,7 +74,7 @@ TEST_CASE("split_object_path_inverts_make_object_path", "[net]") {
     const auto path = storage_paths::make_object_path("ores", original);
 
     REQUIRE(storage_paths::split_object_path(path, bucket, key));
-    BOOST_LOG_SEV(lg, info) << "Split: " << bucket << "/" << key;
+    ORES_LOG_SEV(lg, info) << "Split: " << bucket << "/" << key;
     CHECK(bucket == "ores");
     CHECK(key == original);
 }
@@ -84,7 +84,7 @@ TEST_CASE("split_object_path_refuses_a_path_outside_the_prefix", "[net]") {
 
     std::string bucket;
     std::string key;
-    BOOST_LOG_SEV(lg, info) << "Splitting a foreign path";
+    ORES_LOG_SEV(lg, info) << "Splitting a foreign path";
     CHECK_FALSE(storage_paths::split_object_path("/other/ores/k", bucket, key));
     CHECK_FALSE(storage_paths::split_object_path("/api/v1/storage", bucket, key));
     CHECK_FALSE(storage_paths::split_object_path("/api/v1/storage/ores/", bucket, key));

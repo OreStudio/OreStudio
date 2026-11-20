@@ -225,7 +225,7 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_i
         result.emplace(id, std::move(data));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " bond instruments.";
+    ORES_LOG_SEV(lg(), debug) << "Read " << result.size() << " bond instruments.";
     return result;
 }
 

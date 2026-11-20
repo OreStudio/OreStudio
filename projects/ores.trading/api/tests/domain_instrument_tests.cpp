@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
@@ -46,7 +46,7 @@ TEST_CASE("a_carrier_that_states_no_fact_row_reports_no_answer", "[domain]") {
     const credit_instrument_data sut;
     const auto answered = visit_credit_facts([](const auto&) { return true; }, sut);
 
-    BOOST_LOG_SEV(lg, info) << "Answered: " << answered.has_value();
+    ORES_LOG_SEV(lg, info) << "Answered: " << answered.has_value();
     CHECK(!answered.has_value());
 }
 
@@ -57,7 +57,7 @@ TEST_CASE("a_visitor_that_answers_false_is_not_reported_as_silence", "[domain]")
     sut.credit_default_swap_instruments.push_back(credit_default_swap_instrument{});
     const auto answered = visit_credit_facts([](const auto&) { return false; }, sut);
 
-    BOOST_LOG_SEV(lg, info) << "Answered: " << answered.has_value();
+    ORES_LOG_SEV(lg, info) << "Answered: " << answered.has_value();
     REQUIRE(answered.has_value());
     CHECK(!*answered);
 }
@@ -70,7 +70,7 @@ TEST_CASE("the_visitor_sees_the_one_fact_row_the_carrier_states", "[domain]") {
         risk_participation_agreement_instrument{});
     const auto answered = visit_credit_facts([](const auto&) { return true; }, sut);
 
-    BOOST_LOG_SEV(lg, info) << "Answered: " << answered.has_value();
+    ORES_LOG_SEV(lg, info) << "Answered: " << answered.has_value();
     REQUIRE(answered.has_value());
     CHECK(*answered);
 }
@@ -84,7 +84,7 @@ TEST_CASE("fact_rows_reaches_the_array_the_fact_type_lives_in", "[domain]") {
         index_credit_default_swap_option_instrument{});
     const auto& rows = fact_rows<index_credit_default_swap_option_instrument>(sut);
 
-    BOOST_LOG_SEV(lg, info) << "Rows: " << rows.size();
+    ORES_LOG_SEV(lg, info) << "Rows: " << rows.size();
     CHECK(rows.size() == 1U);
     CHECK(fact_rows<credit_default_swap_instrument>(sut).size() == 1U);
     CHECK(fact_rows<risk_participation_agreement_instrument>(sut).empty());

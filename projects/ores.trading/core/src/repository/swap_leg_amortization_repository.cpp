@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/swap_leg_amortization.hpp"
 #include "ores.trading.api/domain/swap_leg_amortization_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/swap_leg_amortization_protocol.hpp"
 #include "ores.trading.core/repository/swap_leg_amortization_entity.hpp"
 #include "ores.trading.core/repository/swap_leg_amortization_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -240,9 +238,9 @@ void swap_leg_amortization_repository::write(const context& ctx,
 void swap_leg_amortization_repository::write(const context& ctx,
                                              const domain::swap_leg_amortization& v,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing swap leg amortization. " << "trade_id: " << v.trade_id
-                               << " leg_number: " << v.leg_number
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Writing swap leg amortization. " << "trade_id: " << v.trade_id
+                              << " leg_number: " << v.leg_number
+                              << " sequence_number: " << v.sequence_number;
     const auto t =
         swap_leg_amortization_apply_claim(v,
                                           claim,
@@ -262,7 +260,7 @@ void swap_leg_amortization_repository::write(
     const context& ctx,
     const std::vector<domain::swap_leg_amortization>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing swap leg amortizations. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing swap leg amortizations. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "swap_leg_amortization_repository::write: one claim is needed for each row");
@@ -305,9 +303,9 @@ swap_leg_amortization_repository::read_latest(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& leg_number,
                                               const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest swap leg amortization. "
-                               << "trade_id: " << trade_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest swap leg amortization. "
+                              << "trade_id: " << trade_id << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -331,9 +329,9 @@ swap_leg_amortization_repository::read_all(const context& ctx,
                                            const std::string& trade_id,
                                            const std::string& leg_number,
                                            const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all swap leg amortization versions. "
-                               << "trade_id: " << trade_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading all swap leg amortization versions. "
+                              << "trade_id: " << trade_id << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swap_leg_amortization_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
@@ -356,10 +354,9 @@ swap_leg_amortization_repository::read_at_version(const context& ctx,
                                                   const std::string& leg_number,
                                                   const std::string& sequence_number,
                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading swap leg amortization at version. "
-                               << "trade_id: " << trade_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading swap leg amortization at version. "
+                              << "trade_id: " << trade_id << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<swap_leg_amortization_entity>> |
@@ -389,8 +386,8 @@ swap_leg_amortization_repository::read_latest_by_trade_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::swap_leg_amortizations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest swap leg amortizations. trade_id: " << trade_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest swap leg amortizations. trade_id: " << trade_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swap_leg_amortization_entity>> |
@@ -414,8 +411,8 @@ std::uint32_t swap_leg_amortization_repository::get_total_swap_leg_amortization_
     const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::swap_leg_amortizations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swap leg amortizations count. trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active swap leg amortizations count. trade_id: "
+                              << trade_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -438,9 +435,9 @@ swap_leg_amortization_repository::remove(const context& ctx,
                                          const std::string& leg_number,
                                          const std::string& sequence_number,
                                          std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing swap leg amortization. " << "trade_id: " << trade_id
-                               << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Removing swap leg amortization. " << "trade_id: " << trade_id
+                              << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     const auto current = read_latest(ctx, trade_id, leg_number, sequence_number);
     if (current.empty())
         return remove_status::missing;
@@ -484,8 +481,8 @@ std::vector<domain::swap_leg_amortization> swap_leg_amortization_repository::rea
     const ores::utility::domain::order& order,
     const std::optional<messaging::swap_leg_amortizations_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest swap leg amortizations with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest swap leg amortizations with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swap_leg_amortization_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -508,7 +505,7 @@ std::uint32_t swap_leg_amortization_repository::get_total_swap_leg_amortization_
     const context& ctx,
     const std::optional<messaging::swap_leg_amortizations_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swap leg amortization count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active swap leg amortization count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swap_leg_amortization_entity>> |

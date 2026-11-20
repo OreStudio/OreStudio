@@ -21,7 +21,7 @@
 #include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include "test_suite.hpp"
@@ -49,7 +49,7 @@ TEST_CASE("create_session_with_valid_fields", "[domain]") {
     sut.bytes_received = 2048;
     sut.country_code = "US";
 
-    BOOST_LOG_SEV(lg, info) << "Session: " << sut;
+    ORES_LOG_SEV(lg, info) << "Session: " << sut;
 
     CHECK(sut.client_identifier == "OreStudio Desktop");
     CHECK(sut.client_version_major == 1);
@@ -69,7 +69,7 @@ TEST_CASE("session_is_open_when_end_time_is_absent", "[domain]") {
     sut.client_ip = boost::asio::ip::make_address("10.0.0.1");
     sut.client_identifier = "Test Client";
 
-    BOOST_LOG_SEV(lg, info) << "Active session: " << sut;
+    ORES_LOG_SEV(lg, info) << "Active session: " << sut;
 
     CHECK_FALSE(sut.end_time.has_value());
     CHECK(sut.protocol == "binary");
@@ -86,7 +86,7 @@ TEST_CASE("session_is_closed_when_end_time_is_set", "[domain]") {
     sut.client_ip = boost::asio::ip::make_address("10.0.0.1");
     sut.client_identifier = "Test Client";
 
-    BOOST_LOG_SEV(lg, info) << "Ended session: " << sut;
+    ORES_LOG_SEV(lg, info) << "Ended session: " << sut;
 
     CHECK(sut.end_time.has_value());
 }
@@ -101,7 +101,7 @@ TEST_CASE("session_with_ipv6_address", "[domain]") {
     sut.client_ip = boost::asio::ip::make_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
     sut.client_identifier = "IPv6 Client";
 
-    BOOST_LOG_SEV(lg, info) << "IPv6 session: " << sut;
+    ORES_LOG_SEV(lg, info) << "IPv6 session: " << sut;
 
     CHECK(sut.client_ip.is_v6());
     CHECK(sut.client_identifier == "IPv6 Client");
@@ -134,7 +134,7 @@ TEST_CASE("session_serialization_to_json", "[domain]") {
     sut.client_version_minor = 5;
     sut.country_code = "GB";
 
-    BOOST_LOG_SEV(lg, info) << "Session: " << sut;
+    ORES_LOG_SEV(lg, info) << "Session: " << sut;
 
     std::ostringstream os;
     os << sut;
@@ -158,7 +158,7 @@ TEST_CASE("session_without_geolocation", "[domain]") {
     sut.client_identifier = "Local Client";
     // country_code remains empty for localhost/private IPs
 
-    BOOST_LOG_SEV(lg, info) << "Session without geo: " << sut;
+    ORES_LOG_SEV(lg, info) << "Session without geo: " << sut;
 
     CHECK(sut.country_code.empty());
 }
@@ -178,7 +178,7 @@ TEST_CASE("create_session_with_faker", "[domain]") {
     sut.bytes_received = faker::number::integer<uint64_t>(0, 1000000);
     sut.country_code = faker::location::countryCode();
 
-    BOOST_LOG_SEV(lg, info) << "Faker session: " << sut;
+    ORES_LOG_SEV(lg, info) << "Faker session: " << sut;
 
     CHECK(!sut.client_identifier.empty());
     CHECK(sut.client_version_major >= 1);
@@ -206,7 +206,7 @@ TEST_CASE("create_multiple_random_sessions", "[domain]") {
         sut.bytes_sent = faker::number::integer<uint64_t>(100, 10000);
         sut.bytes_received = faker::number::integer<uint64_t>(100, 10000);
 
-        BOOST_LOG_SEV(lg, info) << "Session " << i << ": " << sut;
+        ORES_LOG_SEV(lg, info) << "Session " << i << ": " << sut;
 
         CHECK(!sut.client_identifier.empty());
     }

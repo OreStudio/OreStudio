@@ -1,0 +1,72 @@
+GET /api/timeline, proved against the environment the systemd unit runs.
+
+Commit under test : f6c6024bbd (PR #4907 head, the review fixes included)
+Built from        : the gateway reports d9e983dd95, the commit its binary was linked at
+Database          : ores_dev_brave_hopper, recreated from this checkout 2026-11-19 21:50
+Schema            : in sync, fingerprint cabc2ecdbf1f608e (compass bearings); the
+                    review fixes touch no SQL, so the fingerprint is unchanged
+Gateway           : ores.http.server-brave_hopper, http://localhost:20401
+Tenant            : acme_corporation, provisioned by the acme_demo profile and active
+
+The run prints each subject's answer: its subject, the count of events and gaps, the
+events by entity type, the newest four, and every gap with the sentence the screen shows.
+It then shows the address refusing what the BFF refused.
+
+The party read is the first operational party the session may act as, and the session
+chooses that party: a party's parts and links answer only to a session acting as it.
+
+--- 8< ---
+
+=== signing in ===
+outcome: party-required  tenant: Acme Corporation  db fingerprint: cabc2ecdbf1f608e  commit: d9e983dd95
+choose party: 200
+party:   6fcbd63e-9e10-482b-99ab-65c729f1565d
+person:  tenant_admin
+request: 01a1f5da-ccd2-7b17-a11c-9161bbfb8aca
+
+=== party timeline: HTTP 200 ===
+subject: party  id: 6fcbd63e-9e10-482b-99ab-65c729f1565d
+events: 492  gaps: 3
+  ores.refdata.business_unit                     1
+  ores.refdata.party                             7
+  ores.refdata.party_contact_information         4
+  ores.refdata.party_counterparty                453
+  ores.refdata.party_currency                    26
+  ores.refdata.party_identifier                  1
+  raised      ores.refdata.party_counterparty        6fcbd63e-9e10-482b-99ab-65c7 v1   2026-11-19 21:55:07.845481Z
+  raised      ores.refdata.party_counterparty        6fcbd63e-9e10-482b-99ab-65c7 v1   2026-11-19 21:55:07.845308Z
+  raised      ores.refdata.party_counterparty        6fcbd63e-9e10-482b-99ab-65c7 v1   2026-11-19 21:55:07.845143Z
+  raised      ores.refdata.party_counterparty        6fcbd63e-9e10-482b-99ab-65c7 v1   2026-11-19 21:55:07.844884Z
+  GAP ores.refdata.party_identifier_removed -> No read lists the identifiers that were removed from this party.
+  GAP ores.refdata.party_contact_information_removed -> No read lists the contacts that were removed from this party.
+  GAP ores.refdata.business_unit_removed -> No read lists the business units that were removed from this party.
+
+=== person timeline: HTTP 200 ===
+subject: person  id: tenant_admin
+events: 20  gaps: 1
+  ores.iam.account                               3
+  ores.iam.account_party                         10
+  ores.iam.account_role                          2
+  ores.iam.auth_event                            5
+  signed_in   ores.iam.auth_event                    dab9f6b3-0e67-45b4-b745-17bd v1   2026-11-19 23:04:36.581730Z
+  signed_in   ores.iam.auth_event                    3a6a9a6a-dc9f-442f-8afc-7048 v1   2026-11-19 23:03:53.511792Z
+  signed_in   ores.iam.auth_event                    e58f48f2-28bb-4060-bb5e-5610 v1   2026-11-19 22:12:11.319349Z
+  signed_in   ores.iam.auth_event                    7f951390-efb1-4396-8bb3-499b v1   2026-11-19 22:12:01.964679Z
+  GAP ores.iam.auth_event -> The sign-in log keeps a rolling window rather than everything, so a sign-in older than the window is not shown
+
+=== request timeline: HTTP 200 ===
+subject: request  id: 01a1f5da-ccd2-7b17-a11c-9161bbfb8aca
+events: 3  gaps: 0
+  ores.inbox.approval_decision                   1
+  ores.inbox.approval_request                    2
+  changed     ores.inbox.approval_request            01a1f5da-ccd2-7b17-a11c-9161 v2   2026-11-19 22:08:39.637533Z
+  decided     ores.inbox.approval_decision           01a1f5da-ccd2-7b17-a11c-9161 v1   2026-11-19 22:08:39.636585Z
+  raised      ores.inbox.approval_request            01a1f5da-ccd2-7b17-a11c-9161 v1   2026-11-19 22:08:39.635348Z
+
+=== the address refuses what the BFF refused ===
+{"code":"invalid-request","message":"Name a timeline by its subject and its id."}
+no subject: HTTP 400
+{"code":"invalid-request","message":"A timeline is read for one of person, party, request, not for desk."}
+bad subject: HTTP 400
+{"code":"invalid-request","message":"This read cannot take since."}
+unknown parameter: HTTP 400

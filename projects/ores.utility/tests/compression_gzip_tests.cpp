@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/compression/gzip.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -44,8 +44,8 @@ TEST_CASE("gzip_roundtrip_preserves_payload", "[compression]") {
     const auto compressed = gzip_compress(payload);
     const auto restored = gzip_decompress(compressed);
 
-    BOOST_LOG_SEV(lg, info) << "Payload " << payload.size() << " bytes compressed to "
-                            << compressed.size() << " bytes";
+    ORES_LOG_SEV(lg, info) << "Payload " << payload.size() << " bytes compressed to "
+                           << compressed.size() << " bytes";
 
     CHECK(to_string(restored) == payload);
     CHECK(to_string(compressed) != payload);
@@ -61,10 +61,10 @@ TEST_CASE("gzip_compress_emits_the_gzip_container_header", "[compression]") {
     CHECK(static_cast<unsigned char>(compressed[1]) == 0x8b);
     CHECK(static_cast<unsigned char>(compressed[2]) == 0x08);
 
-    BOOST_LOG_SEV(lg, info) << "Container header: " << std::hex
-                            << static_cast<int>(static_cast<unsigned char>(compressed[0])) << " "
-                            << static_cast<int>(static_cast<unsigned char>(compressed[1])) << " "
-                            << static_cast<int>(static_cast<unsigned char>(compressed[2]));
+    ORES_LOG_SEV(lg, info) << "Container header: " << std::hex
+                           << static_cast<int>(static_cast<unsigned char>(compressed[0])) << " "
+                           << static_cast<int>(static_cast<unsigned char>(compressed[1])) << " "
+                           << static_cast<int>(static_cast<unsigned char>(compressed[2]));
 }
 
 TEST_CASE("gzip_decompress_reads_a_stream_from_another_producer", "[compression]") {
@@ -81,7 +81,7 @@ TEST_CASE("gzip_decompress_reads_a_stream_from_another_producer", "[compression]
 
     const auto restored = gzip_decompress(compressed);
 
-    BOOST_LOG_SEV(lg, info) << "Restored " << restored.size() << " bytes";
+    ORES_LOG_SEV(lg, info) << "Restored " << restored.size() << " bytes";
 
     CHECK(to_string(restored) == "The quick brown fox jumps over the lazy dog");
 }
@@ -92,7 +92,7 @@ TEST_CASE("gzip_roundtrip_of_empty_input_returns_no_bytes", "[compression]") {
     const auto compressed = gzip_compress(std::string());
     const auto restored = gzip_decompress(compressed);
 
-    BOOST_LOG_SEV(lg, info) << "Empty payload compressed to " << compressed.size() << " bytes";
+    ORES_LOG_SEV(lg, info) << "Empty payload compressed to " << compressed.size() << " bytes";
 
     CHECK(!compressed.empty());
     CHECK(restored.empty());
@@ -104,7 +104,7 @@ TEST_CASE("gzip_compress_shrinks_a_repetitive_payload", "[compression]") {
     const std::string payload(10000, 'a');
     const auto compressed = gzip_compress(payload);
 
-    BOOST_LOG_SEV(lg, info) << "10000 bytes compressed to " << compressed.size() << " bytes";
+    ORES_LOG_SEV(lg, info) << "10000 bytes compressed to " << compressed.size() << " bytes";
 
     CHECK(compressed.size() < payload.size());
     CHECK(to_string(gzip_decompress(compressed)) == payload);
@@ -125,7 +125,7 @@ TEST_CASE("gzip_decompress_rejects_input_that_is_not_gzip", "[compression]") {
 
     const std::string not_gzip("this is not a gzip stream");
 
-    BOOST_LOG_SEV(lg, info) << "Rejecting " << not_gzip.size() << " bytes of plain text";
+    ORES_LOG_SEV(lg, info) << "Rejecting " << not_gzip.size() << " bytes of plain text";
 
     CHECK_THROWS_AS(gzip_decompress(not_gzip), std::runtime_error);
 }

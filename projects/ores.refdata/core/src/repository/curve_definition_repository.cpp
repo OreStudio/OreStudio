@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/curve_definition.hpp"
 #include "ores.refdata.api/domain/curve_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/curve_definition_protocol.hpp"
 #include "ores.refdata.core/repository/curve_definition_entity.hpp"
 #include "ores.refdata.core/repository/curve_definition_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -214,7 +212,7 @@ void curve_definition_repository::write(const context& ctx,
 void curve_definition_repository::write(const context& ctx,
                                         const domain::curve_definition& v,
                                         const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing curve definition. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing curve definition. " << "id: " << v.id;
     const auto t =
         curve_definition_apply_claim(v,
                                      claim,
@@ -229,7 +227,7 @@ void curve_definition_repository::write(
     const context& ctx,
     const std::vector<domain::curve_definition>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing curve definitions. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing curve definitions. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "curve_definition_repository::write: one claim is needed for each row");
@@ -265,7 +263,7 @@ std::vector<domain::curve_definition> curve_definition_repository::read_latest(c
 
 std::vector<domain::curve_definition>
 curve_definition_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest curve definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest curve definition. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -283,7 +281,7 @@ curve_definition_repository::read_latest(const context& ctx, const std::string& 
 std::vector<domain::curve_definition>
 curve_definition_repository::read_latest_by_curve_id(const context& ctx,
                                                      const std::string& curve_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest curve definition by curve_id: " << curve_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest curve definition by curve_id: " << curve_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_definition_entity>> |
@@ -325,8 +323,8 @@ curve_definition_repository::read_latest_by_curve_id(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest curve definitions by curve_id. Count: "
-                               << curve_ids.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest curve definitions by curve_id. Count: "
+                              << curve_ids.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_definition_entity>> |
@@ -347,7 +345,7 @@ curve_definition_repository::read_latest_by_curve_id(const context& ctx,
 
 std::vector<domain::curve_definition>
 curve_definition_repository::read_any_by_curve_id(const context& ctx, const std::string& curve_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any curve definition by curve_id: " << curve_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading any curve definition by curve_id: " << curve_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_definition_entity>> |
                        query_builder::where("tenant_id"_c == tid && "curve_id"_c == curve_id) |
@@ -375,7 +373,7 @@ curve_definition_repository::read_any_by_curve_id(const context& ctx, const std:
 
 std::vector<domain::curve_definition> curve_definition_repository::read_all(const context& ctx,
                                                                             const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all curve definition versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all curve definition versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_definition_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -391,8 +389,8 @@ std::vector<domain::curve_definition> curve_definition_repository::read_all(cons
 
 std::optional<domain::curve_definition> curve_definition_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading curve definition at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading curve definition at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<curve_definition_entity>> |
@@ -415,7 +413,7 @@ std::optional<domain::curve_definition> curve_definition_repository::read_at_ver
 
 curve_definition_repository::remove_status curve_definition_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve definition. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -454,8 +452,8 @@ std::vector<domain::curve_definition> curve_definition_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::curve_definitions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest curve definitions with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest curve definitions with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_definition_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -477,7 +475,7 @@ std::uint32_t curve_definition_repository::get_total_curve_count(
     const context& ctx,
     const std::optional<messaging::curve_definitions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve definition count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active curve definition count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_definition_entity>> |

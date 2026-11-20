@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_forward.hpp"
 #include "ores.trading.api/messaging/bond_forward_protocol.hpp"
 #include "ores.trading.core/repository/bond_forward_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -457,12 +455,12 @@ bond_forward_service::prepare_change(const messaging::bond_forward_change& chang
 
 std::vector<domain::bond_forward> bond_forward_service::list_bond_forwards(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond forwards";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond forwards";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_forward_service::count_bond_forwards() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond forwards count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond forwards count";
     return repo_.get_total_bond_forward_count(ctx_);
 }
 
@@ -470,14 +468,14 @@ std::uint32_t bond_forward_service::count_bond_forwards() {
 std::optional<domain::bond_forward>
 bond_forward_service::get_bond_forward_at_version(const boost::uuids::uuid& trade_id,
                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond forward at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond forward at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::bond_forward>
 bond_forward_service::get_bond_forward(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond forward. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond forward. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -492,11 +490,11 @@ bond_forward_service::get_bond_forwards(const std::vector<std::string>& trade_id
 void bond_forward_service::save_bond_forward(const domain::bond_forward& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Bond Forward trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond forward. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving bond forward. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond forward. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved bond forward. " << "trade_id: " << v.trade_id;
 }
 
 void bond_forward_service::save_bond_forwards(
@@ -505,7 +503,7 @@ void bond_forward_service::save_bond_forwards(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Bond Forward trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << bond_forwards.size() << " bond forwards";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << bond_forwards.size() << " bond forwards";
     auto ts = bond_forwards;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -514,9 +512,9 @@ void bond_forward_service::save_bond_forwards(
 }
 
 void bond_forward_service::delete_bond_forward(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond forward. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond forward. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed bond forward. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed bond forward. " << "trade_id: " << trade_id;
 }
 
 void bond_forward_service::delete_bond_forwards(const std::vector<std::string>& trade_ids) {
@@ -525,7 +523,7 @@ void bond_forward_service::delete_bond_forwards(const std::vector<std::string>& 
 
 std::vector<domain::bond_forward>
 bond_forward_service::get_bond_forward_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond forward. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond forward. " << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

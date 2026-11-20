@@ -101,6 +101,14 @@ public:
         }
     }
 
+    void derived(std::string name, const scripted_derived& from) {
+        auto& p = parameter(std::move(name), "Event", "derived_schedule");
+        p.base_schedule = from.base;
+        p.shift = from.shift;
+        p.calendar = from.calendar;
+        p.convention = from.convention;
+    }
+
     domain::instrument_underlying& underlying(std::string role,
                                               const marketdata::datum::market_reference& address,
                                               std::string type = "Equity") {
@@ -292,8 +300,10 @@ scripted_result scripted_trade_builder::build() const {
             out.list(variable.name, variable.type, *values);
         else if (const auto* schedule = std::get_if<scripted_schedule>(&variable.value))
             out.schedule(variable.name, *schedule);
+        else if (const auto* listed = std::get_if<scripted_dates>(&variable.value))
+            out.dates(variable.name, *listed);
         else
-            out.dates(variable.name, std::get<scripted_dates>(variable.value));
+            out.derived(variable.name, std::get<scripted_derived>(variable.value));
     }
     return out.take();
 }

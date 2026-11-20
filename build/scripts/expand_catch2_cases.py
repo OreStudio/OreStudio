@@ -12,6 +12,13 @@ ctest_submit, so that each suite entry becomes one entry per case, named
 The suites still run as one process each, so nothing about how they run
 changes: no extra process starts, and no extra test tenant is provisioned.
 
+A case entry is kept small: the suite path once, a short command line and
+no repeated measurements, because a run has tens of thousands of cases. With
+=--split <dir>=, the script also writes one Test.xml per CDash subproject
+into =<dir>=, each with the Site header and its own Subproject, and lists
+them in =<dir>/files.txt=. One file for every case is too large for CDash
+to process; one file per component is not.
+
 A suite entry stays as it is when its results cannot account for it: the
 results file is missing, unreadable or older than the run (the binary
 crashed, timed out or never started), or the suite failed while every case
@@ -20,11 +27,12 @@ never hidden behind passing cases.
 
 Usage::
 
-    expand_catch2_cases.py <Testing/<tag>/Test.xml>
+    expand_catch2_cases.py <Testing/<tag>/Test.xml> [--split <dir>]
 """
 
 from __future__ import annotations
 
+import copy
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -129,16 +137,13 @@ def named(kind: str, name: str, value: str) -> ET.Element:
 
 def case_entry(suite: ET.Element, case: Case) -> ET.Element:
     suite_name = suite.findtext("Name") or ""
-    path = suite.findtext("Path") or "."
-    binary = (suite.findtext("FullCommandLine") or "").split(" ")[0]
     name = f"{suite_name}.{case.name}"
-    command = f'{binary} "{case.name}"'
 
     entry = ET.Element("Test", {"Status": case.status})
     ET.SubElement(entry, "Name").text = name
-    ET.SubElement(entry, "Path").text = path
-    ET.SubElement(entry, "FullName").text = f"{path}/{name}"
-    ET.SubElement(entry, "FullCommandLine").text = command
+    ET.SubElement(entry, "Path").text = suite.findtext("Path") or "."
+    ET.SubElement(entry, "FullName").text = name
+    ET.SubElement(entry, "FullCommandLine").text = f'{suite_name} "{case.name}"'
     ET.SubElement(entry, "StartTestTime").text = suite.findtext("StartTestTime")
     results = ET.SubElement(entry, "Results")
     if case.status == "failed":
@@ -146,7 +151,6 @@ def case_entry(suite: ET.Element, case: Case) -> ET.Element:
     results.append(named("numeric/double", "Execution Time", f"{case.seconds:.6f}"))
     results.append(named("text/string", "Completion Status",
                          "Completed" if case.status != "notrun" else "Skipped"))
-    results.append(named("text/string", "Command Line", command))
     ET.SubElement(ET.SubElement(results, "Measurement"), "Value").text = case.text
     labels = suite.find("Labels")
     if labels is not None:
@@ -184,8 +188,59 @@ def expand(tree: ET.ElementTree) -> tuple[int, int]:
     return suites, cases_added
 
 
+UNASSIGNED = "unassigned"
+
+
+def subproject_of(test: ET.Element, labels: dict[str, str]) -> str:
+    for label in test.iterfind("Labels/Label"):
+        if label.text in labels:
+            return labels[label.text]
+    return UNASSIGNED
+
+
+def split(tree: ET.ElementTree, out_dir: Path) -> list[Path]:
+    """Write one Test.xml per subproject; return the files in name order."""
+    site = tree.getroot()
+    testing = site.find("Testing")
+    if testing is None:
+        return []
+    subprojects = {sp.get("name", ""): sp for sp in site.iterfind("Subproject")}
+    labels = {label.text: name
+              for name, sp in subprojects.items()
+              for label in sp.iterfind("Label")}
+    groups: dict[str, list[ET.Element]] = {}
+    for test in testing.iterfind("Test"):
+        groups.setdefault(subproject_of(test, labels), []).append(test)
+
+    head = [c for c in testing if c.tag in ("StartDateTime", "StartTestTime")]
+    tail = [c for c in testing if c.tag in ("EndDateTime", "EndTestTime",
+                                            "ElapsedMinutes")]
+    out_dir.mkdir(parents=True, exist_ok=True)
+    files: list[Path] = []
+    for name in sorted(groups):
+        out = ET.Element(site.tag, site.attrib)
+        if name in subprojects:
+            out.append(copy.deepcopy(subprojects[name]))
+        part = ET.SubElement(out, "Testing")
+        part.extend(copy.deepcopy(c) for c in head)
+        test_list = ET.SubElement(part, "TestList")
+        for test in groups[name]:
+            ET.SubElement(test_list, "Test").text = test.findtext("FullName")
+        part.extend(groups[name])
+        part.extend(copy.deepcopy(c) for c in tail)
+        path = out_dir / f"Test-{name}.xml"
+        ET.ElementTree(out).write(path, encoding="UTF-8", xml_declaration=True)
+        files.append(path)
+    (out_dir / "files.txt").write_text("".join(f"{f}\n" for f in files))
+    return files
+
+
 def main(argv: list[str]) -> int:
-    if len(argv) != 2:
+    if len(argv) == 2:
+        out_dir = None
+    elif len(argv) == 4 and argv[2] == "--split":
+        out_dir = Path(argv[3])
+    else:
         print(__doc__, file=sys.stderr)
         return 2
     path = Path(argv[1])
@@ -193,6 +248,9 @@ def main(argv: list[str]) -> int:
     suites, cases = expand(tree)
     tree.write(path, encoding="UTF-8", xml_declaration=True)
     print(f"expand_catch2_cases: {suites} suites expanded into {cases} cases")
+    if out_dir is not None:
+        files = split(tree, out_dir)
+        print(f"expand_catch2_cases: {len(files)} subproject files in {out_dir}")
     return 0
 
 

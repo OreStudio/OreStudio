@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 84B81A9D-AC9A-4395-8E64-2A59E2581C81
+:END:
+#+title: Task: Submit the cases to CDash one component at a time
+#+description: Keep each case entry small and send CDash one Test.xml per component, because one file with every case is too large for CDash to process.
+#+type: task
+#+level: s1
+#+filetags: :show_each_catch2_case_on_cdash:sprint_30:v0:
+#+owner: marco
+#+branch: feature/submit-cdash-cases-per-component
+#+pr: 4931
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A00D828F-FA36-4B54-8FBC-07004823A3EB][Show each Catch2 test case on CDash]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+CDash shows every Catch2 case again. One Test.xml with all 36,355 cases is about 54 MB, and CDash dropped it while processing it, so CI builds since 20 Nov show no tests. The expansion writes small case entries and one Test.xml per component, and the final submit sends those.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A00D828F-FA36-4B54-8FBC-07004823A3EB][Show each Catch2 test case on CDash]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- Each case entry carries its name, the suite path once, a short command
+  line, its time, status, failure text and labels, and nothing repeated.
+- =expand_catch2_cases.py --split <dir>= writes one Test.xml per CDash
+  subproject, each with the Site header and its own Subproject element,
+  and a =files.txt= that lists them. Tests with no subproject label go to
+  =Test-unassigned.xml=.
+- =CTest.cmake= submits those files and then the remaining parts without
+  Test. Without the split files, the submit is as before.
+- A real submission to my.cdash.org shows every case under its component.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| CI builds on CDash before and after #4908 and #4910 | before: no children, about 105 tests each; after: 104 children, no tests | CDash =api/v1/index.php= for 2026-11-19 and 2026-11-20 | 01:56 UTC Continuous Linux run on main |
+| Cases the CI expansion produced | 96 suites into 36355 cases; the upload of Test.xml reported success | Continuous Linux run 44657270073 log | main after ffdc97a250 |
+| Size of a case entry before the change | 1496 bytes on average; about 54 MB for 36355 cases | local Test.xml from the #4910 proof | ffdc97a250 |
+| Local Test.xml after the change, three suites | 12563 cases, 10.6 MB in all, 843 bytes a case; split files 17 KB (ores.orgmode), 5.8 MB (ores.refdata.api), 4.7 MB (ores.trading.api) | =ctest -S= driver: ctest_test on the three suites, the script with =--split=, =ctest_submit(FILES ...)= | this branch |
+| CDash after the local submission | Experimental build split-test-linux-clang-release-ninja (id 4597880): 3 children, 12563 cases passed, within 30 s | CDash =api/v1/index.php= | this branch |
+
+* Notes
+
+- Why CI showed no tests: the build and configure parts reached CDash, and
+  the 54 MB Test.xml uploaded, but CDash kept none of its tests. Reports
+  of CDash running out of memory on Test.xml files with about 15,000 tests
+  go back to 2008; my.cdash.org's settings cannot be changed from here.
+- One file per component keeps each file under 6 MB. ores.refdata.api is
+  the largest component, with 6945 cases. If a component grows past what
+  CDash takes, split it further.
+- Another site, ip-10-0-134-92, also submits linux-clang builds to the
+  project, with one entry per suite. It is not ORE's CI.
+- The local proof build split-test-linux-clang-release-ninja stays in the
+  Experimental group.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4931][#4931]] | [build] Submit the CDash cases one component at a time |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The FILES submit result and the parts result are easy to misread. | CTest.cmake | Accepted | Each component file is submitted on its own; a failure sets submit_result and warns. |
+| 2 | A rejected component file is not named. | CTest.cmake | Accepted | The warning names the file, for example Test-ores.refdata.api.xml. |
+| 3 | FullName lost its Path prefix. | build/scripts/expand_catch2_cases.py | Declined | CDash keys a test's history by its name, which is unchanged. |
+| 4 | Use argparse in main. | build/scripts/expand_catch2_cases.py | Declined | One option; positional parsing gives the usage text on a bad call. |
+| 5 | No test for two subproject labels or a missing Testing element. | build/scripts/tests/test_expand_catch2_cases.py | Accepted | Two tests added. |
+| 6 | split() moves the tests out of the tree. | build/scripts/expand_catch2_cases.py | Declined | ElementTree elements have no parent link, so extend does not detach them. A test that wrote the tree after split passed with and without a copy, so the copy was dropped. |
+
+* Result
+
+Case entries are about 840 bytes instead of about 1500, and CI sends one
+Test.xml per component instead of one with every case. A local submission
+of three suites, 12563 cases with the largest file at 5.8 MB, appeared on
+CDash in full under its three components. The script's 11 tests pass,
+two of them new for the split.

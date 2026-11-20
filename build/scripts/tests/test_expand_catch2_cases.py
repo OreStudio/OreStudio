@@ -54,7 +54,7 @@ ALL_PASS = """<?xml version="1.0" encoding="UTF-8"?>
 """
 
 
-def suite(name: str, status: str, results: Path | None) -> str:
+def suite(name: str, status: str, results: Path | None, label: str = "demo") -> str:
     out = f' "-r" "xml::out={results}"' if results else ""
     command = f'/bin/{name} "--durations" "yes"{out}'
     return f"""
@@ -68,14 +68,17 @@ def suite(name: str, status: str, results: Path | None) -> str:
         <NamedMeasurement type="numeric/double" name="Execution Time"><Value>2</Value></NamedMeasurement>
         <Measurement><Value>suite output</Value></Measurement>
       </Results>
-      <Labels><Label>demo</Label></Labels>
+      <Labels><Label>{label}</Label></Labels>
     </Test>"""
 
 
-def ctest_xml(*suites: tuple[str, str, Path | None]) -> ET.ElementTree:
-    listed = "".join(f"<Test>./{n}</Test>" for n, _, _ in suites)
+def ctest_xml(*suites: tuple, subprojects: tuple[str, ...] = ()) -> ET.ElementTree:
+    listed = "".join(f"<Test>./{s[0]}</Test>" for s in suites)
     body = "".join(suite(*s) for s in suites)
-    text = (f'<Site Name="x"><Testing><TestList>{listed}</TestList>'
+    declared = "".join(f'<Subproject name="{n}"><Label>{n}</Label></Subproject>'
+                       for n in subprojects)
+    text = (f'<Site Name="x" BuildStamp="s">{declared}<Testing>'
+            f"<StartTestTime>{START}</StartTestTime><TestList>{listed}</TestList>"
             f"{body}<EndTestTime>0</EndTestTime></Testing></Site>")
     return ET.ElementTree(ET.fromstring(text))
 
@@ -101,7 +104,7 @@ def test_a_suite_becomes_one_entry_per_case(tmp_path):
         "ores.demo.tests.waits_for_a_feature": "notrun",
     }
     listed = [t.text for t in tree.getroot().iterfind("Testing/TestList/Test")]
-    assert listed == ["./" + n for n in found]
+    assert listed == list(found)
 
 
 def test_a_case_carries_its_time_command_and_labels(tmp_path):
@@ -109,7 +112,9 @@ def test_a_case_carries_its_time_command_and_labels(tmp_path):
     expand_catch2_cases.expand(tree)
     case = entries(tree)["ores.demo.tests.adds_two_numbers"]
     assert expand_catch2_cases.measurement(case, "Execution Time") == "0.250000"
-    assert case.findtext("FullCommandLine") == '/bin/ores.demo.tests "adds_two_numbers"'
+    assert case.findtext("FullName") == "ores.demo.tests.adds_two_numbers"
+    assert case.findtext("FullCommandLine") == 'ores.demo.tests "adds_two_numbers"'
+    assert expand_catch2_cases.measurement(case, "Command Line") is None
     assert [label.text for label in case.iterfind("Labels/Label")] == ["demo"]
 
 
@@ -160,3 +165,61 @@ def test_main_rewrites_the_file_in_place(tmp_path):
     tree.write(path, encoding="UTF-8", xml_declaration=True)
     assert expand_catch2_cases.main(["expand_catch2_cases.py", str(path)]) == 0
     assert list(entries(ET.parse(path))) == ["ores.demo.tests.adds_two_numbers"]
+
+
+def test_split_writes_one_file_per_subproject(tmp_path):
+    other = tmp_path / "other"
+    other.mkdir()
+    tree = ctest_xml(
+        ("ores.demo.tests", "failed", results_file(tmp_path, CATCH2_RESULTS)),
+        ("ores.other.tests", "passed", results_file(other, ALL_PASS), "other"),
+        ("ores.loose.tests", "passed", None, "loose"),
+        subprojects=("demo", "other"))
+    expand_catch2_cases.expand(tree)
+    files = expand_catch2_cases.split(tree, tmp_path / "split")
+    assert [f.name for f in files] == ["Test-demo.xml", "Test-other.xml",
+                                       "Test-unassigned.xml"]
+    assert (tmp_path / "split" / "files.txt").read_text().split() == [str(f) for f in files]
+
+    def read(name):
+        root = ET.parse(tmp_path / "split" / name).getroot()
+        tests = [t.findtext("Name") for t in root.iterfind("Testing/Test")]
+        listed = [t.text for t in root.iterfind("Testing/TestList/Test")]
+        declared = [sp.get("name") for sp in root.iterfind("Subproject")]
+        return root, tests, listed, declared
+
+    root, tests, listed, declared = read("Test-demo.xml")
+    assert root.attrib == {"Name": "x", "BuildStamp": "s"}
+    assert declared == ["demo"]
+    assert len(tests) == 3 and listed == tests
+    assert root.findtext("Testing/StartTestTime") == str(START)
+    assert root.findtext("Testing/EndTestTime") == "0"
+
+    _, tests, _, declared = read("Test-other.xml")
+    assert (tests, declared) == (["ores.other.tests.adds_two_numbers"], ["other"])
+
+    _, tests, _, declared = read("Test-unassigned.xml")
+    assert (tests, declared) == (["ores.loose.tests"], [])
+
+
+def test_main_splits_when_asked(tmp_path):
+    tree = ctest_xml(("ores.demo.tests", "passed", results_file(tmp_path, ALL_PASS)),
+                     subprojects=("demo",))
+    path = tmp_path / "Test.xml"
+    tree.write(path, encoding="UTF-8", xml_declaration=True)
+    out = tmp_path / "split"
+    assert expand_catch2_cases.main(["x", str(path), "--split", str(out)]) == 0
+    assert (out / "files.txt").read_text() == f"{out / 'Test-demo.xml'}\n"
+
+
+def test_a_test_with_two_subproject_labels_goes_to_the_first(tmp_path):
+    tree = ctest_xml(("ores.demo.tests", "passed", None, "demo</Label><Label>other"),
+                     subprojects=("demo", "other"))
+    files = expand_catch2_cases.split(tree, tmp_path / "split")
+    assert [f.name for f in files] == ["Test-demo.xml"]
+
+
+def test_split_of_a_file_without_testing_writes_nothing(tmp_path):
+    tree = ET.ElementTree(ET.fromstring('<Site Name="x"/>'))
+    assert expand_catch2_cases.split(tree, tmp_path / "split") == []
+    assert not (tmp_path / "split").exists()

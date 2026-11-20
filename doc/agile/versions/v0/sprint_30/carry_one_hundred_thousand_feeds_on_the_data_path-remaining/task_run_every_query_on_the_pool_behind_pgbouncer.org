@@ -131,7 +131,7 @@ Two ways out, and this is the decision to take before the unit is written:
    =Prepare= and =Bind= are followed by pgbouncer, which re-prepares on the
    server connection that actually serves the transaction. It needs
    =max_prepared_statements= set to a non-zero value, and it costs memory per
-   client and a small protocol overhead. The distro offers 1.26.1.
+   client and a small protocol overhead.
    Nothing in our code changes, which is most of its appeal.
 2. *Send repository statements unnamed too*, as hand-written SQL already does.
    Then no name exists to be lost, and any pgbouncer version works. The cost is
@@ -176,6 +176,36 @@ and the step workers a service runs (two, =provisioning_step_registrar.cpp=)
 argue for a *larger* client pool than two, while the server connection count is
 capped and shared. Sizing the pool before the pooler lands would size it to the
 wrong constraint, which is why that task is waiting on this one.
+
+** Where the binary comes from, which is not a detail
+
+The images are already "the smallest base that carries this kind of program",
+and none of them is Debian at runtime:
+
+| Image | Runtime base |
+|-------+--------------|
+| =nats.Dockerfile= | =scratch= (static Go binary; Debian is only the extract stage) |
+| =service-base.Dockerfile= | =cgr.dev/chainguard/glibc-dynamic= (our C++ binaries, glibc) |
+| =service-web.Dockerfile= | =alpine:3.22= (node) |
+
+=pgbouncer= links nothing of ours - it speaks the PostgreSQL protocol to the
+server and is a C program with libevent, OpenSSL and c-ares - so a musl base is
+safe for it, and Alpine is the consistent choice:
+
+| Source | Version | Prepared statements |
+|--------+---------+---------------------|
+| =alpine:3.22= (community) | 1.24.0 | yes (1.21 and later) |
+| =alpine:edge= | 1.25.2 | yes |
+| =debian:bookworm-slim= | 1.18.0 | **no** |
+| the development host (sid) | 1.26.1 | yes |
+
+So the container is an =alpine= image with =apk add pgbouncer=, about 410 KiB
+installed, and its configuration under =build/config/= as the task already says.
+The development environments run the services as systemd units rather than in
+containers, so there the binary is the host package; the floor is the same in
+both places, pgbouncer 1.21, and that floor exists only if decision 1 goes the
+pooler-tracks-statements way. If the statements go unnamed, any version works
+and bookworm's 1.18 would do.
 
 ** What to build
 

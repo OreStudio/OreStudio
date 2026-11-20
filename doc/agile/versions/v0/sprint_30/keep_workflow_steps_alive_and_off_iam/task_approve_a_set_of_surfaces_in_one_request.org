@@ -30,9 +30,9 @@ trail names the set. A publish of one member stays the act it is today.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Done but for the run that proves it end to end. A publish row's natural key is the request and its subject; a raise writes the request and its members in one transaction; the curve and surface steps raise their party's set once and publish each member under it. |
-| Waiting on   | Nothing.                               |
-| Next         | The proof test passes and the surfaces and curves tests pass, then close. |
+| Now          | Delivered. A publish row's natural key is the request and its subject; a raise writes the request and its members in one transaction; the curve and surface steps raise their party's set once and publish each member under it; a person's publish is a set of one. |
+| Waiting on   | A PR, then the close.                  |
+| Next         | Raise the PR for review.               |
 | Last touched | 2026-11-17                               |
 
 * Acceptance

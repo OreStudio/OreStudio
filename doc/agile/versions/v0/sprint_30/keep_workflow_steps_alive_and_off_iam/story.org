@@ -158,6 +158,21 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
   whether the service's own role may be the maker of an installation-wide
   publish. Until someone states them, iam keeps the step and the impersonation
   it uses, and the task stays open.
+- *An approval request authorises the publish rows that name it,
+  2026-11-20.* A publish was per surface because the store said so: the row's
+  =request_id= was its natural key, so =UNIQUE (tenant_id, request_id)= refused a
+  second subject under one request. The fix is to say what a request is for: its
+  subject is a *set*, and the rows that name it are its members. The natural key
+  becomes the request and the subject, the gate reads the row of the subject it
+  is asked about, and a raise writes the request and every member in one
+  transaction. Everything a reader already relies on is untouched: one published
+  row per surface, curve and forward set, =published_at= to say which are in use,
+  and =request_id_one_of= to read a set. The apply stays per member, so the three
+  checks a publish makes -- approved, not yet applied, calibration unchanged --
+  are still answered for one subject at a time. It is worth stating what this
+  buys and what it does not: under the deployment's auto-approval the saving is a
+  request and a transaction per surface; under a manual policy the saving is a
+  person, who now answers once for a party's set instead of thirty-five times.
 - *A step reads where it stands and writes where the table's owner is,
   2026-11-18.* Moving a marketdata step onto its own process meant asking, of
   every call it made, who owns the table behind it. The reads answered the

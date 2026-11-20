@@ -81,6 +81,26 @@ TEST_CASE("a_key_is_named_by_its_code", "[analytics_templates]") {
     CHECK(templates_holds(refused.body, "named by its code"));
 }
 
+TEST_CASE("a_code_is_measured_in_characters_once_trimmed", "[analytics_templates]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the one measure the address and the body share";
+
+    // A code of a hundred accented characters is a hundred characters and two
+    // hundred bytes, so a part that measured bytes would refuse it.
+    std::string a_hundred;
+    for (int i = 0; i < 100; ++i)
+        a_hundred += "\xc3\xa9";
+    http_request req;
+    req.body = std::string(R"({"code":")") + a_hundred +
+               R"(","methodCode":"FD","assetClassCode":null,"description":"",)" +
+               R"("reasonCode":"new","commentary":""})";
+    const auto answered =
+        answer_at<analytics_routes>(http_method::post, keys_pattern, req, keys_pattern);
+    // It reaches the service, which is not there, rather than being refused for
+    // its length: the measure is characters, not bytes.
+    CHECK(answered.status == http_status::bad_gateway);
+}
+
 TEST_CASE("a_page_of_keys_answers_the_service_is_absent", "[analytics_templates]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing a page with no service behind it";

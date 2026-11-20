@@ -159,8 +159,8 @@ std::optional<std::uint32_t> count_of(const http_request& req,
     if (text.empty())
         return fallback;
     std::uint32_t value = 0;
-    const auto [end, failed] = std::from_chars(text.data(), text.data() + text.size(), value);
-    if (failed != std::errc{} || end != text.data() + text.size() || value < least || value > most)
+    const auto [end, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
+    if (ec != std::errc{} || end != text.data() + text.size() || value < least || value > most)
         return std::nullopt;
     return value;
 }
@@ -259,20 +259,28 @@ std::string read_one(const http_request& req,
     messaging::get_sensitivity_template_request msg;
     msg.key = messaging::sensitivity_template_key{code};
     const auto reply = forwarding::forward(req, session, msg);
-    if (reply.result.outcome != ores::utility::domain::outcome::ok)
-        rr::require_ok(reply.result);
+    rr::require_ok(reply.result);
     if (!reply.sensitivity_template)
         rr::refuse(
             http_status::not_found, "not-found", "There is no sensitivity template " + code + ".");
     return template_json(*reply.sensitivity_template, known);
 }
 
-/// The code the address states: 1 to 100 characters once trimmed.
-std::string code_of(const http_request& req) {
-    const auto raw = req.get_path_param("code");
-    if (raw.empty() || raw.size() > 100)
+/// The code a screen states: 1 to 100 characters once trimmed.
+///
+/// The address and the body state the same key, so both are trimmed and both are
+/// measured the way the rest of the part measures text, in characters and not in
+/// bytes, so a code with an accent in it is counted once.
+std::string code_from(const std::string& raw) {
+    const auto code = rr::trimmed(raw);
+    if (code.empty() || rr::characters_of(code) > 100)
         rr::invalid(std::string(code_refused));
-    return raw;
+    return code;
+}
+
+/// The code the address states.
+std::string code_of(const http_request& req) {
+    return code_from(req.get_path_param("code"));
 }
 
 /// The address's query as the page reads it.
@@ -385,6 +393,9 @@ void sensitivity_template_routes::register_routes(
 
     add(router->get("/api/analytics/sensitivity-templates/{code}/history"),
         [&session](const http_request& req) {
+            // The history step names its own subject, so there is no request type
+            // for guard to log a failure against; this route states its failure
+            // handling instead.
             try {
                 rr::refuse_unknown_params(req, {});
                 const auto code = code_of(req);
@@ -430,9 +441,7 @@ void sensitivity_template_routes::register_routes(
                 req,
                 {"code", "methodCode", "assetClassCode", "description", "reasonCode", "commentary"},
                 std::string(body_refused));
-            const auto code = rr::trimmed(body.code);
-            if (code.empty() || code.size() > 100)
-                rr::invalid(std::string(code_refused));
+            const auto code = code_from(body.code);
             const auto known = read_choices(req, session);
             std::string method_code;
             std::string asset_class_code;

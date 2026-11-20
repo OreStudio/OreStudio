@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: AB4D3509-DE98-4866-BB7B-B60E9381179A
+:END:
+#+title: Task: Key a fixing's identity by its provider
+#+description: Carry the series' provider on its identity row and in the fixing identity's unique index, so two providers' series of one fixing each keep an identity, as the series table already allows.
+#+type: task
+#+level: s1
+#+filetags: :two_providers_of_one_fixing_collide_in_the_identity_table:sprint_30:v0:
+#+owner: marco
+#+branch: feature/two-providers-of-one-fixing-collide-in-the-identity-table
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B58C44F-5E31-4A30-B185-C06A75E6451C][Two providers of one fixing collide in the identity table]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A party holds one fixing from two providers, and both series have an identity a reader can find.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:3B58C44F-5E31-4A30-B185-C06A75E6451C][Two providers of one fixing collide in the identity table]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- The identity row carries the provider of its series.
+- The fixing identity's unique index holds the provider, so two providers of one fixing write two identity rows and one provider cannot write the same fixing twice.
+- The repository case for two providers of one item writes a real fixing, and both identities are found.
+- Every reader that looks a fixing up by its fields states which provider it wants, or reads all of them on purpose.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 20D96191-9FBE-455C-B2EA-529C31867A76
+:END:
+#+title: A published curve's series has no identity until something else projects it
+#+description: The refdata curve publish inserts each curve's series in SQL and nothing projects its identity, so the resolver cannot see it and its shape is not checked until a later marketdata publish or a manual backfill runs.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:refdata:series_identity:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_refdata_publish_curve_configuration_from_dq_fn= calls
+=ores_marketdata_publish_curve_series_fn=, which inserts a =yield= series for
+each published curve straight into =ores_marketdata_market_series_tbl=. SQL
+cannot run the oresmd codec, so no identity row is written, and the refdata
+service's publish handler runs no projection after it. The marketdata publish
+handler does: it calls =project_missing= after its own SQL function, and that
+call covers the whole tenant. So a curve's series is projected only when a later
+marketdata publish happens to run, or when an operator runs
+=marketdata backfill-identity=. Make the curve publish project what it writes,
+for example by asking the marketdata service to backfill the party once the
+refdata publish completes.
+
+* Why
+
+Until it is projected, the resolver and the series list cannot see the series,
+and its identity shape is not checked. Measured on 2026-11-20 on a freshly
+provisioned Acme tenant: 35 =ir.yield= curve series (=*1D= zero curves, one per
+party and currency) had no identity row after provisioning. A backfill projected
+all 35 and the shape refused none of them.
+
+* References
+
+- [[id:52F82265-4192-43EA-9EA7-56E06D7B7EE4][Refuse an identity row that misses its shape]], where it was found.
+- =projects/ores.sql/create/marketdata/marketdata_curve_series_create.sql=
+- =projects/ores.marketdata/core/src/messaging/publish_from_dq_handler.cpp=
+
+* See also
+
+-

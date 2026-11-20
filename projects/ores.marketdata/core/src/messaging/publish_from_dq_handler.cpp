@@ -165,7 +165,8 @@ void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
                 repository::market_series_identity_projector::project_missing(target_ctx);
             ORES_LOG_SEV(lg(), info)
                 << "publish_from_dq projected identities: projected=" << done.projected
-                << " already=" << done.already_projected << " unreadable=" << done.unreadable;
+                << " already=" << done.already_projected << " unreadable=" << done.unreadable
+                << " refused=" << done.refused << " unstated=" << done.unstated;
         }
 
         ORES_LOG_SEV(lg(), info) << "publish_from_dq complete: fn=" << fn_name

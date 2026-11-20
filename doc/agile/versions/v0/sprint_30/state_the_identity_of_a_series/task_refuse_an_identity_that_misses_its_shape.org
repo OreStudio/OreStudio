@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :state_the_identity_of_a_series:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/refuse-an-identity-that-misses-its-shape
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
-#+updated: 2026-11-15
-#+environment:
+#+updated: 2026-11-20
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:663D745C-C7C3-48F7-A2E5-0BBE6B90C69A][State the identity of a market series]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Identity is written from an oresmd URI when a series is created. Today a row tha
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:663D745C-C7C3-48F7-A2E5-0BBE6B90C69A][State the identity of a market series]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-20 |
 
 * Acceptance
 
@@ -41,9 +41,12 @@ Identity is written from an oresmd URI when a series is created. Today a row tha
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The refusal is already on main, so the work left is the third acceptance
+bullet: show that no stored series is refused. Provision Acme on a fresh
+database, then hold every current series against the shape its family states,
+in SQL, with the same rule =identity_shape_book::check= applies. Project any
+series that is still missing an identity row with the shell's backfill, and read
+the backfill's refused count.
 
 * Measurements
 
@@ -57,13 +60,36 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Current series in the database | 2,973 | =evidence/shape_audit.sql=, =series= | 0432e34058 |
+| Series held to a shape | 2,189 | =evidence/shape_audit.sql=, =held to a shape= | 0432e34058 |
+| Fixing series held to a shape | 143 (138 =ir.index_fixing.ibor=, 5 =ir.index_fixing.swap=) and 162 =fx.index_fixing.fx= | =evidence/shape_audit.sql=, =family= rows | 0432e34058 |
+| Series that break their shape | 0 | =evidence/shape_audit.sql=, =shape breaks= | 0432e34058 |
+| Index series with a subclass other than =index_fixing= | 0 | =evidence/shape_audit.sql= | 0432e34058 |
+| Acme series without an identity row after provisioning | 35, all =ir.yield= curve series | =evidence/shape_audit.sql=, =unprojected= | 0432e34058 |
+| Series the backfill projected, and refused | 35 projected, 0 refused | =marketdata backfill-identity= as =tenant_admin@acme_corporation= | 0432e34058 |
+| Acme series without an identity row after the backfill | 0 | =evidence/shape_audit.sql= | 0432e34058 |
 
 * Notes
 
 - 2026-11-20: the refusal is on main. The identity projector checks each row
   against the shape book and refuses it by series, family and field; see the
   result of [[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]]. Left here: measure that no existing fixing series is refused.
+
+- 2026-11-20: the audit joins the current rows of
+  =ores_marketdata_market_series_tbl= to their identity rows and to the current
+  shapes and entries by asset class, subclass and index family. It counts a
+  required field that is empty and a forbidden field that is not. The four
+  series still unprojected at the end are fixtures the backfill tests insert in
+  SQL into their own tenants.
+- 2026-11-20: the backfill without =--party= failed for the Acme admin. The
+  series table isolates by tenant only, and the identity table isolates by party
+  too. So =project_missing= read the other parties' series, could not see their
+  identity rows, took them as missing, and the identity table's party policy
+  refused the write. Fixed here: the backfill now drops the series of parties
+  the context cannot see.
+- 2026-11-20: the 35 unprojected curve series came from the refdata curve
+  publish, which writes series in SQL and projects nothing. Filed as
+  [[id:20D96191-9FBE-455C-B2EA-529C31867A76][A published curve's series has no identity until something else projects it]].
 
 * Test Scenarios
 
@@ -89,3 +115,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The writer refuses an identity row that misses a required field or carries a
+forbidden one, naming the series, the family and the field. That shipped with
+[[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]]. This task measured the third
+acceptance bullet on a freshly provisioned Acme database: no stored series
+breaks its shape, including all 143 IR fixing series and all 162 FX fixing
+series. The 35 curve series the provisioning left unprojected were projected by
+the backfill, and the shape refused none.
+
+The measurement found a defect in the backfill, fixed here. A context that sees
+only some parties tried to project series of parties it cannot see, and the
+identity table's party policy refused the write, which stopped the whole
+backfill. =project_missing= now drops those series first. The new test
+=a_backfill_by_a_party_leaves_the_series_of_parties_it_cannot_see= failed before
+the fix with the same policy error the live backfill gave, and passes after it.
+The marketdata publish handler's log line now also reports the refused and
+unstated counts.

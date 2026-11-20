@@ -8,7 +8,7 @@
 #+filetags: :show_each_catch2_case_on_cdash:sprint_30:v0:
 #+owner: marco
 #+branch: feature/submit-cdash-cases-per-component
-#+pr:
+#+pr: 4931
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-20
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4931][#4931]] | [build] Submit the CDash cases one component at a time |
 
 * Review
 

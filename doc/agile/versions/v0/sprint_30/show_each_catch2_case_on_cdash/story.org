@@ -25,12 +25,12 @@ process each. Only the Test.xml that CTest.cmake submits changes.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                   |
+| State         | DONE                                      |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Done. CTest.cmake expands each suite into its cases and groups them by component. |
+| Now           | Done. CTest.cmake expands each suite into its cases and sends CDash one Test.xml per component. |
 | Waiting on    | Nothing.                               |
-| Next          | Check the first CI build on CDash shows the cases, grouped by component. |
-| Last touched  | 2026-11-19                               |
+| Next          | Check the next CI build on CDash shows every case under its component. |
+| Last touched  | 2026-11-20 |
 
 * Acceptance
 
@@ -51,6 +51,7 @@ process each. Only the Test.xml that CTest.cmake submits changes.
 |------+-------+-------+-----+-------------|
 | [[id:3531C677-255F-4EE6-B7CD-BBEEDFB66622][Expand each suite's results into its cases before the CDash submit]] | DONE | 2026-11-19 | 2026-11-19 | A script rewrites ctest's Test.xml from each suite's Catch2 results, so CDash shows one entry per case, and CTest.cmake runs it between ctest_test and ctest_submit. |
 | [[id:ED622DDC-DA74-496D-8A32-6B41653E5207][Group the CDash test cases by component]] | DONE | 2026-11-19 | 2026-11-19 | Label each test with its component, list the components at configure, and declare them to CDash as subprojects, so the 36,000 case entries are grouped by component. |
+| [[id:84B81A9D-AC9A-4395-8E64-2A59E2581C81][Submit the cases to CDash one component at a time]] | DONE | 2026-11-20 | 2026-11-20 | Keep each case entry small and send CDash one Test.xml per component, because one file with every case is too large for CDash to process. |
 
 * Decisions
 

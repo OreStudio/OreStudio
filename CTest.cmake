@@ -446,18 +446,26 @@ if(configure_result EQUAL 0 AND build_result EQUAL 0)
         # Catch2 results, so the script turns each suite's entry in Test.xml
         # into one entry per case before the submit. The suites still run as
         # one process each. Without Python the suite entries are submitted.
+        #
+        # One Test.xml with every case is tens of megabytes, and CDash drops
+        # it while processing it. The script therefore also writes one file
+        # per subproject, and the final submit sends those instead.
         find_program(ores_python NAMES python3 python)
         file(STRINGS "${CTEST_BINARY_DIRECTORY}/Testing/TAG" testing_tag LIMIT_COUNT 1)
         set(test_xml "${CTEST_BINARY_DIRECTORY}/Testing/${testing_tag}/Test.xml")
+        set(split_dir "${CTEST_BINARY_DIRECTORY}/Testing/${testing_tag}/subprojects")
         if(ores_python AND EXISTS "${test_xml}")
+            file(REMOVE_RECURSE "${split_dir}")
             execute_process(
                 COMMAND ${ores_python}
                     "${CTEST_SOURCE_DIRECTORY}/build/scripts/expand_catch2_cases.py"
-                    "${test_xml}"
+                    "${test_xml}" --split "${split_dir}"
                 RESULT_VARIABLE expand_result)
             if(NOT expand_result EQUAL 0)
                 message(WARNING "Could not expand the Catch2 cases in ${test_xml} "
                     "(exit code: ${expand_result}); CDash shows one entry per suite.")
+            elseif(EXISTS "${split_dir}/files.txt")
+                file(STRINGS "${split_dir}/files.txt" subproject_test_files)
             endif()
         else()
             message(WARNING "No Python or no ${test_xml}; CDash shows one entry per suite.")
@@ -505,8 +513,20 @@ endif()
 # Always attempt to submit results to CDash, even if there were failures.
 # Capture the return value so that CDash being unreachable does not fail CI.
 if(cdash_submit)
-    ctest_submit(RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
-        RETURN_VALUE submit_result)
+    if(subproject_test_files)
+        ctest_submit(FILES ${subproject_test_files}
+            RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
+            RETURN_VALUE submit_result)
+        ctest_submit(PARTS Update Coverage MemCheck Notes ExtraFiles Upload Done
+            RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
+            RETURN_VALUE parts_submit_result)
+        if(parts_submit_result)
+            set(submit_result ${parts_submit_result})
+        endif()
+    else()
+        ctest_submit(RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
+            RETURN_VALUE submit_result)
+    endif()
 endif()
 if(submit_result)
     message(WARNING "CDash submission failed (exit code: ${submit_result}). "

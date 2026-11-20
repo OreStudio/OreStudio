@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/analytics/analytics_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -46,7 +46,7 @@ bool templates_holds(const std::string& body, const std::string& part) {
 
 TEST_CASE("a_page_of_keys_refuses_a_parameter_it_does_not_take", "[analytics_templates]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter a page of keys does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter a page of keys does not name";
 
     http_request req;
     req.query_params["filter"] = "FD";
@@ -58,7 +58,7 @@ TEST_CASE("a_page_of_keys_refuses_a_parameter_it_does_not_take", "[analytics_tem
 
 TEST_CASE("a_page_of_keys_refuses_a_limit_it_cannot_read", "[analytics_templates]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a limit outside the range a page takes";
+    ORES_LOG_SEV(lg, info) << "Testing a limit outside the range a page takes";
 
     http_request req;
     req.query_params["limit"] = "5000";
@@ -69,7 +69,7 @@ TEST_CASE("a_page_of_keys_refuses_a_limit_it_cannot_read", "[analytics_templates
 
 TEST_CASE("a_key_is_named_by_its_code", "[analytics_templates]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the code a key answers to";
+    ORES_LOG_SEV(lg, info) << "Testing the code a key answers to";
 
     const std::string too_long(101, 'x');
     const auto refused =
@@ -83,7 +83,7 @@ TEST_CASE("a_key_is_named_by_its_code", "[analytics_templates]") {
 
 TEST_CASE("a_code_is_measured_in_characters_once_trimmed", "[analytics_templates]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the one measure the address and the body share";
+    ORES_LOG_SEV(lg, info) << "Testing the one measure the address and the body share";
 
     // A code of a hundred accented characters is a hundred characters and two
     // hundred bytes, so a part that measured bytes would refuse it.
@@ -103,7 +103,7 @@ TEST_CASE("a_code_is_measured_in_characters_once_trimmed", "[analytics_templates
 
 TEST_CASE("a_page_of_keys_answers_the_service_is_absent", "[analytics_templates]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a page with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a page with no service behind it";
 
     CHECK(answer_at<analytics_routes>(http_method::get, keys_pattern, http_request{}, keys_pattern)
               .status == http_status::bad_gateway);
@@ -111,7 +111,7 @@ TEST_CASE("a_page_of_keys_answers_the_service_is_absent", "[analytics_templates]
 
 TEST_CASE("a_keys_history_answers_the_service_is_absent", "[analytics_templates]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a history read with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a history read with no service behind it";
 
     CHECK(answer_at<analytics_routes>(http_method::get,
                                       "/api/analytics/sensitivity-templates/FD.IR.1/history",
@@ -122,7 +122,7 @@ TEST_CASE("a_keys_history_answers_the_service_is_absent", "[analytics_templates]
 
 TEST_CASE("a_key_states_the_shape_of_the_body_it_takes", "[analytics_templates]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a create body that names a member it does not take";
+    ORES_LOG_SEV(lg, info) << "Testing a create body that names a member it does not take";
 
     http_request req;
     req.body = R"({"code":"FD.IR.1","methodCode":"FD","assetClassCode":"interest_rates",)"

@@ -33,6 +33,20 @@ State, in one place, how many units of work the marketdata service may hold at o
 | Next         | Take the two together: lanes and workers argue for the client pool, the pooler states the server budget. |
 | Last touched | 2026-11-18                               |
 
+* What the starvation looks like
+
+The pool opens every one of its connections when it is made and never opens
+another, so the number is a ceiling on concurrency and not a cushion. Two is too
+small for a service that runs two provisioning steps at once and four lanes in
+each: the surfaces step met =No connection came free within the acquire timeout=
+in a run, and the answer was to offer the unit twice more rather than to give the
+service the connection it was asking for. A retry is a symptom; the pool should
+have grown.
+
+So the requirement is not "a bigger number". It is that a service may burst to
+the concurrency its work really has, and give the connections back when the burst
+is over.
+
 * Acceptance
 
 - The number of units of work the service may hold at once is stated once and
@@ -43,6 +57,15 @@ State, in one place, how many units of work the marketdata service may hold at o
 - A step that meets a full pool still finishes: the retry is the fallback and
   not the plan.
 - No step fails a party because a lane waited for a connection.
+- The pool states two numbers, the connections it keeps and the connections it
+  may burst to, and opens the second only when a caller is waiting for one.
+  A connection above the first is closed after it has been idle for a while, so
+  an idle service holds the first number and not the second.
+- The burst ceiling is at least the service's real concurrency: its step workers
+  times its lanes, plus the handler work beside them.
+- On a host without a pooler, the burst ceiling is small enough that a fleet's
+  bursts still fit the server's =max_connections=. On a host with one, the
+  ceiling may be large, because the pooler's cap bounds what reaches the server.
 
 * Plan
 
@@ -65,6 +88,34 @@ grows to the lanes the service runs, or the lanes are derived from the pool and
 the workers rather than written as a constant. The measurement that decides it
 is the number of connections the service actually holds at the peak of a run,
 and the acquisition failures it records, not a wall clock.
+
+** The shape the numbers should take
+
+=db-pool-size= is one number today: connections opened at construction, kept for
+life, and simultaneously the service's concurrency and its share of the server.
+The proposal is to split it:
+
+| Setting | Means | Direct (a developer's own database) | Pooled (a shared instance) |
+|---------+-------+-------------------------------------+----------------------------|
+| =db-pool-min= | connections kept, opened at first use | 2 | 1 |
+| =db-pool-max= | ceiling a burst may reach | the work, about 8-16 | the work, about 8-16 |
+| =db-pool-idle= | how long a connection above the min lives | tens of seconds | tens of seconds |
+
+The maxima are the same in both columns on purpose: the service's concurrency is
+a property of its work, not of what is in front of the database. What differs is
+what the server sees - a pooled host sees pgbouncer's cap, a direct host sees the
+burst itself, which is why the direct case only carries it on a database nobody
+else is using.
+
+The pool needs to be able to grow, which it cannot do today: =pq::pool= opens
+everything in its constructor and its =acquire= only waits. Growing on demand and
+reaping above the minimum is the change, and it is small and local: the pool is
+one class with one mutex, one condition variable and one vector.
+
+An alternative worth rejecting out loud: raising =db-pool-size= for everyone.
+That gives the burst and keeps the connections forever, and on a shared host it
+multiplies by the number of services in every environment - the opposite of what
+the pooler is being brought in to fix.
 
 ** Why this now waits on the pooler
 

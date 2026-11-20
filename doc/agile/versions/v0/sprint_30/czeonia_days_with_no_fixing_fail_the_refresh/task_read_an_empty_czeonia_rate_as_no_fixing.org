@@ -104,6 +104,10 @@ via its "Verifies task" field.
 | 1 | Local review: a rate cell of spaces only is still refused | =cnb.cpp= | Decline | No published file holds one; only the empty cell the bank writes means no rate |
 | 2 | Local review: the changed files spell clean | all | Accept | misspell-fixer on the changed files exits 0 |
 | 3 | Gate: ticks-smoke failed provisioning | machine | Decline | The disk filled (944 MB of 906 GB free); Postgres could not extend a file. Not the change |
+| 4 | Claude review: trim a rate cell of spaces only before the check | =cnb.cpp= | Decline | Same as row 1; refusing an unknown shape is the safe choice |
+| 5 | Claude review: no test of a CRLF file with empty rates | =domain_cnb_tests.cpp= | Decline | =lines_of= removes the =\r= for every reader and the CNB files use LF |
+| 6 | Claude review: the fixture may not be the file's real first lines | =domain_cnb_tests.cpp= | Decline | Fetched again on 2026-11-20: the first five lines match the fixture byte for byte |
+| 7 | Claude review: ticks-smoke failed on the full disk | machine | Decline | Same as row 3 |
 
 * Result
 

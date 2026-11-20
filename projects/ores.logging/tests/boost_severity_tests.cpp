@@ -34,21 +34,21 @@ using ores::logging::to_domain_severity;
 TEST_CASE("to_boost_severity_maps_every_lower_case_name", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const boost_severity trace_level(to_boost_severity("trace"));
-    const boost_severity debug_level(to_boost_severity("debug"));
-    const boost_severity info_level(to_boost_severity("info"));
-    const boost_severity warn_level(to_boost_severity("warn"));
-    const boost_severity error_level(to_boost_severity("error"));
+    const detail::boost_severity trace_level(to_boost_severity("trace"));
+    const detail::boost_severity debug_level(to_boost_severity("debug"));
+    const detail::boost_severity info_level(to_boost_severity("info"));
+    const detail::boost_severity warn_level(to_boost_severity("warn"));
+    const detail::boost_severity error_level(to_boost_severity("error"));
 
     ORES_LOG_SEV(lg, ores::logging::info)
         << "trace: " << trace_level << " debug: " << debug_level << " info: " << info_level
         << " warn: " << warn_level << " error: " << error_level;
 
-    CHECK(trace_level == boost_severity::trace);
-    CHECK(debug_level == boost_severity::debug);
-    CHECK(info_level == boost_severity::info);
-    CHECK(warn_level == boost_severity::warn);
-    CHECK(error_level == boost_severity::error);
+    CHECK(trace_level == detail::boost_severity::trace);
+    CHECK(debug_level == detail::boost_severity::debug);
+    CHECK(info_level == detail::boost_severity::info);
+    CHECK(warn_level == detail::boost_severity::warn);
+    CHECK(error_level == detail::boost_severity::error);
 }
 
 TEST_CASE("to_boost_severity_rejects_fatal", "[logging]") {
@@ -76,44 +76,44 @@ TEST_CASE("to_boost_severity_maps_every_domain_level_to_itself", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     ORES_LOG_SEV(lg, ores::logging::info) << "converting domain levels";
 
-    CHECK(to_boost_severity(severity_level::trace) == boost_severity::trace);
-    CHECK(to_boost_severity(severity_level::debug) == boost_severity::debug);
-    CHECK(to_boost_severity(severity_level::info) == boost_severity::info);
-    CHECK(to_boost_severity(severity_level::warn) == boost_severity::warn);
-    CHECK(to_boost_severity(severity_level::error) == boost_severity::error);
+    CHECK(to_boost_severity(severity_level::trace) == detail::boost_severity::trace);
+    CHECK(to_boost_severity(severity_level::debug) == detail::boost_severity::debug);
+    CHECK(to_boost_severity(severity_level::info) == detail::boost_severity::info);
+    CHECK(to_boost_severity(severity_level::warn) == detail::boost_severity::warn);
+    CHECK(to_boost_severity(severity_level::error) == detail::boost_severity::error);
 }
 
 TEST_CASE("to_boost_severity_maps_fatal_to_error", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     ORES_LOG_SEV(lg, ores::logging::info) << "converting severity_level::fatal";
 
-    CHECK(to_boost_severity(severity_level::fatal) == boost_severity::error);
+    CHECK(to_boost_severity(severity_level::fatal) == detail::boost_severity::error);
 }
 
 TEST_CASE("to_domain_severity_round_trips_every_boost_level", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     ORES_LOG_SEV(lg, ores::logging::info) << "round-tripping boost severities";
 
-    CHECK(to_domain_severity(boost_severity::trace) == severity_level::trace);
-    CHECK(to_domain_severity(boost_severity::debug) == severity_level::debug);
-    CHECK(to_domain_severity(boost_severity::info) == severity_level::info);
-    CHECK(to_domain_severity(boost_severity::warn) == severity_level::warn);
-    CHECK(to_domain_severity(boost_severity::error) == severity_level::error);
+    CHECK(to_domain_severity(detail::boost_severity::trace) == severity_level::trace);
+    CHECK(to_domain_severity(detail::boost_severity::debug) == severity_level::debug);
+    CHECK(to_domain_severity(detail::boost_severity::info) == severity_level::info);
+    CHECK(to_domain_severity(detail::boost_severity::warn) == severity_level::warn);
+    CHECK(to_domain_severity(detail::boost_severity::error) == severity_level::error);
 }
 
 TEST_CASE("stream_operator_renders_upper_case_level_names", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     std::ostringstream trace_stream;
-    trace_stream << boost_severity::trace;
+    trace_stream << detail::boost_severity::trace;
     std::ostringstream debug_stream;
-    debug_stream << boost_severity::debug;
+    debug_stream << detail::boost_severity::debug;
     std::ostringstream info_stream;
-    info_stream << boost_severity::info;
+    info_stream << detail::boost_severity::info;
     std::ostringstream warn_stream;
-    warn_stream << boost_severity::warn;
+    warn_stream << detail::boost_severity::warn;
     std::ostringstream error_stream;
-    error_stream << boost_severity::error;
+    error_stream << detail::boost_severity::error;
 
     ORES_LOG_SEV(lg, ores::logging::info)
         << "trace: " << trace_stream.str() << " error: " << error_stream.str();

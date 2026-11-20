@@ -68,7 +68,7 @@ an API publishes no area, so it is counted under =(none)=.
 |  | marketdata, quotes | 2 | unclassified 2 |
 | access | iam, server | 109 | composed view 2, resource 107 |
 | agile | agile-routes | 6 | composed view 2, resource 4 |
-| analytics | sensitivity-templates | 6 | resource 6 |
+| analytics | analytics, sensitivity-templates | 12 | resource 12 |
 | assets | assets, server | 39 | composed view 2, resource 37 |
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
@@ -82,7 +82,7 @@ an API publishes no area, so it is counted under =(none)=.
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
 | workflow | inbox, server, timeline, workflow | 36 | composed view 12, resource 24 |
-| (none) | books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 429 | not an API 407, transport capability 22 |
+| (none) | analytics, books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 430 | not an API 408, transport capability 22 |
 
 * The composed views
 
@@ -147,7 +147,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 |------+------------+--------+------|
 | access | 31 | 31 | 0 |
 | agile | 6 | 0 | 6 |
-| analytics | 6 | 0 | 6 |
+| analytics | 6 | 6 | 0 |
 | assets | 5 | 5 | 0 |
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
@@ -161,8 +161,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 18 | 0 |
-| (none) | 36 | 28 | 8 |
-| total | 334 | 288 | 46 |
+| (none) | 36 | 29 | 7 |
+| total | 334 | 295 | 39 |
 
 * The pairing
 
@@ -189,13 +189,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/agile/docs/:id= | none |
 | GET =/api/agile/sprints= | none |
 | GET =/api/agile/trees= | none |
-| GET =/api/analytics/sensitivity-templates= | none |
-| POST =/api/analytics/sensitivity-templates= | none |
-| DELETE =/api/analytics/sensitivity-templates/:code= | none |
-| GET =/api/analytics/sensitivity-templates/:code= | none |
-| PUT =/api/analytics/sensitivity-templates/:code= | none |
-| GET =/api/analytics/sensitivity-templates/:code/history= | none |
-| GET =/api/analytics/sensitivity-templates/choices= | none |
+| GET =/api/analytics/sensitivity-templates= | GET /api/analytics/sensitivity-templates |
+| POST =/api/analytics/sensitivity-templates= | POST /api/analytics/sensitivity-templates |
+| DELETE =/api/analytics/sensitivity-templates/:code= | DELETE /api/analytics/sensitivity-templates/{code} |
+| GET =/api/analytics/sensitivity-templates/:code= | GET /api/analytics/sensitivity-templates/{code} |
+| PUT =/api/analytics/sensitivity-templates/:code= | PUT /api/analytics/sensitivity-templates/{code} |
+| GET =/api/analytics/sensitivity-templates/:code/history= | GET /api/analytics/sensitivity-templates/{code}/history |
+| GET =/api/analytics/sensitivity-templates/choices= | GET /api/analytics/sensitivity-templates/choices |
 | GET =/api/approvals-mode= | GET /api/approvals-mode |
 | GET =/api/auth-events= | GET /api/auth-events |
 | GET =/api/blotter= | GET /api/blotter |
@@ -505,7 +505,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1392 routes: 334 answered by the BFF and 1058 by ores.http.
+1399 routes: 334 answered by the BFF and 1065 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -547,12 +547,19 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | agile | get | =/api/agile/sprints= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:96 | The sprints the file store states, the collection the board and the charts are read against. |
 | resource | agile | get | =/api/agile/trees= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:124 | The git work trees the agents work in, the source the board reads when it shows who holds what. |
 | resource | analytics | get | =/api/analytics/sensitivity-templates= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:325 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
+| resource | analytics | get | =/api/analytics/sensitivity-templates= | ores.http | projects/ores.http/analytics/src/routes/analytics/sensitivity_template_routes.cpp:325 | A sensitivity template key, answered by ores.http at the address and in the shape the BFF answered: a page of the tenant's keys, the two lookups a key names, one key, its history, and the create, correct and remove writes. |
 | resource | analytics | post | =/api/analytics/sensitivity-templates= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:376 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
+| resource | analytics | post | =/api/analytics/sensitivity-templates= | ores.http | projects/ores.http/analytics/src/routes/analytics/sensitivity_template_routes.cpp:438 | A sensitivity template key, answered by ores.http at the address and in the shape the BFF answered: a page of the tenant's keys, the two lookups a key names, one key, its history, and the create, correct and remove writes. |
 | resource | analytics | delete | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:452 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
 | resource | analytics | get | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:359 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
 | resource | analytics | put | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:414 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
 | resource | analytics | get | =/api/analytics/sensitivity-templates/:code/history= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:366 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
 | not an API | (none) | get | =/api/analytics/sensitivity-templates/choices= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:354 | The two lookups a template states, in the order the screen offers them, which is display order for a form. |
+| not an API | (none) | get | =/api/analytics/sensitivity-templates/choices= | ores.http | projects/ores.http/analytics/src/routes/analytics/sensitivity_template_routes.cpp:358 | The two lookups a template states, read from their own tables and answered by ores.http at the address the BFF answered. |
+| resource | analytics | delete | =/api/analytics/sensitivity-templates/{code}= | ores.http | projects/ores.http/analytics/src/routes/analytics/sensitivity_template_routes.cpp:503 | A sensitivity template key, answered by ores.http at the address and in the shape the BFF answered: a page of the tenant's keys, the two lookups a key names, one key, its history, and the create, correct and remove writes. |
+| resource | analytics | get | =/api/analytics/sensitivity-templates/{code}= | ores.http | projects/ores.http/analytics/src/routes/analytics/sensitivity_template_routes.cpp:383 | A sensitivity template key, answered by ores.http at the address and in the shape the BFF answered: a page of the tenant's keys, the two lookups a key names, one key, its history, and the create, correct and remove writes. |
+| resource | analytics | put | =/api/analytics/sensitivity-templates/{code}= | ores.http | projects/ores.http/analytics/src/routes/analytics/sensitivity_template_routes.cpp:467 | A sensitivity template key, answered by ores.http at the address and in the shape the BFF answered: a page of the tenant's keys, the two lookups a key names, one key, its history, and the create, correct and remove writes. |
+| resource | analytics | get | =/api/analytics/sensitivity-templates/{code}/history= | ores.http | projects/ores.http/analytics/src/routes/analytics/sensitivity_template_routes.cpp:394 | A sensitivity template key, answered by ores.http at the address and in the shape the BFF answered: a page of the tenant's keys, the two lookups a key names, one key, its history, and the create, correct and remove writes. |
 | resource | workflow | get | =/api/approvals-mode= | bff | projects/ores.web/packages/bff/src/inbox.ts:579 | Whether auto-approval is on, its scope, and who set it, when and why, read from the one subject the inbox answers it on. |
 | resource | workflow | get | =/api/approvals-mode= | ores.http | projects/ores.http/workflow/src/routes/workflow/lookup_routes.cpp:72 | Whether the tenant enforces approvals at the address and in the shape the BFF answered: the mode read as whether it auto-approves, with its scope and the person who set it, when and why. |
 | resource | auth | get | =/api/auth-events= | bff | projects/ores.web/packages/bff/src/audit.ts:114 | The tenant's authentication events, newest first, with the account filter the read takes though the screen does not offer it. |
@@ -1592,7 +1599,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:205 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
 | resource | auth | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:279 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
 | resource | access | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:204 | Replaces the permissions one role grants with exactly the set sent. |
-| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:168 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:169 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
 | resource | reference-data | get | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:340 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | post | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:386 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | put | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:399 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |

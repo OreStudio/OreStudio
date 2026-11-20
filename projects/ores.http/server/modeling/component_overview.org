@@ -78,6 +78,7 @@ file(COPY_FILE
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.http.analytics.lib
         ores.http.api.lib
         ores.http.assets.lib
         ores.http.compute.lib

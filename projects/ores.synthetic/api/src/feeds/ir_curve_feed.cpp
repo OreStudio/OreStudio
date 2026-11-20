@@ -484,10 +484,10 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     if (cfg.tenor != "FOMC") {
         if (const auto uri = index_fixing_uri(cfg.currency_code, cfg.index_family, cfg.tenor);
             !uri) {
-            BOOST_LOG_SEV(ir_curve_feed_lg(), warn)
+            ORES_LOG_SEV(ir_curve_feed_lg(), warn)
                 << "Curve " << cfg.source_name << " states no fixings: " << uri.error();
         } else if (const auto level = feed->index_rate(); !level) {
-            BOOST_LOG_SEV(ir_curve_feed_lg(), info)
+            ORES_LOG_SEV(ir_curve_feed_lg(), info)
                 << "Curve " << cfg.source_name << " states no fixings of '" << *uri
                 << "': it has no deposit at the index tenor";
         } else {

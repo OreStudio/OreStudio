@@ -18,7 +18,7 @@
  *
  */
 #include "fixing_history_writer.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
@@ -108,7 +108,7 @@ void fixing_history_writer::run() {
         try {
             write(plan);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The fixings of '" << plan.index_uri << "' are not written: " << e.what();
         }
     }
@@ -173,7 +173,7 @@ std::set<std::chrono::year_month_day> fixing_history_writer::held_days(
     if (!window) {
         // A series the market holds nothing for is refused rather than answered empty, which is
         // the same thing to a caller that wants the days a value is not already held on.
-        BOOST_LOG_SEV(lg(), debug) << "The days the market holds of '" << index_uri
+        ORES_LOG_SEV(lg(), debug) << "The days the market holds of '" << index_uri
                                    << "' are not read: " << window.error();
         return {};
     }
@@ -184,7 +184,7 @@ void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) 
     const auto started = std::chrono::steady_clock::now();
     const auto party = system_party();
     if (!party) {
-        BOOST_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
+        ORES_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
                                   << "' are not written: " << party.error();
         return;
     }
@@ -192,7 +192,7 @@ void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) 
     const auto history = feed::derive_fixing_history(
         plan.level, plan.as_of, fixing_history_days, plan.run_seed, plan.index_uri, held);
     if (!history) {
-        BOOST_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
+        ORES_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
                                   << "' are not stated: " << history.error();
         return;
     }
@@ -201,7 +201,7 @@ void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) 
 
     const auto series = series_for(plan.index_uri, *party);
     if (!series) {
-        BOOST_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
+        ORES_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
                                   << "' have no series: " << series.error();
         return;
     }
@@ -219,7 +219,7 @@ void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) 
                             .commentary = "The fixings a simulated run states for its curves"});
         batch.clear();
         if (!stored) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The fixings of '" << plan.index_uri << "' are not stored: " << stored.error();
             return false;
         }
@@ -238,7 +238,7 @@ void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) 
     }
     if (!flush())
         return;
-    BOOST_LOG_SEV(lg(), info)
+    ORES_LOG_SEV(lg(), info)
         << "Stated " << written << " fixing(s) of '" << plan.index_uri << "' to " << plan.as_of
         << " in "
         << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count()
